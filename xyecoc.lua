@@ -3,7 +3,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local selectedTheme = "Default"
 local Window = Rayfield:CreateWindow({
    Name = "99 Ночей в лесу, by @SFXCL",
-   Icon = 1, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "99 Ночей в лесу",
    LoadingSubtitle = "Скрипт сделан @SFXCL",
    Theme = selectedTheme, -- Check https://docs.sirius.menu/rayfield/configuration/themes
@@ -39,7 +39,7 @@ local PlayerTab = Window:CreateTab("Игрок")
 local EspTab = Window:CreateTab("Визуал")
 local GameTab = Window:CreateTab("Игра")
 local BringItemTab = Window:CreateTab("Телепорт")
-local DiscordTab = Window:CreateTab("")
+local DiscordTab = Window:CreateTab("Дискорд")
 local SettingsTab = Window:CreateTab("Настройки")
 local ActiveEspItems,ActiveDistanceEsp,ActiveEspEnemy,ActiveEspChildren,ActiveEspPeltTrader,ActivateFly,AlrActivatedFlyPC,ActiveNoCooldownPrompt,ActiveNoFog,
 ActiveAuoChopTree,ActiveKillAura,,ActiveNoclip = false,false,false,false,false,false,false,false,false,false,false,false,false
