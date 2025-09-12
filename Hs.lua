@@ -1,10 +1,10 @@
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local selectedTheme = "Default"
 local Window = Rayfield:CreateWindow({
-   Name = "99 Nights In The Forest - Script By Iliankytb",
+   Name = "99 Ночей в лесу, Было сделано @SFXCL",
    Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
-   LoadingTitle = "99 Nights In The Forest",
-   LoadingSubtitle = "Script By Iliankytb",
+   LoadingTitle = "99 Ночей в лесу.",
+   LoadingSubtitle = "Скрипт сделан @SFXCL",
    Theme = selectedTheme, -- Check https://docs.sirius.menu/rayfield/configuration/themes
 
    DisableRayfieldPrompts = false,
@@ -33,20 +33,20 @@ local Window = Rayfield:CreateWindow({
       Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
    }
 })
-local InfoTab = Window:CreateTab("Info")
-local PlayerTab = Window:CreateTab("Player")
-local EspTab = Window:CreateTab("Esp")
-local GameTab = Window:CreateTab("Game")
-local BringItemTab = Window:CreateTab("Bring Item")
-local DiscordTab = Window:CreateTab("Discord")
-local SettingsTab = Window:CreateTab("Settings")
+local InfoTab = Window:CreateTab("Инфо")
+local PlayerTab = Window:CreateTab("Игрок")
+local EspTab = Window:CreateTab("Визуал")
+local GameTab = Window:CreateTab("Игра")
+local BringItemTab = Window:CreateTab("Телепорт")
+local DiscordTab = Window:CreateTab("Телеграмм")
+local SettingsTab = Window:CreateTab("Настройки")
 local ActiveEspItems,ActiveDistanceEsp,ActiveEspEnemy,ActiveEspChildren,ActiveEspPeltTrader,ActivateFly,AlrActivatedFlyPC,ActiveNoCooldownPrompt,ActiveNoFog,
 ActiveAuoChopTree,ActiveKillAura,ActivateInfiniteJump,ActiveNoclip = false,false,false,false,false,false,false,false,false,false,false,false,false
 local ParagraphInfoServer = InfoTab:CreateParagraph({Title = "Info", Content = "Loading"})
 local DistanceForKillAura = 25
 local DistanceForAutoChopTree = 25
 Rayfield:Notify({
-   Title = "Cheat Version",
+   Title = "Версия Чита",
    Content = "V.0.31",
    Duration = 2.5,
    Image = "rewind",
@@ -351,7 +351,7 @@ end
 local DiscordLink = DiscordTab:CreateButton({
    Name = "Discord Link",
    Callback = function()
-copyToClipboard("https://discord.gg/E2TqYRsRP4")
+copyToClipboard("t.me//SFXCL")
 end,
 })
 local PlayerNoclipToggle = PlayerTab:CreateToggle({
