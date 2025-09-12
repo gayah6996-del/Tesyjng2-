@@ -60,5 +60,5 @@ Close.Text = "Close GUI"
 Close.TextColor3 = Color3.fromRGB(255, 255, 255)
 Close.TextSize = 10.000
 Close.MouseButton1Down:connect(function()
-Frame.Visible = true
+Frame.Visible = false
 end)
