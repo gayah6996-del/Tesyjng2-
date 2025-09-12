@@ -7,20 +7,6 @@ local Close = Instance.new("TextButton")
 
 ScreenGui.Parent = game.CoreGui
 
-createButton(scroll, "Infinite Jump", function()
-	if infJump then
-		infJump:Disconnect()
-	end;
-	infJumpDebounce = false;
-	infJump = UserInputService.JumpRequest:Connect(function()
-		if not infJumpDebounce then
-			infJumpDebounce = true;
-			LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
-			task.wait()
-			infJumpDebounce = false
-		end
-	end)
-end)
 Frame.Name = "Frame"
 Frame.Parent = ScreenGui
 Frame.BackgroundColor3 = Color3.fromRGB(44, 44, 44)
