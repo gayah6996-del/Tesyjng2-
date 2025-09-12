@@ -1,8 +1,8 @@
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/NewNewNew.lua'))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local selectedTheme = "Default"
 local Window = Rayfield:CreateWindow({
    Name = "99 Ночей в лесу, Было сделано @SFXCL",
-   Icon = 0, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
+   Icon = 1, -- Icon in Topbar. Can use Lucide Icons (string) or Roblox Image (number). 0 to use no icon (default).
    LoadingTitle = "99 Ночей в лесу.",
    LoadingSubtitle = "Скрипт сделан @SFXCL",
    Theme = selectedTheme, -- Check https://docs.sirius.menu/rayfield/configuration/themes
@@ -18,8 +18,8 @@ local Window = Rayfield:CreateWindow({
 
    Discord = {
       Enabled = false, -- Prompt the user to join your Discord server if their executor supports it
-      Invite = "noinvitelink", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
-      RememberJoins = true -- Set this to false to make them join the discord every time they load it up
+      Invite = "t.me//SFXCL", -- The Discord invite code, do not include discord.gg/. E.g. discord.gg/ ABCD would be ABCD
+      RememberJoins = false -- Set this to false to make them join the discord every time they load it up
    },
 
    KeySystem = false, -- Set this to true to use our key system
@@ -37,8 +37,8 @@ local InfoTab = Window:CreateTab("Инфо")
 local PlayerTab = Window:CreateTab("Игрок")
 local EspTab = Window:CreateTab("Визуал")
 local GameTab = Window:CreateTab("Игра")
-local BringItemTab = Window:CreateTab("Телепорт")
-local DiscordTab = Window:CreateTab("Телеграмм")
+--local BringItemTab = Window:CreateTab("Телепорт")
+--local DiscordTab = Window:CreateTab("Телеграмм")
 local SettingsTab = Window:CreateTab("Настройки")
 local ActiveEspItems,ActiveDistanceEsp,ActiveEspEnemy,ActiveEspChildren,ActiveEspPeltTrader,ActivateFly,AlrActivatedFlyPC,ActiveNoCooldownPrompt,ActiveNoFog,
 ActiveAuoChopTree,ActiveKillAura,ActivateInfiniteJump,ActiveNoclip = false,false,false,false,false,false,false,false,false,false,false,false,false
