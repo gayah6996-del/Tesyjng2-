@@ -39,7 +39,7 @@ local PlayerTab = Window:CreateTab("Игрок")
 local EspTab = Window:CreateTab("Визуал")
 local GameTab = Window:CreateTab("Игра")
 local BringItemTab = Window:CreateTab("Телепорт")
---local DiscordTab = Window:CreateTab("Discord")
+local DiscordTab = Window:CreateTab("Discord")
 local SettingsTab = Window:CreateTab("Настройки")
 local ActiveEspItems,ActiveDistanceEsp,ActiveEspEnemy,ActiveEspChildren,ActiveEspPeltTrader,ActivateFly,AlrActivatedFlyPC,ActiveNoCooldownPrompt,ActiveNoFog,
 ActiveAuoChopTree,ActiveKillAura,ActivateInfiniteJump,ActiveNoclip = false,false,false,false,false,false,false,false,false,false,false,false,false
