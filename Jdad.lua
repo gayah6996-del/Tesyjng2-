@@ -1,5 +1,5 @@
 
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/NewNewNew.lua'))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 local selectedTheme = "Default"
 local Window = Rayfield:CreateWindow({
    Name = "99 Ночей в лесу, Было сделано @SFXCL",
