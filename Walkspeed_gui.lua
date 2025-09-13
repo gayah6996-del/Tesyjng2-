@@ -12,7 +12,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 50)
+frame.Size = UDim2.new(0, 400, 0, 100)
 frame.Position = UDim2.new(0, 20, 0.5, -25)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
@@ -31,7 +31,7 @@ textBox.Position = UDim2.new(0, 10, 0, 10)
 textBox.PlaceholderText = "WalkSpeed"
 textBox.Text = ""
 textBox.Font = Enum.Font.Gotham
-textBox.TextSize = 14
+textBox.TextSize = 5
 textBox.Parent = frame
 
 local applyButton = Instance.new("TextButton")
@@ -48,7 +48,7 @@ NoClip.Position = UDim2.new(0, 190, 0, 10)
 NoClip.PlaceholderText = "NoClip"
 NoClip.Text = ""
 NoClip.Font = Enum.Font.Gotham
-NoClip.TextSize = 14
+NoClip.TextSize = 5
 NoClip.Parent = frame
 loadstring(game:HttpGet("https://pastebin.com/raw/2JZWpiKn", true))()
 
