@@ -27,8 +27,8 @@ local function addCorner(obj, r)
 end
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 400, 0, 350)
-main.Position = UDim2.new(0.5, -150, 0.5, -140)
+main.Size = UDim2.new(0, 400, 0, 400)
+main.Position = UDim2.new(0.5, -170, 0.5, -170)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 main.BackgroundTransparency = 0.1
 main.BorderSizePixel = 0
@@ -146,7 +146,7 @@ funcs["ESP"] = function(s)
                         distT.Visible = true
                         bone.Visible = true
                         nameT.Text = plr.Name
-                        distT.Text = string.format("Dist: %d", dist)
+                        distT.Text = string.format("Distance: %d", dist)
                         nameT.Position = Vector2.new(pos.X, pos.Y - 20)
                         distT.Position = Vector2.new(pos.X, pos.Y)
                         nameT.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
@@ -173,42 +173,43 @@ funcs["SPEEDHACK"] = function(s)
     end
 end
 
--- Функционал Noclip
+local noclipConn
 funcs["NOCLIP"] = function(s)
-    if s then
-        RunService.Stepped:Connect(function()
-            for _, v in next, LocalPlayer.Character:GetChildren() do
-                if v.ClassName == "BasePart" then
-                    v.CanCollide = false
-                end
-            end
-        end)
-    else
-        RunService.Stepped:Disconnect()
-        for _, v in next, LocalPlayer.Character:GetChildren() do
-            if v.ClassName == "BasePart" then
-                v.CanCollide = true
-            end
-        end
-    end
+	if s then
+		noclipConn = RunService.Stepped:Connect(function()
+			for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+				end
+			end
+		end)
+	elseif noclipConn then
+		noclipConn:Disconnect()
+	end
 end
 
 -- Функционал Kisgara
 funcs["KISGARA"] = function(s)
-    if s then
-        print("KISGARA активирована!")
-        -- Здесь добавляем нужную функциональность
-        -- Например, увеличим высоту прыжка
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = 100 -- Повышаем силу прыжка
-        end
-    else
-        print("KISGARA деактивирована!")
-        -- Возвращаем стандартные настройки
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = 50 -- Возвращаем стандартный уровень силы прыжка
+local function enableAimbot()
+    H.Connections.aimbot = S.RunService.Heartbeat:Connect(function()
+        if not H.States.aimbot then return end
+        local closestMonster, closestDistance = nil, math.huge
+        if P.Character and P.Character:FindFirstChild("HumanoidRootPart") then
+            local hrp = P.Character.HumanoidRootPart
+            for monster, _ in pairs(H.Cache.monsters) do
+                if monster and monster.Parent and monster:FindFirstChild("HumanoidRootPart") then
+                    local distance = (hrp.Position - monster.HumanoidRootPart.Position).Magnitude
+                    if distance < H.Config.aimDistance and distance < closestDistance then
+                        closestMonster = monster.HumanoidRootPart
+                        closestDistance = distance
+                    end
+                end
+            end
+            if closestMonster then
+                local targetPos = closestMonster.Position
+                local currentCFrame = C.CFrame
+                local targetCFrame = CFrame.lookAt(currentCFrame.Position, targetPos)
+                C.CFrame = currentCFrame:Lerp(targetCFrame, 0.2)
         end
     end
 end
