@@ -12,7 +12,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 190, 0, 80)
+frame.Size = UDim2.new(0, 190, 0, 60)
 frame.Position = UDim2.new(0, 60, 0.5, -25)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
@@ -40,6 +40,14 @@ applyButton.Position = UDim2.new(0, 100, 0, 10)
 applyButton.Text = "Apply"
 applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
+applyButton.Parent = frame
+
+local JumplingButton = Instance.new("TextButton")
+applyButton.Size = UDim2.new(0, 40, 0, 30)
+applyButton.Position = UDim2.new(0, 190, 0, 10)
+applyButton.Text = "Gogo"
+applyButton.Font = Enum.Font.Gotham
+applyButton.TextSize = 17
 applyButton.Parent = frame
 
 local closeButton = Instance.new("TextButton")
@@ -105,30 +113,6 @@ frame.InputBegan:Connect(function(input)
 			end
 		end)
 	end
-end)
-
-createButton(scroll, "Open Fly GUI", function()
-	loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
-end)
-local descendantAddedConn;
-createButton(scroll, "Instant ProximityPrompts", function()
-	for _, v in ipairs(game:GetDescendants()) do
-		pcall(function()
-			if typeof(v) == "Instance" and v.ClassName == "ProximityPrompt" then
-				v.HoldDuration = 0
-			end
-		end)
-	end;
-	if descendantAddedConn then
-		descendantAddedConn:Disconnect()
-	end;
-	descendantAddedConn = game.DescendantAdded:Connect(function(descendant)
-		pcall(function()
-			if typeof(descendant) == "Instance" and descendant.ClassName == "ProximityPrompt" then
-				descendant.HoldDuration = 0
-			end
-		end)
-	end)
 end)
 
 game:GetService("UserInputService").JumpRequest:Connect(function()
