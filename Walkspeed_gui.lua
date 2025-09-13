@@ -4,7 +4,6 @@ local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local InfiniteJumpEnabled = true
-local isEnabled = false
 local playerGui = player:WaitForChild("PlayerGui")
 
 local screenGui = Instance.new("ScreenGui")
@@ -49,7 +48,7 @@ applyButton.Name = "ApplyButton"
 applyButton.Size = UDim2.new(0, 40, 0, 30)
 applyButton.Position = UDim2.new(0, 10, 0, 10)
 applyButton.Text = "NewNew", function()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua"))()
+loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
 applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
 
