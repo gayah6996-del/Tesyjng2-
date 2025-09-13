@@ -40,26 +40,26 @@ SpeedHack.Name = "SpeedHack"
 SpeedHack.Parent = Frame
 SpeedHack.BackgroundColor3 = Color3.fromRGB(76, 76, 76)
 SpeedHack.BorderColor3 = Color3.fromRGB(0, 0, 0)
-SpeedHack.Position = UDim2.new(0.033303082, 0, 0.0046896172, 0)
-SpeedHack.Size = UDim2.new(0, 579, 0, 111)
+SpeedHack.Position = UDim2.new(0.003303082, 0, 0.0846896172, 0)
+SpeedHack.Size = UDim2.new(0, 340, 0, 77)
 SpeedHack.Font = Enum.Font.GothamBold
 SpeedHack.Text = "Enable SpeedHack"
 SpeedHack.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedHack.TextSize = 1.000
+SpeedHack.TextSize = 3.000
 SpeedHack.MouseButton1Down:connect(function()
 loadstring(game:HttpGet("https://pastebin.com/raw/a95RwWVu", true))()
 end)
 
-Noclip.Name = "Speed-Hack"
+Noclip.Name = "NoClip"
 Noclip.Parent = Frame
 Noclip.BackgroundColor3 = Color3.fromRGB(76, 76, 76)
 Noclip.BorderColor3 = Color3.fromRGB(0, 0, 0)
 Noclip.Position = UDim2.new(0.033303082, 0, 0.0846896172, 0)
-Close.Size = UDim2.new(0, 400, 0, 77)
+NoClip.Size = UDim2.new(0, 340, 0, 77)
 Noclip.Font = Enum.Font.GothamBold
 Noclip.Text = "Enable Noclip"
 Noclip.TextColor3 = Color3.fromRGB(255, 255, 255)
-Noclip.TextSize = 1.000
+Noclip.TextSize = 3.000
 Noclip.MouseButton1Down:connect(function()
 loadstring(game:HttpGet("https://pastebin.com/raw/a95RwWVu", true))()
 end)
@@ -69,11 +69,11 @@ Close.Parent = Frame
 Close.BackgroundColor3 = Color3.fromRGB(76, 76, 76)
 Close.BorderColor3 = Color3.fromRGB(97, 97, 97)
 Close.Position = UDim2.new(0.033303082, 0, 0.570439577, 0)
-Close.Size = UDim2.new(0, 400, 0, 77)
+Close.Size = UDim2.new(0, 340, 0, 77)
 Close.Font = Enum.Font.GothamBold
 Close.Text = "Close GUI"
 Close.TextColor3 = Color3.fromRGB(255, 255, 255)
-Close.TextSize = 1.000
+Close.TextSize = 3.000
 Close.MouseButton1Down:connect(function()
 Frame.Visible = true
 end)
