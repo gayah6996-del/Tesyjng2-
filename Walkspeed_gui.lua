@@ -58,7 +58,7 @@ addCorner(minimize, 6)
 
 local toggled, funcs, btns = {}, {}, {}
 local minimizedState = false
-local names = {"GOD MODE", "INFINITY JUMP", "ESP", "KISGARA"} -- Исправленная кнопка KISGARA
+local names = {"GOD MODE", "INFINITY JUMP", "ESP", "SPEEDHACK", "NOCLIP", "KISGARA"} -- Полный список кнопок
 
 for i, name in ipairs(names) do
     local btn = Instance.new("TextButton", main)
@@ -165,22 +165,50 @@ funcs["ESP"] = function(s)
     end
 end
 
--- Новая функция для кнопки KISGARA
+-- Функционал Speedhack
+funcs["SPEEDHACK"] = function(s)
+    local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.WalkSpeed = s and 30 or 16 -- Изменяем скорость ходьбы
+    end
+end
+
+-- Функционал Noclip
+funcs["NOCLIP"] = function(s)
+    if s then
+        RunService.Stepped:Connect(function()
+            for _, v in next, LocalPlayer.Character:GetChildren() do
+                if v.ClassName == "BasePart" then
+                    v.CanCollide = false
+                end
+            end
+        end)
+    else
+        RunService.Stepped:Disconnect()
+        for _, v in next, LocalPlayer.Character:GetChildren() do
+            if v.ClassName == "BasePart" then
+                v.CanCollide = true
+            end
+        end
+    end
+end
+
+-- Функционал Kisgara
 funcs["KISGARA"] = function(s)
     if s then
         print("KISGARA активирована!")
         -- Здесь добавляем нужную функциональность
-        -- Например, увеличиваем скорость движения персонажа
+        -- Например, увеличим высоту прыжка
         local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
         if humanoid then
-            humanoid.WalkSpeed = 30 -- Увеличиваем скорость движения
+            humanoid.JumpPower = 100 -- Повышаем силу прыжка
         end
     else
         print("KISGARA деактивирована!")
-        -- Возвращаем изначальную скорость
+        -- Возвращаем стандартные настройки
         local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
         if humanoid then
-            humanoid.WalkSpeed = 16 -- Возвращаем обычную скорость
+            humanoid.JumpPower = 50 -- Возвращаем стандартный уровень силы прыжка
         end
     end
 end
