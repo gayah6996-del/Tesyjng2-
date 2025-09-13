@@ -12,7 +12,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 400, 0, 50)
+frame.Size = UDim2.new(0, 190, 0, 80)
 frame.Position = UDim2.new(0, 60, 0.5, -25)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
@@ -25,13 +25,13 @@ gradient.Color = ColorSequence.new{
 gradient.Rotation = 90
 gradient.Parent = frame
 
-local textBox = Instance.new("Числа")
+local textBox = Instance.new("TextBox")
 textBox.Size = UDim2.new(0, 80, 0, 30)
 textBox.Position = UDim2.new(0, 10, 0, 10)
 textBox.PlaceholderText = "WalkSpeed"
 textBox.Text = ""
 textBox.Font = Enum.Font.Gotham
-textBox.TextSize = 5
+textBox.TextSize = 14
 textBox.Parent = frame
 
 local applyButton = Instance.new("TextButton")
