@@ -42,6 +42,14 @@ applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
 applyButton.Parent = frame
 
+local ChangeStateButton = Instance.new("TextButton")
+ChangeStateButton.Size = UDim2.new(0, 80, 0, 30)
+ChangeStateButton.Position = UDim2.new(0, 170, 0, 10)
+ChangeStateButton.Text = "InfinityJump"
+ChangeStateButton.Font = Enum.Font.Gotham
+ChangeStateButton.TextSize = 14
+ChangeStateButton.Parent = frame
+
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 20, 0, 20)
 closeButton.Position = UDim2.new(0, 0, 0, 0)
@@ -109,17 +117,6 @@ end)
 
 local infiniteJumpEnabled = false
 
--- Создаем кнопку
-
--- Кнопка для бесконечного прыжка
-local ChangeStateButton = Instance.new("TextButton")
-ChangeStateButton.Size = UDim2.new(0, 60, 0, 30) -- Такая же ширина и высота
-ChangeStateButton.Position = UDim2.new(0, 170, 0, 10) -- Поставили справа от Apply
-ChangeStateButton.Text = "InfinityJump"
-ChangeStateButton.Font = Enum.Font.Gotham
-ChangeStateButton.TextSize = 14
-ChangeStateButton.Parent = frame
-
 -- Обрабатываем клик по кнопке
 ChangeStateButton.MouseButton1Click:Connect(function()
     infiniteJumpEnabled = not infiniteJumpEnabled -- меняем состояние прыжка
@@ -138,6 +135,40 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
         game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
 end)
+
+-- Создание кнопки Noclip Toggle
+local toggleBtn = Instance.new("TextButton")   -- Создаем новую кнопку
+toggleBtn.Name = "ToggleNoclip"
+toggleBtn.AutoButtonColor = true                -- Автоматическое изменение цвета при нажатии
+toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Цвет фона кнопки по умолчанию (красный)
+toggleBtn.Position = UDim2.new(0, 5, 1, 5)     -- Кнопка размещается снизу текущего элемента
+toggleBtn.Size = UDim2.new(1, -70, 0, 25)      -- Размер кнопки: ширина полная минус отступ справа
+toggleBtn.FontSize = Enum.FontSize.Size18       -- Размер шрифта текста
+toggleBtn.Text = "Noclip: OFF"                 -- Начальное состояние надписи на кнопке
+toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)-- Белый цвет текста
+toggleBtn.Visible = true                        -- Видима по умолчанию
+toggleBtn.Active = true                         -- Активна по умолчанию
+toggleBtn.Parent = walkspeedSlider              -- Родителем делаем тот же фрейм, что и ползунок скорости
+
+-- Функция обработки события клика по кнопке
+toggleBtn.MouseButton1Click:Connect(function()
+ local newState = not noclip                   -- Инвертируем текущее состояние ноклипа
+ setNoclip(newState)                           -- Устанавливаем новое значение состояния
+end)
+
+-- Логика установки состояния ноклипа
+local function setNoclip(state)
+ noclip = state                                -- Обновляем глобальную переменную состояния
+ if noclip then
+  toggleBtn.Text = "Noclip: ON"               -- Меняем надпись и цвет кнопки
+  toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+ else
+  toggleBtn.Text = "Noclip: OFF"
+  toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+ end
+end
+
+setNoclip(false)                               -- Изначально выключено
 
 frame.InputChanged:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
