@@ -50,7 +50,7 @@ local minimize = Instance.new("TextButton", main)
 minimize.Size = UDim2.new(0, 30, 0, 30)
 minimize.Position = UDim2.new(1, -35, 0, 5) -- digeser agar tidak menabrak teks
 minimize.BackgroundTransparency = 1
-minimize.Text = "X" or ""
+minimize.Text = "X"
 minimize.TextColor3 = Color3.new(1, 1, 1)
 minimize.Font = Enum.Font.GothamBold
 minimize.TextScaled = true
@@ -193,8 +193,8 @@ funcs["ESP"] = function(s)
 	end
 end
 
+local enableAimbot
 funcs["AIMBOT"] = function(s)
-local function enableAimbot()
     H.Connections.aimbot = S.RunService.Heartbeat:Connect(function()
         if not H.States.aimbot then return end
         local closestMonster, closestDistance = nil, math.huge
@@ -217,8 +217,6 @@ local function enableAimbot()
             end
         end
     end)
-    notify("Combat", "Aimbot activé!", 3, "🎯")
-end
 
 LocalPlayer.CharacterAdded:Connect(function()
 	wait(1)
