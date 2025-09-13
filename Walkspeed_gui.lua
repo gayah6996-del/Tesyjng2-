@@ -127,9 +127,8 @@ ChangeStateButton.MouseButton1Click:Connect(function()
     
     -- Можно дополнительно изменить надпись на кнопке
     if infiniteJumpEnabled then
-        ChangeStateButton.Text = "Infinity Jump:Off"
-    else
-        ChangeStateButton.Text = "Infinity Jump:On"
+        ChangeStateButton.Text = "Infinity Jump"
+        ChangeStateButton.Enabled and "ON" or "OFF")
     end
 end)
 
