@@ -65,14 +65,16 @@ reopenButton.TextSize = 19
 reopenButton.Visible = false
 reopenButton.Parent = screenGui
 
--- появление элементов после первого клика на окно
+-- Первое открытие окна (при клике на заголовок)
+local firstOpen = true
 frame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if input.UserInputType == Enum.UserInputType.MouseButton1 and firstOpen then
         wait() -- небольшая задержка перед появлением
         
         walkSpeedTextBox.Visible = true
         jumpToggleButton.Visible = true
         closeButton.Visible = true
+        firstOpen = false
     end
 end)
 
