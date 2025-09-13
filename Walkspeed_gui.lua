@@ -35,36 +35,16 @@ main.Active = true
 main.Draggable = true
 addCorner(main, 12)
 
-local title = Instance.new("TextLabel", main)
-title.Name = "TitleLabel"
-title.Size = UDim2.new(1, -40, 0, 40)
-title.Position = UDim2.new(0, 15, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "SCRIPT BY @SFXCL"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.TextScaled = true
-title.Font = Enum.Font.GothamBold
-
-local minimize = Instance.new("TextButton", main)
-minimize.Size = UDim2.new(0, 30, 0, 30)
-minimize.Position = UDim2.new(1, -35, 0, 5)
-minimize.BackgroundTransparency = 1
-minimize.Text = "-"
-minimize.TextColor3 = Color3.new(1, 1, 1)
-minimize.Font = Enum.Font.GothamBold
-minimize.TextScaled = true
-addCorner(minimize, 6)
-
--- Переключающая кнопка
-local toggleBtn = Instance.new("TextButton", main)
-toggleBtn.Size = UDim2.new(0, 30, 0, 30)
-toggleBtn.Position = UDim2.new(1, -65, 0, 5)
-toggleBtn.BackgroundTransparency = 1
-toggleBtn.Text = "X" -- символ, обозначающий кнопку переключателя
-toggleBtn.TextColor3 = Color3.new(1, 1, 1)
-toggleBtn.Font = Enum.Font.GothamBold
-toggleBtn.TextScaled = true
-addCorner(toggleBtn, 6)
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -65, 0, 5)
+closeButton.Text = "X"
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 12
+closeButton.TextScaled = true
+addCorner(closeButton, 6)
 
 local reopenButton = Instance.new("TextButton", main)
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
@@ -143,6 +123,11 @@ funcs["SPEEDHACK"] = function(s)
         end
     end
 end
+
+closeButton.MouseButton1Click:Connect(function()
+	frame.Visible = false
+	reopenButton.Visible = true
+end)
 
 reopenButton.MouseButton1Click:Connect(function()
 	frame.Visible = true
