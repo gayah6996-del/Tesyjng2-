@@ -62,7 +62,7 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, -50, 0, -10)
+reopenButton.Position = UDim2.new(0.5, -50, 0, -30)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 19
@@ -135,40 +135,40 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
         game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
 end)
+-- Кнопка загрузки скрипта
+local button = Instance.new("TextButton")
+button.Name = "ScriptLoader"
+button.AutoButtonColor = true
+button.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+button.Position = UDim2.new(0, 5, 0, wallSpeedButton.AbsoluteSize.Y + 10) -- Размещаем под WallSpeed
+button.Size = UDim2.new(0, 150, 0, 30)
+button.FontSize = Enum.FontSize.Size18
+button.Text = "Load Script"
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.Visible = true
+button.Active = true
+button.Parent = game.CoreGui.RobloxGui
 
--- Создание кнопки Noclip Toggle
-local toggleBtn = Instance.new("TextButton")   -- Создаем новую кнопку
-toggleBtn.Name = "ToggleNoclip"
-toggleBtn.AutoButtonColor = true                -- Автоматическое изменение цвета при нажатии
-toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50) -- Цвет фона кнопки по умолчанию (красный)
-toggleBtn.Position = UDim2.new(0, 5, 1, 5)     -- Кнопка размещается снизу текущего элемента
-toggleBtn.Size = UDim2.new(1, -70, 0, 25)      -- Размер кнопки: ширина полная минус отступ справа
-toggleBtn.FontSize = Enum.FontSize.Size18       -- Размер шрифта текста
-toggleBtn.Text = "Noclip: OFF"                 -- Начальное состояние надписи на кнопке
-toggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)-- Белый цвет текста
-toggleBtn.Visible = true                        -- Видима по умолчанию
-toggleBtn.Active = true                         -- Активна по умолчанию
-toggleBtn.Parent = walkspeedSlider              -- Родителем делаем тот же фрейм, что и ползунок скорости
+local scriptLoaded = false
+local loadedThread
 
--- Функция обработки события клика по кнопке
-toggleBtn.MouseButton1Click:Connect(function()
- local newState = not noclip                   -- Инвертируем текущее состояние ноклипа
- setNoclip(newState)                           -- Устанавливаем новое значение состояния
+button.MouseButton1Click:Connect(function()
+    if not scriptLoaded then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua", true))()
+        loadedThread = coroutine.running()
+        button.Text = "Unload Script"
+        button.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        scriptLoaded = true
+    else
+        coroutine.resume(coroutine.create(function()
+            error("Script stopped manually.")
+        end))
+        loadedThread = nil
+        button.Text = "Load Script"
+        button.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        scriptLoaded = false
+    end
 end)
-
--- Логика установки состояния ноклипа
-local function setNoclip(state)
- noclip = state                                -- Обновляем глобальную переменную состояния
- if noclip then
-  toggleBtn.Text = "Noclip: ON"               -- Меняем надпись и цвет кнопки
-  toggleBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
- else
-  toggleBtn.Text = "Noclip: OFF"
-  toggleBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
- end
-end
-
-setNoclip(false)                               -- Изначально выключено
 
 frame.InputChanged:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
