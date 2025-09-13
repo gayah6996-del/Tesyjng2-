@@ -3,6 +3,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
+local InfiniteJumpEnabled = true
 local playerGui = player:WaitForChild("PlayerGui")
 
 local screenGui = Instance.new("ScreenGui")
@@ -54,7 +55,7 @@ closeButton.Parent = frame
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
 reopenButton.Position = UDim2.new(0.5, -50, 1, -60)
-reopenButton.Text = "Reopen GUI"
+reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 16
 reopenButton.Visible = false
@@ -104,6 +105,12 @@ frame.InputBegan:Connect(function(input)
 			end
 		end)
 	end
+end)
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if InfiniteJumpEnabled then
+        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
 end)
 
 frame.InputChanged:Connect(function(input)
