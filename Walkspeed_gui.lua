@@ -12,7 +12,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 90)
+frame.Size = UDim2.new(0, 300, 0, 120)
 frame.Position = UDim2.new(0.5, -125, 0.5, -45) 
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
@@ -43,7 +43,7 @@ applyButton.TextSize = 14
 applyButton.Parent = frame
 
 local ChangeStateButton = Instance.new("TextButton")
-ChangeStateButton.Size = UDim2.new(0, 80, 0, 30)
+ChangeStateButton.Size = UDim2.new(0, 60, 0, 30)
 ChangeStateButton.Position = UDim2.new(0, 170, 0, 10)
 ChangeStateButton.Text = "InfinityJump"
 ChangeStateButton.Font = Enum.Font.Gotham
