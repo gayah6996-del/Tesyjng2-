@@ -29,7 +29,6 @@ local textBox = Instance.new("TextBox")
 textBox.Size = UDim2.new(0, 80, 0, 30)
 textBox.Position = UDim2.new(0, 10, 0, 10)
 textBox.PlaceholderText = "WalkSpeed"
-textTitle = "ON";
 textBox.Text = ""
 textBox.Font = Enum.Font.Gotham
 textBox.TextSize = 14
@@ -127,8 +126,9 @@ ChangeStateButton.MouseButton1Click:Connect(function()
     
     -- Можно дополнительно изменить надпись на кнопке
     if infiniteJumpEnabled then
-        ChangeStateButton.Text = "Infinity Jump"
-        ChangeStateButton.Enabled and "ON" or "OFF")
+        ChangeStateButton.Text = "Infinity Jump:Off"
+    else
+        ChangeStateButton.Text = "Infinity Jump:On"
     end
 end)
 
@@ -136,28 +136,6 @@ end)
 game:GetService("UserInputService").JumpRequest:Connect(function()
     if infiniteJumpEnabled then
         game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
-end)
-
-local button = Instance.new("TextButton")
-button.Text = "Load Script"
-button.Size = UDim2.new(0, 100, 0, 30)
-button.Position = UDim2.new(0, 10, 0, 10)
-button.Parent = game.Players.LocalPlayer.PlayerGui
-
-local scriptLoaded = false
-
-button.MouseButton1Click:Connect(function()
-    if not scriptLoaded then
-        pcall(function()
-            loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
-            button.Text = "Close Script"
-            scriptLoaded = true
-        end)
-    else
-        print("Script closed!")
-        button.Text = "Load Script"
-        scriptLoaded = false
     end
 end)
 
