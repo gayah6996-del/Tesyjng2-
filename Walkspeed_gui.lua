@@ -133,7 +133,7 @@ funcs["ESP"] = function(s)
                 distT.Outline = true
                 distT.Size = 13
                 distT.Color = Color3.new(1, 0, 0)
-                local bone = Drawing.new("Line")
+                local bone = Drawing.new("Skeleton")
                 bone.Color = Color3.new(1, 1, 1)
                 bone.Thickness = 2
                 RunService.RenderStepped:Connect(function()
@@ -149,7 +149,7 @@ funcs["ESP"] = function(s)
                         distT.Text = string.format("Distance: %d", dist)
                         nameT.Position = Vector2.new(pos.X, pos.Y - 20)
                         distT.Position = Vector2.new(pos.X, pos.Y)
-                        nameT.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+                        nameT.Color = Color3.fromHSV(tick() % 5 / 1, 0, 0)
                         local h2 = cam:WorldToViewportPoint(head.Position)
                         local t2 = cam:WorldToViewportPoint(torso.Position)
                         bone.From = Vector2.new(t2.X, t2.Y)
