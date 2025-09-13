@@ -42,15 +42,6 @@ applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
 applyButton.Parent = frame
 
-local applyButton = Instance.new("TextButton")
-applyButton.Size = UDim2.new(0, 60, 0, 30)
-applyButton.Position = UDim2.new(0, 190, 0, 10)
-applyButton.Text = "NewNEw"
-applyButton.Font = Enum.Font.Gotham
-applyButton.TextSize = 14
-applyButton.Parent = frame
-loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
-
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 20, 0, 20)
 closeButton.Position = UDim2.new(0, 0, 0, 0)
@@ -114,6 +105,16 @@ frame.InputBegan:Connect(function(input)
 			end
 		end)
 	end
+end)
+
+local applyButton = Instance.new("TextButton")
+applyButton.Size = UDim2.new(0, 40, 0, 30)
+applyButton.Position = UDim2.new(0, 10, 0, 10)
+applyButton.Text = "NewNEw"
+applyButton.Font = Enum.Font.Gotham
+applyButton.TextSize = 14
+applyButton.Parent = frame
+loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
 end)
 
 game:GetService("UserInputService").JumpRequest:Connect(function()
