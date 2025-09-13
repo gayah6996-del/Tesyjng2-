@@ -55,7 +55,7 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, -50, 0, 0)
+reopenButton.Position = UDim2.new(0.5, -50, 0, -10)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 19
@@ -140,22 +140,21 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
-local Button = Instance.new("TextButton")
-Button.Size = UDim2.new(0, 100, 0, 30)
-Button.Position = UDim2.new(0, 10, 0, 50)
---Button.Text = "InfinityJump"
-Button.Font = Enum.Font.Gotham
-Button.TextSize = 14
-Button.Parent = frame
---Button.Parent = game.Players.LocalPlayer.PlayerGui
+local button = Instance.new("TextButton")
+button.Text = "Load Script"
+button.Size = UDim2.new(0, 100, 0, 30)
+button.Position = UDim2.new(0, 10, 0, 10)
+button.Parent = game.Players.LocalPlayer.PlayerGui
 
 local scriptLoaded = false
 
 button.MouseButton1Click:Connect(function()
     if not scriptLoaded then
-        loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
-        button.Text = "Close Script"
-        scriptLoaded = true
+        pcall(function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
+            button.Text = "Close Script"
+            scriptLoaded = true
+        end)
     else
         print("Script closed!")
         button.Text = "Load Script"
