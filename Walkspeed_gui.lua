@@ -62,7 +62,7 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, -50, 0, -30)
+reopenButton.Position = UDim2.new(0.5, -50, 0, -50)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 19
@@ -155,7 +155,7 @@ local loadedThread
 
 button.MouseButton1Click:Connect(function()
     if not scriptLoaded then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua", true))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua"()
         loadedThread = coroutine.running()
         button.Text = "Unload Script"
         button.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
