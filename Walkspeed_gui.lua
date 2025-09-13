@@ -12,7 +12,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 190, 0, 60)
+frame.Size = UDim2.new(0, 250, 0, 70)
 frame.Position = UDim2.new(0, 60, 0.5, -25)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
@@ -42,13 +42,13 @@ applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
 applyButton.Parent = frame
 
-local JumplingButton = Instance.new("TextButton")
-applyButton.Size = UDim2.new(0, 40, 0, 30)
-applyButton.Position = UDim2.new(0, 190, 0, 10)
-applyButton.Text = "Gogo"
-applyButton.Font = Enum.Font.Gotham
-applyButton.TextSize = 17
-applyButton.Parent = frame
+local JumpingButton = Instance.new("TextButton")
+JumpingButton.Size = UDim2.new(0, 40, 0, 30)
+JumpingButton.Position = UDim2.new(0, 190, 0, 10)
+JumpingButton.Text = "Gogo"
+JumpingButton.Font = Enum.Font.Gotham
+JumpingButton.TextSize = 17
+JumpingButton.Parent = frame
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 20, 0, 20)
@@ -62,7 +62,7 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, -50, 1, -60)
+reopenButton.Position = UDim2.new(0.5, 50, 1, -60)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 16
