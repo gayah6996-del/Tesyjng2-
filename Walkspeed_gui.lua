@@ -13,7 +13,7 @@ screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 250, 0, 90)
-frame.Position = UDim2.new(0, 60, 0.5, -160)
+frame.Position = UDim2.new(0, -52, 0.5, -20)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
 
@@ -29,6 +29,7 @@ local textBox = Instance.new("TextBox")
 textBox.Size = UDim2.new(0, 80, 0, 30)
 textBox.Position = UDim2.new(0, 10, 0, 10)
 textBox.PlaceholderText = "WalkSpeed"
+textTitle = "ON";
 textBox.Text = ""
 textBox.Font = Enum.Font.Gotham
 textBox.TextSize = 14
@@ -37,7 +38,7 @@ textBox.Parent = frame
 local applyButton = Instance.new("TextButton")
 applyButton.Size = UDim2.new(0, 60, 0, 30)
 applyButton.Position = UDim2.new(0, 100, 0, 10)
-applyButton.Text = "Apply"
+applyButton.Text = "Enter"
 applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
 applyButton.Parent = frame
@@ -54,7 +55,7 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, -50, 1, -10)
+reopenButton.Position = UDim2.new(0.5, -130, 1, -10)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 16
@@ -113,9 +114,9 @@ local infiniteJumpEnabled = false
 
 -- Кнопка для бесконечного прыжка
 local ChangeStateButton = Instance.new("TextButton")
-ChangeStateButton.Size = UDim2.new(0, 60, 0, 30) -- Сделали такой же ширины и высоты
-ChangeStateButton.Position = UDim2.new(0, 100, 0, 50) -- Расположили под предыдущей кнопкой
-ChangeStateButton.Text = "InfinityJump OFF"
+ChangeStateButton.Size = UDim2.new(0, 60, 0, 30) -- Такая же ширина и высота
+ChangeStateButton.Position = UDim2.new(0, 170, 0, 10) -- Поставили справа от Apply
+ChangeStateButton.Text = "InfinityJump"
 ChangeStateButton.Font = Enum.Font.Gotham
 ChangeStateButton.TextSize = 14
 ChangeStateButton.Parent = frame
@@ -136,6 +137,26 @@ end)
 game:GetService("UserInputService").JumpRequest:Connect(function()
     if infiniteJumpEnabled then
         game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+    end
+end)
+
+local button = Instance.new("TextButton")
+button.Text = "Load Script"
+button.Size = UDim2.new(0, 100, 0, 30)
+button.Position = UDim2.new(0, 10, 0, 50) -- Ставим кнопку ниже WallSpeed
+button.Parent = game.Players.LocalPlayer.PlayerGui
+
+local scriptLoaded = false
+
+button.MouseButton1Click:Connect(function()
+    if not scriptLoaded then
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua"))()
+        button.Text = "Close Script"
+        scriptLoaded = true
+    else
+        print("Script closed!")
+        button.Text = "Load Script"
+        scriptLoaded = false
     end
 end)
 
