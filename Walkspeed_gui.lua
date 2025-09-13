@@ -3,47 +3,49 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local InfiniteJumpEnabled = true
+local InfiniteJumpEnabled = false
 local playerGui = player:WaitForChild("PlayerGui")
 
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "WalkSpeedGui"
+screenGui.Name = "GameToolsGui"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 90)
-frame.Position = UDim2.new(0.5, -125, 0.5, -45) 
+frame.Size = UDim2.new(0, 250, 0, 120)
+frame.Position = UDim2.new(0.5, -125, 0.5, -60) 
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
 
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 40))
-}
-gradient.Rotation = 90
-gradient.Parent = frame
+local titleLabel = Instance.new("TextLabel") -- название окна
+titleLabel.Size = UDim2.new(1, 0, 0, 30)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.Text = "Test"
+titleLabel.Font = Enum.Font.Gotham
+titleLabel.TextSize = 18
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
+titleLabel.Parent = frame
 
-local textBox = Instance.new("TextBox")
-textBox.Size = UDim2.new(0, 80, 0, 30)
-textBox.Position = UDim2.new(0, 10, 0, 10)
-textBox.PlaceholderText = "WalkSpeed"
-textTitle = "ON";
-textBox.Text = ""
-textBox.Font = Enum.Font.Gotham
-textBox.TextSize = 14
-textBox.Parent = frame
+local walkSpeedTextBox = Instance.new("TextBox") -- скрытое поле ввода скорости
+walkSpeedTextBox.Size = UDim2.new(0, 80, 0, 30)
+walkSpeedTextBox.Position = UDim2.new(0, 10, 0, 50)
+walkSpeedTextBox.PlaceholderText = "Set Walk Speed"
+walkSpeedTextBox.Text = ""
+walkSpeedTextBox.Font = Enum.Font.Gotham
+walkSpeedTextBox.TextSize = 14
+walkSpeedTextBox.Visible = false -- делаем невидимым сразу
+walkSpeedTextBox.Parent = frame
 
-local applyButton = Instance.new("TextButton")
-applyButton.Size = UDim2.new(0, 60, 0, 30)
-applyButton.Position = UDim2.new(0, 100, 0, 10)
-applyButton.Text = "Enter"
-applyButton.Font = Enum.Font.Gotham
-applyButton.TextSize = 14
-applyButton.Parent = frame
+local jumpToggleButton = Instance.new("TextButton") -- кнопка прыжка
+jumpToggleButton.Size = UDim2.new(0, 120, 0, 30)
+jumpToggleButton.Position = UDim2.new(0, 100, 0, 50)
+jumpToggleButton.Text = "Infinite Jump: OFF"
+jumpToggleButton.Font = Enum.Font.Gotham
+jumpToggleButton.TextSize = 14
+jumpToggleButton.Visible = false -- делаем невидимой сразу
+jumpToggleButton.Parent = frame
 
-local closeButton = Instance.new("TextButton")
+local closeButton = Instance.new("TextButton") -- кнопка закрытия окна
 closeButton.Size = UDim2.new(0, 20, 0, 20)
 closeButton.Position = UDim2.new(0, 0, 0, 0)
 closeButton.Text = "X"
@@ -51,32 +53,53 @@ closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 closeButton.TextColor3 = Color3.new(1, 1, 1)
 closeButton.Font = Enum.Font.GothamBold
 closeButton.TextSize = 12
+closeButton.Visible = false -- делаем невидимой сразу
 closeButton.Parent = frame
 
-local reopenButton = Instance.new("TextButton")
+local reopenButton = Instance.new("TextButton") -- новая кнопка восстановления окна
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
 reopenButton.Position = UDim2.new(0.5, -50, 0, -10)
-reopenButton.Text = "By @SFXCL"
+reopenButton.Text = "@SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 19
 reopenButton.Visible = false
 reopenButton.Parent = screenGui
 
-applyButton.MouseButton1Click:Connect(function()
-	local speed = tonumber(textBox.Text)
-	if speed and speed > 0 then
-		player.Character.Humanoid.WalkSpeed = speed
-	end
+-- появление элементов после первого клика на окно
+frame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        wait() -- небольшая задержка перед появлением
+        
+        walkSpeedTextBox.Visible = true
+        jumpToggleButton.Visible = true
+        closeButton.Visible = true
+    end
+end)
+
+walkSpeedTextBox.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        local speed = tonumber(walkSpeedTextBox.Text)
+        if speed and speed > 0 then
+            player.Character.Humanoid.WalkSpeed = speed
+        else
+            warn("Invalid walk speed value!")
+        end
+    end
+end)
+
+jumpToggleButton.MouseButton1Click:Connect(function()
+    InfiniteJumpEnabled = not InfiniteJumpEnabled
+    jumpToggleButton.Text = "Infinite Jump: " .. (InfiniteJumpEnabled and "ON" or "OFF")
 end)
 
 closeButton.MouseButton1Click:Connect(function()
-	frame.Visible = false
-	reopenButton.Visible = true
+    frame.Visible = false
+    reopenButton.Visible = true
 end)
 
 reopenButton.MouseButton1Click:Connect(function()
-	frame.Visible = true
-	reopenButton.Visible = false
+    frame.Visible = true
+    reopenButton.Visible = false
 end)
 
 local dragging
@@ -85,91 +108,31 @@ local dragStart
 local startPos
 
 local function update(input)
-	local delta = input.Position - dragStart
-	frame.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
-	)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
 end
 
 frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = frame.Position
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
 
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
-end)
-
-local infiniteJumpEnabled = false
-
--- Создаем кнопку
-
--- Кнопка для бесконечного прыжка
-local ChangeStateButton = Instance.new("TextButton")
-ChangeStateButton.Size = UDim2.new(0, 60, 0, 30) -- Такая же ширина и высота
-ChangeStateButton.Position = UDim2.new(0, 170, 0, 10) -- Поставили справа от Apply
-ChangeStateButton.Text = "InfinityJump"
-ChangeStateButton.Font = Enum.Font.Gotham
-ChangeStateButton.TextSize = 14
-ChangeStateButton.Parent = frame
-
--- Обрабатываем клик по кнопке
-ChangeStateButton.MouseButton1Click:Connect(function()
-    infiniteJumpEnabled = not infiniteJumpEnabled -- меняем состояние прыжка
-    
-    -- Можно дополнительно изменить надпись на кнопке
-    if infiniteJumpEnabled then
-        ChangeStateButton.Text = "Infinity Jump:Off"
-    else
-        ChangeStateButton.Text = "Infinity Jump:On"
-    end
-end)
-
--- Основной код обработки прыжков остается прежним
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if infiniteJumpEnabled then
-        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
-end)
-
-local button = Instance.new("TextButton")
-button.Text = "Load Script"
-button.Size = UDim2.new(0, 100, 0, 30)
-button.Position = UDim2.new(0, 10, 0, 10)
-button.Parent = game.Players.LocalPlayer.PlayerGui
-
-local scriptLoaded = false
-
-button.MouseButton1Click:Connect(function()
-    if not scriptLoaded then
-        pcall(function()
-            loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
-            button.Text = "Close Script"
-            scriptLoaded = true
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
         end)
-    else
-        print("Script closed!")
-        button.Text = "Load Script"
-        scriptLoaded = false
     end
 end)
 
-frame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
-end)
-
-RunService.RenderStepped:Connect(function()
-	if dragging and dragInput then
-		update(dragInput)
-	end
+UserInputService.JumpRequest:connect(function()
+    if InfiniteJumpEnabled then
+        player.Character:FindFirstChildWhichIsA("Humanoid"):ChangeState(Enum.HumanoidStateType.Jumping)
+    end
 end)
