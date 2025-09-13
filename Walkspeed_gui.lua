@@ -26,7 +26,6 @@ gradient.Rotation = 90
 gradient.Parent = frame
 
 local textBox = Instance.new("TextBox")
-Title = "FMY ON";
 textBox.Size = UDim2.new(0, 80, 0, 30)
 textBox.Position = UDim2.new(0, 10, 0, 10)
 textBox.PlaceholderText = "WalkSpeed"
@@ -42,15 +41,6 @@ applyButton.Text = "Apply"
 applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
 applyButton.Parent = frame
-
-local applyButton = Instance.new("TextButton")
-applyButton.Name = "ApplyButton"
-applyButton.Size = UDim2.new(0, 40, 0, 30)
-applyButton.Position = UDim2.new(0, 10, 0, 10)
-applyButton.Text = "NewNew", function()
-loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
-applyButton.Font = Enum.Font.Gotham
-applyButton.TextSize = 14
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 20, 0, 20)
@@ -117,6 +107,9 @@ frame.InputBegan:Connect(function(input)
 	end
 end)
 
+createButton(scroll, "Open Fly GUI", function()
+	loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
+end)
 local descendantAddedConn;
 createButton(scroll, "Instant ProximityPrompts", function()
 	for _, v in ipairs(game:GetDescendants()) do
