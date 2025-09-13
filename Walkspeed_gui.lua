@@ -136,40 +136,39 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
--- Кнопка загрузки скрипта
-local button = Instance.new("TextButton")
-button.Name = "ScriptLoader"
-button.AutoButtonColor = true
-button.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-button.Position = UDim2.new(0, 5, 0, wallSpeedButton.AbsoluteSize.Y + 10) -- Размещаем под WallSpeed
-button.Size = UDim2.new(0, 150, 0, 30)
-button.FontSize = Enum.FontSize.Size18
-button.Text = "Load Script"
-button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.Visible = true
-button.Active = true
-button.Parent = game.CoreGui.RobloxGui
+local campfire = false
 
-local scriptLoaded = false
-local loadedThread
+-- Создаем кнопку
+local campfire = Instance.new("TextButton")
+campfire.Size = UDim2.new(0, 40, 0, 30)
+campfire.Position = UDim2.new(0, 10, 0, 40)
+campfire.Text = "Soso"
+campfire.Font = Enum.Font.Gotham
+campfire.TextSize = 17
+campfire.Parent = frame
 
-button.MouseButton1Click:Connect(function()
-    if not scriptLoaded then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua"()
-        loadedThread = coroutine.running()
-        button.Text = "Unload Script"
-        button.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-        scriptLoaded = true
+-- Обрабатываем клик по кнопке
+campfire.MouseButton1Click:Connect(function()
+    infiniteJumpEnabled = not infiniteJumpEnabled -- меняем состояние прыжка
+    
+    -- Можно дополнительно изменить надпись на кнопке
+    if infiniteJumpEnabled then
+        campfire.Text = "Stop"
     else
-        coroutine.resume(coroutine.create(function()
-            error("Script stopped manually.")
-        end))
-        loadedThread = nil
-        button.Text = "Load Script"
-        button.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        scriptLoaded = false
+        campfire.Text = "Soso"
     end
 end)
+
+-- Основной код обработки прыжков остается прежним
+    Callback = function()
+        if campfire then
+            local center = campfire:FindFirstChild("Center")
+            if center then
+                humanoidRootPart.CFrame = center.CFrame * CFrame.new(0, 13, 0)
+            end
+        end
+    end
+}
 
 frame.InputChanged:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
