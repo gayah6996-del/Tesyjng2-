@@ -13,7 +13,7 @@ screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 250, 0, 90)
-frame.Position = UDim2.new(0, 60, 0.5, -25)
+frame.Position = UDim2.new(0, 60, 0.5, -160)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
 
@@ -110,12 +110,14 @@ end)
 local infiniteJumpEnabled = false
 
 -- Создаем кнопку
+
+-- Кнопка для бесконечного прыжка
 local ChangeStateButton = Instance.new("TextButton")
-ChangeStateButton.Size = UDim2.new(0, 10, 0, 50)
-ChangeStateButton.Position = UDim2.new(0, 170, 0, 10)
-ChangeStateButton.Text = "InfinityJump"
+ChangeStateButton.Size = UDim2.new(0, 60, 0, 30) -- Сделали такой же ширины и высоты
+ChangeStateButton.Position = UDim2.new(0, 100, 0, 50) -- Расположили под предыдущей кнопкой
+ChangeStateButton.Text = "InfinityJump OFF"
 ChangeStateButton.Font = Enum.Font.Gotham
-ChangeStateButton.TextSize = 17
+ChangeStateButton.TextSize = 14
 ChangeStateButton.Parent = frame
 
 -- Обрабатываем клик по кнопке
@@ -124,9 +126,9 @@ ChangeStateButton.MouseButton1Click:Connect(function()
     
     -- Можно дополнительно изменить надпись на кнопке
     if infiniteJumpEnabled then
-        ChangeStateButton.Text = "STOP"
+        ChangeStateButton.Text = "Infinity Jump:Off"
     else
-        ChangeStateButton.Text = "ON"
+        ChangeStateButton.Text = "Infinity Jump:On"
     end
 end)
 
