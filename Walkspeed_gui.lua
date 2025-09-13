@@ -42,14 +42,6 @@ applyButton.Font = Enum.Font.Gotham
 applyButton.TextSize = 14
 applyButton.Parent = frame
 
-local JumpingButton = Instance.new("TextButton")
-JumpingButton.Size = UDim2.new(0, 40, 0, 30)
-JumpingButton.Position = UDim2.new(0, 190, 0, 10)
-JumpingButton.Text = "Gogo"
-JumpingButton.Font = Enum.Font.Gotham
-JumpingButton.TextSize = 17
-JumpingButton.Parent = frame
-
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 20, 0, 20)
 closeButton.Position = UDim2.new(0, 0, 0, 0)
@@ -62,7 +54,7 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, 50, 1, -60)
+reopenButton.Position = UDim2.new(0.5, -50, 1, 90)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 16
@@ -115,8 +107,32 @@ frame.InputBegan:Connect(function(input)
 	end
 end)
 
+local infiniteJumpEnabled = false
+
+-- Создаем кнопку
+local ChangeStateButton = Instance.new("TextButton")
+ChangeStateButton.Size = UDim2.new(0, 40, 0, 30)
+ChangeStateButton.Position = UDim2.new(0, 190, 0, 10)
+ChangeStateButton.Text = "Gogo"
+ChangeStateButton.Font = Enum.Font.Gotham
+ChangeStateButton.TextSize = 17
+ChangeStateButton.Parent = frame
+
+-- Обрабатываем клик по кнопке
+ChangeStateButton.MouseButton1Click:Connect(function()
+    infiniteJumpEnabled = not infiniteJumpEnabled -- меняем состояние прыжка
+    
+    -- Можно дополнительно изменить надпись на кнопке
+    if infiniteJumpEnabled then
+        ChangeStateButton.Text = "Stop"
+    else
+        ChangeStateButton.Text = "Gogo"
+    end
+end)
+
+-- Основной код обработки прыжков остается прежним
 game:GetService("UserInputService").JumpRequest:Connect(function()
-    if InfiniteJumpEnabled then
+    if infiniteJumpEnabled then
         game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
 end)
