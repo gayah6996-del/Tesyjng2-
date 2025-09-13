@@ -55,7 +55,7 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, -130, 1, -10)
+reopenButton.Position = UDim2.new(0.5, -50, 0, 10)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 16
@@ -140,11 +140,14 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
     end
 end)
 
-local button = Instance.new("TextButton")
-button.Text = "Load Script"
-button.Size = UDim2.new(0, 100, 0, 30)
-button.Position = UDim2.new(0, 10, 0, 50) -- Ставим кнопку ниже WallSpeed
-button.Parent = game.Players.LocalPlayer.PlayerGui
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(0, 100, 0, 30)
+Button.Position = UDim2.new(0, 10, 0, 50)
+--Button.Text = "InfinityJump"
+Button.Font = Enum.Font.Gotham
+Button.TextSize = 14
+Button.Parent = frame
+--Button.Parent = game.Players.LocalPlayer.PlayerGui
 
 local scriptLoaded = false
 
