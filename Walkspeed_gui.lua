@@ -13,7 +13,7 @@ screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 250, 0, 90)
-frame.Position = UDim2.new(0, -52, 0.5, -20)
+frame.Position = UDim2.new(0.5, -125, 0.5, -45) 
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
 
@@ -55,10 +55,10 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, -50, 0, 10)
+reopenButton.Position = UDim2.new(0.5, -50, 0, 0)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
-reopenButton.TextSize = 16
+reopenButton.TextSize = 19
 reopenButton.Visible = false
 reopenButton.Parent = screenGui
 
@@ -153,7 +153,7 @@ local scriptLoaded = false
 
 button.MouseButton1Click:Connect(function()
     if not scriptLoaded then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua"))()
+        loadstring(game:HttpGet("https://pastebin.com/raw/XS9ytz61"))()
         button.Text = "Close Script"
         scriptLoaded = true
     else
