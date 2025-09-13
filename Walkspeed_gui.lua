@@ -60,11 +60,22 @@ local toggleBtn = Instance.new("TextButton", main)
 toggleBtn.Size = UDim2.new(0, 30, 0, 30)
 toggleBtn.Position = UDim2.new(1, -65, 0, 5)
 toggleBtn.BackgroundTransparency = 1
-toggleBtn.Text = "◉" -- символ, обозначающий кнопку переключателя
+toggleBtn.Text = "X" -- символ, обозначающий кнопку переключателя
 toggleBtn.TextColor3 = Color3.new(1, 1, 1)
 toggleBtn.Font = Enum.Font.GothamBold
 toggleBtn.TextScaled = true
 addCorner(toggleBtn, 6)
+
+local reopenButton = Instance.new("TextButton", main)
+reopenButton.Size = UDim2.new(0, 100, 0, 40)
+reopenButton.Position = UDim2.new(0.5, -50, 0, -50)
+reopenButton.BackgroundTransparency = 1
+reopenButton.Text = "SFXCL" -- символ, обозначающий кнопку переключателя
+reopenButton.TextSize = 19
+reopenButton.TextColor3 = Color3.new(1, 1, 1)
+reopenButton.Font = Enum.Font.GothamBold
+reopenButton.TextScaled = true
+addCorner(reopenButton, 6)
 
 -- Обработчик события клика для переключающей кнопки
 toggleBtn.MouseButton1Click:Connect(function()
@@ -132,6 +143,11 @@ funcs["SPEEDHACK"] = function(s)
         end
     end
 end
+
+reopenButton.MouseButton1Click:Connect(function()
+	frame.Visible = true
+	reopenButton.Visible = false
+end)
 
 local noclipConn
 funcs["NOCLIP"] = function(s)
