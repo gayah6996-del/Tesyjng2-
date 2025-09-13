@@ -79,7 +79,7 @@ local names = {"GOD MODE", "SPEEDHACK", "NOCLIP", "INFINITY JUMP", "ESP"}
 for i, name in ipairs(names) do
     local btn = Instance.new("TextButton", main)
     btn.Size = UDim2.new(1, -20, 0, 35)
-    btn.Position = UDim2.new(0, 10, 0, 20 + (i - 1) * 42)
+    btn.Position = UDim2.new(0, 10, 0, 70 + (i - 1) * 42)
     btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     btn.Text = name
     btn.TextColor3 = Color3.new(1, 1, 1)
