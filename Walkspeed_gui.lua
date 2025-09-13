@@ -135,6 +135,7 @@ game:GetService("UserInputService").JumpRequest:Connect(function()
         game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
 end)
+
 -- Кнопка загрузки скрипта
 local button = Instance.new("TextButton")
 button.Name = "ScriptLoader"
