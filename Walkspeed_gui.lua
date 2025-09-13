@@ -12,7 +12,7 @@ screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 250, 0, 70)
+frame.Size = UDim2.new(0, 250, 0, 90)
 frame.Position = UDim2.new(0, 60, 0.5, -25)
 frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 frame.Parent = screenGui
@@ -54,7 +54,7 @@ closeButton.Parent = frame
 
 local reopenButton = Instance.new("TextButton")
 reopenButton.Size = UDim2.new(0, 100, 0, 40)
-reopenButton.Position = UDim2.new(0.5, -50, 1, 90)
+reopenButton.Position = UDim2.new(0.5, -50, 1, -10)
 reopenButton.Text = "By @SFXCL"
 reopenButton.Font = Enum.Font.Gotham
 reopenButton.TextSize = 16
@@ -111,9 +111,9 @@ local infiniteJumpEnabled = false
 
 -- Создаем кнопку
 local ChangeStateButton = Instance.new("TextButton")
-ChangeStateButton.Size = UDim2.new(0, 40, 0, 30)
-ChangeStateButton.Position = UDim2.new(0, 190, 0, 10)
-ChangeStateButton.Text = "Gogo"
+ChangeStateButton.Size = UDim2.new(0, 10, 0, 50)
+ChangeStateButton.Position = UDim2.new(0, 170, 0, 10)
+ChangeStateButton.Text = "InfinityJump"
 ChangeStateButton.Font = Enum.Font.Gotham
 ChangeStateButton.TextSize = 17
 ChangeStateButton.Parent = frame
@@ -124,9 +124,9 @@ ChangeStateButton.MouseButton1Click:Connect(function()
     
     -- Можно дополнительно изменить надпись на кнопке
     if infiniteJumpEnabled then
-        ChangeStateButton.Text = "Stop"
+        ChangeStateButton.Text = "STOP"
     else
-        ChangeStateButton.Text = "Gogo"
+        ChangeStateButton.Text = "ON"
     end
 end)
 
