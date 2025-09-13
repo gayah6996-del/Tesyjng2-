@@ -1,4 +1,3 @@
--- TRASHNEVERDIE GUI
 local Players = game:GetService("Players")
 local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
@@ -27,7 +26,7 @@ local function addCorner(obj, r)
 end
 
 local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 300, 0, 280)
+main.Size = UDim2.new(0, 400, 0, 350)
 main.Position = UDim2.new(0.5, -150, 0.5, -140)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 main.BackgroundTransparency = 0.1
@@ -56,21 +55,21 @@ minimize.Font = Enum.Font.GothamBold
 minimize.TextScaled = true
 addCorner(minimize, 6)
 
--- Добавляем кнопку закрытия
-local closeBtn = Instance.new("TextButton", main)
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -65, 0, 5)
-closeBtn.BackgroundTransparency = 1
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.new(1, 1, 1)
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.TextScaled = true
-addCorner(closeBtn, 6)
+-- Переключающая кнопка
+local toggleBtn = Instance.new("TextButton", main)
+toggleBtn.Size = UDim2.new(0, 30, 0, 30)
+toggleBtn.Position = UDim2.new(1, -65, 0, 5)
+toggleBtn.BackgroundTransparency = 1
+toggleBtn.Text = "◉" -- символ, обозначающий кнопку переключателя
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.Font = Enum.Font.GothamBold
+toggleBtn.TextScaled = true
+addCorner(toggleBtn, 6)
 
--- Обработчик события клика для кнопки закрытия
-closeBtn.MouseButton1Click:Connect(function()
+-- Обработчик события клика для переключающей кнопки
+toggleBtn.MouseButton1Click:Connect(function()
     playClick()
-    main.Visible = false
+    main.Visible = not main.Visible -- меняем состояние видимости окна
 end)
 
 local toggled, funcs, btns = {}, {}, {}
