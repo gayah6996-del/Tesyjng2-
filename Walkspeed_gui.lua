@@ -190,20 +190,13 @@ end
 
 -- Функционал Kisgara
 funcs["KISGARA"] = function(s)
-    if s then
-        print("KISGARA активирована!")
-        -- Здесь добавляем нужную функциональность
-        -- Например, увеличим высоту прыжка
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = 100 -- Повышаем силу прыжка
-        end
-    else
-        print("KISGARA деактивирована!")
-        -- Возвращаем стандартные настройки
-        local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.JumpPower = 50 -- Возвращаем стандартный уровень силы прыжка
+        local fire = Workspace:FindFirstChild("Fire") -- Adjust to actual fire name
+        if fire and fire.PrimaryPart then
+            for _, obj in pairs(Workspace.Items:GetChildren()) do
+                if obj:IsA("Model") and (obj.Name == "Petrol" or obj.Name == "Gas Can" or obj.Name == "Coal" or obj.Name == "Log" or obj.Name:match("Corpse")) and obj.PrimaryPart then
+                    obj.PrimaryPart.CFrame = fire.PrimaryPart.CFrame
+                    DragItem(obj)
+                end
+            end
         end
     end
-end
