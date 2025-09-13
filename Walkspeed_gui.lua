@@ -40,7 +40,7 @@ title.Name = "TitleLabel"
 title.Size = UDim2.new(1, -40, 0, 40)
 title.Position = UDim2.new(0, 15, 0, 0)
 title.BackgroundTransparency = 1
-title.Text = "TRASHNEVERDIE MENU"
+title.Text = "SCRIPT BY @SFXCL"
 title.TextColor3 = Color3.new(1, 1, 1)
 title.TextScaled = true
 title.Font = Enum.Font.GothamBold
@@ -79,7 +79,7 @@ local names = {"GOD MODE", "SPEEDHACK", "NOCLIP", "INFINITY JUMP", "ESP"}
 for i, name in ipairs(names) do
     local btn = Instance.new("TextButton", main)
     btn.Size = UDim2.new(1, -20, 0, 35)
-    btn.Position = UDim2.new(0, 10, 0, 45 + (i - 1) * 42)
+    btn.Position = UDim2.new(0, 10, 0, 20 + (i - 1) * 42)
     btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     btn.Text = name
     btn.TextColor3 = Color3.new(1, 1, 1)
