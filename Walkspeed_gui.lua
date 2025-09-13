@@ -1,62 +1,197 @@
+-- TRASHNEVERDIE GUI
 local Players = game:GetService("Players")
+local CoreGui = game:GetService("CoreGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
+local LocalPlayer = Players.LocalPlayer
 
-local player = Players.LocalPlayer
-local InfiniteJumpEnabled = true
-local playerGui = player:WaitForChild("PlayerGui")
+if CoreGui:FindFirstChild("TRASHNEVERDIE_GUI") then
+	CoreGui.TRASHNEVERDIE_GUI:Destroy()
+end
 
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "WalkSpeedGui"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+local gui = Instance.new("ScreenGui")
+gui.Name = "TRASHNEVERDIE_GUI"
+gui.Parent = CoreGui
+gui.ResetOnSpawn = false
+gui.IgnoreGuiInset = true
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 300, 0, 120)
-frame.Position = UDim2.new(0.5, -125, 0.5, -45) 
-frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-frame.Parent = screenGui
+local clickSound = Instance.new("Sound", SoundService)
+clickSound.SoundId = "rbxassetid://9118823105"
+clickSound.Volume = 1
+local function playClick() clickSound:Play() end
 
-local gradient = Instance.new("UIGradient")
-gradient.Color = ColorSequence.new{
-	ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
-	ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 40))
-}
-gradient.Rotation = 90
-gradient.Parent = frame
+local function addCorner(obj, r)
+	local c = Instance.new("UICorner", obj)
+	c.CornerRadius = UDim.new(0, r)
+end
 
-local textBox = Instance.new("TextBox")
-textBox.Size = UDim2.new(0, 80, 0, 30)
-textBox.Position = UDim2.new(0, 10, 0, 10)
-textBox.PlaceholderText = "WalkSpeed"
-textBox.Text = ""
-textBox.Font = Enum.Font.Gotham
-textBox.TextSize = 14
-textBox.Parent = frame
+local main = Instance.new("Frame", gui)
+main.Size = UDim2.new(0, 300, 0, 280) -- diperkecil height-nya
+main.Position = UDim2.new(0.5, -150, 0.5, -140)
+main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+main.BackgroundTransparency = 0.1
+main.BorderSizePixel = 0
+main.Active = true
+main.Draggable = true
+addCorner(main, 12)
 
-local applyButton = Instance.new("TextButton")
-applyButton.Size = UDim2.new(0, 60, 0, 30)
-applyButton.Position = UDim2.new(0, 100, 0, 10)
-applyButton.Text = "Enter"
-applyButton.Font = Enum.Font.Gotham
-applyButton.TextSize = 14
-applyButton.Parent = frame
+local title = Instance.new("TextLabel", main)
+title.Name = "TitleLabel"
+title.Size = UDim2.new(1, -40, 0, 40)
+title.Position = UDim2.new(0, 15, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "TRASHNEVERDIE MENU"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.TextScaled = true
+title.Font = Enum.Font.GothamBold
 
-local ChangeStateButton = Instance.new("TextButton")
-ChangeStateButton.Size = UDim2.new(0, 60, 0, 30)
-ChangeStateButton.Position = UDim2.new(0, 170, 0, 10)
-ChangeStateButton.Text = "InfinityJump"
-ChangeStateButton.Font = Enum.Font.Gotham
-ChangeStateButton.TextSize = 14
-ChangeStateButton.Parent = frame
+local minimize = Instance.new("TextButton", main)
+minimize.Size = UDim2.new(0, 30, 0, 30)
+minimize.Position = UDim2.new(1, -35, 0, 5) -- digeser agar tidak menabrak teks
+minimize.BackgroundTransparency = 1
+minimize.Text = "-"
+minimize.TextColor3 = Color3.new(1, 1, 1)
+minimize.Font = Enum.Font.GothamBold
+minimize.TextScaled = true
+addCorner(minimize, 6)
 
-local noclipConn = Instance.new("TextButton")
-noclipConn.Size = UDim2.new(0, 60, 0, 30)
-noclipConn.Position = UDim2.new(0, 170, 0, 50)
-noclipConn.Text = "NoClip"
-noclipConn.Font = Enum.Font.Gotham
-noclipConn.TextSize = 14
-noclipConn.Parent = frame
+local toggled, funcs, btns = {}, {}, {}
+local minimizedState = false
+local names = {"GOD MODE", "SPEEDHACK", "NOCLIP", "INFINITY JUMP", "ESP"}
+
+for i, name in ipairs(names) do
+	local btn = Instance.new("TextButton", main)
+	btn.Size = UDim2.new(1, -20, 0, 35)
+	btn.Position = UDim2.new(0, 10, 0, 45 + (i - 1) * 42)
+	btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+	btn.Text = name
+	btn.TextColor3 = Color3.new(1, 1, 1)
+	btn.TextScaled = true
+	btn.Font = Enum.Font.GothamBold
+	btn.BorderSizePixel = 0
+	addCorner(btn, 8)
+	toggled[name] = false
+	btn.MouseButton1Click:Connect(function()
+		playClick()
+		toggled[name] = not toggled[name]
+		btn.BackgroundColor3 = toggled[name] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+		if funcs[name] then funcs[name](toggled[name]) end
+	end)
+	btns[name] = btn
+end
+
+minimize.MouseButton1Click:Connect(function()
+	playClick()
+	minimizedState = not minimizedState
+	for _, b in pairs(btns) do b.Visible = not minimizedState end
+	main.Size = minimizedState and UDim2.new(0, 300, 0, 40) or UDim2.new(0, 300, 0, 280)
+end)
+
+funcs["GOD MODE"] = function(s)
+	local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.MaxHealth = math.huge
+		hum.Health = math.huge
+		if s then
+			hum.HealthChanged:Connect(function()
+				hum.Health = hum.MaxHealth
+			end)
+		end
+	end
+end
+
+local antiFallConn
+funcs["SPEEDHACK"] = function(s)
+	local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.WalkSpeed = s and 100 or 16
+		if s then
+			antiFallConn = RunService.Stepped:Connect(function()
+				hum:ChangeState(Enum.HumanoidStateType.Seated)
+				hum:ChangeState(Enum.HumanoidStateType.Running)
+			end)
+		elseif antiFallConn then
+			antiFallConn:Disconnect()
+		end
+	end
+end
+
+local noclipConn
+funcs["NOCLIP"] = function(s)
+	if s then
+		noclipConn = RunService.Stepped:Connect(function()
+			for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
+				if part:IsA("BasePart") then
+					part.CanCollide = false
+				end
+			end
+		end)
+	elseif noclipConn then
+		noclipConn:Disconnect()
+	end
+end
+
+funcs["INFINITY JUMP"] = function(s)
+	if s then
+		_G.JC = UserInputService.JumpRequest:Connect(function()
+			local h = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+			if h then h:ChangeState("Jumping") end
+		end)
+	elseif _G.JC then
+		_G.JC:Disconnect()
+	end
+end
+
+funcs["ESP"] = function(s)
+	if not s then return end
+	for _, plr in ipairs(Players:GetPlayers()) do
+		if plr ~= LocalPlayer then
+			coroutine.wrap(function()
+				local char = plr.Character or plr.CharacterAdded:Wait()
+				local head = char:WaitForChild("Head")
+				local torso = char:FindFirstChild("HumanoidRootPart")
+				local nameT = Drawing.new("Text")
+				nameT.Center = true
+				nameT.Outline = true
+				nameT.Size = 14
+				nameT.Font = 2
+				local distT = Drawing.new("Text")
+				distT.Center = true
+				distT.Outline = true
+				distT.Size = 13
+				distT.Color = Color3.new(1, 0, 0)
+				local bone = Drawing.new("Line")
+				bone.Color = Color3.new(1, 1, 1)
+				bone.Thickness = 2
+				RunService.RenderStepped:Connect(function()
+					if not head:IsDescendantOf(workspace) then return end
+					local cam = workspace.CurrentCamera
+					local pos, vis = cam:WorldToViewportPoint(head.Position)
+					local dist = (LocalPlayer.Character.Head.Position - head.Position).Magnitude
+					if vis and dist <= 250 then
+						nameT.Visible = true
+						distT.Visible = true
+						bone.Visible = true
+						nameT.Text = plr.Name
+						distT.Text = ("Dist: %d"):format(dist)
+						nameT.Position = Vector2.new(pos.X, pos.Y - 20)
+						distT.Position = Vector2.new(pos.X, pos.Y)
+						nameT.Color = Color3.fromHSV(tick() % 5 / 5, 1, 1)
+						local h2 = cam:WorldToViewportPoint(head.Position)
+						local t2 = cam:WorldToViewportPoint(torso.Position)
+						bone.From = Vector2.new(t2.X, t2.Y)
+						bone.To = Vector2.new(h2.X, h2.Y)
+					else
+						nameT.Visible = false
+						distT.Visible = false
+						bone.Visible = false
+					end
+				end)
+			end)()
+		end
+	end
+end
 
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 20, 0, 20)
@@ -94,78 +229,9 @@ reopenButton.MouseButton1Click:Connect(function()
 	reopenButton.Visible = false
 end)
 
-local dragging
-local dragInput
-local dragStart
-local startPos
-
-local function update(input)
-	local delta = input.Position - dragStart
-	frame.Position = UDim2.new(
-		startPos.X.Scale,
-		startPos.X.Offset + delta.X,
-		startPos.Y.Scale,
-		startPos.Y.Offset + delta.Y
-	)
-end
-
-frame.InputBegan:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-		dragging = true
-		dragStart = input.Position
-		startPos = frame.Position
-
-		input.Changed:Connect(function()
-			if input.UserInputState == Enum.UserInputState.End then
-				dragging = false
-			end
-		end)
-	end
-end)
-
-local infiniteJumpEnabled = false
-
--- Обрабатываем клик по кнопке
-ChangeStateButton.MouseButton1Click:Connect(function()
-    infiniteJumpEnabled = not infiniteJumpEnabled -- меняем состояние прыжка
-    
-    -- Можно дополнительно изменить надпись на кнопке
-    if infiniteJumpEnabled then
-        ChangeStateButton.Text = "Infinity Jump:Off"
-    else
-        ChangeStateButton.Text = "Infinity Jump:On"
-    end
-end)
-
--- Основной код обработки прыжков остается прежним
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if infiniteJumpEnabled then
-        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
-    end
-end)
-
-local noclipConn = false
-     noclipConn.MouseButton1Click:Connect(function()
-	--	noclipConn = RunService.Stepped:Connect(function()
-			for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = false
-				end
-			end
-		end)
-	elseif noclipConn then
-		noclipConn:Disconnect()
-	end
-end
-
-frame.InputChanged:Connect(function(input)
-	if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-		dragInput = input
-	end
-end)
-
-RunService.RenderStepped:Connect(function()
-	if dragging and dragInput then
-		update(dragInput)
+LocalPlayer.CharacterAdded:Connect(function()
+	wait(1)
+	for _, name in ipairs(names) do
+		if toggled[name] then funcs[name](true) end
 	end
 end)
