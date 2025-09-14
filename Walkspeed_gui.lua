@@ -1,239 +1,395 @@
--- // TUC0HUB IS BACK? Script Hub //
--- Autor: Code GPT 🥷
 
--- SERVIÇOS
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local HttpService = game:GetService("HttpService")
+local TweenService, UIS, rs = game:GetService("TweenService"), game:GetService("UserInputService"), game:GetService("RunService")
+local player = game:GetService("Players").LocalPlayer
 
-local player = Players.LocalPlayer
-local PlayerGui = player:WaitForChild("PlayerGui")
-
--- VARIÁVEIS
-local KEY = "TUC0HUB IS BACK?"
-
--- GUI PRINCIPAL
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "TUC0HUB"
-ScreenGui.Parent = PlayerGui
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
--- KEY INPUT
-local KeyFrame = Instance.new("Frame")
-KeyFrame.Size = UDim2.new(0, 300, 0, 150)
-KeyFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-KeyFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-KeyFrame.Parent = ScreenGui
-
-local KeyBox = Instance.new("TextBox")
-KeyBox.PlaceholderText = "Digite a Key..."
-KeyBox.Size = UDim2.new(1, -40, 0, 40)
-KeyBox.Position = UDim2.new(0, 20, 0, 30)
-KeyBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-KeyBox.TextColor3 = Color3.new(1, 1, 1)
-KeyBox.TextSize = 18
-KeyBox.Font = Enum.Font.SourceSans
-KeyBox.Parent = KeyFrame
-
-local Submit = Instance.new("TextButton")
-Submit.Text = "Verificar"
-Submit.Size = UDim2.new(1, -40, 0, 40)
-Submit.Position = UDim2.new(0, 20, 0, 80)
-Submit.BackgroundColor3 = Color3.fromRGB(30, 120, 255)
-Submit.TextColor3 = Color3.new(1, 1, 1)
-Submit.TextSize = 18
-Submit.Font = Enum.Font.SourceSansBold
-Submit.Parent = KeyFrame
-
-local Status = Instance.new("TextLabel")
-Status.Text = ""
-Status.Size = UDim2.new(1, 0, 0, 30)
-Status.Position = UDim2.new(0, 0, 1, -30)
-Status.BackgroundTransparency = 1
-Status.TextColor3 = Color3.new(1, 0, 0)
-Status.TextSize = 14
-Status.Font = Enum.Font.SourceSans
-Status.Parent = KeyFrame
-
--- ANIMAÇÃO ELEMENTOS
-local Circle = Instance.new("Frame")
-Circle.Size = UDim2.new(0, 100, 0, 100)
-Circle.Position = UDim2.new(0.5, -50, 0.5, -50)
-Circle.BackgroundColor3 = Color3.fromRGB(50, 50, 255)
-Circle.Visible = false
-Circle.ClipsDescendants = true
-Circle.Parent = ScreenGui
-Circle.AnchorPoint = Vector2.new(0.5, 0.5)
-Circle.BackgroundTransparency = 0
-Circle.BorderSizePixel = 0
-Circle.Name = "Circle"
-
-CircleCorner = Instance.new("UICorner")
-CircleCorner.CornerRadius = UDim.new(1, 0)
-CircleCorner.Parent = Circle
-
-local THLabel = Instance.new("TextLabel")
-THLabel.Text = "TH"
-THLabel.Size = UDim2.new(1, 0, 1, 0)
-THLabel.BackgroundTransparency = 1
-THLabel.TextColor3 = Color3.new(1, 1, 1)
-THLabel.Font = Enum.Font.SourceSansBold
-THLabel.TextSize = 30
-THLabel.Parent = Circle
-
--- HUB FRAME
-local HubFrame = Instance.new("Frame")
-HubFrame.Size = UDim2.new(0, 500, 0, 300)
-HubFrame.Position = UDim2.new(0.5, -250, 0.5, -150)
-HubFrame.Visible = false
-HubFrame.Parent = ScreenGui
-
--- GRADIENT
-local Gradient = Instance.new("UIGradient")
-Gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 200, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 120))
+-- Theme Setup
+local Theme = {
+    Background = Color3.fromRGB(15, 15, 15),
+    Button = Color3.fromRGB(30, 30, 30),
+    Text = Color3.fromRGB(255, 255, 255)
 }
-Gradient.Parent = HubFrame
 
--- DRAG
-local dragging, dragInput, dragStart, startPos
+-- Main UI
+local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
+local MainFrame = Instance.new("Frame", ScreenGui)
+MainFrame.Size = UDim2.new(0, 350, 0, 230)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+MainFrame.BackgroundColor3 = Theme.Background
 
-HubFrame.Active = true
-HubFrame.Draggable = true
+-- Draggable GUI for PC and Mobile
+local dragToggle = false
+local dragStart = nil
+local startPos = nil
+local dragInput = nil
 
--- Minimizar botão
-local MinButton = Instance.new("TextButton")
-MinButton.Text = "-"
-MinButton.Size = UDim2.new(0, 30, 0, 30)
-MinButton.Position = UDim2.new(1, -40, 0, 10)
-MinButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-MinButton.TextColor3 = Color3.new(1, 1, 1)
-MinButton.Font = Enum.Font.SourceSansBold
-MinButton.TextSize = 20
-MinButton.Parent = HubFrame
-
-local minimized = false
-
-MinButton.MouseButton1Click:Connect(function()
-    minimized = not minimized
-    HubFrame:FindFirstChild("MainContent").Visible = not minimized
-end)
-
--- Barra lateral
-local Sidebar = Instance.new("Frame")
-Sidebar.Size = UDim2.new(0, 100, 1, 0)
-Sidebar.Position = UDim2.new(0, 0, 0, 0)
-Sidebar.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Sidebar.Parent = HubFrame
-
-local MainContent = Instance.new("Frame")
-MainContent.Name = "MainContent"
-MainContent.Size = UDim2.new(1, -100, 1, 0)
-MainContent.Position = UDim2.new(0, 100, 0, 0)
-MainContent.BackgroundTransparency = 1
-MainContent.Parent = HubFrame
-
--- Botões Sidebar
-local sections = {"Scripts","Player","Output","Executor","Visuals","Config"}
-local sectionFrames = {}
-
-for i, sec in ipairs(sections) do
-    local Btn = Instance.new("TextButton")
-    Btn.Text = sec
-    Btn.Size = UDim2.new(1, 0, 0, 40)
-    Btn.Position = UDim2.new(0, 0, 0, (i-1)*40)
-    Btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    Btn.TextColor3 = Color3.new(1, 1, 1)
-    Btn.Font = Enum.Font.SourceSans
-    Btn.TextSize = 14
-    Btn.Parent = Sidebar
-
-    local Frame = Instance.new("Frame")
-    Frame.Size = UDim2.new(1, 0, 1, 0)
-    Frame.Position = UDim2.new(0, 0, 0, 0)
-    Frame.Visible = (i == 1)
-    Frame.Parent = MainContent
-
-    sectionFrames[sec] = Frame
-
-    Btn.MouseButton1Click:Connect(function()
-        for _, f in pairs(sectionFrames) do f.Visible = false end
-        Frame.Visible = true
-    end)
-end
-
--- Exemplo: Scripts Section
-local ExampleScriptBtn = Instance.new("TextButton")
-ExampleScriptBtn.Text = "Print Hello"
-ExampleScriptBtn.Size = UDim2.new(0, 150, 0, 40)
-ExampleScriptBtn.Position = UDim2.new(0, 20, 0, 20)
-ExampleScriptBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-ExampleScriptBtn.TextColor3 = Color3.new(1, 1, 1)
-ExampleScriptBtn.Font = Enum.Font.SourceSans
-ExampleScriptBtn.TextSize = 14
-ExampleScriptBtn.Parent = sectionFrames["Scripts"]
-
-ExampleScriptBtn.MouseButton1Click:Connect(function()
-    print("Hello from TUC0HUB!")
-end)
-
--- Executor Section
-local ExecBox = Instance.new("TextBox")
-ExecBox.PlaceholderText = "-- Digite código Lua aqui"
-ExecBox.Size = UDim2.new(0, 300, 0, 200)
-ExecBox.Position = UDim2.new(0, 20, 0, 20)
-ExecBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-ExecBox.TextColor3 = Color3.new(1, 1, 1)
-ExecBox.TextSize = 14
-ExecBox.Font = Enum.Font.Code
-ExecBox.TextXAlignment = Enum.TextXAlignment.Left
-ExecBox.TextYAlignment = Enum.TextYAlignment.Top
-ExecBox.ClearTextOnFocus = false
-ExecBox.MultiLine = true
-ExecBox.Parent = sectionFrames["Executor"]
-
-local ExecBtn = Instance.new("TextButton")
-ExecBtn.Text = "Executar"
-ExecBtn.Size = UDim2.new(0, 100, 0, 40)
-ExecBtn.Position = UDim2.new(0, 20, 0, 230)
-ExecBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
-ExecBtn.TextColor3 = Color3.new(1, 1, 1)
-ExecBtn.Font = Enum.Font.SourceSansBold
-ExecBtn.TextSize = 14
-ExecBtn.Parent = sectionFrames["Executor"]
-
-ExecBtn.MouseButton1Click:Connect(function()
-    local code = ExecBox.Text
-    local success, result = pcall(function()
-        loadstring(code)()
-    end)
-    if not success then
-        warn(result)
+MainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
     end
 end)
 
--- SUBMIT ACTION
-Submit.MouseButton1Click:Connect(function()
-    if KeyBox.Text == KEY then
-        KeyFrame:Destroy()
-        Circle.Visible = true
+MainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
 
-        local rotate = TweenService:Create(Circle, TweenInfo.new(4, Enum.EasingStyle.Linear), {Rotation = 360})
-        rotate:Play()
-        rotate.Completed:Wait()
+MainFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragToggle = false
+    end
+end)
 
-        local expandTween = TweenService:Create(Circle, TweenInfo.new(1), {
-            Size = UDim2.new(0, 500, 0, 300),
-            Position = UDim2.new(0.5, -250, 0.5, -150)
-        })
-        expandTween:Play()
-        expandTween.Completed:Wait()
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragToggle and input == dragInput then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
 
-        HubFrame.Position = Circle.Position
-        HubFrame.Visible = true
-        Circle:Destroy()
+
+-- Rainbow Outline for Main Frame
+local frameOutline = Instance.new("UIStroke")
+frameOutline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+frameOutline.Thickness = 3
+frameOutline.Parent = MainFrame
+local hue = 0
+rs.RenderStepped:Connect(function()
+    hue = (hue + 0.005) % 1
+    frameOutline.Color = Color3.fromHSV(hue, 1, 1)
+end)
+Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
+
+local Title = Instance.new("TextLabel", MainFrame)
+Title.Text, Title.Size, Title.Position = "RINGTA SCRIPTS", UDim2.new(1, -20, 0, 20), UDim2.new(0, 10, 0, 5)
+Title.BackgroundTransparency, Title.TextColor3, Title.Font, Title.TextSize = 1, Theme.Text, Enum.Font.GothamBold, 14
+
+-- Tabs Frame
+local TabsFrame = Instance.new("Frame", MainFrame)
+TabsFrame.Size = UDim2.new(0, 100, 1, -40)
+TabsFrame.Position = UDim2.new(0, 10, 0, 30)
+TabsFrame.BackgroundColor3 = Theme.Button
+Instance.new("UICorner", TabsFrame).CornerRadius = UDim.new(0, 6)
+
+-- Tab Buttons
+local Tabs = {}
+local TabContentFrame = Instance.new("Frame", MainFrame)
+TabContentFrame.Size = UDim2.new(1, -120, 1, -40)
+TabContentFrame.Position = UDim2.new(0, 110, 0, 30)
+TabContentFrame.BackgroundColor3 = Theme.Background
+TabContentFrame.ClipsDescendants = true
+Instance.new("UICorner", TabContentFrame).CornerRadius = UDim.new(0, 6)
+
+local function CreateTab(tabName)
+    local TabButton = Instance.new("TextButton", TabsFrame)
+    TabButton.Text, TabButton.Size, TabButton.Position = tabName, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, (#Tabs * 35))
+    TabButton.BackgroundColor3, TabButton.TextColor3 = Theme.Button, Theme.Text
+    Instance.new("UICorner", TabButton).CornerRadius = UDim.new(0, 6)
+    
+    local TabFrame = Instance.new("Frame", TabContentFrame)
+    TabFrame.Size = UDim2.new(1, 0, 1, 0)
+    TabFrame.Visible = (#Tabs == 0) -- Default to showing the first tab
+    table.insert(Tabs, TabFrame)
+    
+    TabButton.MouseButton1Click:Connect(function()
+        for _, frame in pairs(Tabs) do
+            frame.Visible = false
+        end
+        TabFrame.Visible = true
+    end)
+    return TabFrame
+end
+
+-- Button Template
+local function CreateButton(parent, text, callback, position)
+    local Button = Instance.new("TextButton", parent)
+    Button.Text, Button.Size, Button.Position = text, UDim2.new(0.8, 0, 0.12, 0), position
+    Button.BackgroundColor3, Button.TextColor3 = Theme.Button, Theme.Text
+    Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6)
+
+    -- Button Hover Effects
+    Button.MouseEnter:Connect(function()
+        Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    end)
+    Button.MouseLeave:Connect(function()
+        Button.BackgroundColor3 = Theme.Button
+    end)
+
+    Button.MouseButton1Click:Connect(callback)
+end
+
+-- Main Tab for Teleports
+local MainTab = CreateTab("Main")
+
+CreateButton(MainTab, "TP to Train", function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/ringtaa/train.github.io/refs/heads/main/train.lua'))()
+end, UDim2.new(0.1, 0, 0.2, 0))
+
+CreateButton(MainTab, "TP to Sterling", function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/ringtaa/sterlingnotifcation.github.io/refs/heads/main/Sterling.lua'))()
+end, UDim2.new(0.1, 0, 0.34, 0))
+
+CreateButton(MainTab, "TP to TeslaLab", function()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/ringtaa/tptotesla.github.io/refs/heads/main/Tptotesla.lua'))()
+end, UDim2.new(0.1, 0, 0.48, 0))
+
+CreateButton(MainTab, "TP to Castle", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/castletpfast.github.io/refs/heads/main/FASTCASTLE.lua"))()
+end, UDim2.new(0.1, 0, 0.62, 0))
+
+CreateButton(MainTab, "TP to Fort", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/Tpfort.github.io/refs/heads/main/Tpfort.lua"))()
+end, UDim2.new(0.1, 0, 0.76, 0))
+
+-- Other Tab for Additional Features
+local OtherTab = CreateTab("Other")
+
+CreateButton(OtherTab, "TP to End", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/hbjrev/tpend.github.io/refs/heads/main/ringta.lua"))()
+end, UDim2.new(0.1, 0, 0.06, 0))
+
+
+
+CreateButton(OtherTab, "TP to Bank", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/Tptobank.github.io/refs/heads/main/Banktp.lua"))()
+end, UDim2.new(0.1, 0, 0.2, 0))
+
+
+-- Gun Kill Aura Toggle with Shading
+local gunKillAuraActive = false -- Keeps track of the current state
+
+-- Gun Kill Aura Button
+local GunKillAuraButton = Instance.new("TextButton", OtherTab)
+GunKillAuraButton.Text, GunKillAuraButton.Size, GunKillAuraButton.Position = "Gun Aura (Kill Mobs): OFF", UDim2.new(0.8, 0, 0.12, 0), UDim2.new(0.1, 0, 0.34, 0)
+GunKillAuraButton.BackgroundColor3, GunKillAuraButton.TextColor3 = Color3.fromRGB(30, 30, 30), Theme.Text -- Default OFF color
+Instance.new("UICorner", GunKillAuraButton).CornerRadius = UDim.new(0, 6)
+
+-- Button Hover Effects
+GunKillAuraButton.MouseEnter:Connect(function()
+    GunKillAuraButton.BackgroundColor3 = gunKillAuraActive and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(40, 40, 40)
+end)
+GunKillAuraButton.MouseLeave:Connect(function()
+    GunKillAuraButton.BackgroundColor3 = gunKillAuraActive and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(30, 30, 30)
+end)
+
+-- Toggle Functionality
+GunKillAuraButton.MouseButton1Click:Connect(function()
+    gunKillAuraActive = not gunKillAuraActive -- Toggle the active state
+
+    if gunKillAuraActive then
+        GunKillAuraButton.Text = "Gun Aura (Kill Mobs): ON"
+        GunKillAuraButton.BackgroundColor3 = Color3.fromRGB(50, 205, 50) -- Green for ON state
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/Aimbot.github.io/refs/heads/main/Kill.lua"))()
     else
-        Status.Text = "Key incorreta!"
+        GunKillAuraButton.Text = "Gun Aura (Kill Mobs): OFF"
+        GunKillAuraButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Gray for OFF state
+        -- Add logic to disable "Gun Kill Aura" if needed
+    end
+end)
+
+
+-- Noclip ON Button
+local NoclipOnButton = Instance.new("TextButton", OtherTab)
+NoclipOnButton.Text, NoclipOnButton.Size, NoclipOnButton.Position = "Noclip: ON", UDim2.new(0.8, 0, 0.12, 0), UDim2.new(0.1, 0, 0.48, 0)
+NoclipOnButton.BackgroundColor3, NoclipOnButton.TextColor3 = Color3.fromRGB(30, 30, 30), Theme.Text
+Instance.new("UICorner", NoclipOnButton).CornerRadius = UDim.new(0, 6)
+
+-- Noclip OFF Button
+local NoclipOffButton = Instance.new("TextButton", OtherTab)
+NoclipOffButton.Text, NoclipOffButton.Size, NoclipOffButton.Position = "Noclip: OFF", UDim2.new(0.8, 0, 0.12, 0), UDim2.new(0.1, 0, 0.62, 0)
+NoclipOffButton.BackgroundColor3, NoclipOffButton.TextColor3 = Color3.fromRGB(30, 30, 30), Theme.Text
+Instance.new("UICorner", NoclipOffButton).CornerRadius = UDim.new(0, 6)
+
+local noclipConnection -- To store the active loop for noclip
+
+-- Function to enable noclip
+local function enableNoclip()
+    if noclipConnection then return end -- Prevent multiple connections
+    noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+        if player.Character then
+            for _, part in pairs(player.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false -- Disable collisions
+                end
+            end
+        end
+    end)
+end
+
+-- Function to disable noclip
+local function disableNoclip()
+    if noclipConnection then
+        noclipConnection:Disconnect() -- Stop the loop
+        noclipConnection = nil
+    end
+    if player.Character then
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = true -- Enable collisions
+            end
+        end
+    end
+end
+
+-- Button Functionality for Noclip ON
+NoclipOnButton.MouseButton1Click:Connect(function()
+    enableNoclip()
+    NoclipOnButton.BackgroundColor3 = Color3.fromRGB(50, 205, 50) -- Green for visual feedback
+    NoclipOffButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Reset OFF button color
+end)
+
+-- Button Functionality for Noclip OFF
+NoclipOffButton.MouseButton1Click:Connect(function()
+    disableNoclip()
+    NoclipOnButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Reset ON button color
+    NoclipOffButton.BackgroundColor3 = Color3.fromRGB(205, 50, 50) -- Red for visual feedback
+end)
+
+
+-- Anti-Void Button
+local antiVoidActive = false -- Keeps track of whether Anti-Void is active
+local antiVoidConnection -- Stores the connection for the loop
+
+local AntiVoidButton = Instance.new("TextButton", OtherTab)
+AntiVoidButton.Text, AntiVoidButton.Size, AntiVoidButton.Position = "Anti-Void: OFF", UDim2.new(0.8, 0, 0.12, 0), UDim2.new(0.1, 0, 0.76, 0)
+AntiVoidButton.BackgroundColor3, AntiVoidButton.TextColor3 = Color3.fromRGB(30, 30, 30), Theme.Text
+Instance.new("UICorner", AntiVoidButton).CornerRadius = UDim.new(0, 6)
+
+-- Button Hover Effects
+AntiVoidButton.MouseEnter:Connect(function()
+    AntiVoidButton.BackgroundColor3 = antiVoidActive and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(40, 40, 40)
+end)
+AntiVoidButton.MouseLeave:Connect(function()
+    AntiVoidButton.BackgroundColor3 = antiVoidActive and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(30, 30, 30)
+end)
+
+local function startAntiVoid()
+    antiVoidConnection = game:GetService("RunService").Stepped:Connect(function()
+        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local rootPart = player.Character.HumanoidRootPart
+            if rootPart.Position.Y < -1 then -- Check if the player is below y = -1
+                rootPart.CFrame = CFrame.new(70, 5, 30000) -- Teleports directly to coordinates
+            end
+        end
+    end)
+end
+
+
+local function stopAntiVoid()
+    if antiVoidConnection then
+        antiVoidConnection:Disconnect() -- Stop monitoring position
+        antiVoidConnection = nil
+    end
+end
+
+-- Button Functionality
+AntiVoidButton.MouseButton1Click:Connect(function()
+    antiVoidActive = not antiVoidActive -- Toggle the active state
+
+    if antiVoidActive then
+        AntiVoidButton.Text = "Anti-Void: ON"
+        AntiVoidButton.BackgroundColor3 = Color3.fromRGB(50, 205, 50) -- Green for ON state
+        startAntiVoid() -- Start monitoring position
+    else
+        AntiVoidButton.Text = "Anti-Void: OFF"
+        AntiVoidButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Gray for OFF state
+        stopAntiVoid() -- Stop monitoring position
+    end
+end)
+
+
+
+
+-- Towns Tab for Town Teleports
+local TownsTab = CreateTab("Towns")
+
+CreateButton(TownsTab, "Town 1", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown1.github.io/refs/heads/main/town1.lua"))()
+end, UDim2.new(0.1, 0, 0.2, 0))
+
+CreateButton(TownsTab, "Town 2", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown2.github.io/refs/heads/main/town2.lua"))()
+end, UDim2.new(0.1, 0, 0.34, 0))
+
+CreateButton(TownsTab, "Town 3", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown3.github.io/refs/heads/main/town3.lua"))()
+end, UDim2.new(0.1, 0, 0.48, 0))
+
+CreateButton(TownsTab, "Town 4", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown4.github.io/refs/heads/main/town4.lua"))()
+end, UDim2.new(0.1, 0, 0.62, 0))
+
+CreateButton(TownsTab, "Town 5", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown5.github.io/refs/heads/main/town5.lua"))()
+end, UDim2.new(0.1, 0, 0.76, 0))
+
+CreateButton(TownsTab, "Town 6", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown6.github.io/refs/heads/main/town6.lua"))()
+end, UDim2.new(0.1, 0, 0.9, 0))
+
+local BypassTab = CreateTab("Bypass")
+
+CreateButton(BypassTab, "Bypass AC", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/bypass.github.io/refs/heads/main/ringta.lua"))()
+end, UDim2.new(0.1, 0, 0.06, 0))
+
+CreateButton(BypassTab, "Sterling Town", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/newsterlingtp.github.io/refs/heads/main/RINGTA.lua"))()
+end, UDim2.new(0.1, 0, 0.2, 0))
+
+CreateButton(BypassTab, "Jade Sword", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/tpjadesword.github.io/refs/heads/main/ringta.lua"))()
+end, UDim2.new(0.1, 0, 0.34, 0))
+
+
+
+-- Minimize Button
+local MinimizeButton = Instance.new("TextButton", MainFrame)
+MinimizeButton.Text, MinimizeButton.Size, MinimizeButton.Position = "-", UDim2.new(0, 20, 0, 20), UDim2.new(1, -25, 0, 5)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Changed to bright green for better visibility
+MinimizeButton.TextColor3 = Theme.Text
+Instance.new("UICorner", MinimizeButton).CornerRadius = UDim.new(0, 6)
+
+-- Reopen Button (Hidden When UI is Minimized)
+local ReopenButton = Instance.new("TextButton", ScreenGui)
+ReopenButton.Text, ReopenButton.Size, ReopenButton.Position = "Open RINGTA SCRIPTS", UDim2.new(0, 150, 0, 30), UDim2.new(0.5, 0, 0, -22)
+ReopenButton.AnchorPoint, ReopenButton.Visible = Vector2.new(0.5, 0), false
+ReopenButton.BackgroundColor3, ReopenButton.TextColor3 = Theme.Button, Theme.Text
+Instance.new("UICorner", ReopenButton).CornerRadius = UDim.new(0, 6)
+
+local isMinimized = false
+
+-- Minimize Functionality
+MinimizeButton.MouseButton1Click:Connect(function()
+    if not isMinimized then -- Only minimize if not already minimized
+        isMinimized = true
+        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0.5, 0, -0.7, 0),
+            Size = UDim2.new(0, 250, 0, 50)
+        }):Play()
+        wait(0.3)
+        MainFrame.Visible = false
+        ReopenButton.Visible = true
+    end
+end)
+
+-- Reopen Functionality
+ReopenButton.MouseButton1Click:Connect(function()
+    if isMinimized then -- Only reopen if currently minimized
+        isMinimized = false
+        ReopenButton.Visible = false
+        MainFrame.Visible = true
+        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+            Position = UDim2.new(0.5, 0, 0.5, 0),
+            Size = UDim2.new(0, 350, 0, 230)
+        }):Play()
     end
 end)
