@@ -16,16 +16,14 @@ speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5,
 -- Настройки кнопки закрытия
 closeButton.Size = UDim2.new(0, 100, 0, 50)closeButton.Position = UDim2.new(0.5, -50, 0.5, 100)closeButton.Text ="Close"closeButton.Parent = screenGui
 
+-- Функция для бесконечного прыжка
+local function onJumpRequest()    if infiniteJumpEnabled and humanoid:GetState() == Enum.HumanoidStateType.Freefall then
+        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)    end
+end
+
 -- Привязываем функции к нажатию кнопок
 jumpButton.MouseButton1Click:Connect(function()    infiniteJumpEnabled = not infiniteJumpEnabled
-
-    if infiniteJumpEnabled then
-        jumpButton.Text ="Infinite Jump: ON"        humanoid.JumpPower = 50 -- Устанавливаем силу прыжка
-        humanoid.StateChanged:Connect(function(_, newState)            if newState == Enum.HumanoidStateType.Freefall and infiniteJumpEnabled then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)            end
-        end)    else
-        jumpButton.Text ="Infinite Jump: OFF"    end
-speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speedHackEnabled
+    jumpButton.Text = infiniteJumpEnabled and"Infinite Jump: ON" or"Infinite Jump: OFF"end)speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speedHackEnabled
     if speedHackEnabled then
         speedButton.Text ="Speed Hack: ON"        humanoid.WalkSpeed = 100 -- Устанавливаем скорость
     else
@@ -33,9 +31,7 @@ speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speed
     end
 end)-- Обработчик нажатия пробела для бесконечного прыжка
 userInputService.InputBegan:Connect(function(input, gameProcessed)    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
-        if infiniteJumpEnabled and humanoid:GetState() == Enum.HumanoidStateType.Freefall then
-            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)        end
-    end
+        onJumpRequest()    end
 end)-- Закрытие GUI
 closeButton.MouseButton1Click:Connect(function()    screenGui:Destroy() -- Удаляем GUI
 end)
