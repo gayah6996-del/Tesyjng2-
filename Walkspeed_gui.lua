@@ -35,14 +35,14 @@ UIStroke.Thickness = 2
 UIStroke.Transparency = 0.5
 
 -- Заголовок
-local Title = Instance.new("TextLabel", Frame)
-Title.Size = UDim2.new(1, 0, 0.2, 0)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.Text = "Hitbox Changer"
-Title.TextColor3 = Color3.fromRGB(0, 255, 255)
-Title.Font = Enum.Font.Arcade
-Title.TextSize = 18
-Title.BackgroundTransparency = 1
+local ChangeStateButton = Instance.new("TextLabel", Frame)
+ChangeStateButton.Size = UDim2.new(1, 0, 0.2, 0)
+ChangeStateButton.Position = UDim2.new(0, 0, 0, 0)
+ChangeStateButton.Text = "Hitbox Changer"
+ChangeStateButton.TextColor3 = Color3.fromRGB(0, 255, 255)
+ChangeStateButton.Font = Enum.Font.Arcade
+ChangeStateButton.TextSize = 18
+ChangeStateButton.BackgroundTransparency = 1
 
 -- Статус
 local StatusLabel = Instance.new("TextLabel", Frame)
@@ -355,6 +355,23 @@ game:GetService("RunService").Heartbeat:Connect(function()
             rootPart.Material = "Neon"
             rootPart.CanCollide = false
         end)
+    end
+end)
+
+ChangeStateButton.MouseButton1Click:Connect(function()
+    InfiniteJumpEnabled = not InfiniteJumpEnabled -- переключаем состояние прыжка
+    
+    if InfiniteJumpEnabled then
+        ChangeStateButton.Text = "Infinity Jump: On"
+    else
+        ChangeStateButton.Text = "Infinity Jump: Off"
+    end
+end)
+
+-- Логика бесконечного прыжка
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if InfiniteJumpEnabled then
+        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
     end
 end)
 
