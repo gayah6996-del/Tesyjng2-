@@ -130,36 +130,7 @@ end
 local MainTab = CreateTab("Main")
 
 CreateButton(MainTab, "TP to Train", function()
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/ringtaa/train.github.io/refs/heads/main/train.lua'))()
-end, UDim2.new(0.1, 0, 0.2, 0))
-
-CreateButton(MainTab, "TP to Sterling", function()
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/ringtaa/sterlingnotifcation.github.io/refs/heads/main/Sterling.lua'))()
-end, UDim2.new(0.1, 0, 0.34, 0))
-
-CreateButton(MainTab, "TP to TeslaLab", function()
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/ringtaa/tptotesla.github.io/refs/heads/main/Tptotesla.lua'))()
-end, UDim2.new(0.1, 0, 0.48, 0))
-
-CreateButton(MainTab, "TP to Castle", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/castletpfast.github.io/refs/heads/main/FASTCASTLE.lua"))()
-end, UDim2.new(0.1, 0, 0.62, 0))
-
-CreateButton(MainTab, "TP to Fort", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/Tpfort.github.io/refs/heads/main/Tpfort.lua"))()
-end, UDim2.new(0.1, 0, 0.76, 0))
-
--- Other Tab for Additional Features
-local OtherTab = CreateTab("Other")
-
-CreateButton(OtherTab, "TP to End", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/hbjrev/tpend.github.io/refs/heads/main/ringta.lua"))()
-end, UDim2.new(0.1, 0, 0.06, 0))
-
-
-
-CreateButton(OtherTab, "TP to Bank", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/Tptobank.github.io/refs/heads/main/Banktp.lua"))()
+    loadstring(game:HttpGet('https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua'))()
 end, UDim2.new(0.1, 0, 0.2, 0))
 
 
@@ -309,45 +280,11 @@ end)
 
 
 -- Towns Tab for Town Teleports
-local TownsTab = CreateTab("Towns")
+local TownsTab = CreateTab("Misc")
 
 CreateButton(TownsTab, "Town 1", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown1.github.io/refs/heads/main/town1.lua"))()
 end, UDim2.new(0.1, 0, 0.2, 0))
-
-CreateButton(TownsTab, "Town 2", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown2.github.io/refs/heads/main/town2.lua"))()
-end, UDim2.new(0.1, 0, 0.34, 0))
-
-CreateButton(TownsTab, "Town 3", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown3.github.io/refs/heads/main/town3.lua"))()
-end, UDim2.new(0.1, 0, 0.48, 0))
-
-CreateButton(TownsTab, "Town 4", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown4.github.io/refs/heads/main/town4.lua"))()
-end, UDim2.new(0.1, 0, 0.62, 0))
-
-CreateButton(TownsTab, "Town 5", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown5.github.io/refs/heads/main/town5.lua"))()
-end, UDim2.new(0.1, 0, 0.76, 0))
-
-CreateButton(TownsTab, "Town 6", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown6.github.io/refs/heads/main/town6.lua"))()
-end, UDim2.new(0.1, 0, 0.9, 0))
-
-local BypassTab = CreateTab("Bypass")
-
-CreateButton(BypassTab, "Bypass AC", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/bypass.github.io/refs/heads/main/ringta.lua"))()
-end, UDim2.new(0.1, 0, 0.06, 0))
-
-CreateButton(BypassTab, "Sterling Town", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/newsterlingtp.github.io/refs/heads/main/RINGTA.lua"))()
-end, UDim2.new(0.1, 0, 0.2, 0))
-
-CreateButton(BypassTab, "Jade Sword", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/fjruie/tpjadesword.github.io/refs/heads/main/ringta.lua"))()
-end, UDim2.new(0.1, 0, 0.34, 0))
 
 
 
