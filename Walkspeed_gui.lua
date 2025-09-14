@@ -6,8 +6,7 @@ local menuOpen = false -- To keep track of the menu state
 
 -- Create the ScreenGui
 local screenGui = Instance.new("ScreenGui", player.PlayerGui)screenGui.Name ="@SFXCL"-- Create the button to open/close the menu
-local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 50, 0, 50)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="Menu" -- Change to"Menu" for clarity
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Blue color
+local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 70, 0, 70)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -95)toggleButton.Text ="@SFXCL"toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Blue color
 
 -- Create the jump button
 local jumpButton = Instance.new("TextButton", screenGui)jumpButton.Size = UDim2.new(0, 200, 0, 50)jumpButton.Position = UDim2.new(0.5, -100, 0.5, -30)jumpButton.Text ="Toggle Infinity Jump"jumpButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
@@ -47,22 +46,25 @@ end
 local function toggleFly()    flyEnabled = not flyEnabled
     flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
 
-    if flyEnabled then
-        local character = player.Character
-        local humanoid = character:FindFirstChild("Humanoid")        if humanoid then
+    local character = player.Character
+    local humanoid = character:FindFirstChild("Humanoid")    if flyEnabled then
+        if humanoid then
             humanoid.PlatformStand = true -- Prevents falling
         end
-        -- Enable flying
+
         local bodyVelocity = Instance.new("BodyVelocity")        bodyVelocity.Velocity = Vector3.new(0, 0, 0)        bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)        bodyVelocity.Parent = character.PrimaryPart
+
+        -- Control flying
         game:GetService("RunService").RenderStepped:Connect(function()            if flyEnabled and character and character.PrimaryPart then
-                local direction = Vector3.new(0, 0, 0)                if player:GetMouse().KeyDown:Wait() then
-                    direction = Vector3.new(0, 1, 0) -- Adjust Y for upward movement
+                local direction = Vector3.new(0, 0, 0)                local moveDirection = Vector3.new(0, 0, 0)                -- Get the direction from the gamepad
+                local userInputService = game:GetService("UserInputService")                if userInputService:IsGamepadEnabled() then
+                    local gamepadInput = userInputService:GetGamepadState(Enum.UserInputType.Gamepad1)                    if gamepadInput then
+                        local leftStick = gamepadInput[1]                        -- Adjust the direction based on the left stick input
+                        moveDirection = Vector3.new(leftStick.Position.X, 0, leftStick.Position.Y) * 50 -- Adjust the multiplier for speed
+                    end
                 end
-                bodyVelocity.Velocity = direction*50 -- Adjust the multiplier for speed
-            else
-                bodyVelocity:Destroy()                if humanoid then
-                    humanoid.PlatformStand = false
-                end
+
+                bodyVelocity.Velocity = moveDirection
             end
         end)    else
         if character and character.PrimaryPart then
