@@ -129,7 +129,7 @@ end
 -- Main Tab for Teleports
 local MainTab = CreateTab("Main")
 
-CreateButton(MainTab, "TP to Train", function()
+CreateButton(MainTab, "Fly", function()
     loadstring(game:HttpGet('https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua'))()
 end, UDim2.new(0.1, 0, 0.2, 0))
 
@@ -283,7 +283,7 @@ end)
 local TownsTab = CreateTab("Misc")
 
 CreateButton(TownsTab, "Town 1", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ringta9321/tptown1.github.io/refs/heads/main/town1.lua"))()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/NoClip.Lua"))()
 end, UDim2.new(0.1, 0, 0.2, 0))
 
 
