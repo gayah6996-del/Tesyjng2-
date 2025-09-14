@@ -18,7 +18,14 @@ closeButton.Size = UDim2.new(0, 100, 0, 50)closeButton.Position = UDim2.new(0.5,
 
 -- Привязываем функции к нажатию кнопок
 jumpButton.MouseButton1Click:Connect(function()    infiniteJumpEnabled = not infiniteJumpEnabled
-    jumpButton.Text = infiniteJumpEnabled and"Infinite Jump: ON" or"Infinite Jump: OFF"end)speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speedHackEnabled
+
+    if infiniteJumpEnabled then
+        jumpButton.Text ="Infinite Jump: ON"        humanoid.JumpPower = 50 -- Устанавливаем силу прыжка
+        humanoid.StateChanged:Connect(function(_, newState)            if newState == Enum.HumanoidStateType.Freefall and infiniteJumpEnabled then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)            end
+        end)    else
+        jumpButton.Text ="Infinite Jump: OFF"    end
+speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speedHackEnabled
     if speedHackEnabled then
         speedButton.Text ="Speed Hack: ON"        humanoid.WalkSpeed = 100 -- Устанавливаем скорость
     else
