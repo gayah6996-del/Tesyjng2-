@@ -1,6 +1,7 @@
 local player = game.Players.LocalPlayer
 local jumpEnabled = false
 local speedEnabled = false
+local noClipEnabled = false
 local menuOpen = false -- To keep track of the menu state
 
 -- Create the ScreenGui
@@ -15,6 +16,9 @@ jumpButton.Visible = false -- Initially hidden
 -- Create the speed button
 local speedButton = Instance.new("TextButton", screenGui)speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 20)speedButton.Text ="Toggle Speed Hack"speedButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
 speedButton.Visible = false -- Initially hidden
+
+local noClipButton = Instance.new("TextButton", screenGui)noClipButton.Size = UDim2.new(0, 200, 0, 50)noClipButton.Position = UDim2.new(0.5, -100, 0.5, 70)noClipButton.Text ="Toggle NoClip"noClipButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
+noClipButton.Visible = false -- Initially hidden
 
 -- Create the close button
 local closeButton = Instance.new("TextButton", screenGui)closeButton.Size = UDim2.new(0, 50, 0, 50)closeButton.Position = UDim2.new(0.5, 75, 0.5, -30) -- Position it next to the jump button
@@ -38,10 +42,24 @@ local function toggleSpeed()    speedEnabled = not speedEnabled
     end
 end
 
+local function toggleNoClip()    noClipEnabled = not noClipEnabled
+    noClipButton.BackgroundColor3 = noClipEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
+
+    local character = player.Character
+    if character then
+        for_, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = not noClipEnabled
+            end
+        end
+    end
+end
+
 -- Function to open/close the menu
 local function toggleMenu()    menuOpen = not menuOpen
     jumpButton.Visible = menuOpen
     speedButton.Visible = menuOpen
+    noClipButton.Visible = menuOpen
     closeButton.Visible = menuOpen
 end
 
