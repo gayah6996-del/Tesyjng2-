@@ -1,6 +1,7 @@
 local player = game.Players.LocalPlayer
 local jumpEnabled = false
 local speedEnabled = false
+local flyEnabled = false
 local menuOpen = false -- To keep track of the menu state
 
 -- Create the ScreenGui
@@ -15,6 +16,10 @@ jumpButton.Visible = false -- Initially hidden
 -- Create the speed button
 local speedButton = Instance.new("TextButton", screenGui)speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 20)speedButton.Text ="Toggle Speed Hack"speedButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
 speedButton.Visible = false -- Initially hidden
+
+-- Create the fly button
+local flyButton = Instance.new("TextButton", screenGui)flyButton.Size = UDim2.new(0, 200, 0, 50)flyButton.Position = UDim2.new(0.5, -100, 0.5, 70)flyButton.Text ="Toggle Fly"flyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
+flyButton.Visible = false -- Initially hidden
 
 -- Create the close button
 local closeButton = Instance.new("TextButton", screenGui)closeButton.Size = UDim2.new(0, 50, 0, 50)closeButton.Position = UDim2.new(0.5, 75, 0.5, -30) -- Position it next to the jump button
@@ -38,10 +43,41 @@ local function toggleSpeed()    speedEnabled = not speedEnabled
     end
 end
 
+-- Function to toggle flying
+local function toggleFly()    flyEnabled = not flyEnabled
+    flyButton.BackgroundColor3 = flyEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
+
+    if flyEnabled then
+        local character = player.Character
+        local humanoid = character:FindFirstChild("Humanoid")        if humanoid then
+            humanoid.PlatformStand = true -- Prevents falling
+        end
+        -- Enable flying
+        local bodyVelocity = Instance.new("BodyVelocity")        bodyVelocity.Velocity = Vector3.new(0, 0, 0)        bodyVelocity.MaxForce = Vector3.new(4000, 4000, 4000)        bodyVelocity.Parent = character.PrimaryPart
+        game:GetService("RunService").RenderStepped:Connect(function()            if flyEnabled and character and character.PrimaryPart then
+                local direction = Vector3.new(0, 0, 0)                if player:GetMouse().KeyDown:Wait() then
+                    direction = Vector3.new(0, 1, 0) -- Adjust Y for upward movement
+                end
+                bodyVelocity.Velocity = direction*50 -- Adjust the multiplier for speed
+            else
+                bodyVelocity:Destroy()                if humanoid then
+                    humanoid.PlatformStand = false
+                end
+            end
+        end)    else
+        if character and character.PrimaryPart then
+            character.PrimaryPart:FindFirstChildOfClass("BodyVelocity"):Destroy()            if humanoid then
+                humanoid.PlatformStand = false
+            end
+        end
+    end
+end
+
 -- Function to open/close the menu
 local function toggleMenu()    menuOpen = not menuOpen
     jumpButton.Visible = menuOpen
     speedButton.Visible = menuOpen
+    flyButton.Visible = menuOpen
     closeButton.Visible = menuOpen
 end
 
@@ -49,11 +85,12 @@ end
 local function closeMenu()    menuOpen = false
     jumpButton.Visible = false
     speedButton.Visible = false
+    flyButton.Visible = false
     closeButton.Visible = false
 end
 
 -- Connect button click events
-toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)closeButton.MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
+toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)flyButton.MouseButton1Click:Connect(toggleFly)closeButton.MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
 local function dragMenu(button)    local dragging = false
     local dragInput
     local startPos = button.Position
