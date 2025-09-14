@@ -20,7 +20,7 @@ ScreenGui.Name = "HitboxGUI"
 ScreenGui.ResetOnSpawn = false
 
 local Frame = Instance.new("Frame", ScreenGui)
-Frame.Size = UDim2.new(0, 320, 0, 230)
+Frame.Size = UDim2.new(0, 360, 0, 280)
 Frame.Position = UDim2.new(0.5, -160, 0.5, -115)
 Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 Frame.BorderSizePixel = 0
@@ -35,14 +35,14 @@ UIStroke.Thickness = 2
 UIStroke.Transparency = 0.5
 
 -- Заголовок
-local ChangeStateButton = Instance.new("TextLabel", Frame)
-ChangeStateButton.Size = UDim2.new(1, 0, 0.2, 0)
-ChangeStateButton.Position = UDim2.new(0, 0, 0, 0)
-ChangeStateButton.Text = "Hitbox Changer"
-ChangeStateButton.TextColor3 = Color3.fromRGB(0, 255, 255)
-ChangeStateButton.Font = Enum.Font.Arcade
-ChangeStateButton.TextSize = 18
-ChangeStateButton.BackgroundTransparency = 1
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0.2, 0)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.Text = "Script By @SFXCL"
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
+Title.Font = Enum.Font.Arcade
+Title.TextSize = 18
+Title.BackgroundTransparency = 1
 
 -- Статус
 local StatusLabel = Instance.new("TextLabel", Frame)
@@ -55,15 +55,15 @@ StatusLabel.TextSize = 14
 StatusLabel.BackgroundTransparency = 1
 
 -- Кнопка включения
-local ToggleButton = Instance.new("TextButton", Frame)
-ToggleButton.Size = UDim2.new(0.9, 0, 0.18, 0)
-ToggleButton.Position = UDim2.new(0.05, 0, 0.39, 0)
-ToggleButton.Text = "Включить"
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.TextSize = 16
-ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.AutoButtonColor = true
+local ChangeStateButton = Instance.new("TextButton", Frame)
+ChangeStateButton.Size = UDim2.new(0.9, 0, 0.18, 0)
+ChangeStateButton.Position = UDim2.new(0.05, 0, 0.39, 0)
+ChangeStateButton.Text = "Включить"
+ChangeStateButton.Font = Enum.Font.GothamBold
+ChangeStateButton.TextSize = 16
+ChangeStateButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ChangeStateButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ChangeStateButton.AutoButtonColor = true
 
 -- Крестик (Unload)
 local CloseButton = Instance.new("TextButton", Frame)
@@ -75,6 +75,15 @@ CloseButton.TextSize = 20
 CloseButton.TextColor3 = Color3.fromRGB(255, 100, 100)
 CloseButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 CloseButton.AutoButtonColor = true
+
+local reopenButton = Instance.new("TextButton")
+reopenButton.Size = UDim2.new(0, 100, 0, 40)
+reopenButton.Position = UDim2.new(0.5, -50, 0, -10)
+reopenButton.Text = "By @SFXCL"
+reopenButton.Font = Enum.Font.Gotham
+reopenButton.TextSize = 19
+reopenButton.Visible = false
+reopenButton.Parent = screenGui
 
 -- === Настройка размера ===
 local SizeLabel = Instance.new("TextLabel", Frame)
@@ -216,6 +225,11 @@ end)
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
     restoreOriginal()
+end)
+
+reopenButton.MouseButton1Click:Connect(function()
+    frame.Visible = true
+    reopenButton.Visible = false
 end)
 
 -- ✅ Ввод размера — обновляем HeadSize сразу
