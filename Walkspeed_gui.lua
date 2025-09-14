@@ -1,74 +1,59 @@
 local player = game.Players.LocalPlayer
 local jumpEnabled = false
 local speedEnabled = false
-local noClipEnabled = false -- New variable for NoClip
-local menuOpen = false -- To keep track of the menu state
+local noClipEnabled = false -- Новый параметр для NoClip
+local menuOpen = false -- Для отслеживания состояния меню
 
--- Create the ScreenGui
-local screenGui = Instance.new("ScreenGui", player.PlayerGui)screenGui.Name ="@SFXCL"-- Create the button to open/close the menu
-local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 50, 0, 50)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="Menu" -- Change to"Menu" for clarity
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Blue color
+-- Создаем ScreenGui
+local screenGui = Instance.new("ScreenGui", player.PlayerGui)screenGui.Name ="@SFXCL"-- Создаем кнопку для открытия/закрытия меню
+local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 50, 0, 50)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="Menu"toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Синий цвет
 
--- Create the jump button
-local jumpButton = Instance.new("TextButton", screenGui)jumpButton.Size = UDim2.new(0, 200, 0, 50)jumpButton.Position = UDim2.new(0.5, -100, 0.5, -30)jumpButton.Text ="Toggle Infinity Jump"jumpButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-jumpButton.Visible = false -- Initially hidden
+-- Создаем кнопку для прыжка
+local jumpButton = Instance.new("TextButton", screenGui)jumpButton.Size = UDim2.new(0, 200, 0, 50)jumpButton.Position = UDim2.new(0.5, -100, 0.5, -30)jumpButton.Text ="Toggle Infinity Jump"jumpButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Красный цвет
+jumpButton.Visible = false -- Изначально скрыта
 
--- Create the speed button
-local speedButton = Instance.new("TextButton", screenGui)speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 20)speedButton.Text ="Toggle Speed Hack"speedButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-speedButton.Visible = false -- Initially hidden
+-- Создаем кнопку для скорости
+local speedButton = Instance.new("TextButton", screenGui)speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 20)speedButton.Text ="Toggle Speed Hack"speedButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Красный цвет
+speedButton.Visible = false -- Изначально скрыта
 
--- Create the NoClip button
-local noClipButton = Instance.new("TextButton", screenGui)noClipButton.Size = UDim2.new(0, 200, 0, 50)noClipButton.Position = UDim2.new(0.5, -100, 0.5, 70)noClipButton.Text ="Toggle NoClip"noClipButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-noClipButton.Visible = false -- Initially hidden
+-- Создаем кнопку NoClip
+local noClipButton = Instance.new("TextButton", screenGui)noClipButton.Size = UDim2.new(0, 200, 0, 50)noClipButton.Position = UDim2.new(0.5, -100, 0.5, 70)noClipButton.Text ="Toggle NoClip"noClipButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Красный цвет
+noClipButton.Visible = false -- Изначально скрыта
 
--- Create the close button
-local closeButton = Instance.new("TextButton", screenGui)closeButton.Size = UDim2.new(0, 50, 0, 50)closeButton.Position = UDim2.new(0.5, 75, 0.5, -30) -- Position it next to the jump button
-closeButton.Text ="X" -- Close button
-closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-closeButton.Visible = false -- Initially hidden
+-- Создаем кнопку закрытия меню
+local closeButton = Instance.new("TextButton", screenGui)closeButton.Size = UDim2.new(0, 50, 0, 50)closeButton.Position = UDim2.new(0.5, 75, 0.5, -30)closeButton.Text ="X" -- Кнопка закрытия
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Красный цвет
+closeButton.Visible = false -- Изначально скрыта
 
--- Function to toggle infinite jump
+-- Функция для переключения бесконечного прыжка
 local function toggleJump()    jumpEnabled = not jumpEnabled
-    jumpButton.BackgroundColor3 = jumpEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
+    jumpButton.BackgroundColor3 = jumpEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Зеленый, если включен; красный, если выключен
     if player.Character and player.Character:FindFirstChild("Humanoid") then
         player.Character.Humanoid.JumpPower = jumpEnabled and 100 or 50
     end
 end
 
--- Function to toggle speed
+-- Функция для переключения скорости
 local function toggleSpeed()    speedEnabled = not speedEnabled
-    speedButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
+    speedButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)    if player.Character and player.Character:FindFirstChild("Humanoid") then
         player.Character.Humanoid.WalkSpeed = speedEnabled and 50 or 16
     end
 end
 
--- Function to toggle NoClip
+-- Функция для переключения NoClip
 local function toggleNoClip()    noClipEnabled = not noClipEnabled
-    noClipButton.BackgroundColor3 = noClipEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
-    
-    if noClipEnabled then
-        local character = player.Character
-        if character then
-            for_, part in pairs(character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false -- Disable collisions
-                end
-            end
-        end
-    else
-        local character = player.Character
-        if character then
-            for_, part in pairs(character:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true -- Enable collisions
-                end
+    noClipButton.BackgroundColor3 = noClipEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)    
+    local character = player.Character
+    if character then
+        for_, part in pairs(character:GetChildren()) do
+            if part:IsA("BasePart") then
+                part.CanCollide = not noClipEnabled -- Переключаем коллизию
             end
         end
     end
 end
 
--- Function to open/close the menu
+-- Функция для открытия/закрытия меню
 local function toggleMenu()    menuOpen = not menuOpen
     jumpButton.Visible = menuOpen
     speedButton.Visible = menuOpen
@@ -76,7 +61,7 @@ local function toggleMenu()    menuOpen = not menuOpen
     closeButton.Visible = menuOpen
 end
 
--- Function to close the menu
+-- Функция для закрытия меню
 local function closeMenu()    menuOpen = false
     jumpButton.Visible = false
     speedButton.Visible = false
@@ -84,8 +69,8 @@ local function closeMenu()    menuOpen = false
     closeButton.Visible = false
 end
 
--- Connect button click events
-toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)noClipButton.MouseButton1Click:Connect(toggleNoClip)closeButton.MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
+-- Подключаем события нажатия кнопок
+toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)noClipButton.MouseButton1Click:Connect(toggleNoClip)closeButton.MouseButton1Click:Connect(closeMenu)-- Функция для перетаскивания меню
 local function dragMenu(button)    local dragging = false
     local dragInput
     local startPos = button.Position
@@ -99,15 +84,16 @@ local function dragMenu(button)    local dragging = false
                     dragging = false
                 end
             end)        end
-    end)    button.InputChanged:Connect(function(input)        if input.UserInputType == Enum.UserInputType.MouseMovement then
+    end)    
+    button.InputChanged:Connect(function(input)        if input.UserInputType == Enum.UserInputType.MouseMovement then
             while dragging do
                 local mousePos = player:GetMouse().X
                 button.Position = UDim2.new(0, mousePos - button.Size.X.Offset / 2, 0, startPos.Y.Offset)                wait()            end
         end
     end)end
 
--- Allow dragging for the toggle button
-dragMenu(toggleButton)-- Ensure the player can jump infinitely
+-- Разрешаем перетаскивание для кнопки переключения
+dragMenu(toggleButton)-- Обеспечиваем, чтобы игрок мог прыгать бесконечно
 game:GetService("RunService").RenderStepped:Connect(function()    if jumpEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
         if player.Character.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
             player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)        end
