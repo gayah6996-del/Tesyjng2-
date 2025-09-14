@@ -5,7 +5,7 @@ local menuOpen = true -- To keep track of the menu state
 
 -- Create the ScreenGui
 local screenGui = Instance.new("ScreenGui", player.PlayerGui)screenGui.Name ="@SFXCL"-- Create the button to open/close the menu
-local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 50, 0, 50)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="Menu" -- Change to"Menu" for clarity
+local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 70, 0, 70)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="@SFXCL" -- Change to"Menu" for clarity
 toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Blue color
 
 -- Create the jump button
@@ -39,7 +39,29 @@ local function toggleMenu()    menuOpen = not menuOpen
 end
 
 -- Connect button click events
-toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)-- Ensure the player can jump infinitely
+toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)-- Enable dragging of the menu
+local function dragMenu(button)    local dragging = false
+    local dragInput
+    local startPos = button.Position
+
+    button.InputBegan:Connect(function(input)        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragInput = input
+            startPos = button.Position
+
+            input.Changed:Connect(function()                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)        end
+    end)    button.InputChanged:Connect(function(input)        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            while dragging do
+                local mousePos = player:GetMouse().X
+                button.Position = UDim2.new(0, mousePos - button.Size.X.Offset / 2, 0, startPos.Y.Offset)                wait()            end
+        end
+    end)end
+
+-- Allow dragging for the toggle button
+dragMenu(toggleButton)-- Ensure the player can jump infinitely
 game:GetService("RunService").RenderStepped:Connect(function()    if jumpEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
         if player.Character.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
             player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)        end
