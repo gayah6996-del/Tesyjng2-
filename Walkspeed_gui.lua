@@ -11,9 +11,6 @@ jumpButton.Size = UDim2.new(0, 200, 0, 50)jumpButton.Position = UDim2.new(0.5, -
 -- Настройки кнопки Speed Hack
 speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 25)speedButton.Text ="Speed Hack: OFF"speedButton.Parent = screenGui
 
--- Настройки кнопки закрытия
-closeButton.Size = UDim2.new(0, 100, 0, 50)closeButton.Position = UDim2.new(0.5, -50, 0.5, 100)closeButton.Text ="Close"closeButton.Parent = screenGui
-
 -- Привязываем функции к нажатию кнопок
 jumpButton.MouseButton1Click:Connect(function()    infiniteJumpEnabled = not infiniteJumpEnabled
 
@@ -31,9 +28,4 @@ speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speed
     else
         speedButton.Text ="Speed Hack: OFF"        humanoid.WalkSpeed = 16 -- Возвращаем скорость к норме
     end
-end)
-userInputService.InputBegan:Connect(function(input, gameProcessed)    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
-        onJumpRequest()    end
-end)-- Закрытие GUI
-closeButton.MouseButton1Click:Connect(function()    screenGui:Destroy() -- Удаляем GUI
 end)
