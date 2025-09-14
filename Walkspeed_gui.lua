@@ -23,7 +23,8 @@ jumpButton.MouseButton1Click:Connect(function()    infiniteJumpEnabled = not inf
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)            end
         end)    else
         jumpButton.Text ="Infinite Jump: OFF"    end
-end)speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speedHackEnabled
+end)
+speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speedHackEnabled
 
     if speedHackEnabled then
         speedButton.Text ="Speed Hack: ON"        humanoid.WalkSpeed = 100 -- Устанавливаем скорость
