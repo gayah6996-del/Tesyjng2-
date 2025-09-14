@@ -5,7 +5,7 @@ local menuOpen = false -- To keep track of the menu state
 
 -- Create the ScreenGui
 local screenGui = Instance.new("ScreenGui", player.PlayerGui)screenGui.Name ="@SFXCL"-- Create the button to open/close the menu
-local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 70, 0, 70)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="@SFXCL" -- Change to"Menu" for clarity
+local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 50, 0, 50)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="Menu" -- Change to"Menu" for clarity
 toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Blue color
 
 -- Create the jump button
@@ -15,6 +15,12 @@ jumpButton.Visible = false -- Initially hidden
 -- Create the speed button
 local speedButton = Instance.new("TextButton", screenGui)speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 20)speedButton.Text ="Toggle Speed Hack"speedButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
 speedButton.Visible = false -- Initially hidden
+
+-- Create the close button
+local closeButton = Instance.new("TextButton", screenGui)closeButton.Size = UDim2.new(0, 50, 0, 50)closeButton.Position = UDim2.new(0.5, 75, 0.5, -30) -- Position it next to the jump button
+closeButton.Text ="X" -- Close button
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
+closeButton.Visible = false -- Initially hidden
 
 -- Function to toggle infinite jump
 local function toggleJump()    jumpEnabled = not jumpEnabled
@@ -36,10 +42,18 @@ end
 local function toggleMenu()    menuOpen = not menuOpen
     jumpButton.Visible = menuOpen
     speedButton.Visible = menuOpen
+    closeButton.Visible = menuOpen
+end
+
+-- Function to close the menu
+local function closeMenu()    menuOpen = false
+    jumpButton.Visible = false
+    speedButton.Visible = false
+    closeButton.Visible = false
 end
 
 -- Connect button click events
-toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)-- Enable dragging of the menu
+toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)closeButton.MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
 local function dragMenu(button)    local dragging = false
     local dragInput
     local startPos = button.Position
