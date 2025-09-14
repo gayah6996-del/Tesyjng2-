@@ -15,3 +15,7 @@ local function toggleInfiniteJump()	infiniteJumpEnabled = not infiniteJumpEnable
 		jumpButton.Text ="Infinite Jump: OFF"		player.Character.Humanoid.JumpPower = 50 -- Возвращаем силу прыжка к норме, если нужно
 	end
 end
+
+-- Привязываем функцию к нажатию кнопки
+jumpButton.MouseButton1Click:Connect(toggleInfiniteJump)
+end
