@@ -1,7 +1,7 @@
 local player = game.Players.LocalPlayer
 local jumpEnabled = false
 local speedEnabled = false
-local noClipEnabled = false
+local noClipEnabled = false -- New variable for NoClip
 local menuOpen = false -- To keep track of the menu state
 
 -- Create the ScreenGui
@@ -17,6 +17,7 @@ jumpButton.Visible = false -- Initially hidden
 local speedButton = Instance.new("TextButton", screenGui)speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 20)speedButton.Text ="Toggle Speed Hack"speedButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
 speedButton.Visible = false -- Initially hidden
 
+-- Create the NoClip button
 local noClipButton = Instance.new("TextButton", screenGui)noClipButton.Size = UDim2.new(0, 200, 0, 50)noClipButton.Position = UDim2.new(0.5, -100, 0.5, 70)noClipButton.Text ="Toggle NoClip"noClipButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
 noClipButton.Visible = false -- Initially hidden
 
@@ -42,14 +43,26 @@ local function toggleSpeed()    speedEnabled = not speedEnabled
     end
 end
 
+-- Function to toggle NoClip
 local function toggleNoClip()    noClipEnabled = not noClipEnabled
     noClipButton.BackgroundColor3 = noClipEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
-
-    local character = player.Character
-    if character then
-        for_, part in ipairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = not noClipEnabled
+    
+    if noClipEnabled then
+        local character = player.Character
+        if character then
+            for_, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false -- Disable collisions
+                end
+            end
+        end
+    else
+        local character = player.Character
+        if character then
+            for_, part in pairs(character:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true -- Enable collisions
+                end
             end
         end
     end
@@ -67,11 +80,12 @@ end
 local function closeMenu()    menuOpen = false
     jumpButton.Visible = false
     speedButton.Visible = false
+    noClipButton.Visible = false
     closeButton.Visible = false
 end
 
 -- Connect button click events
-toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)closeButton.MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
+toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)noClipButton.MouseButton1Click:Connect(toggleNoClip)closeButton.MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
 local function dragMenu(button)    local dragging = false
     local dragInput
     local startPos = button.Position
