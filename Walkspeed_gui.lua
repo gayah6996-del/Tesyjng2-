@@ -10,6 +10,7 @@ jumpButton.Size = UDim2.new(0, 200, 0, 50)jumpButton.Position = UDim2.new(0.5, -
 speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 25)speedButton.Text ="Speed Hack: OFF"speedButton.Parent = screenGui
 
 -- Функция для включения/выключения бесконечного прыжка
+toggleInfiniteJump:Connect(function()
 local function toggleInfiniteJump()    infiniteJumpEnabled = not infiniteJumpEnabled
     
     if infiniteJumpEnabled then
@@ -22,6 +23,7 @@ local function toggleInfiniteJump()    infiniteJumpEnabled = not infiniteJumpEna
 end
 
 -- Функция для включения/выключения Speed Hack
+toggleSpeedHack.MouseButton1Click:Connect(function()
 local function toggleSpeedHack()    speedHackEnabled = not speedHackEnabled
 
     if speedHackEnabled then
