@@ -1,37 +1,30 @@
 local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")local character = player.Character or player.CharacterAdded:Wait()local humanoid = character:WaitForChild("Humanoid")local userInputService = game:GetService("UserInputService")local infiniteJumpEnabled = false
-local speedHackEnabled = false
+local playerGui = player:WaitForChild("PlayerGui")local character = player.Character or player.CharacterAdded:Wait()local userInputService = game:GetService("UserInputService")-- Укажите здесь местоположение костра
+local campfirePosition = Vector3.new(0, 0, 0) -- Замените на реальные координаты костра
 
 -- Создаем GUI
-local screenGui = Instance.new("ScreenGui")local jumpButton = Instance.new("TextButton")local speedButton = Instance.new("TextButton")local closeButton = Instance.new("TextButton") -- Кнопка закрытия
+local screenGui = Instance.new("ScreenGui")local openChestsButton = Instance.new("TextButton")screenGui.Parent = playerGui
 
-screenGui.Parent = playerGui
+-- Настройки кнопки открытия сундуков
+openChestsButton.Size = UDim2.new(0, 200, 0, 50)openChestsButton.Position = UDim2.new(0.5, -100, 0.5, -75)openChestsButton.Text ="Open All Chests"openChestsButton.Parent = screenGui
 
--- Настройки кнопки Infinite Jump
-jumpButton.Size = UDim2.new(0, 200, 0, 50)jumpButton.Position = UDim2.new(0.5, -100, 0.5, -75)jumpButton.Text ="Infinite Jump: OFF"jumpButton.Parent = screenGui
-
--- Настройки кнопки Speed Hack
-speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 25)speedButton.Text ="Speed Hack: OFF"speedButton.Parent = screenGui
-
--- Настройки кнопки закрытия
-closeButton.Size = UDim2.new(0, 100, 0, 50)closeButton.Position = UDim2.new(0.5, -50, 0.5, 100)closeButton.Text ="Close"closeButton.Parent = screenGui
-
--- Функция для бесконечного прыжка
-local function onJumpRequest()    if infiniteJumpEnabled and humanoid:GetState() == Enum.HumanoidStateType.Freefall then
-        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)    end
-end
-
--- Привязываем функции к нажатию кнопок
-jumpButton.MouseButton1Click:Connect(function()    infiniteJumpEnabled = not infiniteJumpEnabled
-    jumpButton.Text = infiniteJumpEnabled and"Infinite Jump: ON" or"Infinite Jump: OFF"end)speedButton.MouseButton1Click:Connect(function()    speedHackEnabled = not speedHackEnabled
-    if speedHackEnabled then
-        speedButton.Text ="Speed Hack: ON"        humanoid.WalkSpeed = 100 -- Устанавливаем скорость
-    else
-        speedButton.Text ="Speed Hack: OFF"        humanoid.WalkSpeed = 16 -- Возвращаем скорость к норме
+-- Функция для открытия всех сундуков
+local function openAllChests()    for_, chest in pairs(workspace:GetChildren()) do
+        if chest:IsA("Model") and chest:FindFirstChild("Open") then -- Предполагаем, что есть часть или метод для открытия сундука
+            chest:FindFirstChild("Open"):Fire() -- Вызываем функцию открытия сундука
+            wait(0.5) -- Небольшая задержка, чтобы не перегружать игру
+            for_, item in pairs(chest:GetChildren()) do
+                if item:IsA("BasePart") then
+                    -- Перемещаем содержимое на костер
+                    local newItem = item:Clone()                    newItem.Position = campfirePosition + Vector3.new(0, 2, 0) -- Поднимаем над костром
+                    newItem.Parent = workspace
+                    item:Destroy() -- Удаляем оригинал из сундука
+                end
+            end
+        end
     end
-end)-- Обработчик нажатия пробела для бесконечного прыжка
-userInputService.InputBegan:Connect(function(input, gameProcessed)    if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Space then
-        onJumpRequest()    end
-end)-- Закрытие GUI
-closeButton.MouseButton1Click:Connect(function()    screenGui:Destroy() -- Удаляем GUI
+end)
+
+-- Привязываем функцию к нажатию кнопки
+openChestsButton.MouseButton1Click:Connect(function() openAllChests()
 end)
