@@ -1,202 +1,372 @@
--- TRASHNEVERDIE GUI
+-- === Hitbox Changer by kisamm ===
+-- Теперь размер обновляется при вкл/выкл
+
+-- === Настройки ===
+local HeadSize = 20
+local Disabled = true 
+
+-- === Бинды ===
+local toggleGUIBind = Enum.KeyCode.P
+local toggleHitboxBind = Enum.KeyCode.H
+
+-- === Сервисы ===
 local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local SoundService = game:GetService("SoundService")
 local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
 
-if CoreGui:FindFirstChild("TRASHNEVERDIE_GUI") then
-    CoreGui.TRASHNEVERDIE_GUI:Destroy()
+-- === GUI Setup ===
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.Name = "HitboxGUI"
+ScreenGui.ResetOnSpawn = false
+
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 320, 0, 230)
+Frame.Position = UDim2.new(0.5, -160, 0.5, -115)
+Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Frame.BorderSizePixel = 0
+Frame.Visible = true
+Frame.Draggable = true
+Frame.Active = true
+
+-- Неоновая обводка
+local UIStroke = Instance.new("UIStroke", Frame)
+UIStroke.Color = Color3.fromRGB(0, 255, 255)
+UIStroke.Thickness = 2
+UIStroke.Transparency = 0.5
+
+-- Заголовок
+local Title = Instance.new("TextLabel", Frame)
+Title.Size = UDim2.new(1, 0, 0.2, 0)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.Text = "Hitbox Changer"
+Title.TextColor3 = Color3.fromRGB(0, 255, 255)
+Title.Font = Enum.Font.Arcade
+Title.TextSize = 18
+Title.BackgroundTransparency = 1
+
+-- Статус
+local StatusLabel = Instance.new("TextLabel", Frame)
+StatusLabel.Size = UDim2.new(0.9, 0, 0.15, 0)
+StatusLabel.Position = UDim2.new(0.05, 0, 0.22, 0)
+StatusLabel.Text = "Статус: Выключен"
+StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+StatusLabel.Font = Enum.Font.Gotham
+StatusLabel.TextSize = 14
+StatusLabel.BackgroundTransparency = 1
+
+-- Кнопка включения
+local ToggleButton = Instance.new("TextButton", Frame)
+ToggleButton.Size = UDim2.new(0.9, 0, 0.18, 0)
+ToggleButton.Position = UDim2.new(0.05, 0, 0.39, 0)
+ToggleButton.Text = "Включить"
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.TextSize = 16
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.AutoButtonColor = true
+
+-- Крестик (Unload)
+local CloseButton = Instance.new("TextButton", Frame)
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
+CloseButton.Text = "✕"
+CloseButton.Font = Enum.Font.Arcade
+CloseButton.TextSize = 20
+CloseButton.TextColor3 = Color3.fromRGB(255, 100, 100)
+CloseButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+CloseButton.AutoButtonColor = true
+
+-- === Настройка размера ===
+local SizeLabel = Instance.new("TextLabel", Frame)
+SizeLabel.Size = UDim2.new(0.4, 0, 0.15, 0)
+SizeLabel.Position = UDim2.new(0.05, 0, 0.61, 0)
+SizeLabel.Text = "Размер (1-50):"
+SizeLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+SizeLabel.Font = Enum.Font.Gotham
+SizeLabel.TextSize = 14
+SizeLabel.BackgroundTransparency = 1
+
+local SizeBox = Instance.new("TextBox", Frame)
+SizeBox.Size = UDim2.new(0.4, 0, 0.15, 0)
+SizeBox.Position = UDim2.new(0.5, 0, 0.61, 0)
+SizeBox.Text = tostring(HeadSize)
+SizeBox.TextColor3 = Color3.new(1, 1, 1)
+SizeBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+SizeBox.Font = Enum.Font.Code
+SizeBox.TextSize = 14
+SizeBox.ClearTextOnFocus = false
+
+-- === Поля для биндов ===
+local BindContainer = Instance.new("Frame", Frame)
+BindContainer.Size = UDim2.new(0.9, 0, 0.23, 0)
+BindContainer.Position = UDim2.new(0.05, 0, 0.78, 0)
+BindContainer.BackgroundTransparency = 1
+
+-- Бинд: Открыть/закрыть GUI
+local GUIBindLabel = Instance.new("TextLabel", BindContainer)
+GUIBindLabel.Size = UDim2.new(0.6, 0, 0.4, 0)
+GUIBindLabel.Text = "Открыть GUI:"
+GUIBindLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+GUIBindLabel.Font = Enum.Font.Gotham
+GUIBindLabel.TextSize = 13
+GUIBindLabel.BackgroundTransparency = 1
+
+local GUIBindBox = Instance.new("TextBox", BindContainer)
+GUIBindBox.Size = UDim2.new(0.35, 0, 0.4, 0)
+GUIBindBox.Position = UDim2.new(0.65, 0, 0, 0)
+GUIBindBox.Text = toggleGUIBind.Name
+GUIBindBox.TextColor3 = Color3.new(1, 1, 1)
+GUIBindBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+GUIBindBox.Font = Enum.Font.Code
+GUIBindBox.TextSize = 13
+GUIBindBox.ClearTextOnFocus = false
+
+-- Бинд: Вкл/выкл хитбокса
+local HitboxBindLabel = Instance.new("TextLabel", BindContainer)
+HitboxBindLabel.Size = UDim2.new(0.6, 0, 0.4, 0)
+HitboxBindLabel.Position = UDim2.new(0, 0, 0.5, 0)
+HitboxBindLabel.Text = "Вкл/выкл хитбокс:"
+HitboxBindLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+HitboxBindLabel.Font = Enum.Font.Gotham
+HitboxBindLabel.TextSize = 13
+HitboxBindLabel.BackgroundTransparency = 1
+
+local HitboxBindBox = Instance.new("TextBox", BindContainer)
+HitboxBindBox.Size = UDim2.new(0.35, 0, 0.4, 0)
+HitboxBindBox.Position = UDim2.new(0.65, 0, 0.5, 0)
+HitboxBindBox.Text = toggleHitboxBind.Name
+HitboxBindBox.TextColor3 = Color3.new(1, 1, 1)
+HitboxBindBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+HitboxBindBox.Font = Enum.Font.Code
+HitboxBindBox.TextSize = 13
+HitboxBindBox.ClearTextOnFocus = false
+
+-- === Логика GUI ===
+local function updateStatus()
+    StatusLabel.Text = "Статус: " .. (Disabled and "Выключен" or "Включён")
+    StatusLabel.TextColor3 = Disabled and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(0, 255, 0)
+    ToggleButton.Text = Disabled and "Включить" or "Выключить"
+    ToggleButton.BackgroundColor3 = Disabled and Color3.fromRGB(80, 0, 0) or Color3.fromRGB(0, 80, 0)
 end
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "TRASHNEVERDIE_GUI"
-gui.Parent = CoreGui
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = true
+updateStatus()
 
-local clickSound = Instance.new("Sound", SoundService)
-clickSound.SoundId = "rbxassetid://9118823105"
-clickSound.Volume = 1
-local function playClick() clickSound:Play() end
-
-local function addCorner(obj, r)
-    local c = Instance.new("UICorner", obj)
-    c.CornerRadius = UDim.new(0, r)
+-- === Цвет по команде ===
+local function getTeamColor(player)
+    if not player.Team then return Color3.fromRGB(0, 0, 255) end
+    if player.Team.Name == "Outlaws" then
+        return Color3.fromRGB(255, 0, 0) -- Красный
+    elseif player.Team.Name == "Cowboys" then
+        return Color3.fromRGB(0, 0, 255) -- Синий
+    else
+        return Color3.fromRGB(0, 0, 255) -- Синий
+    end
 end
 
-local main = Instance.new("Frame", gui)
-main.Size = UDim2.new(0, 450, 0, 450)
-main.Position = UDim2.new(0.5, -150, 0.5, -140)
-main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-main.BackgroundTransparency = 0.1
-main.BorderSizePixel = 0
-main.Active = true
-main.Draggable = true
-addCorner(main, 12)
+-- === Хранение оригинальных свойств ===
+local originalProperties = {}
 
-local title = Instance.new("TextLabel", main)
-title.Name = "TitleLabel"
-title.Size = UDim2.new(1, -40, 0, 40)
-title.Position = UDim2.new(0, 15, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "by @SFXCL"
-title.TextColor3 = Color3.new(1, 1, 1)
-title.TextScaled = true
-title.Font = Enum.Font.GothamBold
-
-local minimize = Instance.new("TextButton", main)
-minimize.Size = UDim2.new(0, 30, 0, 30)
-minimize.Position = UDim2.new(1, -35, 0, 5)
-minimize.BackgroundTransparency = 1
-minimize.Text = "X"
-minimize.TextColor3 = Color3.new(1, 1, 1)
-minimize.Font = Enum.Font.GothamBold
-minimize.TextScaled = true
-addCorner(minimize, 6)
-
-local toggled, funcs, btns = {}, {}, {}
-local minimizedState = false
-local names = {"GOD MODE", "INFINITY JUMP", "ESP", "SPEEDHACK", "NOCLIP", "KISGARA"} -- Полный список кнопок
-
-for i, name in ipairs(names) do
-    local btn = Instance.new("TextButton", main)
-    btn.Size = UDim2.new(1, -20, 0, 35)
-    btn.Position = UDim2.new(0, 10, 0, 60 + (i - 1) * 42)
-    btn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    btn.Text = name
-    btn.TextColor3 = Color3.new(1, 1, 1)
-    btn.TextScaled = true
-    btn.Font = Enum.Font.GothamBold
-    btn.BorderSizePixel = 0
-    addCorner(btn, 8)
-    toggled[name] = false
-    btn.MouseButton1Click:Connect(function()
-        playClick()
-        toggled[name] = not toggled[name]
-        btn.BackgroundColor3 = toggled[name] and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
-        if funcs[name] then funcs[name](toggled[name]) end
-    end)
-    btns[name] = btn
-end
-
-minimize.MouseButton1Click:Connect(function()
-    playClick()
-    minimizedState = not minimizedState
-    for _, b in pairs(btns) do b.Visible = not minimizedState end
-    main.Size = minimizedState and UDim2.new(0, 300, 0, 40) or UDim2.new(0, 300, 0, 280)
-end)
-
--- Функционал God Mode
-funcs["GOD MODE"] = function(s)
-    local hum = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.MaxHealth = math.huge
-        hum.Health = math.huge
-        if s then
-            hum.HealthChanged:Connect(function()
-                hum.Health = hum.MaxHealth
-            end)
+-- === Восстановление оригинальных хитбоксов ===
+local function restoreOriginal()
+    for player, data in pairs(originalProperties) do
+        local character = player.Character
+        if character then
+            local root = character:FindFirstChild("HumanoidRootPart")
+            if root and root:IsA("BasePart") then
+                root.Size = data.size
+                root.Transparency = data.transparency
+                root.BrickColor = data.brickColor
+                root.Material = data.material
+                root.CanCollide = data.canCollide
+            end
         end
     end
+    originalProperties = {}
 end
 
--- Функционал Infinity Jump
-funcs["INFINITY JUMP"] = function(s)
-    if s then
-        _G.JC = UserInputService.JumpRequest:Connect(function()
-            local h = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-            if h then h:ChangeState("Jumping") end
-        end)
-    elseif _G.JC then
-        _G.JC:Disconnect()
-    end
-end
-
--- Функционал ESP
-funcs["ESP"] = function(s)
-    if not s then return end
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer then
-            coroutine.wrap(function()
-                local char = plr.Character or plr.CharacterAdded:Wait()
-                local head = char:WaitForChild("Head")
-                local torso = char:FindFirstChild("HumanoidRootPart")
-                local nameT = Drawing.new("Text")
-                nameT.Center = true
-                nameT.Outline = true
-                nameT.Size = 14
-                nameT.Font = 2
-                local distT = Drawing.new("Text")
-                distT.Center = true
-                distT.Outline = true
-                distT.Size = 13
-                distT.Color = Color3.new(1, 0, 0)
-                local bone = Drawing.new("Skeleton")
-                bone.Color = Color3.new(1, 1, 1)
-                bone.Thickness = 2
-                RunService.RenderStepped:Connect(function()
-                    if not head:IsDescendantOf(workspace) then return end
-                    local cam = workspace.CurrentCamera
-                    local pos, vis = cam:WorldToViewportPoint(head.Position)
-                    local dist = (LocalPlayer.Character.Head.Position - head.Position).Magnitude
-                    if vis and dist <= 250 then
-                        nameT.Visible = true
-                        distT.Visible = true
-                        bone.Visible = true
-                        nameT.Text = plr.Name
-                        distT.Text = string.format("Distance: %d", dist)
-                        nameT.Position = Vector2.new(pos.X, pos.Y - 20)
-                        distT.Position = Vector2.new(pos.X, pos.Y)
-                        nameT.Color = Color3.fromHSV(tick() % 5 / 1, 0, 0)
-                        local h2 = cam:WorldToViewportPoint(head.Position)
-                        local t2 = cam:WorldToViewportPoint(torso.Position)
-                        bone.From = Vector2.new(t2.X, t2.Y)
-                        bone.To = Vector2.new(h2.X, h2.Y)
-                    else
-                        nameT.Visible = false
-                        distT.Visible = false
-                        bone.Visible = false
+-- Переключение хитбокса
+ToggleButton.MouseButton1Click:Connect(function()
+    Disabled = not Disabled
+    if Disabled then
+        restoreOriginal()
+    else
+        -- ✅ При включении — пересоздаём оригинальные свойства с актуальным размером
+        for _, player in ipairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer then
+                local character = player.Character
+                if character then
+                    local rootPart = character:FindFirstChild("HumanoidRootPart")
+                    if rootPart and rootPart:IsA("BasePart") then
+                        originalProperties[player] = {
+                            size = rootPart.Size,
+                            transparency = rootPart.Transparency,
+                            brickColor = rootPart.BrickColor,
+                            material = rootPart.Material,
+                            canCollide = rootPart.CanCollide
+                        }
                     end
-                end)
-            end)()
-        end
-    end
-end
-
--- Функционал Speedhack
-funcs["SPEEDHACK"] = function(s)
-    local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.WalkSpeed = s and 30 or 16 -- Изменяем скорость ходьбы
-    end
-end
-
-local noclipConn
-funcs["NOCLIP"] = function(s)
-	if s then
-		noclipConn = RunService.Stepped:Connect(function()
-			for _, part in ipairs(LocalPlayer.Character:GetDescendants()) do
-				if part:IsA("BasePart") then
-					part.CanCollide = false
-				end
-			end
-		end)
-	elseif noclipConn then
-		noclipConn:Disconnect()
-	end
-end
-
--- Функционал Kisgara
-funcs["KISGARA"] = function(s)
-        local fire = Workspace:FindFirstChild("Fire") -- Adjust to actual fire name
-        if fire and fire.PrimaryPart then
-            for _, obj in pairs(Workspace.Items:GetChildren()) do
-                if obj:IsA("Model") and (obj.Name == "Petrol" or obj.Name == "Gas Can" or obj.Name == "Coal" or obj.Name == "Log" or obj.Name:match("Corpse")) and obj.PrimaryPart then
-                    obj.PrimaryPart.CFrame = fire.PrimaryPart.CFrame
-                    DragItem(obj)
                 end
             end
         end
     end
+    updateStatus()
+end)
+
+-- Крестик — выгрузка скрипта
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+    restoreOriginal()
+end)
+
+-- ✅ Ввод размера — обновляем HeadSize сразу
+SizeBox.FocusLost:Connect(function(enterPressed)
+    if not enterPressed then return end
+    local val = tonumber(SizeBox.Text)
+    if val and val >= 1 and val <= 50 then
+        HeadSize = val
+        SizeBox.Text = tostring(val)
+        -- ✅ Если включено — сразу обновляем хитбоксы с новым размером
+        if not Disabled then
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    local character = player.Character
+                    if character then
+                        local rootPart = character:FindFirstChild("HumanoidRootPart")
+                        if rootPart and rootPart:IsA("BasePart") then
+                            pcall(function()
+                                rootPart.Size = Vector3.new(HeadSize, HeadSize, HeadSize)
+                                rootPart.Transparency = 0.7
+                                rootPart.BrickColor = BrickColor.new("Medium stone grey")
+                                rootPart.Material = "Neon"
+                                rootPart.CanCollide = false
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+    else
+        SizeBox.Text = tostring(HeadSize)
+    end
+end)
+
+-- Сохранение биндов
+GUIBindBox.FocusLost:Connect(function(enterPressed)
+    if not enterPressed then return end
+    local key = GUIBindBox.Text:upper()
+    local keyCode = Enum.KeyCode[key]
+    if keyCode then
+        toggleGUIBind = keyCode
+        GUIBindBox.Text = key
+    else
+        GUIBindBox.Text = toggleGUIBind.Name
+    end
+end)
+
+HitboxBindBox.FocusLost:Connect(function(enterPressed)
+    if not enterPressed then return end
+    local key = HitboxBindBox.Text:upper()
+    local keyCode = Enum.KeyCode[key]
+    if keyCode then
+        toggleHitboxBind = keyCode
+        HitboxBindBox.Text = key
+    else
+        HitboxBindBox.Text = toggleHitboxBind.Name
+    end
+end)
+
+-- Управление по биндам
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+
+    if input.KeyCode == toggleGUIBind then
+        Frame.Visible = not Frame.Visible
+    end
+
+    if input.KeyCode == toggleHitboxBind then
+        Disabled = not Disabled
+        if Disabled then
+            restoreOriginal()
+        else
+            -- ✅ При включении по бинду — пересохраняем оригиналы и применяем новый размер
+            for _, player in ipairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    local character = player.Character
+                    if character then
+                        local rootPart = character:FindFirstChild("HumanoidRootPart")
+                        if rootPart and rootPart:IsA("BasePart") then
+                            originalProperties[player] = {
+                                size = rootPart.Size,
+                                transparency = rootPart.Transparency,
+                                brickColor = rootPart.BrickColor,
+                                material = rootPart.Material,
+                                canCollide = rootPart.CanCollide
+                            }
+                            -- ✅ Применяем новый размер сразу
+                            pcall(function()
+                                rootPart.Size = Vector3.new(HeadSize, HeadSize, HeadSize)
+                                rootPart.Transparency = 0.7
+                                rootPart.BrickColor = BrickColor.new("Medium stone grey")
+                                rootPart.Material = "Neon"
+                                rootPart.CanCollide = false
+                            end)
+                        end
+                    end
+                end
+            end
+        end
+        updateStatus()
+    end
+end)
+
+-- === Основной цикл — хитбоксы ===
+game:GetService("RunService").Heartbeat:Connect(function()
+    if Disabled then return end
+
+    for _, player in ipairs(Players:GetPlayers()) do
+        if player == LocalPlayer then continue end
+
+        local character = player.Character
+        if not character then continue end
+
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+        if not humanoid or humanoid.Health <= 0 then continue end
+
+        local rootPart = character:FindFirstChild("HumanoidRootPart")
+        if not rootPart or not rootPart:IsA("BasePart") then continue end
+
+        -- ✅ Всегда сохраняем оригинальные свойства при первом входе
+        if not originalProperties[player] then
+            originalProperties[player] = {
+                size = rootPart.Size,
+                transparency = rootPart.Transparency,
+                brickColor = rootPart.BrickColor,
+                material = rootPart.Material,
+                canCollide = rootPart.CanCollide
+            }
+        end
+
+        -- ✅ Применяем хитбокс с актуальным размером
+        local teamColor = getTeamColor(player)
+        pcall(function()
+            rootPart.Size = Vector3.new(HeadSize, HeadSize, HeadSize)
+            rootPart.Transparency = 0.7
+            rootPart.BrickColor = BrickColor.new("Medium stone grey")
+            rootPart.Material = "Neon"
+            rootPart.CanCollide = false
+        end)
+    end
+end)
+
+-- === При смерти / респе — сброс ===
+LocalPlayer.CharacterAdded:Connect(function()
+    if Disabled then return end
+    wait(0.5)
+    restoreOriginal()
+end)
+
+-- === При выходе из игры ===
+game:BindToClose(function()
+    Disabled = true
+    restoreOriginal()
+end)
