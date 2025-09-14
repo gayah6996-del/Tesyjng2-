@@ -1,332 +1,420 @@
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local GameName = ""
 
-local TweenService, UIS, rs = game:GetService("TweenService"), game:GetService("UserInputService"), game:GetService("RunService")
-local player = game:GetService("Players").LocalPlayer
-
--- Theme Setup
-local Theme = {
-    Background = Color3.fromRGB(15, 15, 15),
-    Button = Color3.fromRGB(30, 30, 30),
-    Text = Color3.fromRGB(255, 255, 255)
+local GameIds = {
+    [6137321701] = "Blair (Lobby)",
+    [6348640020] = "Blair",
+    [18199615050] = "Demonology [Lobby]",
+    [18794863104] = "Demonology [Game]",
+    [8260276694] = "Ability Wars",
+    [126884695634066] = "Grow A Garden [BETA]",
+    [14518422161] = "Gunfight Arena [BETA]",
+    [8267733039] = "Specter [Lobby]",
+    [8417221956] = "Specter [GAME]",
+    [79546208627805] = "99 Night in the forest [LOBBY]",
+    [126509999114328] = "99 Night in the forest [GAME]",
+    [111989938562194] = "Brainrot Evolution",
+    [137925884276740] = "Build A Plane",
+    [121864768012064] = "Fish It",
 }
 
--- Main UI
-local ScreenGui = Instance.new("ScreenGui", player:WaitForChild("PlayerGui"))
-local MainFrame = Instance.new("Frame", ScreenGui)
-MainFrame.Size = UDim2.new(0, 350, 0, 230)
-MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Theme.Background
+GameName = GameIds[game.PlaceId] or "Universal"
 
--- Draggable GUI for PC and Mobile
-local dragToggle = false
-local dragStart = nil
-local startPos = nil
-local dragInput = nil
+local KeyModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/Chavels123/Newloader/refs/heads/main/KeymodulesBeta.lua"))()
 
-MainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragToggle = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-    end
-end)
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-MainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
+print("Key system initialized!")
 
-MainFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragToggle = false
-    end
-end)
-
-game:GetService("UserInputService").InputChanged:Connect(function(input)
-    if dragToggle and input == dragInput then
-        local delta = input.Position - dragStart
-        MainFrame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
-    end
-end)
-
-
--- Rainbow Outline for Main Frame
-local frameOutline = Instance.new("UIStroke")
-frameOutline.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-frameOutline.Thickness = 3
-frameOutline.Parent = MainFrame
-local hue = 0
-rs.RenderStepped:Connect(function()
-    hue = (hue + 0.005) % 1
-    frameOutline.Color = Color3.fromHSV(hue, 1, 1)
-end)
-Instance.new("UICorner", MainFrame).CornerRadius = UDim.new(0, 8)
-
-local Title = Instance.new("TextLabel", MainFrame)
-Title.Text, Title.Size, Title.Position = "RINGTA SCRIPTS", UDim2.new(1, -20, 0, 20), UDim2.new(0, 10, 0, 5)
-Title.BackgroundTransparency, Title.TextColor3, Title.Font, Title.TextSize = 1, Theme.Text, Enum.Font.GothamBold, 14
-
--- Tabs Frame
-local TabsFrame = Instance.new("Frame", MainFrame)
-TabsFrame.Size = UDim2.new(0, 100, 1, -40)
-TabsFrame.Position = UDim2.new(0, 10, 0, 30)
-TabsFrame.BackgroundColor3 = Theme.Button
-Instance.new("UICorner", TabsFrame).CornerRadius = UDim.new(0, 6)
-
--- Tab Buttons
-local Tabs = {}
-local TabContentFrame = Instance.new("Frame", MainFrame)
-TabContentFrame.Size = UDim2.new(1, -120, 1, -40)
-TabContentFrame.Position = UDim2.new(0, 110, 0, 30)
-TabContentFrame.BackgroundColor3 = Theme.Background
-TabContentFrame.ClipsDescendants = true
-Instance.new("UICorner", TabContentFrame).CornerRadius = UDim.new(0, 6)
-
-local function CreateTab(tabName)
-    local TabButton = Instance.new("TextButton", TabsFrame)
-    TabButton.Text, TabButton.Size, TabButton.Position = tabName, UDim2.new(1, -10, 0, 30), UDim2.new(0, 5, 0, (#Tabs * 35))
-    TabButton.BackgroundColor3, TabButton.TextColor3 = Theme.Button, Theme.Text
-    Instance.new("UICorner", TabButton).CornerRadius = UDim.new(0, 6)
-    
-    local TabFrame = Instance.new("Frame", TabContentFrame)
-    TabFrame.Size = UDim2.new(1, 0, 1, 0)
-    TabFrame.Visible = (#Tabs == 0) -- Default to showing the first tab
-    table.insert(Tabs, TabFrame)
-    
-    TabButton.MouseButton1Click:Connect(function()
-        for _, frame in pairs(Tabs) do
-            frame.Visible = false
+local function checkSavedKey()
+    local success, keyData = pcall(function()
+        if isfile("KeyText.txt") then
+            return readfile("KeyText.txt")
         end
-        TabFrame.Visible = true
+        return nil
     end)
-    return TabFrame
-end
-
--- Button Template
-local function CreateButton(parent, text, callback, position)
-    local Button = Instance.new("TextButton", parent)
-    Button.Text, Button.Size, Button.Position = text, UDim2.new(0.8, 0, 0.12, 0), position
-    Button.BackgroundColor3, Button.TextColor3 = Theme.Button, Theme.Text
-    Instance.new("UICorner", Button).CornerRadius = UDim.new(0, 6)
-
-    -- Button Hover Effects
-    Button.MouseEnter:Connect(function()
-        Button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    end)
-    Button.MouseLeave:Connect(function()
-        Button.BackgroundColor3 = Theme.Button
-    end)
-
-    Button.MouseButton1Click:Connect(callback)
-end
-
--- Main Tab for Teleports
-local MainTab = CreateTab("Main")
-
-CreateButton(MainTab, "Fly", function()
-    loadstring(game:HttpGet('https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua'))()
-end, UDim2.new(0.1, 0, 0.2, 0))
-
-
--- Gun Kill Aura Toggle with Shading
-local gunKillAuraActive = false -- Keeps track of the current state
-
--- Gun Kill Aura Button
-local GunKillAuraButton = Instance.new("TextButton", OtherTab)
-GunKillAuraButton.Text, GunKillAuraButton.Size, GunKillAuraButton.Position = "Gun Aura (Kill Mobs): OFF", UDim2.new(0.8, 0, 0.12, 0), UDim2.new(0.1, 0, 0.34, 0)
-GunKillAuraButton.BackgroundColor3, GunKillAuraButton.TextColor3 = Color3.fromRGB(30, 30, 30), Theme.Text -- Default OFF color
-Instance.new("UICorner", GunKillAuraButton).CornerRadius = UDim.new(0, 6)
-
--- Button Hover Effects
-GunKillAuraButton.MouseEnter:Connect(function()
-    GunKillAuraButton.BackgroundColor3 = gunKillAuraActive and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(40, 40, 40)
-end)
-GunKillAuraButton.MouseLeave:Connect(function()
-    GunKillAuraButton.BackgroundColor3 = gunKillAuraActive and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(30, 30, 30)
-end)
-
--- Toggle Functionality
-GunKillAuraButton.MouseButton1Click:Connect(function()
-    gunKillAuraActive = not gunKillAuraActive -- Toggle the active state
-
-    if gunKillAuraActive then
-        GunKillAuraButton.Text = "Gun Aura (Kill Mobs): ON"
-        GunKillAuraButton.BackgroundColor3 = Color3.fromRGB(50, 205, 50) -- Green for ON state
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ringtaa/Aimbot.github.io/refs/heads/main/Kill.lua"))()
+    
+    if success and keyData then
+        return keyData
     else
-        GunKillAuraButton.Text = "Gun Aura (Kill Mobs): OFF"
-        GunKillAuraButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Gray for OFF state
-        -- Add logic to disable "Gun Kill Aura" if needed
+        return nil
     end
-end)
+end
 
+local function saveKeyToFile(key)
+    local success, err = pcall(function()
+        writefile("KeyText.txt", key)
+    end)
+    
+    if not success then
+        warn("Failed to save key: " .. tostring(err))
+    end
+end
 
--- Noclip ON Button
-local NoclipOnButton = Instance.new("TextButton", OtherTab)
-NoclipOnButton.Text, NoclipOnButton.Size, NoclipOnButton.Position = "Noclip: ON", UDim2.new(0.8, 0, 0.12, 0), UDim2.new(0.1, 0, 0.48, 0)
-NoclipOnButton.BackgroundColor3, NoclipOnButton.TextColor3 = Color3.fromRGB(30, 30, 30), Theme.Text
-Instance.new("UICorner", NoclipOnButton).CornerRadius = UDim.new(0, 6)
+local function delkey()
+    if isfile("KeyText.txt") then
+        pcall(function()
+            delfile("KeyText.txt")
+        end)
+    end
+end
 
--- Noclip OFF Button
-local NoclipOffButton = Instance.new("TextButton", OtherTab)
-NoclipOffButton.Text, NoclipOffButton.Size, NoclipOffButton.Position = "Noclip: OFF", UDim2.new(0.8, 0, 0.12, 0), UDim2.new(0.1, 0, 0.62, 0)
-NoclipOffButton.BackgroundColor3, NoclipOffButton.TextColor3 = Color3.fromRGB(30, 30, 30), Theme.Text
-Instance.new("UICorner", NoclipOffButton).CornerRadius = UDim.new(0, 6)
+local Window = Rayfield:CreateWindow({
+    Name = "PulseHub - " .. GameName,
+    Icon = 0,
+    LoadingTitle = "PulseHub Keysystem",
+    LoadingSubtitle = "by PulseHub Team",
+    Theme = "Default",
+    
+    ToggleUIKeybind = "K",
+    
+    DisableRayfieldPrompts = false,
+    DisableBuildWarnings = false,
+    
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "PulseHub",
+        FileName = "PulseHub_Config"
+    },
+    
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    
+    KeySystem = false,
+    KeySettings = {
+        Title = "PulseHub Key System",
+        Subtitle = "Enter your key to continue",
+        Note = "Get your key from the link provided",
+        FileName = "PulseHub_Key",
+        SaveKey = true,
+        GrabKeyFromSite = false,
+        Key = {""}
+    }
+})
 
-local noclipConnection -- To store the active loop for noclip
+local KeySystemTab = Window:CreateTab("Key System", "key")
+local InfoTab = Window:CreateTab("Info", "info")
 
--- Function to enable noclip
-local function enableNoclip()
-    if noclipConnection then return end -- Prevent multiple connections
-    noclipConnection = game:GetService("RunService").Stepped:Connect(function()
-        if player.Character then
-            for _, part in pairs(player.Character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false -- Disable collisions
+local keyInputValue = ""
+local isKeyValid = false
+
+local isManualLoadGame = (game.PlaceId == 6137321701) or (game.PlaceId == 6348640020) or (game.PlaceId == 111989938562194) or (game.PlaceId == 126509999114328) or (game.PlaceId == 79546208627805)
+if isManualLoadGame then
+    local VersionSection = KeySystemTab:CreateSection("Version")
+    local VersionIdsByPlaceId = {
+        [6137321701] = { Stable = "fa4e49b11535d5a034b51e9bfd716abf", Beta = "b79c79c96e9c304d48008efe659813bd" },
+        [6348640020] = { Stable = "fa4e49b11535d5a034b51e9bfd716abf", Beta = "b79c79c96e9c304d48008efe659813bd" },
+        [111989938562194] = { Stable = "2653400a353d057c2bb96eb410da97a9", Beta = "7718627eedfb9ceab9f44e63401010e4" },
+        [126509999114328] = { Stable = "0bc73c28f738300dbd3d4b99e5daf4f3", Beta = "e3e0c2382cb62a436040f422e0d7d428" },
+        [79546208627805] = { Stable = "0bc73c28f738300dbd3d4b99e5daf4f3", Beta = "e3e0c2382cb62a436040f422e0d7d428" },
+    }
+    local VersionDropdown = KeySystemTab:CreateDropdown({
+        Name = "Select Version",
+        Options = {"Stable Version","BETA Version"},
+        CurrentOption = {"Stable Version"},
+        MultipleOptions = false,
+        Flag = "PulseHub_Version",
+        Callback = function(Options)
+            local selection = Options and Options[1]
+            local versions = VersionIdsByPlaceId[game.PlaceId]
+            if selection == "Stable Version" then
+                if versions and versions.Stable then
+                    KeyModule.ScriptID = versions.Stable
+                    pcall(function() KeyModule._api = nil end)
                 end
+                Rayfield:Notify({
+                    Title = "Version",
+                    Content = "Stable version selected",
+                    Duration = 3,
+                    Image = "check-circle",
+                })
+            elseif selection == "BETA Version" then
+                if versions and versions.Beta then
+                    KeyModule.ScriptID = versions.Beta
+                    pcall(function() KeyModule._api = nil end)
+                end
+                Rayfield:Notify({
+                    Title = "Version",
+                    Content = "BETA version selected",
+                    Duration = 3,
+                    Image = "check-circle",
+                })
+            end
+        end,
+    })
+
+    local LoadButton = KeySystemTab:CreateButton({
+        Name = "Load Selected Version",
+        Callback = function()
+            if not isKeyValid then
+                Rayfield:Notify({
+                    Title = "Action Required",
+                    Content = "Validate your key first",
+                    Duration = 3,
+                    Image = "alert-circle",
+                })
+                return
+            end
+            local ok = pcall(function()
+                getgenv().script_key = keyInputValue
+                local scriptId = KeyModule.ScriptID
+                local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+                api.script_id = scriptId
+                api.load_script()
+            end)
+            if ok then
+                Rayfield:Destroy()
+            else
+                Rayfield:Notify({
+                    Title = "Load Failed",
+                    Content = "Unable to load the selected version",
+                    Duration = 4,
+                    Image = "x-circle",
+                })
+            end
+        end,
+    })
+end
+
+local KeySection = KeySystemTab:CreateSection("Key Validation")
+
+local KeyInput = KeySystemTab:CreateInput({
+    Name = "Enter Key",
+    CurrentValue = "",
+    PlaceholderText = "Enter your key here...",
+    RemoveTextAfterFocusLost = false,
+    Flag = "KeyInput",
+    Callback = function(Text)
+        keyInputValue = Text
+    end,
+})
+
+local ValidateButton = KeySystemTab:CreateButton({
+    Name = "Validate Key",
+    Callback = function()
+        if not keyInputValue or keyInputValue == "" then
+            Rayfield:Notify({
+                Title = "Error",
+                Content = "Please enter a key first!",
+                Duration = 3,
+                Image = "alert-circle",
+            })
+            return
+        end
+        
+        Rayfield:Notify({
+            Title = "Validating",
+            Content = "Checking your key...",
+            Duration = 2,
+            Image = "clock",
+        })
+        
+        KeyModule.MainWindow = Window
+        KeyModule.Notify = function(notifyData)
+            if notifyData.Title == "Success" then
+                isKeyValid = true
+                Rayfield:Notify({
+                    Title = "Success",
+                    Content = notifyData.Content,
+                    Duration = 5,
+                    Image = "check-circle",
+                })
+                
+                saveKeyToFile(keyInputValue)
+                
+                if not isManualLoadGame then
+                    task.wait(2)
+                    print("Loading script directly...")
+                    getgenv().script_key = keyInputValue
+                    local scriptId = KeyModule.ScriptID
+                    pcall(function()
+                        local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+                        api.script_id = scriptId
+                        print("Using script ID:", scriptId)
+                        print("Using key:", string.sub(keyInputValue, 1, 5) .. "...")
+                        api.load_script()
+                        print("Script loaded successfully!")
+                    end)
+                    task.wait(2)
+                    Rayfield:Destroy()
+                else
+                    Rayfield:Notify({
+                        Title = "Ready",
+                        Content = "Key validated. Choose a version and press Load",
+                        Duration = 5,
+                        Image = "info",
+                    })
+                end
+            else
+                Rayfield:Notify({
+                    Title = "Error",
+                    Content = notifyData.Content,
+                    Duration = 5,
+                    Image = "x-circle",
+                })
             end
         end
-    end)
-end
+        
+        KeyModule.CheckKey(keyInputValue)
+    end,
+})
 
--- Function to disable noclip
-local function disableNoclip()
-    if noclipConnection then
-        noclipConnection:Disconnect() -- Stop the loop
-        noclipConnection = nil
-    end
-    if player.Character then
-        for _, part in pairs(player.Character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = true -- Enable collisions
+KeySystemTab:CreateDivider()
+
+local GetKeySection = KeySystemTab:CreateSection("Get Key Options")
+
+local GetKeyLinkvertiseButton = KeySystemTab:CreateButton({
+    Name = "Get Key (Linkvertise)",
+    Callback = function()
+        Rayfield:Notify({
+            Title = "Generating Link",
+            Content = "Creating key link via Linkvertise...",
+            Duration = 2,
+            Image = "link",
+        })
+        
+        task.wait(0.5)
+        
+        local keyLink = "https://ads.luarmor.net/get_key?for=Pulse_Hub_Checkpoint-TxLYDUUMfNao"
+        setclipboard(keyLink)
+        
+        Rayfield:Notify({
+            Title = "Linkvertise Link Copied",
+            Content = "Linkvertise key link has been copied to your clipboard!",
+            Duration = 5,
+            Image = "clipboard",
+        })
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "PulseHub - Linkvertise",
+            Text = "Linkvertise key link has been copied to your clipboard!",
+            Duration = 5
+        })
+    end,
+})
+
+local GetKeyLootlabsButton = KeySystemTab:CreateButton({
+    Name = "Get Key (Wat)",
+    Callback = function()
+        local playerName = Players.LocalPlayer.DisplayName or Players.LocalPlayer.Name
+        
+        Rayfield:Notify({
+            Title = "Lootlabs Unavailable",
+            Content = "Hello " .. playerName .. "! Thanks for selecting Wat, but it's currently unavailable. We'll be implementing Wat support soon! Thanks for your patience.",
+            Duration = 8,
+            Image = "construction",
+        })
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "PulseHub - Wat",
+            Text = "Hello " .. playerName .. "! Wat is coming soon. Please use Linkvertise for now.",
+            Duration = 6
+        })
+    end,
+})
+
+local StatusSection = KeySystemTab:CreateSection("Status")
+
+local StatusLabel = KeySystemTab:CreateLabel("Status: Ready", "activity")
+
+local GameInfoSection = KeySystemTab:CreateSection("Game Information")
+
+local GameLabel = KeySystemTab:CreateLabel("Detected Game: " .. GameName, "gamepad-2")
+
+local InfoSection = InfoTab:CreateSection("Information")
+
+local MaintenanceLabel = InfoTab:CreateLabel("Under Maintenance", "wrench")
+
+local MaintenanceParagraph = InfoTab:CreateParagraph({
+    Title = "Maintenance Notice",
+    Content = "This section is currently under maintenance. Please check back later for updates and information about PulseHub."
+})
+
+local savedKey = checkSavedKey()
+if savedKey then
+    KeyInput:Set(savedKey)
+    keyInputValue = savedKey
+    StatusLabel:Set("Status: Validating saved key...", "clock")
+    
+    Rayfield:Notify({
+        Title = "Saved Key Found",
+        Content = "Validating saved key automatically...",
+        Duration = 3,
+        Image = "key",
+    })
+    
+    KeyModule.MainWindow = Window
+    KeyModule.Notify = function(notifyData)
+        if notifyData.Title == "Success" then
+            StatusLabel:Set("Status: Saved key validated successfully!", "check-circle")
+            Rayfield:Notify({
+                Title = "Success",
+                Content = "Saved key is valid! " .. notifyData.Content,
+                Duration = 5,
+                Image = "check-circle",
+            })
+            if not isManualLoadGame then
+                task.wait(2.5)
+                Rayfield:Destroy()
+                task.wait(2)
+                print("Loading script directly...")
+                getgenv().script_key = savedKey
+                local scriptId = KeyModule.ScriptID
+                pcall(function()
+                    local api = loadstring(game:HttpGet("https://sdkapi-public.luarmor.net/library.lua"))()
+                    api.script_id = scriptId
+                    print("Using script ID:", scriptId)
+                    print("Using key:", string.sub(savedKey, 1, 5) .. "...")
+                    api.load_script()
+                    print("Script loaded successfully!")
+                end)
+            else
+                isKeyValid = true
+                StatusLabel:Set("Status: Key validated. Choose version and press Load.", "info")
+                Rayfield:Notify({
+                    Title = "Ready",
+                    Content = "Key validated. Choose a version and press Load",
+                    Duration = 5,
+                    Image = "info",
+                })
             end
+        else
+            delkey()
+            KeyInput:Set("")
+            keyInputValue = ""
+            StatusLabel:Set("Status: Saved key invalid - deleted. Please enter a new key.", "x-circle")
+            Rayfield:Notify({
+                Title = "Invalid Key",
+                Content = "Saved key was invalid and has been deleted. Please enter a new key.",
+                Duration = 5,
+                Image = "x-circle",
+            })
         end
     end
+    
+    KeyModule.CheckKey(savedKey)
 end
 
--- Button Functionality for Noclip ON
-NoclipOnButton.MouseButton1Click:Connect(function()
-    enableNoclip()
-    NoclipOnButton.BackgroundColor3 = Color3.fromRGB(50, 205, 50) -- Green for visual feedback
-    NoclipOffButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Reset OFF button color
-end)
-
--- Button Functionality for Noclip OFF
-NoclipOffButton.MouseButton1Click:Connect(function()
-    disableNoclip()
-    NoclipOnButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Reset ON button color
-    NoclipOffButton.BackgroundColor3 = Color3.fromRGB(205, 50, 50) -- Red for visual feedback
-end)
-
-
--- Anti-Void Button
-local antiVoidActive = false -- Keeps track of whether Anti-Void is active
-local antiVoidConnection -- Stores the connection for the loop
-
-local AntiVoidButton = Instance.new("TextButton", OtherTab)
-AntiVoidButton.Text, AntiVoidButton.Size, AntiVoidButton.Position = "Anti-Void: OFF", UDim2.new(0.8, 0, 0.12, 0), UDim2.new(0.1, 0, 0.76, 0)
-AntiVoidButton.BackgroundColor3, AntiVoidButton.TextColor3 = Color3.fromRGB(30, 30, 30), Theme.Text
-Instance.new("UICorner", AntiVoidButton).CornerRadius = UDim.new(0, 6)
-
--- Button Hover Effects
-AntiVoidButton.MouseEnter:Connect(function()
-    AntiVoidButton.BackgroundColor3 = antiVoidActive and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(40, 40, 40)
-end)
-AntiVoidButton.MouseLeave:Connect(function()
-    AntiVoidButton.BackgroundColor3 = antiVoidActive and Color3.fromRGB(50, 205, 50) or Color3.fromRGB(30, 30, 30)
-end)
-
-local function startAntiVoid()
-    antiVoidConnection = game:GetService("RunService").Stepped:Connect(function()
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            local rootPart = player.Character.HumanoidRootPart
-            if rootPart.Position.Y < -1 then -- Check if the player is below y = -1
-                rootPart.CFrame = CFrame.new(70, 5, 30000) -- Teleports directly to coordinates
-            end
+local KeySystem = {
+    ValidateKey = function(key)
+        keyInputValue = key
+        if KeyModule.CheckKey then
+            return KeyModule.CheckKey(key)
         end
-    end)
-end
+        return false
+    end,
+    Close = function()
+        Rayfield:Destroy()
+    end,
+    Window = Window,
+    KeyModule = KeyModule
+}
 
-
-local function stopAntiVoid()
-    if antiVoidConnection then
-        antiVoidConnection:Disconnect() -- Stop monitoring position
-        antiVoidConnection = nil
-    end
-end
-
--- Button Functionality
-AntiVoidButton.MouseButton1Click:Connect(function()
-    antiVoidActive = not antiVoidActive -- Toggle the active state
-
-    if antiVoidActive then
-        AntiVoidButton.Text = "Anti-Void: ON"
-        AntiVoidButton.BackgroundColor3 = Color3.fromRGB(50, 205, 50) -- Green for ON state
-        startAntiVoid() -- Start monitoring position
-    else
-        AntiVoidButton.Text = "Anti-Void: OFF"
-        AntiVoidButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Gray for OFF state
-        stopAntiVoid() -- Stop monitoring position
-    end
-end)
-
-
-
-
--- Towns Tab for Town Teleports
-local TownsTab = CreateTab("Misc")
-
-CreateButton(TownsTab, "Town 1", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/NoClip.Lua"))()
-end, UDim2.new(0.1, 0, 0.2, 0))
-
-
-
--- Minimize Button
-local MinimizeButton = Instance.new("TextButton", MainFrame)
-MinimizeButton.Text, MinimizeButton.Size, MinimizeButton.Position = "-", UDim2.new(0, 20, 0, 20), UDim2.new(1, -25, 0, 5)
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Changed to bright green for better visibility
-MinimizeButton.TextColor3 = Theme.Text
-Instance.new("UICorner", MinimizeButton).CornerRadius = UDim.new(0, 6)
-
--- Reopen Button (Hidden When UI is Minimized)
-local ReopenButton = Instance.new("TextButton", ScreenGui)
-ReopenButton.Text, ReopenButton.Size, ReopenButton.Position = "Open RINGTA SCRIPTS", UDim2.new(0, 150, 0, 30), UDim2.new(0.5, 0, 0, -22)
-ReopenButton.AnchorPoint, ReopenButton.Visible = Vector2.new(0.5, 0), false
-ReopenButton.BackgroundColor3, ReopenButton.TextColor3 = Theme.Button, Theme.Text
-Instance.new("UICorner", ReopenButton).CornerRadius = UDim.new(0, 6)
-
-local isMinimized = false
-
--- Minimize Functionality
-MinimizeButton.MouseButton1Click:Connect(function()
-    if not isMinimized then -- Only minimize if not already minimized
-        isMinimized = true
-        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0.5, 0, -0.7, 0),
-            Size = UDim2.new(0, 250, 0, 50)
-        }):Play()
-        wait(0.3)
-        MainFrame.Visible = false
-        ReopenButton.Visible = true
-    end
-end)
-
--- Reopen Functionality
-ReopenButton.MouseButton1Click:Connect(function()
-    if isMinimized then -- Only reopen if currently minimized
-        isMinimized = false
-        ReopenButton.Visible = false
-        MainFrame.Visible = true
-        TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-            Position = UDim2.new(0.5, 0, 0.5, 0),
-            Size = UDim2.new(0, 350, 0, 230)
-        }):Play()
-    end
-end)
+return KeySystem
