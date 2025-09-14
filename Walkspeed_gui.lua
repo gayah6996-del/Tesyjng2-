@@ -1,5 +1,5 @@
 local player = game.Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")local character = player.Character or player.CharacterAdded:Wait()local userInputService = game:GetService("UserInputService")-- Укажите здесь местоположение костра
+local playerGui = player:WaitForChild("PlayerGui")local userInputService = game:GetService("UserInputService")-- Укажите здесь местоположение костра
 local campfirePosition = Vector3.new(0, 0, 0) -- Замените на реальные координаты костра
 
 -- Создаем GUI
@@ -10,9 +10,14 @@ openChestsButton.Size = UDim2.new(0, 200, 0, 50)openChestsButton.Position = UDim
 
 -- Функция для открытия всех сундуков
 local function openAllChests()    for_, chest in pairs(workspace:GetChildren()) do
-        if chest:IsA("Model") and chest:FindFirstChild("Open") then -- Предполагаем, что есть часть или метод для открытия сундука
-            chest:FindFirstChild("Open"):Fire() -- Вызываем функцию открытия сундука
+        if chest:IsA("Model") and chest:FindFirstChild("Open") then
+            -- Предполагаем, что у сундука есть объект"Open", который нужно вызвать
+            local openFunction = chest:FindFirstChild("Open")            if openFunction:IsA("RemoteEvent") then
+                openFunction:Fire() -- Вызов функции открытия сундука
+            end
+            
             wait(0.5) -- Небольшая задержка, чтобы не перегружать игру
+            
             for_, item in pairs(chest:GetChildren()) do
                 if item:IsA("BasePart") then
                     -- Перемещаем содержимое на костер
@@ -23,8 +28,8 @@ local function openAllChests()    for_, chest in pairs(workspace:GetChildren()) 
             end
         end
     end
-end)
+end
 
 -- Привязываем функцию к нажатию кнопки
-openChestsButton.MouseButton1Click:Connect(function() openAllChests()
+openChestsButton.MouseButton1Click:Connect(function()    openAllChests() -- Вызываем функцию открытия сундуков
 end)
