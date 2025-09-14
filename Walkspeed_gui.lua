@@ -1,7 +1,7 @@
 local player = game.Players.LocalPlayer
 local jumpEnabled = false
 local speedEnabled = false
-local menuOpen = true -- To keep track of the menu state
+local menuOpen = false -- To keep track of the menu state
 
 -- Create the ScreenGui
 local screenGui = Instance.new("ScreenGui", player.PlayerGui)screenGui.Name ="@SFXCL"-- Create the button to open/close the menu
