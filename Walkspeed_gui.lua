@@ -310,7 +310,7 @@ do
         Title = "Запустить",
         Description = "Телеграм @SFXCL",
         Callback = function()
-            loadstring(game:HttpGet('https://raw.githubusercontent.com/ZexusBerry/BerryHub/main/ZexusKing/1JumpEverySecond.lua'))()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Tower%20Of%20Hell.lua'))()
         end
     })
  
