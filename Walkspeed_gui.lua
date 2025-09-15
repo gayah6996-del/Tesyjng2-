@@ -1,14 +1,12 @@
 local player = game.Players.LocalPlayer
 local jumpEnabled = false
 local speedEnabled = false
-local espEnabled = false
 local menuOpen = false -- To keep track of the menu state
-local espObjects = {} -- Table to keep track of ESP parts
 
 -- Create the ScreenGui
 local screenGui = Instance.new("ScreenGui", player.PlayerGui)screenGui.Name ="@SFXCL"-- Create the button to open/close the menu
-local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 50, 0, 50)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -105) -- Подняли кнопку выше
-toggleButton.Text ="Menu"toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Blue color
+local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 50, 0, 50)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="Menu" -- Change to"Menu" for clarity
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Blue color
 
 -- Create the jump button
 local jumpButton = Instance.new("TextButton", screenGui)jumpButton.Size = UDim2.new(0, 200, 0, 50)jumpButton.Position = UDim2.new(0.5, -100, 0.5, -30)jumpButton.Text ="Toggle Infinity Jump"jumpButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
@@ -18,9 +16,8 @@ jumpButton.Visible = false -- Initially hidden
 local speedButton = Instance.new("TextButton", screenGui)speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 20)speedButton.Text ="Toggle Speed Hack"speedButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
 speedButton.Visible = false -- Initially hidden
 
--- Create the ESP button
-local espButton = Instance.new("TextButton", screenGui)espButton.Size = UDim2.new(0, 200, 0, 50)espButton.Position = UDim2.new(0.5, -100, 0.5, 70)espButton.Text ="Toggle ESP"espButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-espButton.Visible = false -- Initially hidden
+local hakButton = Instance.new("TextButton", screenGui)hakButton.Size = UDim2.new(0, 200, 0, 50)hakButton.Position = UDim2.new(0.5, -100, 0.5, 70)hakButton.Text ="Toggle NoClip"hakButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
+hakButton.Visible = false -- Initially hidden
 
 -- Create the close button
 local closeButton = Instance.new("TextButton", screenGui)closeButton.Size = UDim2.new(0, 50, 0, 50)closeButton.Position = UDim2.new(0.5, 75, 0.5, -30) -- Position it next to the jump button
@@ -44,31 +41,28 @@ local function toggleSpeed()    speedEnabled = not speedEnabled
     end
 end
 
--- Function to toggle ESP
-local function toggleESP()    espEnabled = not espEnabled
-    espButton.BackgroundColor3 = espEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
-
-    if espEnabled then
-        for_, otherPlayer in pairs(game.Players:GetPlayers()) do
-            if otherPlayer ~= player then
-                local highlight = Instance.new("Highlight")                highlight.Adornee = otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart")                highlight.FillColor = Color3.new(1, 0, 0) -- Red color for highlights
-                highlight.FillTransparency = 0.5 -- Slightly transparent
-                highlight.OutlineColor = Color3.new(1, 1, 1) -- White outline
-                highlight.Parent = otherPlayer.Character
-
-                table.insert(espObjects, highlight)            end
-        end
-    else
-        for_, espObject in pairs(espObjects) do
-            espObject:Destroy()        end
-        espObjects = {}    end
-end
+local function toggleHak()    hakEnabled = not hakEnabled
+    hakButton.BackgroundColor3 = hakEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
+                for _, obj in pairs(Workspace.Items:GetChildren()) do
+                    if obj:IsA("Model") and obj.Name:match("Food") and obj.PrimaryPart then
+                        CreateEsp(obj, Color3.fromRGB(128, 0, 128), obj.Name, obj.PrimaryPart, 2)
+                    end
+                end
+                wait(0.1)
+            end
+            for _, obj in pairs(Workspace.Items:GetChildren()) do
+                if obj:IsA("Model") and obj.Name:match("Food") and obj.PrimaryPart then
+                    KeepEsp(obj, obj.PrimaryPart)
+                end
+            end
+        end)
+    end
+})
 
 -- Function to open/close the menu
 local function toggleMenu()    menuOpen = not menuOpen
     jumpButton.Visible = menuOpen
     speedButton.Visible = menuOpen
-    espButton.Visible = menuOpen
     closeButton.Visible = menuOpen
 end
 
@@ -76,12 +70,12 @@ end
 local function closeMenu()    menuOpen = false
     jumpButton.Visible = false
     speedButton.Visible = false
-    espButton.Visible = false
     closeButton.Visible = false
 end
 
 -- Connect button click events
-toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleSpeed)espButton.MouseButton1Click:Connect(toggleESP)closeButton.MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
+toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleHak)closeMenu.
+MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
 local function dragMenu(button)    local dragging = false
     local dragInput
     local startPos = button.Position
