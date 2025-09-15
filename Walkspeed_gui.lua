@@ -15,11 +15,12 @@ local Window = Fluent:CreateWindow({
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "menu" }),
-    Universal = Window:AddTab({ Title = "Universal", Icon = "globe" }),
-	jumpeverysec = Window:AddTab({ Title = "1 Jump Every Sec", Icon = "gamepad" }),
+  --  Universal = Window:AddTab({ Title = "Universal", Icon = "globe" }),
+	jumpeverysec = Window:AddTab({ Title = "Tower Of Hell", Icon = "gamepad" }),
 	v1v1pistol = Window:AddTab({ Title = "99 Nights in the forest", Icon = "gamepad" }),
 	c3008 = Window:AddTab({ Title = "Steal a brainrot", Icon = "gamepad" }),
 	Abilitywars = Window:AddTab({ Title = "Murder Mystery 2", Icon = "gamepad" }),
+	Ageofheroes = Window:AddTab({ Title = "Evade", Icon = "gamepad" }),
 }
  
 local Options = Fluent.Options
@@ -331,10 +332,10 @@ do
     })
  
     Tabs.Ageofheroes:AddButton({
-        Title = "Zen X Hub",
+        Title = "Запустить",
         Description = "Телеграм @SFXCL",
         Callback = function()
-            loadstring(game:HttpGet("https://scriptblox.com/raw/npc-farm-orb-farm-kill-player-(op-script)_482"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Evade.lua"))()
         end
     })
  
