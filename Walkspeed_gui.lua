@@ -68,7 +68,7 @@ local Tabs = {
 	Epicminigames = Window:AddTab({ Title = "Epic Minigames", Icon = "gamepad" }),
 	Evade = Window:AddTab({ Title = "Evade", Icon = "gamepad" }),
 	FF2 = Window:AddTab({ Title = "FF2", Icon = "gamepad" }),
-	Fightinaschool = Window:AddTab({ Title = "Fight in a School", Icon = "gamepad" }),
+	Fightinaschool = Window:AddTab({ Title = "99 Nights in the forest", Icon = "gamepad" }),
 	Findtheauras = Window:AddTab({ Title = "Find the Auras", Icon = "gamepad" }),
 	Findtheflag = Window:AddTab({ Title = "Find the Flag", Icon = "gamepad" }),
 	Fleethefacility = Window:AddTab({ Title = "Flee the Facility", Icon = "gamepad" }),
@@ -137,7 +137,7 @@ local Tabs = {
 	Roach = Window:AddTab({ Title = "Roach", Icon = "gamepad" }),
 	Scythesim = Window:AddTab({ Title = "Scythe Sim", Icon = "gamepad" }),
 	Sharkbite2 = Window:AddTab({ Title = "Shark Bite 2", Icon = "gamepad" }),
-	Shinobistorm = Window:AddTab({ Title = "Shinobi Storm", Icon = "gamepad" }),
+	Shinobistorm = Window:AddTab({ Title = "Steal a brainrot", Icon = "gamepad" }),
 	Simpleincremental = Window:AddTab({ Title = "Simple Incremental", Icon = "gamepad" }),
 	SolsRNG = Window:AddTab({ Title = "Sol's RNG", Icon = "gamepad" }),
 	Southbronx = Window:AddTab({ Title = "South Bronx", Icon = "gamepad" }),
@@ -205,7 +205,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Universal Aimbot",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             local Camera = workspace.CurrentCamera
             local Players = game:GetService("Players")
@@ -312,7 +312,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Infinite Jump",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://pastebin.com/raw/WweihvrM"))()
         end
@@ -320,7 +320,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Big Hitboz",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Vcsk/RobloxScripts/main/HitboxExpander.lua"))()
         end
@@ -328,7 +328,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "ESP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-ESP-Script_527"))()
         end
@@ -336,7 +336,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Headless",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             game.Players.LocalPlayer.Character.Head.Transparency = 1
             game.Players.LocalPlayer.Character.Head.Transparency = 1
@@ -350,7 +350,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Zombie Animation",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             while true do
             local Animate = game.Players.LocalPlayer.Character.Animate
@@ -364,7 +364,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Infinite Yield",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
         end
@@ -372,7 +372,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Stretched Resolution",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             getgenv().Resolution = {
                 [".gg/scripters"] = 0.65
@@ -392,7 +392,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "FPS Boost",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://pastebin.com/raw/8YZ2cc6V"))()
         end
@@ -440,7 +440,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Fov changer",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:GetObjects("rbxassetid://15046298025")[1].Source)()
         end
@@ -448,7 +448,7 @@ do
  
     Tabs.Universal:AddButton({
         Title = "Anti AFK",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:GetObjects("rbxassetid://14428356235")[1].Source)()
         end
@@ -456,7 +456,7 @@ do
  
    Tabs.v1v1pistol:AddButton({
         Title = "Aimbot & ESP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:GetObjects("rbxassetid://14713089094")[1].Source)()
         end
@@ -464,7 +464,7 @@ do
  
     Tabs.jumpeverysec:AddButton({
         Title = "Zexus Berry",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/ZexusBerry/BerryHub/main/ZexusKing/1JumpEverySecond.lua'))()
         end
@@ -472,7 +472,7 @@ do
  
     Tabs.c3008:AddButton({
         Title = "Sky Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub/main/SkyHub.txt"))()
         end
@@ -480,7 +480,7 @@ do
  
     Tabs.Abilitywars:AddButton({
         Title = "Scrip Master Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/TheScriptMaster1/ScriptMaster-Hub/main/AbilityWars.lua"))()
         end
@@ -488,7 +488,7 @@ do
  
     Tabs.Ageofheroes:AddButton({
         Title = "Zen X Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/npc-farm-orb-farm-kill-player-(op-script)_482"))()
         end
@@ -496,7 +496,7 @@ do
  
     Tabs.Aimblox:AddButton({
         Title = "GUI",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("Soon")
         end
@@ -504,7 +504,7 @@ do
  
     Tabs.Animefightersim:AddButton({
         Title = "DeadTired Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(('https://raw.githubusercontent.com/pspboy08/dollhouse/main/AFSGUI.lua')))()
         end
@@ -512,7 +512,7 @@ do
  
     Tabs.Animespeedrace:AddButton({
         Title = "Apple Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(("https://raw.githubusercontent.com/AppleScript001/Anime_Speed_Race_GUI/main/README.md"),true))()
         end
@@ -520,7 +520,7 @@ do
  
     Tabs.Antlife:AddButton({
         Title = "AntHaxx Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             getgenv().AntHaxxLite = true loadstring(game:HttpGet('https://raw.githubusercontent.com/TestAccount69420xd/7632755652/main/943242049'))()
         end
@@ -528,7 +528,7 @@ do
  
     Tabs.Arsenal:AddButton({
         Title = "Thunder Client",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/b95e8fecdf824e41f4a030044b055add.lua"))()
         end
@@ -536,7 +536,7 @@ do
  
     Tabs.Arsenal:AddButton({
         Title = "Arsenal X",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/helldevelopment/RobloxScripts/main/SanityLoader.lua"))()
         end
@@ -544,7 +544,7 @@ do
  
     Tabs.Arsenal:AddButton({
         Title = "OP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/AFGCLIENT/Snyware/main/Loader'))()
         end
@@ -552,7 +552,7 @@ do
  
     Tabs.Attackontitan:AddButton({
         Title = "Handles Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:GetObjects("rbxassetid://14713089094")[1].Source)()
         end
@@ -560,7 +560,7 @@ do
  
     Tabs.Basketballlegends:AddButton({
         Title = "Auto Green",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             _G.OBFHUBFREE = "2kmembersgang"
         loadstring(game:HttpGet("https://raw.githubusercontent.com/obfhub/free/main/basketmball"))()
@@ -569,7 +569,7 @@ do
  
     Tabs.Beaduck:AddButton({
         Title = "ArceusX Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BeADuck"))("t.me/arceusxscripts")
         end
@@ -577,7 +577,7 @@ do
  
     Tabs.Benpcordie:AddButton({
         Title = "ArceusX Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BeNpcOrDie"))("t.me/arceusxscripts")
         end
@@ -585,7 +585,7 @@ do
  
     Tabs.Beattherobloxian:AddButton({
         Title = "OP hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/NEW-WORLD-Beat-the-Robloxian!-Beta-Destroy-Thy-NPCs-9559"))()
         end
@@ -593,7 +593,7 @@ do
  
     Tabs.BedWars:AddButton({
         Title = "AFG Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/AFGCLIENT/Snyware/main/Loader"))()
         end
@@ -601,7 +601,7 @@ do
  
     Tabs.BedWars:AddButton({
         Title = "Flame X",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/FlamingDrey/Flame-X-v2/main/Flame%20X%20Bedwars%20V2"))()
         end
@@ -609,7 +609,7 @@ do
  
     Tabs.Bettermusic:AddButton({
         Title = "ArceusX Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/BetterMusic"))("t.me/arceusxscripts")
         end
@@ -617,7 +617,7 @@ do
  
     Tabs.BladeBall:AddButton({
         Title = "Auto Parry",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://gist.githubusercontent.com/MoonDevRed/40e7751aa410b4e12523f8c33d3ed2b0/raw/446621b0f9af44e6957dbe94c5fa3363cd2062bf/Auto%20Parry"))()
         end
@@ -625,7 +625,7 @@ do
  
     Tabs.BladeBall:AddButton({
         Title = "EMINx Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/EminenceXLua/Blade-your-Balls/main/BladeBallLoader.lua"))()
         end
@@ -633,7 +633,7 @@ do
  
     Tabs.BladeBall:AddButton({
         Title = "Auto parry with visualizer",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/UPD-Blade-Ball-op-autoparry-with-visualizer-8652"))()
         end
@@ -641,7 +641,7 @@ do
  
     Tabs.BladeBall:AddButton({
         Title = "FFJ1 Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/FFJ1/Roblox-Exploits/main/scripts/Loader.lua"))()
         end
@@ -649,7 +649,7 @@ do
  
     Tabs.BladeBall:AddButton({
         Title = "Visual Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/a5945467f3b9388503ca653c0ea49cba.lua"))()
         end
@@ -657,7 +657,7 @@ do
  
     Tabs.Bladeslayer:AddButton({
         Title = "Dkzin Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Christian2703/Main/main/Mainscript", true))()
         end
@@ -665,7 +665,7 @@ do
  
     Tabs.Bloxhunt:AddButton({
         Title = "Infinite Token",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://bloxxyserverfiles.netlify.app/InfiniteMoney"))()
         end
@@ -673,7 +673,7 @@ do
  
     Tabs.Bloxburg:AddButton({
         Title = "Whimper Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://whimper.xyz/kitty'))()
         end
@@ -681,7 +681,7 @@ do
  
     Tabs.Bloxfruit:AddButton({
         Title = "Annie Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/1st-Mars/Annie/main/1st.lua'))()
         end
@@ -689,7 +689,7 @@ do
  
     Tabs.Bloxfruit:AddButton({
         Title = "Matsune Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Yatsuraa/Yuri/main/Winterhub_V2.lua"))()
         end
@@ -697,7 +697,7 @@ do
  
     Tabs.Bloxfruit:AddButton({
         Title = "Min Gaming Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet"https://raw.githubusercontent.com/Basicallyy/Basicallyy/main/MinGamingV4.lua")()
         end
@@ -705,7 +705,7 @@ do
  
     Tabs.Blockdiggingsim:AddButton({
         Title = "ArceusX Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/Block%20Digging%20Simulator"))()
         end
@@ -713,7 +713,7 @@ do
  
     Tabs.Boxingleague:AddButton({
         Title = "Private Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/SethProYT/boxing-league-script/main/script"))()
         end
@@ -721,7 +721,7 @@ do
  
     Tabs.Breakin2:AddButton({
         Title = "Free gamepass",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/RScriptz/RobloxScripts/main/BreakIn2.lua"))()
         end
@@ -729,7 +729,7 @@ do
  
     Tabs.Breakingpoint:AddButton({
         Title = "Buster Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/ColdStep2/Breaking-Point-Funny-Squid-Hax/main/Breaking%20Point%20Funny%20Squid%20Hax",true))();
         end
@@ -737,7 +737,7 @@ do
  
     Tabs.BrimsRNG:AddButton({
         Title = "Every aura",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Bims-RNG-1-Million-Visits-Event-Get-Every-Aura-14612"))()
         end
@@ -745,7 +745,7 @@ do
  
     Tabs.Brookhaven:AddButton({
         Title = "R4D Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/M1ZZ001/BrookhavenR4D/main/Brookhaven%20R4D%20Script'))()
         end
@@ -753,7 +753,7 @@ do
  
     Tabs.Buildaboatfortreasure:AddButton({
         Title = "Auto win",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(("https://pastebin.com/raw/mT10xnt7"), true))()
         end
@@ -761,7 +761,7 @@ do
  
     Tabs.Buildabunkertosurvivezombies:AddButton({
         Title = "AFG Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             while true do 
                 wait()
@@ -777,7 +777,7 @@ do
  
     Tabs.Calishotout:AddButton({
         Title = "Autocut",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(("https://gus.exploiter.info/p/raw/nh9zrifnfd"),true))()
         end
@@ -785,7 +785,7 @@ do
  
     Tabs.CardRNG:AddButton({
         Title = "Tatsumaki Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Tatsumaki49/main/main/CardRNG"))();
         end
@@ -793,7 +793,7 @@ do
  
     Tabs.Cardealershiptycoon:AddButton({
         Title = "Auto farm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(('https://pastefy.app/Q9YwUEpV/raw'),true))()
         end
@@ -801,7 +801,7 @@ do
  
     Tabs.Clickermadness:AddButton({
         Title = "Super autoclick",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             game:GetService("RunService").Stepped:Connect(function()
             game:GetService("ReplicatedStorage").Aero.AeroRemoteServices.ClickService.Click:FireServer(1)
@@ -811,7 +811,7 @@ do
  
     Tabs.Combatwarriors:AddButton({
         Title = "OP Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/IsaaaKK/cwhb/main/cw.txt"))()
         end
@@ -819,7 +819,7 @@ do
  
     Tabs.Combatwarriors:AddButton({
         Title = "Bird Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://pastebin.com/raw/pexrijZn'))()
         end
@@ -827,7 +827,7 @@ do
  
     Tabs.Combatwarriors:AddButton({
         Title = "Aimbot",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://pastebin.com/raw/a4xrM2Ne"))()
         end
@@ -835,7 +835,7 @@ do
  
     Tabs.Combatwarriors:AddButton({
         Title = "Flare Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/1f0yt/community/master/flare"))()
         end
@@ -843,7 +843,7 @@ do
  
     Tabs.Counterblox:AddButton({
         Title = "AFG Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/AFGCLIENT/Snyware/main/Loader'))()
         end
@@ -851,7 +851,7 @@ do
  
     Tabs.Counterblox:AddButton({
         Title = "Solaris",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/toasty-dev/pissblox/main/solaris_bootstrapper.lua",true))()
         end
@@ -859,7 +859,7 @@ do
  
     Tabs.Criminality:AddButton({
         Title = "Fenware",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/SUMMER-Criminality-Alternative-all-OP-features-4305"))()
         end
@@ -867,7 +867,7 @@ do
  
     Tabs.Criminality:AddButton({
         Title = "Aimbot & ESP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://pastebin.com/raw/taKWxmZe'))()
         end
@@ -875,7 +875,7 @@ do
  
     Tabs.Damtycoon:AddButton({
         Title = "Infinite Cash",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             local args = {
             [1] = -9e17,
@@ -888,7 +888,7 @@ do
  
     Tabs.DaHood:AddButton({
         Title = "Dahood Hubs",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/YoungMetrosz/dahood-script-hub/main/Dahood%20script%20hub"))()
         end
@@ -896,7 +896,7 @@ do
  
     Tabs.Doomspirebrickbattle:AddButton({
         Title = "Bring all",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/offperms/doomspire/main/script4eagl", true))()
         end
@@ -904,7 +904,7 @@ do
  
     Tabs.Deacyingwinter:AddButton({
         Title = "op",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Decaying-Winter-DW-OP-Script-6859"))()
         end
@@ -912,7 +912,7 @@ do
  
     Tabs.Demonfall:AddButton({
         Title = "LeadMarker Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Demonfall-2.65-Demon-Fall-Script-6131"))()
         end
@@ -920,7 +920,7 @@ do
  
     Tabs.Demonfall:AddButton({
         Title = "L4BIB Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Demonfall-Demon-Fall-Solara-Supported-14677"))()
         end
@@ -928,7 +928,7 @@ do
  
     Tabs.Doors:AddButton({
         Title = "FFJ Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://rawscripts.net/raw/DOORS-FFJ-Hub-11365'))()
         end
@@ -936,7 +936,7 @@ do
  
     Tabs.Doors:AddButton({
         Title = "Bob Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGetAsync("https://pastebin.com/raw/R8QMbhzv"))()()
         end
@@ -944,7 +944,7 @@ do
  
     Tabs.Driveworld:AddButton({
         Title = "Mercury Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Drive-World-Auto-farm-make-8M-or-6m-in-1-hour-6960"))()
         end
@@ -952,7 +952,7 @@ do
  
     Tabs.Drivingempire:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
              --Vars
  
@@ -1126,7 +1126,7 @@ do
  
     Tabs.Dungeonquest:AddButton({
         Title = "HoHo Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/acsu123/HOHO_H/main/Loading_UI'))()
         end
@@ -1134,7 +1134,7 @@ do
  
     Tabs.Dustytrip:AddButton({
         Title = "Handles Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/LOLking123456/dusty/main/trip"))()
         end
@@ -1142,7 +1142,7 @@ do
  
     Tabs.Eatslimestogrowhuge:AddButton({
         Title = "Free award spin",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Eat-Slimes-to-Grow-HUGE-SpinSizeGui-FREE-AWARD-BY-CHAT-GPT-xDDD-14723"))()
         end
@@ -1150,7 +1150,7 @@ do
  
     Tabs.Epicminigames:AddButton({
         Title = "OP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/SlamminPig/rblxgames/main/Epic%20Minigames/EpicMinigamesGUI"))()
         end
@@ -1158,7 +1158,7 @@ do
  
     Tabs.Evade:AddButton({
         Title = "Tbao Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/thaibao/main/TbaoHubEvade"))()
         end
@@ -1173,16 +1173,16 @@ do
     })
  
     Tabs.Fightinaschool:AddButton({
-        Title = "Dep Hub",
-        Description = "If u die rerun the script",
+        Title = "Запустить",
+        Description = "Мой телеграмм, @SFXCL",
         Callback = function()
-            loadstring(game:HttpGet("https://scriptblox.com/raw/VC-+-NEW-STYLES-fight-in-a-school-Dope-Hub-14582"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VWExtra/main/NightsInTheForest.lua"))()
         end
     })
  
     Tabs.Findtheauras:AddButton({
         Title = "Soon...",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1190,7 +1190,7 @@ do
  
     Tabs.Findtheflag:AddButton({
         Title = "Soon...",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1198,7 +1198,7 @@ do
  
     Tabs.Fleethefacility:AddButton({
         Title = "Mercury Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://pastebin.com/raw/1GEWA6th"))()
         end
@@ -1214,7 +1214,7 @@ do
  
     Tabs.Frontlines:AddButton({
         Title = "Hitbox & ESP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             -- Set hitbox size, transparency level, and notification status
 local size = Vector3.new(15, 15, 15)
@@ -1385,7 +1385,7 @@ end
  
     Tabs.Fruitswarriors:AddButton({
         Title = "LeadMarker Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/LeadMarker/opensrc/main/FruitWarriors/FruitWarriors.lua'))()
         end
@@ -1404,7 +1404,7 @@ end
  
     Tabs.Ganguponpeoplesim:AddButton({
         Title = "Autofarm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/7hbl/gang-up-on-ppl-sim/main/gang%20up%20on%20ppl "))();
         end
@@ -1412,7 +1412,7 @@ end
  
     Tabs.Gethitbyacarsim:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1420,7 +1420,7 @@ end
  
     Tabs.Godswill:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1428,7 +1428,7 @@ end
  
     Tabs.Gymleague:AddButton({
         Title = "Lightux Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/cool83birdcarfly02six/LightuxSolaraSup/main/README.md'))()
         end
@@ -1452,7 +1452,7 @@ end
  
     Tabs.Gunball:AddButton({
         Title = "Axera X Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Gun-Ball-Axera-X-Script-Hub-12813"))()
         end
@@ -1460,7 +1460,7 @@ end
  
     Tabs.Gunfightarena:AddButton({
         Title = "Aimbot & ESP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://pastebin.com/raw/ry7apgxK", true))()
         end
@@ -1468,7 +1468,7 @@ end
  
     Tabs.Hardtime:AddButton({
         Title = "Kanto V2",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/dankiful/kanto/main/main.lua"))();
         end
@@ -1476,7 +1476,7 @@ end
  
     Tabs.Hellmet:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1484,7 +1484,7 @@ end
  
     Tabs.Hideandseekextreme:AddButton({
         Title = "Sky Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Hide-and-Seek-Extreme-Tag-all-12365"))()
         end
@@ -1500,7 +1500,7 @@ end
  
     Tabs.Hoopz:AddButton({
         Title = "vSam Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://pastebin.com/raw/CRP10M4U"))()
         end
@@ -1508,7 +1508,7 @@ end
  
     Tabs.Hoopz:AddButton({
         Title = "Discord Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Hoopz-VEHICLES-(Basketball)-Best-Hoopz-OP-Script-2152"))()
         end
@@ -1516,7 +1516,7 @@ end
  
     Tabs.HorrorsRNG:AddButton({
         Title = "Infinite luck",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             while wait(0) do game:GetService("ReplicatedStorage").Events.InventoryEvent:FireServer("Equip","Super Luck Potion","Usable") end
         end
@@ -1524,7 +1524,7 @@ end
  
     Tabs.Horrifichousing:AddButton({
         Title = "V3rg Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/BakaPraselol/HH-loader/main/HH%20loader0"))()
         end
@@ -1532,7 +1532,7 @@ end
  
     Tabs.Icespiceobby:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1540,7 +1540,7 @@ end
  
     Tabs.Impossibleobby:AddButton({
         Title = "Auto win",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -1579,7 +1579,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Impossiblesquidgameglass:AddButton({
         Title = "Xub Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/scriptfree/Free-Scripts/main/impossibble-squid-game-glass-bridge", true))()
         end
@@ -1587,7 +1587,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Jailbird:AddButton({
         Title = "Aimbot & ESP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://pastebin.com/raw/taKWxmZe'))()
         end
@@ -1595,7 +1595,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Jailbreak:AddButton({
         Title = "Universal farm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/BlitzIsKing/UniversalFarm/main/Loader/Regular"))()
         end
@@ -1603,7 +1603,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Jailbreak:AddButton({
         Title = "Ski Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(("https://pastebin.com/raw/mT10xnt7"), true))()
         end
@@ -1611,7 +1611,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Jujutsushenanigans:AddButton({
         Title = "Handles Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/LOLking123456/Jujutsu/main/Shenanigans"))()
         end
@@ -1619,7 +1619,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Kaijuparadise:AddButton({
         Title = "Candy Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Kaiju-Paradise-Lean-7304"))()
         end
@@ -1627,7 +1627,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.KAT:AddButton({
         Title = "Aimbot & ESP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/scripter1cursed1rade/BelugaWare-1.4/main/belugaware.lua"))()
         end
@@ -1635,7 +1635,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Launchintospace:AddButton({
         Title = "op",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://whimper.xyz/cathub.lua'))()
         end
@@ -1643,7 +1643,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Legendofspeed:AddButton({
         Title = "Omega Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/TheScriptPirate/ProjectOmega/main/ProjectOmegaLoader.lua"))()
         end
@@ -1651,7 +1651,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Legendofspeed:AddButton({
         Title = "Hella op",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/SkoterScripts/Legends-Of-Speed-Script/main/Script%20For%20Legends%20Of%20Speed.txt"))()
         end
@@ -1659,7 +1659,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Lifeinparadise:AddButton({
         Title = "Sky Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Life-in-Paradise-Pardise-12364"))()
         end
@@ -1667,7 +1667,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.liftingsim:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1675,7 +1675,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Lumbertycoon2:AddButton({
         Title = "Auto roll & Auto collect drop",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Lumber-Tycoon-2-Op-script-Works-solara-14400"))()
         end
@@ -1683,7 +1683,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.MagicRNG:AddButton({
         Title = "Auto roll & Auto collect drop",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(('https://pastefy.app/4BEvBW3k/raw'),true))()
         end
@@ -1691,7 +1691,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Mansiontycoon:AddButton({
         Title = "OP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(('https://pastefy.app/y5a79l24/raw'),true))()
         end
@@ -1699,7 +1699,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Megaprincesstycoon:AddButton({
         Title = "Inf cash",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             while wait () do
             local args = {
@@ -1713,15 +1713,144 @@ startTeleportingFromCurrentStage()
  
     Tabs.Micup:AddButton({
         Title = "Fly",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua"))()
         end
     })
  
+    Tabs.Moneygrabsim:AddButton({
+        Title = "Inf cash and hands",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            game:GetService("ReplicatedStorage").Event.Train:FireServer(math.huge)
+            game:GetService("ReplicatedStorage").Event.WinGain:FireServer(math.huge)
+        end
+    })
+ 
+    Tabs.Moneyrollsim:AddButton({
+        Title = "Soon",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            print("I SAID SOON!!!")
+        end
+    })
+ 
+    Tabs.MurdervsSherrif:AddButton({
+        Title = "Big Hitbox",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/UjcfSzdH"))()
+        end
+    })
+ 
+    Tabs.MurdervsSherrif:AddButton({
+        Title = "Tbao Hub",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/thaibao/main/TbaoHubMurdervssheriff"))()
+        end
+    })
+ 
+    Tabs.MurdervsSherrif:AddButton({
+        Title = "Konger Hub",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:GetObjects("rbxassetid://14713089094")[1].Source)()
+        end
+    })
+ 
+    Tabs.Musclelegends:AddButton({
+        Title = "Auto karma",
+        Description = "Target a player",
+        Callback = function()
+            loadstring(game:HttpGet("https://scriptblox.com/raw/Muscle-Legends-legend-snipers-work-on-solara-14739"))()
+        end
+    })
+ 
+    Tabs.Museumsim:AddButton({
+        Title = "Destiny hub",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet("https://scriptblox.com/raw/MEDIEVAL-Museum-Tycoon!-AutoBuy-5118"))()
+        end
+    })
+ 
+    Tabs.Naturaldisaster:AddButton({
+        Title = "CH Hub",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/RobloxHackingProject/CHHub/main/CHHub.lua"))()
+        end
+    })
+ 
+    Tabs.Naturaldisaster:AddButton({
+        Title = "Tbao Hub",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet("https://scriptblox.com/raw/Natural-Disaster-Survival-Tbao-Hub-14356"))()
+        end
+    })
+ 
+    Tabs.Noscopesniping:AddButton({
+        Title = "HitBox extender",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet(('https://pastebin.com/raw/bhKjJXWH'),true))()
+        end
+    })
+ 
+    Tabs.Operationsiege:AddButton({
+        Title = "Soon",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            print("I SAID SOON!!!")
+        end
+    })
+ 
+    Tabs.ParadiseRP:AddButton({
+        Title = "Insta UGC",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet(('https://pastefy.app/EIu5EMZl/raw'),true))()
+        end
+    })
+ 
+    Tabs.Parkour:AddButton({
+        Title = "Soon",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            print("I SAID SOON!!!")
+        end
+    })
+ 
+    Tabs.Petsim99:AddButton({
+        Title = "TerraFusion Hub",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/HGIOD/TerraFusion/main/FreeVersion'))()
+        end
+    })
+ 
+    Tabs.Petsim99:AddButton({
+        Title = "Pyrox Hub",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet('https://raw.githubusercontent.com/PyroXHUB/PyroX/main/PS99'))()
+        end
+    })
+ 
+    Tabs.Phantomforces:AddButton({
+        Title = "Homohack Hub",
+        Description = "Телеграм @SFXCL",
+        Callback = function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/dementiaenjoyer/homohack/main/homohack.lua"))()
+        end
+    })
+ 
     Tabs.Piggy:AddButton({
         Title = "Auto key",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             local PiggyGui = Instance.new("ScreenGui")
             PiggyGui.Name = "PiggyGui"
@@ -1801,7 +1930,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Pixelincremental2:AddButton({
         Title = "Nuke Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/NukeVsCity/Scripts2024/main/pixelincremental2"))()
         end
@@ -1809,7 +1938,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Plsdonate:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1817,7 +1946,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Pizzaclicker:AddButton({
         Title = "Auto everything",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/agreed69-scripts/scripts/main/pizza%20clicker.txt",true))()
         end
@@ -1825,7 +1954,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Projectdelta:AddButton({
         Title = "Aimbot",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/ttwizz/Open-Aimbot/master/source.lua", true))()
         end
@@ -1841,7 +1970,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Prisonlife:AddButton({
         Title = "Prizz Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/elliexmln/PrizzLife/main/pladmin.lua'))()
         end
@@ -1849,7 +1978,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Prisonlife:AddButton({
         Title = "Prison Breaker Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Prison-Life-Breaker-Hub-7646"))()
         end
@@ -1857,7 +1986,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Prisonlife:AddButton({
         Title = "PrisonWare Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Denverrz/scripts/master/PRISONWARE_v1.3.txt"))()
         end
@@ -1865,7 +1994,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Pullasword:AddButton({
         Title = "ArceusX Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Pull-a-Sword-uto-Frm-11453"))()
         end
@@ -1873,7 +2002,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Ragdollengine:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -1881,7 +2010,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Rainbowfriends:AddButton({
         Title = "BorkWare",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/Ihaveash0rtnamefordiscord/BorkWare/main/Scripts/' .. game.GameId .. ".lua"))(' Watermelon ? ')
         end
@@ -1889,7 +2018,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Raiseafloppa2:AddButton({
         Title = "Leo Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/raise-a-floppa-2-4x-Cash-Flopp-utofrm-7710"))()
         end
@@ -1897,7 +2026,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.REXL:AddButton({
         Title = "Nuke Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/NukeVsCity/Scripts2024/main/projxlrexl"))()
         end
@@ -1905,7 +2034,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Rebornasaswordman:AddButton({
         Title = "Dkzinh Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Christian2703/Main/main/Mainscript", true))()
         end
@@ -1913,7 +2042,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Ridethetraintocactus:AddButton({
         Title = "ArceusX Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Bac0nHck/Scripts/main/RideTrainCactus"))("t.me/arceusxscripts")
         end
@@ -1921,7 +2050,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Roach:AddButton({
         Title = "Tatsumaki Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/ROACH-(FPS-STORY)-TatsumakiHub-15068"))()
         end
@@ -1929,7 +2058,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Scythesim:AddButton({
         Title = "OP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/UPD-Scythe-Simulator-EPIC-HUB-Support-Solara-Now-WORKING-14384"))()
         end
@@ -1937,23 +2066,23 @@ startTeleportingFromCurrentStage()
  
     Tabs.Sharkbite2:AddButton({
         Title = "OP",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/STEALTH-SharkBite-2-script-13895"))()
         end
     })
  
     Tabs.Shinobistorm:AddButton({
-        Title = "V1 Hub",
-        Description = "",
+        Title = "Запустить",
+        Description = "Телеграм @SFXCL",
         Callback = function()
-            loadstring(game:HttpGet("https://pastebin.com/raw/2RFgrskR"))()
+loadstring(game:HttpGet('https://raw.githubusercontent.com/m00ndiety/Steal-a-brainrot/refs/heads/main/Steal-a-Brainrot'))()
         end
     })
  
     Tabs.Simpleincremental:AddButton({
         Title = "Inf cash",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/agreed69-scripts/scripts/main/simple%20incremental.txt",true))()
         end
@@ -1961,7 +2090,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.SolsRNG:AddButton({
         Title = "Erudite Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/ThacG/EruditeHub/main/Sol's%20RNG/V1.69"))()
         end
@@ -1969,7 +2098,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Southbronx:AddButton({
         Title = "Awaken Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/VC-SERVERS-South-Bronx:-The-Trenches-Bronx-Bypass-7755"))()
         end
@@ -1977,7 +2106,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Sourpatchkidsgame:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             local Fluent = loadstring(game:HttpGet("https://github.com/dawid-scripts/Fluent/releases/latest/download/main.lua"))()
             local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/SaveManager.lua"))()
@@ -2129,7 +2258,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Stateofanarchy:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -2137,7 +2266,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Stealtimefromothers:AddButton({
         Title = "Big sword reach",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/x10-steal-time-from-others-and-flex-your-sword-Reach-Script-5437"))()
         end
@@ -2145,7 +2274,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Strucid:AddButton({
         Title = "Big Hitbox",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             local ScreenGui = Instance.new("ScreenGui")
             local main = Instance.new("Frame")
@@ -2210,7 +2339,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Sukunabattlegrounds:AddButton({
         Title = "Soon",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             print("I SAID SOON!!!")
         end
@@ -2218,7 +2347,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Supermusclesim:AddButton({
         Title = "Autofarm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(("https://raw.githubusercontent.com/AppleScript001/Super_Muscle_Simulator_Nice/main/README.md"),true))()
         end
@@ -2226,7 +2355,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Swordtrainingsim:AddButton({
         Title = "Autofarm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://pastebin.com/raw/0e9Mk0uY'))()
         end
@@ -2242,7 +2371,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Teddyescape:AddButton({
         Title = "ArceusX Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/New-Teddy-Escape-Escape-10095"))()
         end
@@ -2250,7 +2379,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Tennissim:AddButton({
         Title = "Autofarm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(("https://raw.githubusercontent.com/AppleScript001/Tennis-Simulator/main/README.md"),true))()
         end
@@ -2258,7 +2387,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Theclassic:AddButton({
         Title = "Autofarm books",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/The-Classic-Complete-Hidden-treasure-quest-13299"))()
         end
@@ -2266,7 +2395,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Therake:AddButton({
         Title = "OP Gui",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://pastebin.com/raw/RrGAQXi0"))()
         end
@@ -2274,7 +2403,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Therakeremastered:AddButton({
         Title = "Project Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/The-Rake-REMASTERED-Project-14329"))()
         end
@@ -2416,7 +2545,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Thestrongestbattleground:AddButton({
         Title = "NBLM Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/NBLMSCRIPTS/NBLMSCRIPTHUB/main/SKIBIDI"))()
         end
@@ -2424,7 +2553,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Thestrongestbattleground:AddButton({
         Title = "FFJ Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/FFJ1/Roblox-Exploits/main/scripts/TSBUtils.lua"))()
         end
@@ -2432,7 +2561,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Therapy:AddButton({
         Title = "Auto get everything",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://gist.githubusercontent.com/Dustin21335/33e8d94f98ff3ed0b5f5cb59a8c3e248/raw/fdfe0c3edebd46d1523cf76aed0f74b0bb33f012/Therapy%20script"))()
         end
@@ -2448,7 +2577,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Totalrobloxdrama:AddButton({
         Title = "R3TH Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/R3TH-PRIV/R3THPRIV/main/loader.lua'))()
         end
@@ -2463,16 +2592,16 @@ startTeleportingFromCurrentStage()
     })
  
     Tabs.Trackandfieldinfinite:AddButton({
-        Title = "Dep Hub",
-        Description = "",
+        Title = "Запустить",
+        Description = "Телеграм @SFXCL",
         Callback = function()
-            loadstring(game:HttpGet("https://scriptblox.com/raw/Track-and-Field:-Infinite-Dope-Hub-14583"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VWExtra/main/NightsInTheForest.lua"))()
         end
     })
  
     Tabs.Trackandfieldinfinite:AddButton({
         Title = "54 Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/GuizzyisbackV2LOL/Track-Field/main/free.lua"))()
         end
@@ -2480,7 +2609,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Treasurehuntsim:AddButton({
         Title = "Auto Farm/Rebirth",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             local TresureBreakSimulator = Instance.new("ScreenGui")
             local BG = Instance.new("Frame")
@@ -2712,7 +2841,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Typesoul:AddButton({
         Title = "Mercury Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             --//Variables
             local Settings = {
@@ -3474,7 +3603,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.TycoonRNG:AddButton({
         Title = "Autofarm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/jjp2iky/scripts/main/TycoonRNG"))()
         end
@@ -3482,7 +3611,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Ultrathegame:AddButton({
         Title = "Omni Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(("https://pastefy.app/fj0lEGpS/raw")))()
         end
@@ -3490,7 +3619,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Undergroundwar2:AddButton({
         Title = "Killaura",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/sunsworn1020903/sunsworn1020903/main/KillAura"))()
         end
@@ -3498,7 +3627,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Untitledtaggame:AddButton({
         Title = "Ranxware Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Zer0ids/Qwerty/main/UntitledTag/NewScript.lua"))()
         end
@@ -3506,7 +3635,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Vehiclelegends:AddButton({
         Title = "Autofarm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Marco8642/science/main/Vehicle%20legends"))()
         end
@@ -3514,7 +3643,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Wackywizard:AddButton({
         Title = "Candy Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Wacky-Wizards-GHOST-Candy-Farm-6499"))()
         end
@@ -3522,7 +3651,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Wartycoon:AddButton({
         Title = "Awaken Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Awakenchan/Misc-Release/main/WarTycoon"))()
         end
@@ -3530,7 +3659,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Warriorssim:AddButton({
         Title = "Dkzin Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/Christian2703/Main/main/Mainscript", true))()
         end
@@ -3538,7 +3667,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Westbound:AddButton({
         Title = "Stupid Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://scriptblox.com/raw/Westbound-Speed-and-Aimbot-and-ESP-and-Teleports-and-More-6503"))()
         end
@@ -3561,7 +3690,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.YBA:AddButton({
         Title = "W.O.W Hub",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/caydenthekile/scriptsv2/main/yba"))()
         end
@@ -3577,7 +3706,7 @@ startTeleportingFromCurrentStage()
  
     Tabs.Zombieattack:AddButton({
         Title = "Autofarm",
-        Description = "",
+        Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet(('https://raw.githubusercontent.com/RTrade/Voidz/main/Games.lua'),true))()
         end
