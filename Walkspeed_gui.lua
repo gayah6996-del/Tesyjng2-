@@ -3,8 +3,8 @@ local SaveManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/d
 local InterfaceManager = loadstring(game:HttpGet("https://raw.githubusercontent.com/dawid-scripts/Fluent/master/Addons/InterfaceManager.lua"))()
  
 local Window = Fluent:CreateWindow({
-    Title = "Exploit Central | V1 ",
-    SubTitle = "by D6_6666",
+    Title = "ASTRALCHEAT | V1 ",
+    SubTitle = "by @SFXCL",
     TabWidth = 160,
     Size = UDim2.fromOffset(580, 460),
     Acrylic = false, -- The blur may be detectable, setting this to false disables blur entirely
@@ -183,7 +183,7 @@ local Options = Fluent.Options
 do
     Fluent:Notify({
         Title = "Welcome!",
-        Content = "Welcome to the Hub",
+        Content = "Welcome to the ASTRALCHEAT",
         SubContent = "D6 made this", -- Optional
         Duration = 5 -- Set to nil to make the notification not disappear
     })
@@ -192,14 +192,14 @@ do
  
     Tabs.Main:AddParagraph({
         Title = "EC Hub",
-        Content = "Welcome to the Exploit Central Hub.\nJoin our Discord for more!"
+        Content = "Welcome to the ASTRALCHEAT.\nJoin our Telegram for more!"
     })
  
     Tabs.Main:AddButton({
         Title = "Server invite",
-        Description = "Copy our Discord server invite",
+        Description = "Copy our Telegram server invite",
         Callback = function()
-            setclipboard("https://discord.gg/hAmMkNSyTV")
+            setclipboard("t.me//SFXCL")
         end
     })
  
@@ -1712,139 +1712,10 @@ startTeleportingFromCurrentStage()
     })
  
     Tabs.Micup:AddButton({
-        Title = "Sky Hub",
+        Title = "Fly",
         Description = "",
         Callback = function()
-            loadstring(game:HttpGet("https://scriptblox.com/raw/3008-2.73-teleport-to-player-worker-esp-grab-food-no-fall-damage-12949"))()
-        end
-    })
- 
-    Tabs.Moneygrabsim:AddButton({
-        Title = "Inf cash and hands",
-        Description = "",
-        Callback = function()
-            game:GetService("ReplicatedStorage").Event.Train:FireServer(math.huge)
-            game:GetService("ReplicatedStorage").Event.WinGain:FireServer(math.huge)
-        end
-    })
- 
-    Tabs.Moneyrollsim:AddButton({
-        Title = "Soon",
-        Description = "",
-        Callback = function()
-            print("I SAID SOON!!!")
-        end
-    })
- 
-    Tabs.MurdervsSherrif:AddButton({
-        Title = "Big Hitbox",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet("https://pastebin.com/raw/UjcfSzdH"))()
-        end
-    })
- 
-    Tabs.MurdervsSherrif:AddButton({
-        Title = "Tbao Hub",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/tbao143/thaibao/main/TbaoHubMurdervssheriff"))()
-        end
-    })
- 
-    Tabs.MurdervsSherrif:AddButton({
-        Title = "Konger Hub",
-        Description = "",
-        Callback = function()
-            loadstring(game:GetObjects("rbxassetid://14713089094")[1].Source)()
-        end
-    })
- 
-    Tabs.Musclelegends:AddButton({
-        Title = "Auto karma",
-        Description = "Target a player",
-        Callback = function()
-            loadstring(game:HttpGet("https://scriptblox.com/raw/Muscle-Legends-legend-snipers-work-on-solara-14739"))()
-        end
-    })
- 
-    Tabs.Museumsim:AddButton({
-        Title = "Destiny hub",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet("https://scriptblox.com/raw/MEDIEVAL-Museum-Tycoon!-AutoBuy-5118"))()
-        end
-    })
- 
-    Tabs.Naturaldisaster:AddButton({
-        Title = "CH Hub",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/RobloxHackingProject/CHHub/main/CHHub.lua"))()
-        end
-    })
- 
-    Tabs.Naturaldisaster:AddButton({
-        Title = "Tbao Hub",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet("https://scriptblox.com/raw/Natural-Disaster-Survival-Tbao-Hub-14356"))()
-        end
-    })
- 
-    Tabs.Noscopesniping:AddButton({
-        Title = "HitBox extender",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet(('https://pastebin.com/raw/bhKjJXWH'),true))()
-        end
-    })
- 
-    Tabs.Operationsiege:AddButton({
-        Title = "Soon",
-        Description = "",
-        Callback = function()
-            print("I SAID SOON!!!")
-        end
-    })
- 
-    Tabs.ParadiseRP:AddButton({
-        Title = "Insta UGC",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet(('https://pastefy.app/EIu5EMZl/raw'),true))()
-        end
-    })
- 
-    Tabs.Parkour:AddButton({
-        Title = "Soon",
-        Description = "",
-        Callback = function()
-            print("I SAID SOON!!!")
-        end
-    })
- 
-    Tabs.Petsim99:AddButton({
-        Title = "TerraFusion Hub",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet('https://raw.githubusercontent.com/HGIOD/TerraFusion/main/FreeVersion'))()
-        end
-    })
- 
-    Tabs.Petsim99:AddButton({
-        Title = "Pyrox Hub",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet('https://raw.githubusercontent.com/PyroXHUB/PyroX/main/PS99'))()
-        end
-    })
- 
-    Tabs.Phantomforces:AddButton({
-        Title = "Homohack Hub",
-        Description = "",
-        Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/dementiaenjoyer/homohack/main/homohack.lua"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/gayah6996-del/Tesyjng2-/refs/heads/main/Flay.lua"))()
         end
     })
  
