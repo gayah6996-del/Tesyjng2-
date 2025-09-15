@@ -19,6 +19,7 @@ local Tabs = {
 	jumpeverysec = Window:AddTab({ Title = "1 Jump Every Sec", Icon = "gamepad" }),
 	v1v1pistol = Window:AddTab({ Title = "99 Nights in the forest", Icon = "gamepad" }),
 	c3008 = Window:AddTab({ Title = "Steal a brainrot", Icon = "gamepad" }),
+	Abilitywars = Window:AddTab({ Title = "Murder Mystery 2", Icon = "gamepad" }),
 }
  
 local Options = Fluent.Options
@@ -27,14 +28,14 @@ do
     Fluent:Notify({
         Title = "Welcome!",
         Content = "Welcome to the ASTRALCHEAT",
-        SubContent = "D6 made this", -- Optional
+        SubContent = "V. 1.0", -- Optional
         Duration = 5 -- Set to nil to make the notification not disappear
     })
  
  
  
     Tabs.Main:AddParagraph({
-        Title = "EC Hub",
+        Title = "By @SFXCL",
         Content = "Welcome to the ASTRALCHEAT.\nJoin our Telegram for more!"
     })
  
@@ -47,7 +48,7 @@ do
     })
  
     Tabs.Universal:AddButton({
-        Title = "Universal Aimbot",
+        Title = "Запустить",
         Description = "Телеграм @SFXCL",
         Callback = function()
             local Camera = workspace.CurrentCamera
@@ -306,7 +307,7 @@ do
     })
  
     Tabs.jumpeverysec:AddButton({
-        Title = "Zexus Berry",
+        Title = "Запустить",
         Description = "Телеграм @SFXCL",
         Callback = function()
             loadstring(game:HttpGet('https://raw.githubusercontent.com/ZexusBerry/BerryHub/main/ZexusKing/1JumpEverySecond.lua'))()
