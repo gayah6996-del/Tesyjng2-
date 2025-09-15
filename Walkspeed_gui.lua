@@ -15,7 +15,7 @@ local Window = Fluent:CreateWindow({
 --Fluent provides Lucide Icons https://lucide.dev/icons/ for the tabs, icons are optional
 local Tabs = {
     Main = Window:AddTab({ Title = "Main", Icon = "menu" }),
-  --  Universal = Window:AddTab({ Title = "Universal", Icon = "globe" }),
+    Universal = Window:AddTab({ Title = "Universal", Icon = "globe" }),
 	jumpeverysec = Window:AddTab({ Title = "Tower Of Hell", Icon = "gamepad" }),
 	v1v1pistol = Window:AddTab({ Title = "99 Nights in the forest", Icon = "gamepad" }),
 	c3008 = Window:AddTab({ Title = "Steal a brainrot", Icon = "gamepad" }),
