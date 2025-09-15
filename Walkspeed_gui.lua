@@ -1,105 +1,32 @@
+-- Получаем ссылку на локального игрока
 local player = game.Players.LocalPlayer
-local jumpEnabled = false
-local speedEnabled = false
-local menuOpen = false -- To keep track of the menu state
 
--- Create the ScreenGui
-local screenGui = Instance.new("ScreenGui", player.PlayerGui)screenGui.Name ="@SFXCL"-- Create the button to open/close the menu
-local toggleButton = Instance.new("TextButton", screenGui)toggleButton.Size = UDim2.new(0, 50, 0, 50)toggleButton.Position = UDim2.new(0.5, -25, 0.5, -25)toggleButton.Text ="Menu" -- Change to"Menu" for clarity
-toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 255) -- Blue color
+-- Создаем ScreenGui
+local screenGui = Instance.new("ScreenGui")screenGui.Parent = player:WaitForChild("PlayerGui")-- Создаем фрейм для меню
+local menuFrame = Instance.new("Frame")menuFrame.Size = UDim2.new(0, 300, 0, 200)menuFrame.Position = UDim2.new(0.5, -150, 0.5, -100)menuFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)menuFrame.Parent = screenGui
 
--- Create the jump button
-local jumpButton = Instance.new("TextButton", screenGui)jumpButton.Size = UDim2.new(0, 200, 0, 50)jumpButton.Position = UDim2.new(0.5, -100, 0.5, -30)jumpButton.Text ="Toggle Infinity Jump"jumpButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-jumpButton.Visible = false -- Initially hidden
+-- Создаем кнопку
+local button = Instance.new("TextButton")button.Size = UDim2.new(1, 0, 0, 50)button.Position = UDim2.new(0, 0, 0.5, -25)button.Text ="Отметить Брейнроты"button.BackgroundColor3 = Color3.new(1, 0, 0) -- Красный цвет
+button.Parent = menuFrame
 
--- Create the speed button
-local speedButton = Instance.new("TextButton", screenGui)speedButton.Size = UDim2.new(0, 200, 0, 50)speedButton.Position = UDim2.new(0.5, -100, 0.5, 20)speedButton.Text ="Toggle Speed Hack"speedButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-speedButton.Visible = false -- Initially hidden
+local isActive = false
+local markedBrainrots = {} -- Список отмеченных брейнротов
 
-local hakButton = Instance.new("TextButton", screenGui)hakButton.Size = UDim2.new(0, 200, 0, 50)hakButton.Position = UDim2.new(0.5, -100, 0.5, 70)hakButton.Text ="Toggle NoClip"hakButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-hakButton.Visible = false -- Initially hidden
-
--- Create the close button
-local closeButton = Instance.new("TextButton", screenGui)closeButton.Size = UDim2.new(0, 50, 0, 50)closeButton.Position = UDim2.new(0.5, 75, 0.5, -30) -- Position it next to the jump button
-closeButton.Text ="X" -- Close button
-closeButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red color
-closeButton.Visible = false -- Initially hidden
-
--- Function to toggle infinite jump
-local function toggleJump()    jumpEnabled = not jumpEnabled
-    jumpButton.BackgroundColor3 = jumpEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.JumpPower = jumpEnabled and 100 or 50
+-- Функция для отметки брейнротов
+local function markBrainrot()    local brainrot = game.Workspace:FindFirstChild("Brainrot") -- Предполагается, что брейнрот находится в Workspace
+    if brainrot then
+        -- Добавляем брейнрот в список отмеченных
+        table.insert(markedBrainrots, brainrot)        
+        brainrot.BrickColor = BrickColor.new("Bright green") -- Изменяем цвет брейнрота
     end
 end
 
--- Function to toggle speed
-local function toggleSpeed()    speedEnabled = not speedEnabled
-    speedButton.BackgroundColor3 = speedEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = speedEnabled and 50 or 16
-    end
-end
-
-local function toggleHak()    hakEnabled = not hakEnabled
-    hakButton.BackgroundColor3 = hakEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0) -- Green when enabled, red when disabled
-                for _, obj in pairs(Workspace.Items:GetChildren()) do
-                    if obj:IsA("Model") and obj.Name:match("Food") and obj.PrimaryPart then
-                        CreateEsp(obj, Color3.fromRGB(128, 0, 128), obj.Name, obj.PrimaryPart, 2)
-                    end
-                end
-                wait(0.1)
-            end
-            for _, obj in pairs(Workspace.Items:GetChildren()) do
-                if obj:IsA("Model") and obj.Name:match("Food") and obj.PrimaryPart then
-                    KeepEsp(obj, obj.PrimaryPart)
-                end
-            end
-        end)
-    end
-})
-
--- Function to open/close the menu
-local function toggleMenu()    menuOpen = not menuOpen
-    jumpButton.Visible = menuOpen
-    speedButton.Visible = menuOpen
-    closeButton.Visible = menuOpen
-end
-
--- Function to close the menu
-local function closeMenu()    menuOpen = false
-    jumpButton.Visible = false
-    speedButton.Visible = false
-    closeButton.Visible = false
-end
-
--- Connect button click events
-toggleButton.MouseButton1Click:Connect(toggleMenu)jumpButton.MouseButton1Click:Connect(toggleJump)speedButton.MouseButton1Click:Connect(toggleHak)closeMenu.
-MouseButton1Click:Connect(closeMenu)-- Enable dragging of the menu
-local function dragMenu(button)    local dragging = false
-    local dragInput
-    local startPos = button.Position
-
-    button.InputBegan:Connect(function(input)        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            dragInput = input
-            startPos = button.Position
-
-            input.Changed:Connect(function()                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)        end
-    end)    button.InputChanged:Connect(function(input)        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            while dragging do
-                local mousePos = player:GetMouse().X
-                button.Position = UDim2.new(0, mousePos - button.Size.X.Offset / 2, 0, startPos.Y.Offset)                wait()            end
-        end
-    end)end
-
--- Allow dragging for the toggle button
-dragMenu(toggleButton)-- Ensure the player can jump infinitely
-game:GetService("RunService").RenderStepped:Connect(function()    if jumpEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
-        if player.Character.Humanoid:GetState() == Enum.HumanoidStateType.Freefall then
-            player.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)        end
+-- Функция для обработки нажатия кнопки
+button.MouseButton1Click:Connect(function()    isActive = not isActive -- Переключаем состояние активности
+    if isActive then
+        button.BackgroundColor3 = Color3.new(0, 1, 0) -- Зелёный цвет
+        markBrainrot() -- Отмечаем брейнрот
+    else
+        button.BackgroundColor3 = Color3.new(1, 0, 0) -- Красный цвет
     end
 end)
