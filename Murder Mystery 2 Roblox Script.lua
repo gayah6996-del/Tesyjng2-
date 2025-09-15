@@ -9,7 +9,7 @@ HEALTHBAR_ACTIVATED = true
 
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/Robojini/Tuturial_UI_Library/main/UI_Template_1"))()
 
-local window = library.CreateLib("JUICEFW Murder Mystery 2. PlaceID: "..game.PlaceId, "RJTheme3") -- Creates the window
+local window = library.CreateLib("By @SFXCL, Murder Mystery 2. PlaceID: "..game.PlaceId, "RJTheme3") -- Creates the window
 
 local MainTab = window:NewTab("Main Tab")
 local main_menu = MainTab:NewSection("Main")
