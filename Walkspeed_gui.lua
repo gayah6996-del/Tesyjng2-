@@ -155,155 +155,11 @@ do
         end
     })
  
-    Tabs.Universal:AddButton({
-        Title = "Infinite Jump",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            loadstring(game:HttpGet("https://pastebin.com/raw/WweihvrM"))()
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Big Hitboz",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/Vcsk/RobloxScripts/main/HitboxExpander.lua"))()
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "ESP",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            loadstring(game:HttpGet("https://scriptblox.com/raw/Universal-ESP-Script_527"))()
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Headless",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            game.Players.LocalPlayer.Character.Head.Transparency = 1
-            game.Players.LocalPlayer.Character.Head.Transparency = 1
-            for i,v in pairs(game.Players.LocalPlayer.Character.Head:GetChildren()) do
-            if (v:IsA("Decal")) then
-            v.Transparency = 1
-            end
-            end
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Zombie Animation",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            while true do
-            local Animate = game.Players.LocalPlayer.Character.Animate
-            Animate.walk.WalkAnim.AnimationId = "http://www.roblox.com/asset/?id=616168032"
-            Animate.run.RunAnim.AnimationId = "http://www.roblox.com/asset/?id=616163682"
-            game.Players.LocalPlayer.Character.Humanoid.Jump = false
-            wait(1)
-            end
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Infinite Yield",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))()
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Stretched Resolution",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            getgenv().Resolution = {
-                [".gg/scripters"] = 0.65
-            }
- 
-            local Camera = workspace.CurrentCamera
-            if getgenv().gg_scripters == nil then
-                game:GetService("RunService").RenderStepped:Connect(
-                    function()
-                        Camera.CFrame = Camera.CFrame * CFrame.new(0, 0, 0, 1, 0, 0, 0, getgenv().Resolution[".gg/scripters"], 0, 0, 0, 1)
-                    end
-                )
-            end
-            getgenv().gg_scripters = "Aori0001"
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "FPS Boost",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            loadstring(game:HttpGet("https://pastebin.com/raw/8YZ2cc6V"))()
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Autoclicker",
-        Description = "Press V",
-        Callback = function()
-            local time = 0.01 --decrease if too slow increase if too fast
- 
-            click = false
-            m = game.Players.LocalPlayer:GetMouse()
-            m.KeyDown:connect(function(key)
-            if key == "v" then
-            if click == true then click = false
-            elseif
-            click == false then click = true
- 
-            while click == true do 
-            wait(time)
-            mouse1click()
-            end
-            end
-            end
-            end)
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Chat Bypass",
-        Description = "Key: P1d#uT (dont work on all games)",
-        Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/vqmpjayZ/Bypass/8e92f1a31635629214ab4ac38217b97c2642d113/vadrifts"))()
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Free camera",
-        Description = "Press Shift + P",
-        Callback = function()
-            loadstring(game:HttpGet('https://zxfolix.github.io/freecamV2.txt'))()
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Fov changer",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            loadstring(game:GetObjects("rbxassetid://15046298025")[1].Source)()
-        end
-    })
- 
-    Tabs.Universal:AddButton({
-        Title = "Anti AFK",
-        Description = "Телеграм @SFXCL",
-        Callback = function()
-            loadstring(game:GetObjects("rbxassetid://14428356235")[1].Source)()
-        end
-    })
- 
    Tabs.v1v1pistol:AddButton({
-        Title = "Aimbot & ESP",
+        Title = "Запустить",
         Description = "Телеграм @SFXCL",
         Callback = function()
-            loadstring(game:GetObjects("rbxassetid://14713089094")[1].Source)()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/VapeVoidware/VWExtra/main/NightsInTheForest.lua", true))()
         end
     })
  
@@ -316,10 +172,10 @@ do
     })
  
     Tabs.c3008:AddButton({
-        Title = "Sky Hub",
+        Title = "Запустить",
         Description = "Телеграм @SFXCL",
         Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/yofriendfromschool1/Sky-Hub/main/SkyHub.txt"))()
+      loadstring(game:HttpGet("https://raw.githubusercontent.com/Estevansit0/KJJK/refs/heads/main/PusarX-loader.lua"))()
         end
     })
  
