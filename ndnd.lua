@@ -149,7 +149,7 @@ local function createGUI()
     gui.Parent = player:WaitForChild("PlayerGui")
 
     local frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -100, 0.5, -115) -- Центр экрана
+    frame.Position = UDim2.new(0.5, -100, 0.5, -115)
     frame.Size = UDim2.new(0, 200, 0, 230)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
@@ -201,15 +201,15 @@ local function createGUI()
     espOff.TextScaled = true
     espOff.BorderSizePixel = 0
 
-    -- FOV Slider
+    -- FOV Slider для телефона
     local fovSliderFrame = Instance.new("Frame", frame)
-    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 50)
+    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60) -- Увеличил высоту для удобства на телефоне
     fovSliderFrame.Position = UDim2.new(0.05, 0, 0.7, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
     local fovLabel = Instance.new("TextLabel", fovSliderFrame)
-    fovLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    fovLabel.Size = UDim2.new(1, 0, 0.3, 0)
     fovLabel.Position = UDim2.new(0, 0, 0, 0)
     fovLabel.BackgroundTransparency = 1
     fovLabel.Text = "FOV Radius: " .. fovRadius
@@ -217,11 +217,13 @@ local function createGUI()
     fovLabel.TextScaled = true
     fovLabel.Font = Enum.Font.SourceSans
 
-    local sliderBackground = Instance.new("Frame", fovSliderFrame)
-    sliderBackground.Size = UDim2.new(1, 0, 0.3, 0)
-    sliderBackground.Position = UDim2.new(0, 0, 0.5, 0)
+    local sliderBackground = Instance.new("TextButton", fovSliderFrame) -- Изменил на TextButton для лучшего тача
+    sliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
+    sliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
     sliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     sliderBackground.BorderSizePixel = 0
+    sliderBackground.Text = ""
+    sliderBackground.AutoButtonColor = false
 
     local sliderFill = Instance.new("Frame", sliderBackground)
     sliderFill.Size = UDim2.new((fovRadius - 50) / 200, 0, 1, 0)
@@ -229,59 +231,101 @@ local function createGUI()
     sliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
     sliderFill.BorderSizePixel = 0
 
-    local sliderButton = Instance.new("TextButton", sliderBackground)
-    sliderButton.Size = UDim2.new(0, 20, 1.5, 0)
-    sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -10, -0.25, 0)
+    local sliderButton = Instance.new("Frame", sliderBackground)
+    sliderButton.Size = UDim2.new(0, 25, 1.5, 0) -- Шире для удобства на телефоне
+    sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -12, -0.25, 0)
     sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    sliderButton.Text = ""
-    sliderButton.BorderSizePixel = 0
-    sliderButton.ZIndex = 2
+    sliderButton.BorderSizePixel = 1
+    sliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
+
+    -- Кнопки + и - для точной настройки
+    local minusButton = Instance.new("TextButton", fovSliderFrame)
+    minusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
+    minusButton.Position = UDim2.new(0, 0, 0.85, 0)
+    minusButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    minusButton.Text = "-"
+    minusButton.TextColor3 = Color3.new(1, 1, 1)
+    minusButton.TextScaled = true
+    minusButton.BorderSizePixel = 0
+
+    local plusButton = Instance.new("TextButton", fovSliderFrame)
+    plusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
+    plusButton.Position = UDim2.new(0.8, 0, 0.85, 0)
+    plusButton.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
+    plusButton.Text = "+"
+    plusButton.TextColor3 = Color3.new(1, 1, 1)
+    plusButton.TextScaled = true
+    plusButton.BorderSizePixel = 0
 
     -- Функция обновления FOV
     local function updateFOV(value)
-        fovRadius = math.clamp(value, 50, 250)
+        fovRadius = math.floor(math.clamp(value, 50, 250))
         circle.Radius = fovRadius
         fovLabel.Text = "FOV Radius: " .. fovRadius
         
         local fillSize = (fovRadius - 50) / 200
         sliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
-        sliderButton.Position = UDim2.new(fillSize, -10, -0.25, 0)
+        sliderButton.Position = UDim2.new(fillSize, -12, -0.25, 0)
     end
 
-    -- Обработка слайдера
+    -- Обработка тача для слайдера
     local isSliding = false
 
-    local function onInputChanged(input)
-        if isSliding and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local sliderAbsolutePosition = sliderBackground.AbsolutePosition
-            local sliderAbsoluteSize = sliderBackground.AbsoluteSize
-            local mouseX = input.Position.X
-            
-            local relativeX = (mouseX - sliderAbsolutePosition.X) / sliderAbsoluteSize.X
-            relativeX = math.clamp(relativeX, 0, 1)
-            
-            local newFOV = 50 + (relativeX * 200)
-            updateFOV(newFOV)
-        end
+    local function updateSliderFromTouch(touchPosition)
+        local sliderAbsPos = sliderBackground.AbsolutePosition
+        local sliderAbsSize = sliderBackground.AbsoluteSize
+        local touchX = touchPosition.X
+        
+        local relativeX = (touchX - sliderAbsPos.X) / sliderAbsSize.X
+        relativeX = math.clamp(relativeX, 0, 1)
+        
+        local newFOV = 50 + (relativeX * 200)
+        updateFOV(newFOV)
     end
 
-    local function onInputEnded(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isSliding = false
-        end
-    end
+    -- Обработка начала тача
+    sliderBackground.MouseButton1Down:Connect(function(x, y)
+        isSliding = true
+        updateSliderFromTouch(Vector2.new(x, y))
+    end)
 
-    sliderButton.MouseButton1Down:Connect(function()
+    -- Обработка движения тача
+    sliderBackground.MouseButton1Move:Connect(function(x, y)
+        if isSliding then
+            updateSliderFromTouch(Vector2.new(x, y))
+        end
+    end)
+
+    -- Обработка окончания тача
+    sliderBackground.MouseButton1Up:Connect(function()
+        isSliding = false
+    end)
+
+    -- Также обрабатываем тач на самой кнопке слайдера
+    sliderButton.MouseButton1Down:Connect(function(x, y)
         isSliding = true
     end)
 
-    userInputService.InputChanged:Connect(onInputChanged)
-    userInputService.InputEnded:Connect(onInputEnded)
+    -- Кнопки + и -
+    minusButton.MouseButton1Click:Connect(function()
+        updateFOV(fovRadius - 10)
+    end)
+
+    plusButton.MouseButton1Click:Connect(function()
+        updateFOV(fovRadius + 10)
+    end)
+
+    -- Обработка глобальных событий тача
+    userInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isSliding = false
+        end
+    end)
 
     -- Кнопки вне основного фрейма
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 100, 0, 30)
-    hideButton.Position = UDim2.new(0.5, -50, 0.5, 130) -- Под основным меню
+    hideButton.Position = UDim2.new(0.5, -50, 0.5, 130)
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     hideButton.Text = "Hide GUI"
     hideButton.TextColor3 = Color3.new(1, 1, 1)
@@ -290,7 +334,7 @@ local function createGUI()
 
     local teamCheckButton = Instance.new("TextButton", gui)
     teamCheckButton.Size = UDim2.new(0, 200, 0, 30)
-    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 170) -- Под кнопкой Hide
+    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 170)
     teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
     teamCheckButton.Text = "Team Check: OFF"
     teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
