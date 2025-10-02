@@ -3,6 +3,7 @@ local player = game.Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local players = game:GetService("Players")
 local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
 
 -- Aimbot & ESP Variables
 local aimbotEnabled = false
@@ -148,9 +149,11 @@ local function createGUI()
     gui.Parent = player:WaitForChild("PlayerGui")
 
     local frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0, 20, 0, 100)
-    frame.Size = UDim2.new(0, 200, 0, 230) -- Увеличил высоту для слайдера
+    frame.Position = UDim2.new(0.5, -100, 0.5, -115) -- Центр экрана
+    frame.Size = UDim2.new(0, 200, 0, 230)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BorderSizePixel = 1
+    frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
 
     local title = Instance.new("TextLabel", frame)
     title.Size = UDim2.new(1, 0, 0, 25)
@@ -160,6 +163,7 @@ local function createGUI()
     title.TextColor3 = Color3.new(1, 1, 1)
     title.TextScaled = true
     title.Font = Enum.Font.SourceSansBold
+    title.BorderSizePixel = 0
 
     local aimbotOn = Instance.new("TextButton", frame)
     aimbotOn.Size = UDim2.new(0.5, -5, 0.3, -5)
@@ -168,6 +172,7 @@ local function createGUI()
     aimbotOn.Text = "Aimbot ON"
     aimbotOn.TextColor3 = Color3.new(1, 1, 1)
     aimbotOn.TextScaled = true
+    aimbotOn.BorderSizePixel = 0
 
     local aimbotOff = Instance.new("TextButton", frame)
     aimbotOff.Size = UDim2.new(0.5, -5, 0.3, -5)
@@ -176,6 +181,7 @@ local function createGUI()
     aimbotOff.Text = "Aimbot OFF ✅"
     aimbotOff.TextColor3 = Color3.new(1, 1, 1)
     aimbotOff.TextScaled = true
+    aimbotOff.BorderSizePixel = 0
 
     local espOn = Instance.new("TextButton", frame)
     espOn.Size = UDim2.new(0.5, -5, 0.3, -5)
@@ -184,6 +190,7 @@ local function createGUI()
     espOn.Text = "ESP ON"
     espOn.TextColor3 = Color3.new(1, 1, 1)
     espOn.TextScaled = true
+    espOn.BorderSizePixel = 0
 
     local espOff = Instance.new("TextButton", frame)
     espOff.Size = UDim2.new(0.5, -5, 0.3, -5)
@@ -192,6 +199,7 @@ local function createGUI()
     espOff.Text = "ESP OFF ✅"
     espOff.TextColor3 = Color3.new(1, 1, 1)
     espOff.TextScaled = true
+    espOff.BorderSizePixel = 0
 
     -- FOV Slider
     local fovSliderFrame = Instance.new("Frame", frame)
@@ -216,7 +224,7 @@ local function createGUI()
     sliderBackground.BorderSizePixel = 0
 
     local sliderFill = Instance.new("Frame", sliderBackground)
-    sliderFill.Size = UDim2.new((fovRadius - 50) / 200, 0, 1, 0) -- 50-250 range
+    sliderFill.Size = UDim2.new((fovRadius - 50) / 200, 0, 1, 0)
     sliderFill.Position = UDim2.new(0, 0, 0, 0)
     sliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
     sliderFill.BorderSizePixel = 0
@@ -227,28 +235,23 @@ local function createGUI()
     sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     sliderButton.Text = ""
     sliderButton.BorderSizePixel = 0
+    sliderButton.ZIndex = 2
 
-    local isSliding = false
-
+    -- Функция обновления FOV
     local function updateFOV(value)
         fovRadius = math.clamp(value, 50, 250)
         circle.Radius = fovRadius
         fovLabel.Text = "FOV Radius: " .. fovRadius
-        sliderFill.Size = UDim2.new((fovRadius - 50) / 200, 0, 1, 0)
-        sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -10, -0.25, 0)
+        
+        local fillSize = (fovRadius - 50) / 200
+        sliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
+        sliderButton.Position = UDim2.new(fillSize, -10, -0.25, 0)
     end
 
-    sliderButton.MouseButton1Down:Connect(function()
-        isSliding = true
-    end)
+    -- Обработка слайдера
+    local isSliding = false
 
-    game:GetService("UserInputService").InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isSliding = false
-        end
-    end)
-
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
+    local function onInputChanged(input)
         if isSliding and input.UserInputType == Enum.UserInputType.MouseMovement then
             local sliderAbsolutePosition = sliderBackground.AbsolutePosition
             local sliderAbsoluteSize = sliderBackground.AbsoluteSize
@@ -257,26 +260,42 @@ local function createGUI()
             local relativeX = (mouseX - sliderAbsolutePosition.X) / sliderAbsoluteSize.X
             relativeX = math.clamp(relativeX, 0, 1)
             
-            local newFOV = 50 + (relativeX * 200) -- 50 to 250 range
+            local newFOV = 50 + (relativeX * 200)
             updateFOV(newFOV)
         end
+    end
+
+    local function onInputEnded(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isSliding = false
+        end
+    end
+
+    sliderButton.MouseButton1Down:Connect(function()
+        isSliding = true
     end)
 
+    userInputService.InputChanged:Connect(onInputChanged)
+    userInputService.InputEnded:Connect(onInputEnded)
+
+    -- Кнопки вне основного фрейма
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 100, 0, 30)
-    hideButton.Position = UDim2.new(0, 20, 0, 340)
+    hideButton.Position = UDim2.new(0.5, -50, 0.5, 130) -- Под основным меню
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     hideButton.Text = "Hide GUI"
     hideButton.TextColor3 = Color3.new(1, 1, 1)
     hideButton.TextScaled = true
+    hideButton.BorderSizePixel = 0
 
     local teamCheckButton = Instance.new("TextButton", gui)
     teamCheckButton.Size = UDim2.new(0, 200, 0, 30)
-    teamCheckButton.Position = UDim2.new(0, 20, 0, 380)
+    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 170) -- Под кнопкой Hide
     teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
     teamCheckButton.Text = "Team Check: OFF"
     teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
     teamCheckButton.TextScaled = true
+    teamCheckButton.BorderSizePixel = 0
 
     teamCheckButton.MouseButton1Click:Connect(function()
         teamCheckEnabled = not teamCheckEnabled
