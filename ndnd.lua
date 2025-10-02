@@ -1,40 +1,408 @@
--- Создаем экран GUI
-local ScreenGui = Instance.new("ScreenGui")local Frame = Instance.new("Frame")local AimBotButton = Instance.new("TextButton")-- Настраиваем GUI
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")Frame.Size = UDim2.new(0.2, 0, 0.2, 0)Frame.Position = UDim2.new(0.4, 0, 0.4, 0)Frame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)Frame.Parent = ScreenGui
+--- Services
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local players = game:GetService("Players")
+local runService = game:GetService("RunService")
 
-AimBotButton.Size = UDim2.new(1, 0, 1, 0)AimBotButton.Text ="Включить Аимбот"AimBotButton.Parent = Frame
-
+-- Aimbot & ESP Variables
 local aimbotEnabled = false
+local espEnabled = false
+local teamCheckEnabled = false
+local fovRadius = 100
+local guiName = "AimbotToggleGUI"
+local guiVisible = true
+local espObjects = {}
 
--- Функция для активации аимбота
-local function toggleAimBot()    aimbotEnabled = not aimbotEnabled
-    if aimbotEnabled then
-        AimBotButton.Text ="Выключить Аимбот"    else
-        AimBotButton.Text ="Включить Аимбот"    end
+-- FOV Circle
+local circle = Drawing.new("Circle")
+circle.Color = Color3.fromRGB(255, 255, 255)
+circle.Thickness = 1
+circle.Filled = false
+circle.Radius = fovRadius
+circle.Visible = true
+circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+
+-- Show Notification
+local function showNotification()
+    local notification = Instance.new("ScreenGui")
+    notification.Name = "NotificationGUI"
+    notification.ResetOnSpawn = false
+    notification.Parent = player:WaitForChild("PlayerGui")
+
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://6073491164"
+    sound.Volume = 1
+    sound.Parent = notification
+    sound:Play()
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Parent = notification
+    textLabel.Size = UDim2.new(0, 250, 0, 50)
+    textLabel.Position = UDim2.new(1, -260, 1, -60)
+    textLabel.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    textLabel.BorderSizePixel = 0
+    textLabel.Text = "Скрипт успешно запущен✅!"
+    textLabel.TextColor3 = Color3.new(1, 1, 1)
+    textLabel.TextScaled = true
+    textLabel.Font = Enum.Font.SourceSansBold
+
+    task.delay(3, function()
+        for i = 1, 10 do
+            textLabel.TextTransparency = i * 0.1
+            textLabel.BackgroundTransparency = i * 0.1
+            task.wait(0.05)
+        end
+        notification:Destroy()
+    end)
 end
 
-AimBotButton.MouseButton1Click:Connect(toggleAimBot)-- Основной цикл для аимбота
-game:GetService("RunService").RenderStepped:Connect(function()    if aimbotEnabled then
-        local player = game.Players.LocalPlayer
-        local character = player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local closestPlayer = nil
-            local closestDistance = math.huge
-            
-            for_, otherPlayer in ipairs(game.Players:GetPlayers()) do
-                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local distance = (character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).magnitude
-                    if distance < closestDistance then
-                        closestDistance = distance
-                        closestPlayer = otherPlayer
-                    end
+-- Create ESP for a player
+local function createESPForPlayer(p)
+    local nameTag = Drawing.new("Text")
+    nameTag.Size = 14
+    nameTag.Color = Color3.fromRGB(255, 0, 0)
+    nameTag.Center = true
+    nameTag.Outline = true
+
+    local distanceTag = Drawing.new("Text")
+    distanceTag.Size = 13
+    distanceTag.Color = Color3.fromRGB(255, 0, 0)
+    distanceTag.Center = true
+    distanceTag.Outline = true
+
+    local box = Drawing.new("Square")
+    box.Thickness = 1
+    box.Color = Color3.fromRGB(255, 0, 0)
+    box.Filled = false
+
+    local tracer = Drawing.new("Line")
+    tracer.Thickness = 1
+    tracer.Color = Color3.fromRGB(255, 0, 0)
+
+    espObjects[p] = {
+        name = nameTag,
+        distance = distanceTag,
+        box = box,
+        tracer = tracer
+    }
+end
+
+-- Remove ESP
+local function removeESPForPlayer(p)
+    if espObjects[p] then
+        for _, drawing in pairs(espObjects[p]) do
+            drawing:Remove()
+        end
+        espObjects[p] = nil
+    end
+end
+
+players.PlayerRemoving:Connect(removeESPForPlayer)
+
+-- Visibility Check
+local function isVisible(part)
+    if not part then return false end
+    local origin = camera.CFrame.Position
+    local direction = (part.Position - origin)
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+    rayParams.FilterDescendantsInstances = { player.Character or workspace }
+    local result = workspace:Raycast(origin, direction, rayParams)
+    if result then
+        return part:IsDescendantOf(result.Instance.Parent) or result.Instance:IsDescendantOf(part.Parent)
+    else
+        return true
+    end
+end
+
+-- Closest Player Function (with team check)
+local function getClosestPlayer()
+    local closestPlayer = nil
+    local shortestDistance = fovRadius
+
+    for _, p in pairs(players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+            if teamCheckEnabled and p.Team == player.Team then
+                continue
+            end
+            local head = p.Character.Head
+            local screenPos, onScreen = camera:WorldToViewportPoint(head.Position)
+            if onScreen then
+                local distanceFromCenter = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)).Magnitude
+                if distanceFromCenter < shortestDistance and isVisible(head) then
+                    shortestDistance = distanceFromCenter
+                    closestPlayer = p
                 end
             end
+        end
+    end
+
+    return closestPlayer
+end
+
+-- GUI Creation Function
+local function createGUI()
+    local gui = Instance.new("ScreenGui")
+    gui.Name = guiName
+    gui.ResetOnSpawn = false
+    gui.Parent = player:WaitForChild("PlayerGui")
+
+    local frame = Instance.new("Frame", gui)
+    frame.Position = UDim2.new(0, 20, 0, 100)
+    frame.Size = UDim2.new(0, 200, 0, 230) -- Увеличил высоту для слайдера
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Position = UDim2.new(0, 0, 0, 0)
+    title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    title.Text = "ASTRALCHEAT V1.0 BY @SFXCL"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.TextScaled = true
+    title.Font = Enum.Font.SourceSansBold
+
+    local aimbotOn = Instance.new("TextButton", frame)
+    aimbotOn.Size = UDim2.new(0.5, -5, 0.3, -5)
+    aimbotOn.Position = UDim2.new(0, 5, 0, 30)
+    aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    aimbotOn.Text = "Aimbot ON"
+    aimbotOn.TextColor3 = Color3.new(1, 1, 1)
+    aimbotOn.TextScaled = true
+
+    local aimbotOff = Instance.new("TextButton", frame)
+    aimbotOff.Size = UDim2.new(0.5, -5, 0.3, -5)
+    aimbotOff.Position = UDim2.new(0.5, 5, 0, 30)
+    aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    aimbotOff.Text = "Aimbot OFF ✅"
+    aimbotOff.TextColor3 = Color3.new(1, 1, 1)
+    aimbotOff.TextScaled = true
+
+    local espOn = Instance.new("TextButton", frame)
+    espOn.Size = UDim2.new(0.5, -5, 0.3, -5)
+    espOn.Position = UDim2.new(0, 5, 0.35, 10)
+    espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    espOn.Text = "ESP ON"
+    espOn.TextColor3 = Color3.new(1, 1, 1)
+    espOn.TextScaled = true
+
+    local espOff = Instance.new("TextButton", frame)
+    espOff.Size = UDim2.new(0.5, -5, 0.3, -5)
+    espOff.Position = UDim2.new(0.5, 5, 0.35, 10)
+    espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    espOff.Text = "ESP OFF ✅"
+    espOff.TextColor3 = Color3.new(1, 1, 1)
+    espOff.TextScaled = true
+
+    -- FOV Slider
+    local fovSliderFrame = Instance.new("Frame", frame)
+    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 50)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.7, 0)
+    fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    fovSliderFrame.BorderSizePixel = 0
+
+    local fovLabel = Instance.new("TextLabel", fovSliderFrame)
+    fovLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    fovLabel.Position = UDim2.new(0, 0, 0, 0)
+    fovLabel.BackgroundTransparency = 1
+    fovLabel.Text = "FOV Radius: " .. fovRadius
+    fovLabel.TextColor3 = Color3.new(1, 1, 1)
+    fovLabel.TextScaled = true
+    fovLabel.Font = Enum.Font.SourceSans
+
+    local sliderBackground = Instance.new("Frame", fovSliderFrame)
+    sliderBackground.Size = UDim2.new(1, 0, 0.3, 0)
+    sliderBackground.Position = UDim2.new(0, 0, 0.5, 0)
+    sliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    sliderBackground.BorderSizePixel = 0
+
+    local sliderFill = Instance.new("Frame", sliderBackground)
+    sliderFill.Size = UDim2.new((fovRadius - 50) / 200, 0, 1, 0) -- 50-250 range
+    sliderFill.Position = UDim2.new(0, 0, 0, 0)
+    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    sliderFill.BorderSizePixel = 0
+
+    local sliderButton = Instance.new("TextButton", sliderBackground)
+    sliderButton.Size = UDim2.new(0, 20, 1.5, 0)
+    sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -10, -0.25, 0)
+    sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    sliderButton.Text = ""
+    sliderButton.BorderSizePixel = 0
+
+    local isSliding = false
+
+    local function updateFOV(value)
+        fovRadius = math.clamp(value, 50, 250)
+        circle.Radius = fovRadius
+        fovLabel.Text = "FOV Radius: " .. fovRadius
+        sliderFill.Size = UDim2.new((fovRadius - 50) / 200, 0, 1, 0)
+        sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -10, -0.25, 0)
+    end
+
+    sliderButton.MouseButton1Down:Connect(function()
+        isSliding = true
+    end)
+
+    game:GetService("UserInputService").InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isSliding = false
+        end
+    end)
+
+    game:GetService("UserInputService").InputChanged:Connect(function(input)
+        if isSliding and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local sliderAbsolutePosition = sliderBackground.AbsolutePosition
+            local sliderAbsoluteSize = sliderBackground.AbsoluteSize
+            local mouseX = input.Position.X
             
-            if closestPlayer then
-                -- Нацеливаемся на ближайшего игрока
-                local targetPosition = closestPlayer.Character.HumanoidRootPart.Position
-                character.HumanoidRootPart.CFrame = CFrame.new(targetPosition + Vector3.new(0, 1, 0)) -- добавляем небольшую высоту
+            local relativeX = (mouseX - sliderAbsolutePosition.X) / sliderAbsoluteSize.X
+            relativeX = math.clamp(relativeX, 0, 1)
+            
+            local newFOV = 50 + (relativeX * 200) -- 50 to 250 range
+            updateFOV(newFOV)
+        end
+    end)
+
+    local hideButton = Instance.new("TextButton", gui)
+    hideButton.Size = UDim2.new(0, 100, 0, 30)
+    hideButton.Position = UDim2.new(0, 20, 0, 340)
+    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    hideButton.Text = "Hide GUI"
+    hideButton.TextColor3 = Color3.new(1, 1, 1)
+    hideButton.TextScaled = true
+
+    local teamCheckButton = Instance.new("TextButton", gui)
+    teamCheckButton.Size = UDim2.new(0, 200, 0, 30)
+    teamCheckButton.Position = UDim2.new(0, 20, 0, 380)
+    teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
+    teamCheckButton.Text = "Team Check: OFF"
+    teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
+    teamCheckButton.TextScaled = true
+
+    teamCheckButton.MouseButton1Click:Connect(function()
+        teamCheckEnabled = not teamCheckEnabled
+        teamCheckButton.Text = "Team Check: " .. (teamCheckEnabled and "ON ✅" or "OFF")
+        teamCheckButton.BackgroundColor3 = teamCheckEnabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(120, 120, 255)
+    end)
+
+    hideButton.MouseButton1Click:Connect(function()
+        guiVisible = not guiVisible
+        frame.Visible = guiVisible
+        hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
+    end)
+
+    aimbotOn.MouseButton1Click:Connect(function()
+        aimbotEnabled = true
+        aimbotOn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        aimbotOff.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        aimbotOn.Text = "Aimbot ON ✅"
+        aimbotOff.Text = "Aimbot OFF"
+    end)
+
+    aimbotOff.MouseButton1Click:Connect(function()
+        aimbotEnabled = false
+        aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        aimbotOn.Text = "Aimbot ON"
+        aimbotOff.Text = "Aimbot OFF ✅"
+    end)
+
+    espOn.MouseButton1Click:Connect(function()
+        espEnabled = true
+        espOn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        espOff.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        espOn.Text = "ESP ON ✅"
+        espOff.Text = "ESP OFF"
+    end)
+
+    espOff.MouseButton1Click:Connect(function()
+        espEnabled = false
+        espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        espOn.Text = "ESP ON"
+        espOff.Text = "ESP OFF ✅"
+        for _, drawings in pairs(espObjects) do
+            drawings.box.Visible = false
+            drawings.name.Visible = false
+            drawings.distance.Visible = false
+            drawings.tracer.Visible = false
+        end
+    end)
+end
+
+createGUI()
+showNotification()
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    if not player:WaitForChild("PlayerGui"):FindFirstChild(guiName) then
+        createGUI()
+    end
+end)
+
+runService.RenderStepped:Connect(function()
+    circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+
+    if aimbotEnabled then
+        local target = getClosestPlayer()
+        if target and target.Character and target.Character:FindFirstChild("Head") then
+            local headPos = target.Character.Head.Position
+            camera.CFrame = CFrame.new(camera.CFrame.Position, headPos)
+        end
+    end
+
+    for _, p in pairs(players:GetPlayers()) do
+        if p ~= player then
+            if not espObjects[p] then
+                createESPForPlayer(p)
+            end
+
+            local drawings = espObjects[p]
+            local char = p.Character
+            if espEnabled and char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
+                if teamCheckEnabled and p.Team == player.Team then
+                    drawings.box.Visible = false
+                    drawings.name.Visible = false
+                    drawings.distance.Visible = false
+                    drawings.tracer.Visible = false
+                    continue
+                end
+
+                local head = char.Head
+                local hrp = char.HumanoidRootPart
+                local headPos2D, onScreen1 = camera:WorldToViewportPoint(head.Position)
+                local rootPos2D, onScreen2 = camera:WorldToViewportPoint(hrp.Position)
+
+                if onScreen1 and onScreen2 then
+                    local height = (headPos2D - rootPos2D).Magnitude * 2
+                    local width = height / 2
+
+                    drawings.box.Size = Vector2.new(width, height)
+                    drawings.box.Position = Vector2.new(rootPos2D.X - width/2, rootPos2D.Y - height/2)
+                    drawings.box.Visible = true
+
+                    drawings.name.Text = p.Name
+                    drawings.name.Position = Vector2.new(headPos2D.X, headPos2D.Y - 20)
+                    drawings.name.Visible = true
+
+                    local distance = math.floor((player.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
+                    drawings.distance.Text = tostring(distance) .. "m"
+                    drawings.distance.Position = Vector2.new(rootPos2D.X, rootPos2D.Y + height/2 + 5)
+                    drawings.distance.Visible = true
+
+                    drawings.tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    drawings.tracer.To = Vector2.new(rootPos2D.X, rootPos2D.Y)
+                    drawings.tracer.Visible = true
+                else
+                    drawings.box.Visible = false
+                    drawings.name.Visible = false
+                    drawings.distance.Visible = false
+                    drawings.tracer.Visible = false
+                end
+            else
+                drawings.box.Visible = false
+                drawings.name.Visible = false
+                drawings.distance.Visible = false
+                drawings.tracer.Visible = false
             end
         end
     end
