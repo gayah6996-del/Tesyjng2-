@@ -13,6 +13,7 @@ local fovRadius = 100
 local guiName = "AimbotToggleGUI"
 local guiVisible = true
 local espObjects = {}
+local currentTab = "Test" -- Текущая вкладка
 
 -- FOV Circle
 local circle = Drawing.new("Circle")
@@ -150,7 +151,7 @@ local function createGUI()
 
     local frame = Instance.new("Frame", gui)
     frame.Position = UDim2.new(0.5, -100, 0.5, -115)
-    frame.Size = UDim2.new(0, 200, 0, 230)
+    frame.Size = UDim2.new(0, 200, 0, 250) -- Увеличил высоту для табов
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -166,46 +167,72 @@ local function createGUI()
     title.Font = Enum.Font.SourceSansBold
     title.BorderSizePixel = 0
 
-    local aimbotOn = Instance.new("TextButton", frame)
-    aimbotOn.Size = UDim2.new(0.5, -5, 0.3, -5)
-    aimbotOn.Position = UDim2.new(0, 5, 0, 30)
+    -- Табы
+    local tabsFrame = Instance.new("Frame", frame)
+    tabsFrame.Size = UDim2.new(1, 0, 0, 30)
+    tabsFrame.Position = UDim2.new(0, 0, 0, 25)
+    tabsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    tabsFrame.BorderSizePixel = 0
+
+    local testTabButton = Instance.new("TextButton", tabsFrame)
+    testTabButton.Size = UDim2.new(1, 0, 1, 0)
+    testTabButton.Position = UDim2.new(0, 0, 0, 0)
+    testTabButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    testTabButton.Text = "Test"
+    testTabButton.TextColor3 = Color3.new(1, 1, 1)
+    testTabButton.TextScaled = true
+    testTabButton.BorderSizePixel = 0
+
+    -- Контент для вкладки Test
+    local testContent = Instance.new("Frame", frame)
+    testContent.Size = UDim2.new(1, 0, 0, 195)
+    testContent.Position = UDim2.new(0, 0, 0, 55)
+    testContent.BackgroundTransparency = 1
+    testContent.Visible = true
+    testContent.Name = "TestContent"
+
+    -- Аимбот кнопки в Test вкладке
+    local aimbotOn = Instance.new("TextButton", testContent)
+    aimbotOn.Size = UDim2.new(0.5, -5, 0.2, -5)
+    aimbotOn.Position = UDim2.new(0, 5, 0, 0)
     aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     aimbotOn.Text = "Aimbot ON"
     aimbotOn.TextColor3 = Color3.new(1, 1, 1)
     aimbotOn.TextScaled = true
     aimbotOn.BorderSizePixel = 0
 
-    local aimbotOff = Instance.new("TextButton", frame)
-    aimbotOff.Size = UDim2.new(0.5, -5, 0.3, -5)
-    aimbotOff.Position = UDim2.new(0.5, 5, 0, 30)
+    local aimbotOff = Instance.new("TextButton", testContent)
+    aimbotOff.Size = UDim2.new(0.5, -5, 0.2, -5)
+    aimbotOff.Position = UDim2.new(0.5, 5, 0, 0)
     aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     aimbotOff.Text = "Aimbot OFF ✅"
     aimbotOff.TextColor3 = Color3.new(1, 1, 1)
     aimbotOff.TextScaled = true
     aimbotOff.BorderSizePixel = 0
 
-    local espOn = Instance.new("TextButton", frame)
-    espOn.Size = UDim2.new(0.5, -5, 0.3, -5)
-    espOn.Position = UDim2.new(0, 5, 0.35, 10)
+    -- ESP кнопки в Test вкладке
+    local espOn = Instance.new("TextButton", testContent)
+    espOn.Size = UDim2.new(0.5, -5, 0.2, -5)
+    espOn.Position = UDim2.new(0, 5, 0.25, 0)
     espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     espOn.Text = "ESP ON"
     espOn.TextColor3 = Color3.new(1, 1, 1)
     espOn.TextScaled = true
     espOn.BorderSizePixel = 0
 
-    local espOff = Instance.new("TextButton", frame)
-    espOff.Size = UDim2.new(0.5, -5, 0.3, -5)
-    espOff.Position = UDim2.new(0.5, 5, 0.35, 10)
+    local espOff = Instance.new("TextButton", testContent)
+    espOff.Size = UDim2.new(0.5, -5, 0.2, -5)
+    espOff.Position = UDim2.new(0.5, 5, 0.25, 0)
     espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     espOff.Text = "ESP OFF ✅"
     espOff.TextColor3 = Color3.new(1, 1, 1)
     espOff.TextScaled = true
     espOff.BorderSizePixel = 0
 
-    -- FOV Slider для телефона
-    local fovSliderFrame = Instance.new("Frame", frame)
+    -- FOV Slider в Test вкладке
+    local fovSliderFrame = Instance.new("Frame", testContent)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.7, 0)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.5, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -257,6 +284,16 @@ local function createGUI()
     plusButton.TextColor3 = Color3.new(1, 1, 1)
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
+
+    -- Team Check кнопка в Test вкладке
+    local teamCheckButton = Instance.new("TextButton", testContent)
+    teamCheckButton.Size = UDim2.new(0.9, 0, 0.15, 0)
+    teamCheckButton.Position = UDim2.new(0.05, 0, 0.85, 0)
+    teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
+    teamCheckButton.Text = "Team Check: OFF"
+    teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
+    teamCheckButton.TextScaled = true
+    teamCheckButton.BorderSizePixel = 0
 
     -- Функция обновления FOV
     local function updateFOV(value)
@@ -313,36 +350,11 @@ local function createGUI()
         updateFOV(fovRadius + 10)
     end)
 
-    -- Кнопки управления (ВНЕ основного фрейма)
-    local hideButton = Instance.new("TextButton", gui)
-    hideButton.Size = UDim2.new(0, 100, 0, 30)
-    hideButton.Position = UDim2.new(0.5, -50, 0.5, 130)
-    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    hideButton.Text = "Hide GUI"
-    hideButton.TextColor3 = Color3.new(1, 1, 1)
-    hideButton.TextScaled = true
-    hideButton.BorderSizePixel = 0
-
-    local teamCheckButton = Instance.new("TextButton", gui)
-    teamCheckButton.Size = UDim2.new(0, 200, 0, 30)
-    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 170)
-    teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
-    teamCheckButton.Text = "Team Check: OFF"
-    teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
-    teamCheckButton.TextScaled = true
-    teamCheckButton.BorderSizePixel = 0
-
-    -- ИСПРАВЛЕННЫЕ ОБРАБОТЧИКИ КНОПОК
+    -- Обработчики кнопок в Test вкладке
     teamCheckButton.MouseButton1Click:Connect(function()
         teamCheckEnabled = not teamCheckEnabled
         teamCheckButton.Text = "Team Check: " .. (teamCheckEnabled and "ON ✅" or "OFF")
         teamCheckButton.BackgroundColor3 = teamCheckEnabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(120, 120, 255)
-    end)
-
-    hideButton.MouseButton1Click:Connect(function()
-        guiVisible = not guiVisible
-        frame.Visible = guiVisible
-        hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
     end)
 
     aimbotOn.MouseButton1Click:Connect(function()
@@ -385,6 +397,40 @@ local function createGUI()
             end
         end
     end)
+
+    -- Кнопка Hide/Show (вне основного фрейма)
+    local hideButton = Instance.new("TextButton", gui)
+    hideButton.Size = UDim2.new(0, 100, 0, 30)
+    hideButton.Position = UDim2.new(0.5, -50, 0.5, 140)
+    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    hideButton.Text = "Hide GUI"
+    hideButton.TextColor3 = Color3.new(1, 1, 1)
+    hideButton.TextScaled = true
+    hideButton.BorderSizePixel = 0
+
+    hideButton.MouseButton1Click:Connect(function()
+        guiVisible = not guiVisible
+        frame.Visible = guiVisible
+        hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
+    end)
+
+    -- Функция для переключения табов (можно добавить больше табов в будущем)
+    local function switchTab(tabName)
+        currentTab = tabName
+        
+        if tabName == "Test" then
+            testContent.Visible = true
+            testTabButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+        end
+    end
+
+    -- Обработчик таба Test
+    testTabButton.MouseButton1Click:Connect(function()
+        switchTab("Test")
+    end)
+
+    -- По умолчанию открываем Test вкладку
+    switchTab("Test")
 end
 
 createGUI()
