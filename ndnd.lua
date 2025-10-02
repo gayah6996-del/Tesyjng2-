@@ -154,6 +154,7 @@ local function createGUI()
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    frame.Visible = guiVisible
 
     local title = Instance.new("TextLabel", frame)
     title.Size = UDim2.new(1, 0, 0, 25)
@@ -203,7 +204,7 @@ local function createGUI()
 
     -- FOV Slider для телефона
     local fovSliderFrame = Instance.new("Frame", frame)
-    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60) -- Увеличил высоту для удобства на телефоне
+    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
     fovSliderFrame.Position = UDim2.new(0.05, 0, 0.7, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
@@ -217,7 +218,7 @@ local function createGUI()
     fovLabel.TextScaled = true
     fovLabel.Font = Enum.Font.SourceSans
 
-    local sliderBackground = Instance.new("TextButton", fovSliderFrame) -- Изменил на TextButton для лучшего тача
+    local sliderBackground = Instance.new("TextButton", fovSliderFrame)
     sliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
     sliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
     sliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -232,7 +233,7 @@ local function createGUI()
     sliderFill.BorderSizePixel = 0
 
     local sliderButton = Instance.new("Frame", sliderBackground)
-    sliderButton.Size = UDim2.new(0, 25, 1.5, 0) -- Шире для удобства на телефоне
+    sliderButton.Size = UDim2.new(0, 25, 1.5, 0)
     sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -12, -0.25, 0)
     sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     sliderButton.BorderSizePixel = 1
@@ -290,20 +291,17 @@ local function createGUI()
     end)
 
     -- Обработка движения тача
-    sliderBackground.MouseButton1Move:Connect(function(x, y)
-        if isSliding then
-            updateSliderFromTouch(Vector2.new(x, y))
+    userInputService.InputChanged:Connect(function(input)
+        if isSliding and input.UserInputType == Enum.UserInputType.Touch then
+            updateSliderFromTouch(input.Position)
         end
     end)
 
     -- Обработка окончания тача
-    sliderBackground.MouseButton1Up:Connect(function()
-        isSliding = false
-    end)
-
-    -- Также обрабатываем тач на самой кнопке слайдера
-    sliderButton.MouseButton1Down:Connect(function(x, y)
-        isSliding = true
+    userInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isSliding = false
+        end
     end)
 
     -- Кнопки + и -
@@ -315,14 +313,7 @@ local function createGUI()
         updateFOV(fovRadius + 10)
     end)
 
-    -- Обработка глобальных событий тача
-    userInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            isSliding = false
-        end
-    end)
-
-    -- Кнопки вне основного фрейма
+    -- Кнопки управления (ВНЕ основного фрейма)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 100, 0, 30)
     hideButton.Position = UDim2.new(0.5, -50, 0.5, 130)
@@ -341,6 +332,7 @@ local function createGUI()
     teamCheckButton.TextScaled = true
     teamCheckButton.BorderSizePixel = 0
 
+    -- ИСПРАВЛЕННЫЕ ОБРАБОТЧИКИ КНОПОК
     teamCheckButton.MouseButton1Click:Connect(function()
         teamCheckEnabled = not teamCheckEnabled
         teamCheckButton.Text = "Team Check: " .. (teamCheckEnabled and "ON ✅" or "OFF")
@@ -383,11 +375,14 @@ local function createGUI()
         espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
         espOn.Text = "ESP ON"
         espOff.Text = "ESP OFF ✅"
+        -- Скрываем все ESP объекты
         for _, drawings in pairs(espObjects) do
-            drawings.box.Visible = false
-            drawings.name.Visible = false
-            drawings.distance.Visible = false
-            drawings.tracer.Visible = false
+            if drawings then
+                drawings.box.Visible = false
+                drawings.name.Visible = false
+                drawings.distance.Visible = false
+                drawings.tracer.Visible = false
+            end
         end
     end)
 end
@@ -423,10 +418,12 @@ runService.RenderStepped:Connect(function()
             local char = p.Character
             if espEnabled and char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
                 if teamCheckEnabled and p.Team == player.Team then
-                    drawings.box.Visible = false
-                    drawings.name.Visible = false
-                    drawings.distance.Visible = false
-                    drawings.tracer.Visible = false
+                    if drawings then
+                        drawings.box.Visible = false
+                        drawings.name.Visible = false
+                        drawings.distance.Visible = false
+                        drawings.tracer.Visible = false
+                    end
                     continue
                 end
 
@@ -435,7 +432,7 @@ runService.RenderStepped:Connect(function()
                 local headPos2D, onScreen1 = camera:WorldToViewportPoint(head.Position)
                 local rootPos2D, onScreen2 = camera:WorldToViewportPoint(hrp.Position)
 
-                if onScreen1 and onScreen2 then
+                if onScreen1 and onScreen2 and drawings then
                     local height = (headPos2D - rootPos2D).Magnitude * 2
                     local width = height / 2
 
@@ -455,13 +452,13 @@ runService.RenderStepped:Connect(function()
                     drawings.tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
                     drawings.tracer.To = Vector2.new(rootPos2D.X, rootPos2D.Y)
                     drawings.tracer.Visible = true
-                else
+                elseif drawings then
                     drawings.box.Visible = false
                     drawings.name.Visible = false
                     drawings.distance.Visible = false
                     drawings.tracer.Visible = false
                 end
-            else
+            elseif drawings then
                 drawings.box.Visible = false
                 drawings.name.Visible = false
                 drawings.distance.Visible = false
