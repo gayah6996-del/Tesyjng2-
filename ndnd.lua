@@ -15,6 +15,12 @@ local guiVisible = true
 local espObjects = {}
 local aimbotTarget = "Head" -- Новая переменная для выбора цели
 
+-- Переменные для перемещения GUI
+local frame = nil
+local isDragging = false
+local dragStart = nil
+local frameStart = nil
+
 -- FOV Circle
 local circle = Drawing.new("Circle")
 circle.Color = Color3.fromRGB(255, 255, 255)
@@ -155,7 +161,7 @@ local function createGUI()
     gui.ResetOnSpawn = false
     gui.Parent = player:WaitForChild("PlayerGui")
 
-    local frame = Instance.new("Frame", gui)
+    frame = Instance.new("Frame", gui)
     frame.Position = UDim2.new(0.5, -100, 0.5, -115)
     frame.Size = UDim2.new(0, 240, 0, 270)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -172,6 +178,48 @@ local function createGUI()
     title.TextScaled = true
     title.Font = Enum.Font.SourceSansBold
     title.BorderSizePixel = 0
+
+    -- Функции для перемещения GUI
+    local function startDrag(input)
+        isDragging = true
+        dragStart = input.Position
+        frameStart = frame.Position
+    end
+
+    local function endDrag()
+        isDragging = false
+    end
+
+    local function updateDrag(input)
+        if isDragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                frameStart.X.Scale, 
+                frameStart.X.Offset + delta.X,
+                frameStart.Y.Scale, 
+                frameStart.Y.Offset + delta.Y
+            )
+        end
+    end
+
+    -- Обработчики для перемещения
+    title.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            startDrag(input)
+        end
+    end)
+
+    title.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            endDrag()
+        end
+    end)
+
+    userInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateDrag(input)
+        end
+    end)
 
     local aimbotOn = Instance.new("TextButton", frame)
     aimbotOn.Size = UDim2.new(0.5, -5, 0.3, -5)
