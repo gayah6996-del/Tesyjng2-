@@ -357,10 +357,10 @@ local function createGUI()
     aimbotButton.TextScaled = true
     aimbotButton.BorderSizePixel = 0
 
-    -- Кнопки выбора цели (серые)
+    -- Кнопки выбора цели (серые) - ОТСТУП 3 СМ ОТ AIMBOT КНОПКИ
     local targetHeadButton = Instance.new("TextButton", aimbotContainer)
     targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+    targetHeadButton.Position = UDim2.new(0.05, 0, 0.20, 0) -- Отступ 3 см от Aimbot кнопки
     targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     targetHeadButton.Text = "Head ✅"
     targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
@@ -369,17 +369,17 @@ local function createGUI()
 
     local targetBodyButton = Instance.new("TextButton", aimbotContainer)
     targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetBodyButton.Position = UDim2.new(0.51, 0, 0.15, 0)
+    targetBodyButton.Position = UDim2.new(0.51, 0, 0.20, 0) -- Отступ 3 см от Aimbot кнопки
     targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     targetBodyButton.Text = "Body"
     targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
     targetBodyButton.TextScaled = true
     targetBodyButton.BorderSizePixel = 0
 
-    -- FOV Slider для аимбота
+    -- FOV Slider для аимбота - ОТСТУП 3 СМ ОТ КНОПОК ВЫБОРА ЦЕЛИ
     local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0) -- Отступ 3 см от кнопок выбора цели
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -444,10 +444,10 @@ local function createGUI()
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider
+    -- Camera FOV Slider - ОТСТУП 3 СМ ОТ КНОПКИ CAMERA FOV
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.20, 0) -- Отступ 3 см от Camera FOV кнопки
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
