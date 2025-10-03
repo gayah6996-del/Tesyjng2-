@@ -19,6 +19,7 @@ local aimbotTarget = "Head"
 -- Переменные для камеры
 local customCameraFOVEnabled = false
 local cameraFOV = 70
+local infinityAmmoEnabled = false
 
 -- Переменные для перемещения GUI
 local frame = nil
@@ -164,6 +165,58 @@ local function getClosestPlayer()
     end
 
     return closestPlayer
+end
+
+-- Infinity Ammo Function
+local function enableInfinityAmmo()
+    spawn(function()
+        while infinityAmmoEnabled do
+            if player.Character then
+                -- Поиск оружия в инвентаре игрока
+                for _, tool in pairs(player.Character:GetChildren()) do
+                    if tool:IsA("Tool") then
+                        -- Попытка найти свойства патронов
+                        local ammo = tool:FindFirstChild("Ammo")
+                        local clip = tool:FindFirstChild("Clip")
+                        local ammoValue = tool:FindFirstChild("AmmoValue")
+                        
+                        if ammo and ammo:IsA("IntValue") then
+                            ammo.Value = 999
+                        end
+                        if clip and clip:IsA("IntValue") then
+                            clip.Value = 999
+                        end
+                        if ammoValue and ammoValue:IsA("IntValue") then
+                            ammoValue.Value = 999
+                        end
+                    end
+                end
+                
+                -- Поиск в Backpack
+                local backpack = player:FindFirstChild("Backpack")
+                if backpack then
+                    for _, tool in pairs(backpack:GetChildren()) do
+                        if tool:IsA("Tool") then
+                            local ammo = tool:FindFirstChild("Ammo")
+                            local clip = tool:FindFirstChild("Clip")
+                            local ammoValue = tool:FindFirstChild("AmmoValue")
+                            
+                            if ammo and ammo:IsA("IntValue") then
+                                ammo.Value = 999
+                            end
+                            if clip and clip:IsA("IntValue") then
+                                clip.Value = 999
+                            end
+                            if ammoValue and ammoValue:IsA("IntValue") then
+                                ammoValue.Value = 999
+                            end
+                        end
+                    end
+                end
+            end
+            wait(0.5)
+        end
+    end)
 end
 
 -- GUI Creation Function
@@ -335,7 +388,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Бесконечные патроны\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -528,10 +581,20 @@ local function createGUI()
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider
+    -- Кнопка Infinity Ammo (отступ 2 см от Camera FOV)
+    local infinityAmmoButton = Instance.new("TextButton", cameraContainer)
+    infinityAmmoButton.Size = UDim2.new(0.9, 0, 0, 35)
+    infinityAmmoButton.Position = UDim2.new(0.05, 0, 0.12, 0)
+    infinityAmmoButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    infinityAmmoButton.Text = "Infinity Ammo: OFF"
+    infinityAmmoButton.TextColor3 = Color3.new(1, 1, 1)
+    infinityAmmoButton.TextScaled = true
+    infinityAmmoButton.BorderSizePixel = 0
+
+    -- Camera FOV Slider (отступ 2 см от Infinity Ammo)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.20, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.19, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -655,9 +718,9 @@ local function createGUI()
         dropdownContainer.Visible = isOpening
         
         if isOpening then
-            -- Сдвигаем слайдеры вниз на 4 см при открытии меню
-            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0)  -- +0.20 от исходного
-            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.70, 0)  -- +0.20 от исходного
+            -- Сдвигаем слайдеры вниз на 5 см при открытии меню
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.60, 0)  -- +0.25 от исходного
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)  -- +0.25 от исходного
         else
             -- Возвращаем слайдеры в исходное положение при закрытии меню
             fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
@@ -774,6 +837,19 @@ local function createGUI()
 
     bodyButton.MouseButton1Click:Connect(function()
         selectTarget("Body")
+    end)
+
+    -- Обработчик для Infinity Ammo
+    infinityAmmoButton.MouseButton1Click:Connect(function()
+        infinityAmmoEnabled = not infinityAmmoEnabled
+        if infinityAmmoEnabled then
+            infinityAmmoButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            infinityAmmoButton.Text = "Infinity Ammo: ON ✅"
+            enableInfinityAmmo()
+        else
+            infinityAmmoButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            infinityAmmoButton.Text = "Infinity Ammo: OFF"
+        end
     end)
 
     -- Закрытие выпадающего списка при клике вне его
