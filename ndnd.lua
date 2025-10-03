@@ -1,4 +1,4 @@
---- Services
+-- Services
 local player = game.Players.LocalPlayer
 local camera = workspace.CurrentCamera
 local players = game:GetService("Players")
@@ -13,6 +13,7 @@ local fovRadius = 100
 local guiName = "AimbotToggleGUI"
 local guiVisible = true
 local espObjects = {}
+local aimbotTarget = "Head" -- Новая переменная для выбора цели
 
 -- FOV Circle
 local circle = Drawing.new("Circle")
@@ -126,11 +127,17 @@ local function getClosestPlayer()
             if teamCheckEnabled and p.Team == player.Team then
                 continue
             end
-            local head = p.Character.Head
-            local screenPos, onScreen = camera:WorldToViewportPoint(head.Position)
+            
+            -- Проверяем выбранную часть тела
+            local targetPart = p.Character:FindFirstChild(aimbotTarget)
+            if not targetPart then
+                targetPart = p.Character.Head -- Fallback на голову если выбранная часть не найдена
+            end
+            
+            local screenPos, onScreen = camera:WorldToViewportPoint(targetPart.Position)
             if onScreen then
                 local distanceFromCenter = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)).Magnitude
-                if distanceFromCenter < shortestDistance and isVisible(head) then
+                if distanceFromCenter < shortestDistance and isVisible(targetPart) then
                     shortestDistance = distanceFromCenter
                     closestPlayer = p
                 end
@@ -201,6 +208,25 @@ local function createGUI()
     espOff.TextColor3 = Color3.new(1, 1, 1)
     espOff.TextScaled = true
     espOff.BorderSizePixel = 0
+
+    -- Кнопки выбора цели для аимбота
+    local targetHeadButton = Instance.new("TextButton", frame)
+    targetHeadButton.Size = UDim2.new(0.5, -5, 0.3, -5)
+    targetHeadButton.Position = UDim2.new(0, 5, 0.7, 10)
+    targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    targetHeadButton.Text = "Target: Head ✅"
+    targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
+    targetHeadButton.TextScaled = true
+    targetHeadButton.BorderSizePixel = 0
+
+    local targetBodyButton = Instance.new("TextButton", frame)
+    targetBodyButton.Size = UDim2.new(0.5, -5, 0.3, -5)
+    targetBodyButton.Position = UDim2.new(0.5, 5, 0.7, 10)
+    targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    targetBodyButton.Text = "Target: Body"
+    targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
+    targetBodyButton.TextScaled = true
+    targetBodyButton.BorderSizePixel = 0
 
     -- FOV Slider для телефона
     local fovSliderFrame = Instance.new("Frame", frame)
@@ -332,6 +358,23 @@ local function createGUI()
     teamCheckButton.TextScaled = true
     teamCheckButton.BorderSizePixel = 0
 
+    -- ОБРАБОТЧИКИ КНОПОК ВЫБОРА ЦЕЛИ
+    targetHeadButton.MouseButton1Click:Connect(function()
+        aimbotTarget = "Head"
+        targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        targetHeadButton.Text = "Target: Head ✅"
+        targetBodyButton.Text = "Target: Body"
+    end)
+
+    targetBodyButton.MouseButton1Click:Connect(function()
+        aimbotTarget = "HumanoidRootPart"
+        targetHeadButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        targetBodyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        targetHeadButton.Text = "Target: Head"
+        targetBodyButton.Text = "Target: Body ✅"
+    end)
+
     -- ИСПРАВЛЕННЫЕ ОБРАБОТЧИКИ КНОПОК
     teamCheckButton.MouseButton1Click:Connect(function()
         teamCheckEnabled = not teamCheckEnabled
@@ -402,9 +445,17 @@ runService.RenderStepped:Connect(function()
 
     if aimbotEnabled then
         local target = getClosestPlayer()
-        if target and target.Character and target.Character:FindFirstChild("Head") then
-            local headPos = target.Character.Head.Position
-            camera.CFrame = CFrame.new(camera.CFrame.Position, headPos)
+        if target and target.Character then
+            -- Используем выбранную часть тела для прицеливания
+            local targetPart = target.Character:FindFirstChild(aimbotTarget)
+            if not targetPart then
+                targetPart = target.Character:FindFirstChild("Head") -- Fallback на голову
+            end
+            
+            if targetPart then
+                local targetPos = targetPart.Position
+                camera.CFrame = CFrame.new(camera.CFrame.Position, targetPos)
+            end
         end
     end
 
