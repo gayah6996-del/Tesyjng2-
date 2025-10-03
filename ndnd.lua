@@ -10,7 +10,7 @@ local aimbotEnabled = false
 local espEnabled = false
 local teamCheckEnabled = false
 local fovRadius = 100
-local aimbotMaxDistance = 100  -- Новая переменная для максимальной дистанции аимбота
+local aimbotMaxDistance = 100
 local guiName = "ASTRALCHEAT"
 local guiVisible = true
 local espObjects = {}
@@ -366,29 +366,49 @@ local function createGUI()
     aimbotButton.TextScaled = true
     aimbotButton.BorderSizePixel = 0
 
-    -- Кнопки выбора цели (серые) - ОТСТУП 3 СМ ОТ AIMBOT КНОПКИ
-    local targetHeadButton = Instance.new("TextButton", aimbotContainer)
-    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.20, 0) -- Отступ 3 см от Aimbot кнопки
-    targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    targetHeadButton.Text = "Head ✅"
-    targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
-    targetHeadButton.TextScaled = true
-    targetHeadButton.BorderSizePixel = 0
+    -- Выпадающий список для выбора цели
+    local targetDropdown = Instance.new("TextButton", aimbotContainer)
+    targetDropdown.Size = UDim2.new(0.9, 0, 0, 35)
+    targetDropdown.Position = UDim2.new(0.05, 0, 0.20, 0) -- Отступ 3 см от Aimbot кнопки
+    targetDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    targetDropdown.Text = "Target: Head"
+    targetDropdown.TextColor3 = Color3.new(1, 1, 1)
+    targetDropdown.TextScaled = true
+    targetDropdown.BorderSizePixel = 0
 
-    local targetBodyButton = Instance.new("TextButton", aimbotContainer)
-    targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetBodyButton.Position = UDim2.new(0.51, 0, 0.20, 0) -- Отступ 3 см от Aimbot кнопки
-    targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    targetBodyButton.Text = "Body"
-    targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
-    targetBodyButton.TextScaled = true
-    targetBodyButton.BorderSizePixel = 0
+    -- Контейнер для выпадающего списка
+    local dropdownContainer = Instance.new("Frame", aimbotContainer)
+    dropdownContainer.Size = UDim2.new(0.9, 0, 0, 70)
+    dropdownContainer.Position = UDim2.new(0.05, 0, 0.20, 35)
+    dropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    dropdownContainer.BorderSizePixel = 1
+    dropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    dropdownContainer.Visible = false
 
-    -- FOV Slider для аимбота - ОТСТУП 3 СМ ОТ КНОПОК ВЫБОРА ЦЕЛИ
+    -- Кнопка выбора Head
+    local headButton = Instance.new("TextButton", dropdownContainer)
+    headButton.Size = UDim2.new(1, 0, 0, 35)
+    headButton.Position = UDim2.new(0, 0, 0, 0)
+    headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    headButton.Text = "Head"
+    headButton.TextColor3 = Color3.new(1, 1, 1)
+    headButton.TextScaled = true
+    headButton.BorderSizePixel = 0
+
+    -- Кнопка выбора Body
+    local bodyButton = Instance.new("TextButton", dropdownContainer)
+    bodyButton.Size = UDim2.new(1, 0, 0, 35)
+    bodyButton.Position = UDim2.new(0, 0, 0, 35)
+    bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    bodyButton.Text = "Body"
+    bodyButton.TextColor3 = Color3.new(1, 1, 1)
+    bodyButton.TextScaled = true
+    bodyButton.BorderSizePixel = 0
+
+    -- FOV Slider для аимбота - ОТСТУП 3 СМ ОТ ВЫПАДАЮЩЕГО СПИСКА
     local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0) -- Отступ 3 см от кнопок выбора цели
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0) -- Отступ 3 см от выпадающего списка
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -611,6 +631,22 @@ local function createGUI()
         distanceSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
     end
 
+    -- Функция для выбора цели через выпадающий список
+    local function selectTarget(target)
+        if target == "Head" then
+            aimbotTarget = "Head"
+            targetDropdown.Text = "Target: Head"
+            headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            bodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        else
+            aimbotTarget = "HumanoidRootPart"
+            targetDropdown.Text = "Target: Body"
+            headButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        end
+        dropdownContainer.Visible = false
+    end
+
     -- Обработка тача для слайдеров
     local isFOVSliding = false
     local isCameraSliding = false
@@ -709,6 +745,35 @@ local function createGUI()
         updateAimbotDistance(aimbotMaxDistance + 10)
     end)
 
+    -- Обработчики для выпадающего списка выбора цели
+    targetDropdown.MouseButton1Click:Connect(function()
+        dropdownContainer.Visible = not dropdownContainer.Visible
+    end)
+
+    headButton.MouseButton1Click:Connect(function()
+        selectTarget("Head")
+    end)
+
+    bodyButton.MouseButton1Click:Connect(function()
+        selectTarget("Body")
+    end)
+
+    -- Закрытие выпадающего списка при клике вне его
+    gui.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if dropdownContainer.Visible then
+                local mousePos = input.Position
+                local dropdownAbsPos = dropdownContainer.AbsolutePosition
+                local dropdownAbsSize = dropdownContainer.AbsoluteSize
+                
+                if mousePos.X < dropdownAbsPos.X or mousePos.X > dropdownAbsPos.X + dropdownAbsSize.X or
+                   mousePos.Y < dropdownAbsPos.Y or mousePos.Y > dropdownAbsPos.Y + dropdownAbsSize.Y then
+                    dropdownContainer.Visible = false
+                end
+            end
+        end
+    end)
+
     -- Функция переключения вкладок
     local function switchTab(tabName)
         activeTab = tabName
@@ -739,6 +804,9 @@ local function createGUI()
             cameraContainer.Visible = true
             cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
+        
+        -- Скрыть выпадающий список при переключении вкладок
+        dropdownContainer.Visible = false
     end
 
     -- ОБРАБОТЧИКИ КНОПОК
@@ -762,22 +830,6 @@ local function createGUI()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
         hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
-    end)
-
-    targetHeadButton.MouseButton1Click:Connect(function()
-        aimbotTarget = "Head"
-        targetHeadButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        targetHeadButton.Text = "Head ✅"
-        targetBodyButton.Text = "Body"
-    end)
-
-    targetBodyButton.MouseButton1Click:Connect(function()
-        aimbotTarget = "HumanoidRootPart"
-        targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        targetBodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        targetHeadButton.Text = "Head"
-        targetBodyButton.Text = "Body ✅"
     end)
 
     cameraFOVButton.MouseButton1Click:Connect(function()
@@ -825,6 +877,9 @@ local function createGUI()
 
     -- Инициализация вкладок
     switchTab("Info")
+    
+    -- Инициализация выпадающего списка
+    selectTarget("Head")
 end
 
 createGUI()
