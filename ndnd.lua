@@ -10,6 +10,7 @@ local aimbotEnabled = false
 local espEnabled = false
 local teamCheckEnabled = false
 local fovRadius = 100
+local aimbotMaxDistance = 100  -- Новая переменная для максимальной дистанции аимбота
 local guiName = "ASTRALCHEAT"
 local guiVisible = true
 local espObjects = {}
@@ -128,7 +129,7 @@ local function isVisible(part)
     end
 end
 
--- Closest Player Function (with team check)
+-- Closest Player Function (with team check and distance check)
 local function getClosestPlayer()
     local closestPlayer = nil
     local shortestDistance = fovRadius
@@ -142,6 +143,14 @@ local function getClosestPlayer()
             local targetPart = p.Character:FindFirstChild(aimbotTarget)
             if not targetPart then
                 targetPart = p.Character.Head
+            end
+            
+            -- Проверка дистанции
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local distanceToPlayer = (player.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
+                if distanceToPlayer > aimbotMaxDistance then
+                    continue
+                end
             end
             
             local screenPos, onScreen = camera:WorldToViewportPoint(targetPart.Position)
@@ -327,7 +336,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -431,6 +440,62 @@ local function createGUI()
     plusButton.TextColor3 = Color3.new(1, 1, 1)
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
+
+    -- Distance Slider для аимбота - ОТСТУП 3 СМ ОТ FOV СЛАЙДЕРА
+    local distanceSliderFrame = Instance.new("Frame", aimbotContainer)
+    distanceSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0) -- Отступ 3 см от FOV слайдера
+    distanceSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    distanceSliderFrame.BorderSizePixel = 0
+
+    local distanceLabel = Instance.new("TextLabel", distanceSliderFrame)
+    distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    distanceLabel.Position = UDim2.new(0, 0, 0, 0)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.Text = "Aimbot Distance: " .. aimbotMaxDistance .. "m"
+    distanceLabel.TextColor3 = Color3.new(1, 1, 1)
+    distanceLabel.TextScaled = true
+    distanceLabel.Font = Enum.Font.SourceSans
+
+    local distanceSliderBackground = Instance.new("TextButton", distanceSliderFrame)
+    distanceSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
+    distanceSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
+    distanceSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    distanceSliderBackground.BorderSizePixel = 0
+    distanceSliderBackground.Text = ""
+    distanceSliderBackground.AutoButtonColor = false
+
+    local distanceSliderFill = Instance.new("Frame", distanceSliderBackground)
+    distanceSliderFill.Size = UDim2.new((aimbotMaxDistance - 10) / 190, 0, 1, 0)
+    distanceSliderFill.Position = UDim2.new(0, 0, 0, 0)
+    distanceSliderFill.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+    distanceSliderFill.BorderSizePixel = 0
+
+    local distanceSliderButton = Instance.new("Frame", distanceSliderBackground)
+    distanceSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
+    distanceSliderButton.Position = UDim2.new((aimbotMaxDistance - 10) / 190, -7, -0.25, 0)
+    distanceSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    distanceSliderButton.BorderSizePixel = 1
+    distanceSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
+
+    -- Кнопки + и - для Distance
+    local distanceMinusButton = Instance.new("TextButton", distanceSliderFrame)
+    distanceMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    distanceMinusButton.Position = UDim2.new(0, 0, 0.8, 0)
+    distanceMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    distanceMinusButton.Text = "-"
+    distanceMinusButton.TextColor3 = Color3.new(1, 1, 1)
+    distanceMinusButton.TextScaled = true
+    distanceMinusButton.BorderSizePixel = 0
+
+    local distancePlusButton = Instance.new("TextButton", distanceSliderFrame)
+    distancePlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    distancePlusButton.Position = UDim2.new(0.8, 0, 0.8, 0)
+    distancePlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    distancePlusButton.Text = "+"
+    distancePlusButton.TextColor3 = Color3.new(1, 1, 1)
+    distancePlusButton.TextScaled = true
+    distancePlusButton.BorderSizePixel = 0
 
     -- ========== ВКЛАДКА CAMERA ==========
     
@@ -536,44 +601,76 @@ local function createGUI()
         end
     end
 
+    -- Функция обновления дистанции аимбота
+    local function updateAimbotDistance(value)
+        aimbotMaxDistance = math.floor(math.clamp(value, 10, 200))
+        distanceLabel.Text = "Aimbot Distance: " .. aimbotMaxDistance .. "m"
+        
+        local fillSize = (aimbotMaxDistance - 10) / 190
+        distanceSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
+        distanceSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
+    end
+
     -- Обработка тача для слайдеров
     local isFOVSliding = false
     local isCameraSliding = false
+    local isDistanceSliding = false
 
-    local function updateSliderFromTouch(touchPosition, isCamera)
-        local sliderAbsPos = isCamera and cameraSliderBackground.AbsolutePosition or sliderBackground.AbsolutePosition
-        local sliderAbsSize = isCamera and cameraSliderBackground.AbsoluteSize or sliderBackground.AbsoluteSize
-        local touchX = touchPosition.X
+    local function updateSliderFromTouch(touchPosition, sliderType)
+        local sliderAbsPos, sliderAbsSize
         
+        if sliderType == "fov" then
+            sliderAbsPos = sliderBackground.AbsolutePosition
+            sliderAbsSize = sliderBackground.AbsoluteSize
+        elseif sliderType == "camera" then
+            sliderAbsPos = cameraSliderBackground.AbsolutePosition
+            sliderAbsSize = cameraSliderBackground.AbsoluteSize
+        elseif sliderType == "distance" then
+            sliderAbsPos = distanceSliderBackground.AbsolutePosition
+            sliderAbsSize = distanceSliderBackground.AbsoluteSize
+        end
+        
+        local touchX = touchPosition.X
         local relativeX = (touchX - sliderAbsPos.X) / sliderAbsSize.X
         relativeX = math.clamp(relativeX, 0, 1)
         
-        if isCamera then
-            local newCameraFOV = 30 + (relativeX * 120)
-            updateCameraFOV(newCameraFOV)
-        else
+        if sliderType == "fov" then
             local newFOV = 50 + (relativeX * 200)
             updateFOV(newFOV)
+        elseif sliderType == "camera" then
+            local newCameraFOV = 30 + (relativeX * 120)
+            updateCameraFOV(newCameraFOV)
+        elseif sliderType == "distance" then
+            local newDistance = 10 + (relativeX * 190)
+            updateAimbotDistance(newDistance)
         end
     end
 
     -- Обработка для FOV слайдера
     sliderBackground.MouseButton1Down:Connect(function(x, y)
         isFOVSliding = true
-        updateSliderFromTouch(Vector2.new(x, y), false)
+        updateSliderFromTouch(Vector2.new(x, y), "fov")
     end)
 
     -- Обработка для Camera FOV слайдера
     cameraSliderBackground.MouseButton1Down:Connect(function(x, y)
         isCameraSliding = true
-        updateSliderFromTouch(Vector2.new(x, y), true)
+        updateSliderFromTouch(Vector2.new(x, y), "camera")
+    end)
+
+    -- Обработка для Distance слайдера
+    distanceSliderBackground.MouseButton1Down:Connect(function(x, y)
+        isDistanceSliding = true
+        updateSliderFromTouch(Vector2.new(x, y), "distance")
     end)
 
     userInputService.InputChanged:Connect(function(input)
         if isFOVSliding and input.UserInputType == Enum.UserInputType.Touch then
-            updateSliderFromTouch(input.Position, false)
+            updateSliderFromTouch(input.Position, "fov")
         elseif isCameraSliding and input.UserInputType == Enum.UserInputType.Touch then
-            updateSliderFromTouch(input.Position, true)
+            updateSliderFromTouch(input.Position, "camera")
+        elseif isDistanceSliding and input.UserInputType == Enum.UserInputType.Touch then
+            updateSliderFromTouch(input.Position, "distance")
         end
     end)
 
@@ -581,6 +678,7 @@ local function createGUI()
         if input.UserInputType == Enum.UserInputType.Touch then
             isFOVSliding = false
             isCameraSliding = false
+            isDistanceSliding = false
         end
     end)
 
@@ -600,6 +698,15 @@ local function createGUI()
 
     cameraPlusButton.MouseButton1Click:Connect(function()
         updateCameraFOV(cameraFOV + 10)
+    end)
+
+    -- Кнопки + и - для Distance
+    distanceMinusButton.MouseButton1Click:Connect(function()
+        updateAimbotDistance(aimbotMaxDistance - 10)
+    end)
+
+    distancePlusButton.MouseButton1Click:Connect(function()
+        updateAimbotDistance(aimbotMaxDistance + 10)
     end)
 
     -- Функция переключения вкладок
