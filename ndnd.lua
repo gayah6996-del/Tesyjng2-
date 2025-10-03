@@ -25,7 +25,7 @@ local frame = nil
 local isDragging = false
 local dragStart = nil
 local frameStart = nil
-local activeTab = "Info" -- Активная вкладка по умолчанию
+local activeTab = "Info"
 
 -- FOV Circle
 local circle = Drawing.new("Circle")
@@ -145,7 +145,6 @@ local function getClosestPlayer()
                 targetPart = p.Character.Head
             end
             
-            -- Проверка дистанции
             if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                 local distanceToPlayer = (player.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
                 if distanceToPlayer > aimbotMaxDistance then
@@ -369,7 +368,7 @@ local function createGUI()
     -- Выпадающий список для выбора цели
     local targetDropdown = Instance.new("TextButton", aimbotContainer)
     targetDropdown.Size = UDim2.new(0.9, 0, 0, 35)
-    targetDropdown.Position = UDim2.new(0.05, 0, 0.20, 0) -- Отступ 3 см от Aimbot кнопки
+    targetDropdown.Position = UDim2.new(0.05, 0, 0.20, 0)
     targetDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     targetDropdown.Text = "Target: Head"
     targetDropdown.TextColor3 = Color3.new(1, 1, 1)
@@ -405,10 +404,10 @@ local function createGUI()
     bodyButton.TextScaled = true
     bodyButton.BorderSizePixel = 0
 
-    -- FOV Slider для аимбота - ОТСТУП 3 СМ ОТ ВЫПАДАЮЩЕГО СПИСКА
+    -- FOV Slider для аимбота
     local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0) -- Отступ 3 см от выпадающего списка
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -461,10 +460,10 @@ local function createGUI()
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
 
-    -- Distance Slider для аимбота - ОТСТУП 3 СМ ОТ FOV СЛАЙДЕРА
+    -- Distance Slider для аимбота
     local distanceSliderFrame = Instance.new("Frame", aimbotContainer)
     distanceSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0) -- Отступ 3 см от FOV слайдера
+    distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     distanceSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     distanceSliderFrame.BorderSizePixel = 0
 
@@ -529,10 +528,10 @@ local function createGUI()
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider - ОТСТУП 3 СМ ОТ КНОПКИ CAMERA FOV
+    -- Camera FOV Slider
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.20, 0) -- Отступ 3 см от Camera FOV кнопки
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.20, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -585,7 +584,7 @@ local function createGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- Кнопка Hide/Show GUI (внизу экрана по центру)
+    -- Кнопка Hide/Show GUI
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 150, 0, 40)
     hideButton.Position = UDim2.new(0.5, -75, 1, -50)
@@ -647,7 +646,7 @@ local function createGUI()
         dropdownContainer.Visible = false
     end
 
-    -- Обработка тача для слайдеров
+    -- Обработка для слайдеров
     local isFOVSliding = false
     local isCameraSliding = false
     local isDistanceSliding = false
@@ -759,15 +758,19 @@ local function createGUI()
     end)
 
     -- Закрытие выпадающего списка при клике вне его
-    gui.InputBegan:Connect(function(input)
+    userInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             if dropdownContainer.Visible then
                 local mousePos = input.Position
                 local dropdownAbsPos = dropdownContainer.AbsolutePosition
                 local dropdownAbsSize = dropdownContainer.AbsoluteSize
-                
-                if mousePos.X < dropdownAbsPos.X or mousePos.X > dropdownAbsPos.X + dropdownAbsSize.X or
-                   mousePos.Y < dropdownAbsPos.Y or mousePos.Y > dropdownAbsPos.Y + dropdownAbsSize.Y then
+                local targetDropdownAbsPos = targetDropdown.AbsolutePosition
+                local targetDropdownAbsSize = targetDropdown.AbsoluteSize
+
+                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
+                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
+                   not (mousePos.X >= targetDropdownAbsPos.X and mousePos.X <= targetDropdownAbsPos.X + targetDropdownAbsSize.X and
+                       mousePos.Y >= targetDropdownAbsPos.Y and mousePos.Y <= targetDropdownAbsPos.Y + targetDropdownAbsSize.Y) then
                     dropdownContainer.Visible = false
                 end
             end
@@ -809,7 +812,7 @@ local function createGUI()
         dropdownContainer.Visible = false
     end
 
-    -- ОБРАБОТЧИКИ КНОПОК
+    -- ОБРАБОТЧИКИ КНОПОК ВКЛАДОК
     infoTabButton.MouseButton1Click:Connect(function()
         switchTab("Info")
     end)
@@ -826,6 +829,7 @@ local function createGUI()
         switchTab("Camera")
     end)
 
+    -- ОБРАБОТЧИКИ ОСНОВНЫХ КНОПОК
     hideButton.MouseButton1Click:Connect(function()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
@@ -882,6 +886,7 @@ local function createGUI()
     selectTarget("Head")
 end
 
+-- Основной код
 createGUI()
 showNotification()
 
