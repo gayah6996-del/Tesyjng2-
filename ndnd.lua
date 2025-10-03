@@ -10,7 +10,7 @@ local aimbotEnabled = false
 local espEnabled = false
 local teamCheckEnabled = false
 local fovRadius = 100
-local guiName = "AimbotToggleGUI"
+local guiName = "ASTRALCHEAT"
 local guiVisible = true
 local espObjects = {}
 local aimbotTarget = "Head"
@@ -24,7 +24,7 @@ local frame = nil
 local isDragging = false
 local dragStart = nil
 local frameStart = nil
-local activeTab = "AimBot" -- Активная вкладка по умолчанию
+local activeTab = "Info" -- Активная вкладка по умолчанию
 
 -- FOV Circle
 local circle = Drawing.new("Circle")
@@ -54,7 +54,7 @@ local function showNotification()
     textLabel.Position = UDim2.new(1, -260, 1, -60)
     textLabel.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
     textLabel.BorderSizePixel = 0
-    textLabel.Text = "Скрипт успешно запущен✅!"
+    textLabel.Text = "ASTRALCHEAT успешно запущен✅!"
     textLabel.TextColor3 = Color3.new(1, 1, 1)
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.SourceSansBold
@@ -174,50 +174,92 @@ local function createGUI()
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
     frame.Visible = guiVisible
 
-    -- Вкладки (горизонтальное расположение)
-    local tabsContainer = Instance.new("Frame", frame)
-    tabsContainer.Size = UDim2.new(1, 0, 0, 40)
-    tabsContainer.Position = UDim2.new(0, 0, 0, 0)
-    tabsContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    tabsContainer.BorderSizePixel = 0
+    -- Заголовок
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Position = UDim2.new(0, 0, 0, 0)
+    title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    title.Text = "ASTRALCHEAT v1.0"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.TextScaled = true
+    title.Font = Enum.Font.SourceSansBold
+    title.BorderSizePixel = 0
 
-    -- Вкладка AimBot
-    local aimbotTabButton = Instance.new("TextButton", tabsContainer)
-    aimbotTabButton.Size = UDim2.new(0.45, 0, 0.8, 0)
-    aimbotTabButton.Position = UDim2.new(0.02, 0, 0.1, 0)
-    aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    -- Контейнер для вкладок и контента
+    local mainContainer = Instance.new("Frame", frame)
+    mainContainer.Size = UDim2.new(1, 0, 1, -25)
+    mainContainer.Position = UDim2.new(0, 0, 0, 25)
+    mainContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    mainContainer.BorderSizePixel = 0
+
+    -- Панель вкладок (вертикальная)
+    local tabsPanel = Instance.new("Frame", mainContainer)
+    tabsPanel.Size = UDim2.new(0, 80, 1, 0)
+    tabsPanel.Position = UDim2.new(0, 0, 0, 0)
+    tabsPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    tabsPanel.BorderSizePixel = 0
+
+    -- Контейнер для контента
+    local contentContainer = Instance.new("Frame", mainContainer)
+    contentContainer.Size = UDim2.new(1, -80, 1, 0)
+    contentContainer.Position = UDim2.new(0, 80, 0, 0)
+    contentContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    contentContainer.BorderSizePixel = 0
+
+    -- Вкладка Info (первая)
+    local infoTabButton = Instance.new("TextButton", tabsPanel)
+    infoTabButton.Size = UDim2.new(0.9, 0, 0, 30)
+    infoTabButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    infoTabButton.Text = "Info"
+    infoTabButton.TextColor3 = Color3.new(1, 1, 1)
+    infoTabButton.TextScaled = true
+    infoTabButton.BorderSizePixel = 1
+    infoTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+
+    -- Вкладка ESP (вторая)
+    local espTabButton = Instance.new("TextButton", tabsPanel)
+    espTabButton.Size = UDim2.new(0.9, 0, 0, 30)
+    espTabButton.Position = UDim2.new(0.05, 0, 0.15, 0) -- Отступ 1 см
+    espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    espTabButton.Text = "ESP"
+    espTabButton.TextColor3 = Color3.new(1, 1, 1)
+    espTabButton.TextScaled = true
+    espTabButton.BorderSizePixel = 1
+    espTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+
+    -- Вкладка AimBot (третья)
+    local aimbotTabButton = Instance.new("TextButton", tabsPanel)
+    aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 30)
+    aimbotTabButton.Position = UDim2.new(0.05, 0, 0.25, 0) -- Отступ 1 см
+    aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     aimbotTabButton.Text = "AimBot"
     aimbotTabButton.TextColor3 = Color3.new(1, 1, 1)
     aimbotTabButton.TextScaled = true
     aimbotTabButton.BorderSizePixel = 1
     aimbotTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
-    -- Вкладка 123
-    local tab123Button = Instance.new("TextButton", tabsContainer)
-    tab123Button.Size = UDim2.new(0.45, 0, 0.8, 0)
-    tab123Button.Position = UDim2.new(0.53, 0, 0.1, 0) -- Отступ примерно 2-3 см
-    tab123Button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    tab123Button.Text = "123"
-    tab123Button.TextColor3 = Color3.new(1, 1, 1)
-    tab123Button.TextScaled = true
-    tab123Button.BorderSizePixel = 1
-    tab123Button.BorderColor3 = Color3.fromRGB(150, 150, 150)
+    -- Контейнеры для содержимого вкладок
+    local infoContainer = Instance.new("Frame", contentContainer)
+    infoContainer.Size = UDim2.new(1, 0, 1, 0)
+    infoContainer.Position = UDim2.new(0, 0, 0, 0)
+    infoContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    infoContainer.BorderSizePixel = 0
+    infoContainer.Visible = true
 
-    -- Контейнер для функций AimBot
-    local aimbotContainer = Instance.new("Frame", frame)
-    aimbotContainer.Size = UDim2.new(1, 0, 1, -40)
-    aimbotContainer.Position = UDim2.new(0, 0, 0, 40)
+    local espContainer = Instance.new("Frame", contentContainer)
+    espContainer.Size = UDim2.new(1, 0, 1, 0)
+    espContainer.Position = UDim2.new(0, 0, 0, 0)
+    espContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    espContainer.BorderSizePixel = 0
+    espContainer.Visible = false
+
+    local aimbotContainer = Instance.new("Frame", contentContainer)
+    aimbotContainer.Size = UDim2.new(1, 0, 1, 0)
+    aimbotContainer.Position = UDim2.new(0, 0, 0, 0)
     aimbotContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     aimbotContainer.BorderSizePixel = 0
-    aimbotContainer.Visible = true -- По умолчанию активна
-
-    -- Контейнер для функций 123
-    local tab123Container = Instance.new("Frame", frame)
-    tab123Container.Size = UDim2.new(1, 0, 1, -40)
-    tab123Container.Position = UDim2.new(0, 0, 0, 40)
-    tab123Container.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    tab123Container.BorderSizePixel = 0
-    tab123Container.Visible = false
+    aimbotContainer.Visible = false
 
     -- Функции для перемещения GUI
     local function startDrag(input)
@@ -243,13 +285,13 @@ local function createGUI()
     end
 
     -- Обработчики для перемещения
-    tabsContainer.InputBegan:Connect(function(input)
+    title.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             startDrag(input)
         end
     end)
 
-    tabsContainer.InputEnded:Connect(function(input)
+    title.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             endDrag()
         end
@@ -261,43 +303,24 @@ local function createGUI()
         end
     end)
 
-    -- ========== ВКЛАДКА AIMBOT ==========
+    -- ========== ВКЛАДКА INFO ==========
     
-    -- Кнопка Aimbot (серая)
-    local aimbotButton = Instance.new("TextButton", aimbotContainer)
-    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
-    aimbotButton.Position = UDim2.new(0.05, 0, 0.1, 0)
-    aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    aimbotButton.Text = "Aimbot: OFF"
-    aimbotButton.TextColor3 = Color3.new(1, 1, 1)
-    aimbotButton.TextScaled = true
-    aimbotButton.BorderSizePixel = 0
+    local infoText = Instance.new("TextLabel", infoContainer)
+    infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
+    infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
+    infoText.BackgroundTransparency = 1
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n\nИспользуйте на свой страх и риск!"
+    infoText.TextColor3 = Color3.new(1, 1, 1)
+    infoText.TextScaled = true
+    infoText.TextWrapped = true
+    infoText.Font = Enum.Font.SourceSans
 
-    -- Кнопки выбора цели (серые)
-    local targetHeadButton = Instance.new("TextButton", aimbotContainer)
-    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.25, 0)
-    targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    targetHeadButton.Text = "Head ✅"
-    targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
-    targetHeadButton.TextScaled = true
-    targetHeadButton.BorderSizePixel = 0
-
-    local targetBodyButton = Instance.new("TextButton", aimbotContainer)
-    targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetBodyButton.Position = UDim2.new(0.51, 0, 0.25, 0)
-    targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    targetBodyButton.Text = "Body"
-    targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
-    targetBodyButton.TextScaled = true
-    targetBodyButton.BorderSizePixel = 0
-
-    -- ========== ВКЛАДКА 123 ==========
+    -- ========== ВКЛАДКА ESP ==========
     
     -- Кнопка ESP (серая)
-    local espButton = Instance.new("TextButton", tab123Container)
+    local espButton = Instance.new("TextButton", espContainer)
     espButton.Size = UDim2.new(0.9, 0, 0, 35)
-    espButton.Position = UDim2.new(0.05, 0, 0.1, 0)
+    espButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     espButton.Text = "ESP: OFF"
     espButton.TextColor3 = Color3.new(1, 1, 1)
@@ -305,9 +328,9 @@ local function createGUI()
     espButton.BorderSizePixel = 0
 
     -- Кнопка Camera FOV (серая)
-    local cameraFOVButton = Instance.new("TextButton", tab123Container)
+    local cameraFOVButton = Instance.new("TextButton", espContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.25, 0)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.15, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
@@ -315,9 +338,9 @@ local function createGUI()
     cameraFOVButton.BorderSizePixel = 0
 
     -- FOV Slider
-    local fovSliderFrame = Instance.new("Frame", tab123Container)
-    fovSliderFrame.Size = UDim2.new(0.96, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.02, 0, 0.45, 0)
+    local fovSliderFrame = Instance.new("Frame", espContainer)
+    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -371,9 +394,9 @@ local function createGUI()
     plusButton.BorderSizePixel = 0
 
     -- Camera FOV Slider
-    local cameraFOVSliderFrame = Instance.new("Frame", tab123Container)
-    cameraFOVSliderFrame.Size = UDim2.new(0.96, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.02, 0, 0.75, 0)
+    local cameraFOVSliderFrame = Instance.new("Frame", espContainer)
+    cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.6, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -425,6 +448,37 @@ local function createGUI()
     cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
+
+    -- ========== ВКЛАДКА AIMBOT ==========
+    
+    -- Кнопка Aimbot (серая)
+    local aimbotButton = Instance.new("TextButton", aimbotContainer)
+    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
+    aimbotButton.Position = UDim2.new(0.05, 0, 0.1, 0)
+    aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    aimbotButton.Text = "Aimbot: OFF"
+    aimbotButton.TextColor3 = Color3.new(1, 1, 1)
+    aimbotButton.TextScaled = true
+    aimbotButton.BorderSizePixel = 0
+
+    -- Кнопки выбора цели (серые)
+    local targetHeadButton = Instance.new("TextButton", aimbotContainer)
+    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
+    targetHeadButton.Position = UDim2.new(0.05, 0, 0.25, 0)
+    targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    targetHeadButton.Text = "Head ✅"
+    targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
+    targetHeadButton.TextScaled = true
+    targetHeadButton.BorderSizePixel = 0
+
+    local targetBodyButton = Instance.new("TextButton", aimbotContainer)
+    targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
+    targetBodyButton.Position = UDim2.new(0.51, 0, 0.25, 0)
+    targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    targetBodyButton.Text = "Body"
+    targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
+    targetBodyButton.TextScaled = true
+    targetBodyButton.BorderSizePixel = 0
 
     -- Кнопка Hide/Show GUI (внизу экрана по центру)
     local hideButton = Instance.new("TextButton", gui)
@@ -532,26 +586,40 @@ local function createGUI()
     local function switchTab(tabName)
         activeTab = tabName
         
-        if tabName == "AimBot" then
+        -- Скрыть все контейнеры
+        infoContainer.Visible = false
+        espContainer.Visible = false
+        aimbotContainer.Visible = false
+        
+        -- Сбросить цвета всех вкладок
+        infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        
+        -- Показать выбранный контейнер и выделить вкладку
+        if tabName == "Info" then
+            infoContainer.Visible = true
+            infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        elseif tabName == "ESP" then
+            espContainer.Visible = true
+            espTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        elseif tabName == "AimBot" then
             aimbotContainer.Visible = true
-            tab123Container.Visible = false
             aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            tab123Button.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        else
-            aimbotContainer.Visible = false
-            tab123Container.Visible = true
-            aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-            tab123Button.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
     end
 
     -- ОБРАБОТЧИКИ КНОПОК
-    aimbotTabButton.MouseButton1Click:Connect(function()
-        switchTab("AimBot")
+    infoTabButton.MouseButton1Click:Connect(function()
+        switchTab("Info")
     end)
 
-    tab123Button.MouseButton1Click:Connect(function()
-        switchTab("123")
+    espTabButton.MouseButton1Click:Connect(function()
+        switchTab("ESP")
+    end)
+
+    aimbotTabButton.MouseButton1Click:Connect(function()
+        switchTab("AimBot")
     end)
 
     hideButton.MouseButton1Click:Connect(function()
@@ -620,7 +688,7 @@ local function createGUI()
     end)
 
     -- Инициализация вкладок
-    switchTab("AimBot")
+    switchTab("Info")
 end
 
 createGUI()
