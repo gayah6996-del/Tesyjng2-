@@ -429,7 +429,7 @@ local function createGUI()
     -- Кнопки выбора цели (серые)
     local targetHeadButton = Instance.new("TextButton", aimbotContainer)
     targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+    targetHeadButton.Position = UDim2.new(0.05, 0, 0.25, 0) -- Отступ 5-6 см
     targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     targetHeadButton.Text = "Head ✅"
     targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
@@ -438,7 +438,7 @@ local function createGUI()
 
     local targetBodyButton = Instance.new("TextButton", aimbotContainer)
     targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetBodyButton.Position = UDim2.new(0.51, 0, 0.15, 0)
+    targetBodyButton.Position = UDim2.new(0.51, 0, 0.25, 0)
     targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     targetBodyButton.Text = "Body"
     targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
@@ -448,7 +448,7 @@ local function createGUI()
     -- FOV Slider для аимбота
     local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.3, 0) -- Отступ 2-3 см от других функций
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0) -- Отступ 5-6 см от других функций
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -513,10 +513,20 @@ local function createGUI()
     autoTreeButton.TextScaled = true
     autoTreeButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider (после Auto Tree с отступом 2-3 см)
+    -- Кнопка Camera FOV
+    local cameraFOVButton = Instance.new("TextButton", memoryContainer)
+    cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.25, 0) -- Отступ 5-6 см от Auto Tree
+    cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    cameraFOVButton.Text = "CamFOV: OFF"
+    cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraFOVButton.TextScaled = true
+    cameraFOVButton.BorderSizePixel = 0
+
+    -- Camera FOV Slider (после Camera FOV Button с отступом 5-6 см)
     local cameraFOVSliderFrame = Instance.new("Frame", memoryContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.2, 0) -- Отступ 2-3 см от Auto Tree
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0) -- Отступ 5-6 см от Camera FOV Button
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
