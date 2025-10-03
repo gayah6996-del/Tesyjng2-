@@ -19,10 +19,6 @@ local aimbotTarget = "Head"
 local customCameraFOVEnabled = false
 local cameraFOV = 70
 
--- Переменные для Kill Wolves
-local killWolvesEnabled = false
-local killingWolves = false
-
 -- Переменные для перемещения GUI
 local frame = nil
 local isDragging = false
@@ -162,79 +158,6 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
--- Kill Wolves Function
-local function startKillingWolves()
-    if killingWolves then return end
-    killingWolves = true
-    
-    spawn(function()
-        while killWolvesEnabled and player.Character do
-            local character = player.Character
-            local humanoid = character:FindFirstChild("Humanoid")
-            local rootPart = character:FindFirstChild("HumanoidRootPart")
-            
-            if humanoid and rootPart then
-                -- Поиск оружия в инвентаре
-                local weapon = nil
-                for _, tool in pairs(character:GetChildren()) do
-                    if tool:IsA("Tool") and (tool.Name:lower():find("sword") or tool.Name:lower():find("axe") or tool.Name:lower():find("weapon") or tool.Name:lower():find("меч") or tool.Name:lower():find("топор") or tool.Name:lower():find("оружие")) then
-                        weapon = tool
-                        break
-                    end
-                end
-                
-                -- Если оружие найдено, экипируем его
-                if weapon then
-                    humanoid:EquipTool(weapon)
-                    
-                    -- Поиск волков поблизости
-                    local nearestWolf = nil
-                    local nearestDistance = 50 -- Максимальная дистанция
-                    
-                    -- Ищем волков в workspace (NPC, не игроки)
-                    for _, obj in pairs(workspace:GetDescendants()) do
-                        if obj:IsA("Model") and (obj.Name:lower():find("wolf") or obj.Name:lower():find("волк") or obj.Name:lower():find("enemy") or obj.Name:lower():find("враг")) then
-                            local humanoidRootPart = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Head")
-                            if humanoidRootPart then
-                                local distance = (rootPart.Position - humanoidRootPart.Position).Magnitude
-                                if distance < nearestDistance then
-                                    nearestWolf = obj
-                                    nearestDistance = distance
-                                end
-                            end
-                        end
-                    end
-                    
-                    -- Если волк найден, подходим и атакуем
-                    if nearestWolf then
-                        local wolfHRP = nearestWolf:FindFirstChild("HumanoidRootPart") or nearestWolf:FindFirstChild("Head")
-                        
-                        if wolfHRP then
-                            -- Подход к волку
-                            humanoid:MoveTo(wolfHRP.Position)
-                            
-                            -- Ждем пока подойдем
-                            wait(0.5)
-                            
-                            -- Атака волка (активация оружия)
-                            if weapon:IsA("Tool") then
-                                for i = 1, 8 do -- 8 атак по волку
-                                    if not killWolvesEnabled then break end
-                                    weapon:Activate()
-                                    wait(0.3)
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-            
-            wait(0.5) -- Пауза между поиском волков
-        end
-        killingWolves = false
-    end)
-end
-
 -- GUI Creation Function
 local function createGUI()
     local gui = Instance.new("ScreenGui")
@@ -297,7 +220,7 @@ local function createGUI()
     -- Вкладка ESP (вторая)
     local espTabButton = Instance.new("TextButton", tabsPanel)
     espTabButton.Size = UDim2.new(0.9, 0, 0, 25)
-    espTabButton.Position = UDim2.new(0.05, 0, 0.12, 0) -- Отступ 2-3 см
+    espTabButton.Position = UDim2.new(0.05, 0, 0.12, 0)
     espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     espTabButton.Text = "ESP"
     espTabButton.TextColor3 = Color3.new(1, 1, 1)
@@ -308,7 +231,7 @@ local function createGUI()
     -- Вкладка AimBot (третья)
     local aimbotTabButton = Instance.new("TextButton", tabsPanel)
     aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 25)
-    aimbotTabButton.Position = UDim2.new(0.05, 0, 0.22, 0) -- Отступ 2-3 см
+    aimbotTabButton.Position = UDim2.new(0.05, 0, 0.22, 0)
     aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     aimbotTabButton.Text = "AimBot"
     aimbotTabButton.TextColor3 = Color3.new(1, 1, 1)
@@ -316,16 +239,16 @@ local function createGUI()
     aimbotTabButton.BorderSizePixel = 1
     aimbotTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
-    -- Вкладка Memory (четвертая)
-    local memoryTabButton = Instance.new("TextButton", tabsPanel)
-    memoryTabButton.Size = UDim2.new(0.9, 0, 0, 25)
-    memoryTabButton.Position = UDim2.new(0.05, 0, 0.32, 0) -- Отступ 2-3 см
-    memoryTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    memoryTabButton.Text = "Memory"
-    memoryTabButton.TextColor3 = Color3.new(1, 1, 1)
-    memoryTabButton.TextScaled = true
-    memoryTabButton.BorderSizePixel = 1
-    memoryTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+    -- Вкладка Camera (четвертая)
+    local cameraTabButton = Instance.new("TextButton", tabsPanel)
+    cameraTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    cameraTabButton.Position = UDim2.new(0.05, 0, 0.32, 0)
+    cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    cameraTabButton.Text = "Camera"
+    cameraTabButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraTabButton.TextScaled = true
+    cameraTabButton.BorderSizePixel = 1
+    cameraTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
     -- Контейнеры для содержимого вкладок
     local infoContainer = Instance.new("Frame", contentContainer)
@@ -349,12 +272,12 @@ local function createGUI()
     aimbotContainer.BorderSizePixel = 0
     aimbotContainer.Visible = false
 
-    local memoryContainer = Instance.new("Frame", contentContainer)
-    memoryContainer.Size = UDim2.new(1, 0, 1, 0)
-    memoryContainer.Position = UDim2.new(0, 0, 0, 0)
-    memoryContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    memoryContainer.BorderSizePixel = 0
-    memoryContainer.Visible = false
+    local cameraContainer = Instance.new("Frame", contentContainer)
+    cameraContainer.Size = UDim2.new(1, 0, 1, 0)
+    cameraContainer.Position = UDim2.new(0, 0, 0, 0)
+    cameraContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    cameraContainer.BorderSizePixel = 0
+    cameraContainer.Visible = false
 
     -- Функции для перемещения GUI
     local function startDrag(input)
@@ -404,7 +327,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Убийство волков (99 ночей в лесу)\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -437,7 +360,7 @@ local function createGUI()
     -- Кнопки выбора цели (серые)
     local targetHeadButton = Instance.new("TextButton", aimbotContainer)
     targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.15, 0) -- Отступ 2-3 см
+    targetHeadButton.Position = UDim2.new(0.05, 0, 0.15, 0)
     targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     targetHeadButton.Text = "Head ✅"
     targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
@@ -456,7 +379,7 @@ local function createGUI()
     -- FOV Slider для аимбота
     local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0) -- Отступ 2-3 см от других функций
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -509,32 +432,22 @@ local function createGUI()
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
 
-    -- ========== ВКЛАДКА MEMORY ==========
+    -- ========== ВКЛАДКА CAMERA ==========
     
-    -- Кнопка Kill Wolves
-    local killWolvesButton = Instance.new("TextButton", memoryContainer)
-    killWolvesButton.Size = UDim2.new(0.9, 0, 0, 35)
-    killWolvesButton.Position = UDim2.new(0.05, 0, 0.05, 0)
-    killWolvesButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    killWolvesButton.Text = "Kill Wolves: OFF"
-    killWolvesButton.TextColor3 = Color3.new(1, 1, 1)
-    killWolvesButton.TextScaled = true
-    killWolvesButton.BorderSizePixel = 0
-
     -- Кнопка Camera FOV
-    local cameraFOVButton = Instance.new("TextButton", memoryContainer)
+    local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.15, 0) -- Отступ 2-3 см от Kill Wolves
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider (после Camera FOV Button с отступом 2-3 см)
-    local cameraFOVSliderFrame = Instance.new("Frame", memoryContainer)
+    -- Camera FOV Slider
+    local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0) -- Отступ 2-3 см от Camera FOV Button
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -697,13 +610,13 @@ local function createGUI()
         infoContainer.Visible = false
         espContainer.Visible = false
         aimbotContainer.Visible = false
-        memoryContainer.Visible = false
+        cameraContainer.Visible = false
         
         -- Сбросить цвета всех вкладок
         infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        memoryTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         
         -- Показать выбранный контейнер и выделить вкладку
         if tabName == "Info" then
@@ -715,9 +628,9 @@ local function createGUI()
         elseif tabName == "AimBot" then
             aimbotContainer.Visible = true
             aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        elseif tabName == "Memory" then
-            memoryContainer.Visible = true
-            memoryTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        elseif tabName == "Camera" then
+            cameraContainer.Visible = true
+            cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
     end
 
@@ -734,8 +647,8 @@ local function createGUI()
         switchTab("AimBot")
     end)
 
-    memoryTabButton.MouseButton1Click:Connect(function()
-        switchTab("Memory")
+    cameraTabButton.MouseButton1Click:Connect(function()
+        switchTab("Camera")
     end)
 
     hideButton.MouseButton1Click:Connect(function()
@@ -800,18 +713,6 @@ local function createGUI()
                     drawings.tracer.Visible = false
                 end
             end
-        end
-    end)
-
-    killWolvesButton.MouseButton1Click:Connect(function()
-        killWolvesEnabled = not killWolvesEnabled
-        if killWolvesEnabled then
-            killWolvesButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            killWolvesButton.Text = "Kill Wolves: ON ✅"
-            startKillingWolves()
-        else
-            killWolvesButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            killWolvesButton.Text = "Kill Wolves: OFF"
         end
     end)
 
