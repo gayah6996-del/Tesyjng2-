@@ -10,9 +10,9 @@ local aimbotEnabled = false
 local espEnabled = false
 local fovRadius = 100
 local guiName = "AimbotToggleGUI"
-local guiVisible = true
+local guiVisible = false -- GUI изначально скрыто
 local espObjects = {}
-local testWindowOpen = false -- Окно Test изначально закрыто
+local functionsVisible = false -- Функции изначально скрыты
 
 -- FOV Circle
 local circle = Drawing.new("Circle")
@@ -145,35 +145,27 @@ local function createGUI()
     gui.ResetOnSpawn = false
     gui.Parent = player:WaitForChild("PlayerGui")
 
-    -- Основное маленькое окно
+    -- Кнопка Show GUI (изначально видна)
+    local showGuiButton = Instance.new("TextButton", gui)
+    showGuiButton.Size = UDim2.new(0, 100, 0, 30)
+    showGuiButton.Position = UDim2.new(0, 20, 0, 20)
+    showGuiButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    showGuiButton.Text = "Show GUI"
+    showGuiButton.TextColor3 = Color3.new(1, 1, 1)
+    showGuiButton.TextScaled = true
+    showGuiButton.BorderSizePixel = 0
+    showGuiButton.Visible = true
+
+    -- Основное меню (изначально скрыто)
     local mainFrame = Instance.new("Frame", gui)
-    mainFrame.Position = UDim2.new(0.5, -50, 0.5, -15)
-    mainFrame.Size = UDim2.new(0, 100, 0, 30)
+    mainFrame.Position = UDim2.new(0.5, -100, 0.5, -115)
+    mainFrame.Size = UDim2.new(0, 200, 0, 250)
     mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     mainFrame.BorderSizePixel = 1
     mainFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
     mainFrame.Visible = guiVisible
 
-    -- Кнопка Test для открытия/закрытия окна с функциями
-    local testButton = Instance.new("TextButton", mainFrame)
-    testButton.Size = UDim2.new(1, 0, 1, 0)
-    testButton.Position = UDim2.new(0, 0, 0, 0)
-    testButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-    testButton.Text = "Test"
-    testButton.TextColor3 = Color3.new(1, 1, 1)
-    testButton.TextScaled = true
-    testButton.BorderSizePixel = 0
-
-    -- Большое окно с функциями (изначально скрыто)
-    local functionsFrame = Instance.new("Frame", gui)
-    functionsFrame.Position = UDim2.new(0.5, -100, 0.5, -115)
-    functionsFrame.Size = UDim2.new(0, 200, 0, 200)
-    functionsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    functionsFrame.BorderSizePixel = 1
-    functionsFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    functionsFrame.Visible = false
-
-    local title = Instance.new("TextLabel", functionsFrame)
+    local title = Instance.new("TextLabel", mainFrame)
     title.Size = UDim2.new(1, 0, 0, 25)
     title.Position = UDim2.new(0, 0, 0, 0)
     title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -183,48 +175,72 @@ local function createGUI()
     title.Font = Enum.Font.SourceSansBold
     title.BorderSizePixel = 0
 
-    -- Аимбот кнопки
-    local aimbotOn = Instance.new("TextButton", functionsFrame)
+    -- Табы
+    local tabsFrame = Instance.new("Frame", mainFrame)
+    tabsFrame.Size = UDim2.new(1, 0, 0, 30)
+    tabsFrame.Position = UDim2.new(0, 0, 0, 25)
+    tabsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    tabsFrame.BorderSizePixel = 0
+
+    local testTabButton = Instance.new("TextButton", tabsFrame)
+    testTabButton.Size = UDim2.new(1, 0, 1, 0)
+    testTabButton.Position = UDim2.new(0, 0, 0, 0)
+    testTabButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    testTabButton.Text = "Test"
+    testTabButton.TextColor3 = Color3.new(1, 1, 1)
+    testTabButton.TextScaled = true
+    testTabButton.BorderSizePixel = 0
+
+    -- Контент для вкладки Test (изначально скрыт)
+    local testContent = Instance.new("Frame", mainFrame)
+    testContent.Size = UDim2.new(1, 0, 0, 195)
+    testContent.Position = UDim2.new(0, 0, 0, 55)
+    testContent.BackgroundTransparency = 1
+    testContent.Visible = false
+    testContent.Name = "TestContent"
+
+    -- Аимбот кнопки в Test вкладке
+    local aimbotOn = Instance.new("TextButton", testContent)
     aimbotOn.Size = UDim2.new(0.5, -5, 0.2, -5)
-    aimbotOn.Position = UDim2.new(0, 5, 0.1, 0)
+    aimbotOn.Position = UDim2.new(0, 5, 0, 0)
     aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     aimbotOn.Text = "Aimbot ON"
     aimbotOn.TextColor3 = Color3.new(1, 1, 1)
     aimbotOn.TextScaled = true
     aimbotOn.BorderSizePixel = 0
 
-    local aimbotOff = Instance.new("TextButton", functionsFrame)
+    local aimbotOff = Instance.new("TextButton", testContent)
     aimbotOff.Size = UDim2.new(0.5, -5, 0.2, -5)
-    aimbotOff.Position = UDim2.new(0.5, 5, 0.1, 0)
+    aimbotOff.Position = UDim2.new(0.5, 5, 0, 0)
     aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     aimbotOff.Text = "Aimbot OFF ✅"
     aimbotOff.TextColor3 = Color3.new(1, 1, 1)
     aimbotOff.TextScaled = true
     aimbotOff.BorderSizePixel = 0
 
-    -- ESP кнопки
-    local espOn = Instance.new("TextButton", functionsFrame)
+    -- ESP кнопки в Test вкладке
+    local espOn = Instance.new("TextButton", testContent)
     espOn.Size = UDim2.new(0.5, -5, 0.2, -5)
-    espOn.Position = UDim2.new(0, 5, 0.35, 0)
+    espOn.Position = UDim2.new(0, 5, 0.25, 0)
     espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     espOn.Text = "ESP ON"
     espOn.TextColor3 = Color3.new(1, 1, 1)
     espOn.TextScaled = true
     espOn.BorderSizePixel = 0
 
-    local espOff = Instance.new("TextButton", functionsFrame)
+    local espOff = Instance.new("TextButton", testContent)
     espOff.Size = UDim2.new(0.5, -5, 0.2, -5)
-    espOff.Position = UDim2.new(0.5, 5, 0.35, 0)
+    espOff.Position = UDim2.new(0.5, 5, 0.25, 0)
     espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     espOff.Text = "ESP OFF ✅"
     espOff.TextColor3 = Color3.new(1, 1, 1)
     espOff.TextScaled = true
     espOff.BorderSizePixel = 0
 
-    -- FOV Slider
-    local fovSliderFrame = Instance.new("Frame", functionsFrame)
+    -- FOV Slider в Test вкладке
+    local fovSliderFrame = Instance.new("Frame", testContent)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.6, 0)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.5, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -374,38 +390,30 @@ local function createGUI()
         end
     end)
 
-    -- Кнопка Hide/Show для основного окна
-    local hideButton = Instance.new("TextButton", gui)
-    hideButton.Size = UDim2.new(0, 100, 0, 30)
-    hideButton.Position = UDim2.new(0.5, -50, 0.5, 20)
-    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    hideButton.Text = "Hide GUI"
-    hideButton.TextColor3 = Color3.new(1, 1, 1)
-    hideButton.TextScaled = true
-    hideButton.BorderSizePixel = 0
-
-    hideButton.MouseButton1Click:Connect(function()
-        guiVisible = not guiVisible
-        mainFrame.Visible = guiVisible
-        hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
-        -- Если скрываем GUI, то также скрываем окно с функциями
-        if not guiVisible then
-            functionsFrame.Visible = false
-            testWindowOpen = false
+    -- Функция переключения табов
+    local function switchTab(tabName)
+        if tabName == "Test" then
+            testContent.Visible = true
+            testTabButton.BackgroundColor3 = Color3.fromRGB(0, 80, 200)
         end
+    end
+
+    -- Обработчик таба Test
+    testTabButton.MouseButton1Click:Connect(function()
+        switchTab("Test")
     end)
 
-    -- Функция открытия/закрытия окна Test
-    testButton.MouseButton1Click:Connect(function()
-        testWindowOpen = not testWindowOpen
-        functionsFrame.Visible = testWindowOpen
+    -- Обработчик кнопки Show/Hide GUI
+    showGuiButton.MouseButton1Click:Connect(function()
+        guiVisible = not guiVisible
+        mainFrame.Visible = guiVisible
+        showGuiButton.Text = guiVisible and "Hide GUI" or "Show GUI"
         
-        if testWindowOpen then
-            testButton.Text = "Test ▲"
-            testButton.BackgroundColor3 = Color3.fromRGB(0, 80, 200)
+        -- При открытии GUI автоматически открываем вкладку Test
+        if guiVisible then
+            switchTab("Test")
         else
-            testButton.Text = "Test ▼"
-            testButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+            testContent.Visible = false
         end
     end)
 end
