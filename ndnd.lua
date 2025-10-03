@@ -165,8 +165,8 @@ local function createGUI()
     gui.Parent = player:WaitForChild("PlayerGui")
 
     frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -150, 0.5, -140)
-    frame.Size = UDim2.new(0, 300, 0, 280)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -100)
+    frame.Size = UDim2.new(0, 350, 0, 200)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -181,17 +181,6 @@ local function createGUI()
     title.TextScaled = true
     title.Font = Enum.Font.SourceSansBold
     title.BorderSizePixel = 0
-
-    -- Кнопка закрытия/открытия меню
-    local toggleButton = Instance.new("TextButton", frame)
-    toggleButton.Size = UDim2.new(0, 25, 0, 25)
-    toggleButton.Position = UDim2.new(1, -30, 0, 5)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    toggleButton.TextColor3 = Color3.new(1, 1, 1)
-    toggleButton.Text = "X"
-    toggleButton.TextScaled = true
-    toggleButton.BorderSizePixel = 0
-    toggleButton.ZIndex = 2
 
     -- Функции для перемещения GUI
     local function startDrag(input)
@@ -235,40 +224,47 @@ local function createGUI()
         end
     end)
 
-    -- Aimbot Button
+    -- Первая строка кнопок (горизонтальная)
     local aimbotButton = Instance.new("TextButton", frame)
-    aimbotButton.Size = UDim2.new(0.9, 0, 0, 30)
-    aimbotButton.Position = UDim2.new(0.05, 0, 0.1, 0)
+    aimbotButton.Size = UDim2.new(0.3, 0, 0, 30)
+    aimbotButton.Position = UDim2.new(0.02, 0, 0.15, 0)
     aimbotButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     aimbotButton.Text = "Aimbot: OFF"
     aimbotButton.TextColor3 = Color3.new(1, 1, 1)
     aimbotButton.TextScaled = true
     aimbotButton.BorderSizePixel = 0
 
-    -- ESP Button
     local espButton = Instance.new("TextButton", frame)
-    espButton.Size = UDim2.new(0.9, 0, 0, 30)
-    espButton.Position = UDim2.new(0.05, 0, 0.2, 0)
+    espButton.Size = UDim2.new(0.3, 0, 0, 30)
+    espButton.Position = UDim2.new(0.34, 0, 0.15, 0)
     espButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     espButton.Text = "ESP: OFF"
     espButton.TextColor3 = Color3.new(1, 1, 1)
     espButton.TextScaled = true
     espButton.BorderSizePixel = 0
 
-    -- Кнопка Custom Camera FOV
     local cameraFOVButton = Instance.new("TextButton", frame)
-    cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 30)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.3, 0)
+    cameraFOVButton.Size = UDim2.new(0.3, 0, 0, 30)
+    cameraFOVButton.Position = UDim2.new(0.68, 0, 0.15, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    cameraFOVButton.Text = "Custom Camera FOV: OFF"
+    cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Кнопки выбора цели для аимбота
+    -- Вторая строка кнопок (горизонтальная)
+    local teamCheckButton = Instance.new("TextButton", frame)
+    teamCheckButton.Size = UDim2.new(0.3, 0, 0, 30)
+    teamCheckButton.Position = UDim2.new(0.02, 0, 0.35, 0)
+    teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
+    teamCheckButton.Text = "Team: OFF"
+    teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
+    teamCheckButton.TextScaled = true
+    teamCheckButton.BorderSizePixel = 0
+
     local targetHeadButton = Instance.new("TextButton", frame)
-    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 25)
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.4, 0)
+    targetHeadButton.Size = UDim2.new(0.3, 0, 0, 30)
+    targetHeadButton.Position = UDim2.new(0.34, 0, 0.35, 0)
     targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
     targetHeadButton.Text = "Head ✅"
     targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
@@ -276,8 +272,8 @@ local function createGUI()
     targetHeadButton.BorderSizePixel = 0
 
     local targetBodyButton = Instance.new("TextButton", frame)
-    targetBodyButton.Size = UDim2.new(0.44, 0, 0, 25)
-    targetBodyButton.Position = UDim2.new(0.51, 0, 0.4, 0)
+    targetBodyButton.Size = UDim2.new(0.3, 0, 0, 30)
+    targetBodyButton.Position = UDim2.new(0.68, 0, 0.35, 0)
     targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     targetBodyButton.Text = "Body"
     targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
@@ -286,8 +282,8 @@ local function createGUI()
 
     -- FOV Slider (компактный)
     local fovSliderFrame = Instance.new("Frame", frame)
-    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 40)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.5, 0)
+    fovSliderFrame.Size = UDim2.new(0.96, 0, 0, 50)
+    fovSliderFrame.Position = UDim2.new(0.02, 0, 0.55, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -342,8 +338,8 @@ local function createGUI()
 
     -- Camera FOV Slider (компактный)
     local cameraFOVSliderFrame = Instance.new("Frame", frame)
-    cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 40)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.65, 0)
+    cameraFOVSliderFrame.Size = UDim2.new(0.96, 0, 0, 50)
+    cameraFOVSliderFrame.Position = UDim2.new(0.02, 0, 0.78, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -396,15 +392,16 @@ local function createGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- Team Check Button
-    local teamCheckButton = Instance.new("TextButton", frame)
-    teamCheckButton.Size = UDim2.new(0.9, 0, 0, 25)
-    teamCheckButton.Position = UDim2.new(0.05, 0, 0.8, 0)
-    teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
-    teamCheckButton.Text = "Team Check: OFF"
-    teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
-    teamCheckButton.TextScaled = true
-    teamCheckButton.BorderSizePixel = 0
+    -- Кнопка Show/Hide GUI (вне основного фрейма)
+    local hideButton = Instance.new("TextButton", gui)
+    hideButton.Size = UDim2.new(0, 120, 0, 30)
+    hideButton.Position = UDim2.new(0.5, -60, 0, 10)
+    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    hideButton.Text = "Hide GUI"
+    hideButton.TextColor3 = Color3.new(1, 1, 1)
+    hideButton.TextScaled = true
+    hideButton.BorderSizePixel = 0
+    hideButton.ZIndex = 10
 
     -- Функция обновления FOV
     local function updateFOV(value)
@@ -498,11 +495,10 @@ local function createGUI()
     end)
 
     -- ОБРАБОТЧИКИ КНОПОК
-    toggleButton.MouseButton1Click:Connect(function()
+    hideButton.MouseButton1Click:Connect(function()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
-        toggleButton.Text = guiVisible and "X" or ">"
-        toggleButton.BackgroundColor3 = guiVisible and Color3.fromRGB(255, 50, 50) or Color3.fromRGB(50, 255, 50)
+        hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
     end)
 
     targetHeadButton.MouseButton1Click:Connect(function()
@@ -525,11 +521,11 @@ local function createGUI()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-            cameraFOVButton.Text = "Custom Camera FOV: ON ✅"
+            cameraFOVButton.Text = "CamFOV: ON ✅"
             camera.FieldOfView = cameraFOV
         else
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-            cameraFOVButton.Text = "Custom Camera FOV: OFF"
+            cameraFOVButton.Text = "CamFOV: OFF"
             camera.FieldOfView = 70
         end
     end)
@@ -566,7 +562,7 @@ local function createGUI()
 
     teamCheckButton.MouseButton1Click:Connect(function()
         teamCheckEnabled = not teamCheckEnabled
-        teamCheckButton.Text = "Team Check: " .. (teamCheckEnabled and "ON ✅" or "OFF")
+        teamCheckButton.Text = "Team: " .. (teamCheckEnabled and "ON ✅" or "OFF")
         teamCheckButton.BackgroundColor3 = teamCheckEnabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(120, 120, 255)
     end)
 end
