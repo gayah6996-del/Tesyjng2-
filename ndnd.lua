@@ -162,15 +162,15 @@ local function createGUI()
     gui.Parent = player:WaitForChild("PlayerGui")
 
     frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -100, 0.5, -115)
-    frame.Size = UDim2.new(0, 240, 0, 270)
+    frame.Position = UDim2.new(0.5, -150, 0.5, -140) -- Увеличили ширину, сместили центр
+    frame.Size = UDim2.new(0, 300, 0, 320) -- Увеличили ширину и высоту
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
     frame.Visible = guiVisible
 
     local title = Instance.new("TextLabel", frame)
-    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Size = UDim2.new(1, 0, 0, 30) -- Немного увеличили высоту заголовка
     title.Position = UDim2.new(0, 0, 0, 0)
     title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     title.Text = "ASTRALCHEAT V1.0 BY @SFXCL"
@@ -221,70 +221,54 @@ local function createGUI()
         end
     end)
 
-    local aimbotOn = Instance.new("TextButton", frame)
-    aimbotOn.Size = UDim2.new(0.5, -5, 0.3, -5)
-    aimbotOn.Position = UDim2.new(0, 5, 0, 30)
-    aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    aimbotOn.Text = "Aimbot ON"
-    aimbotOn.TextColor3 = Color3.new(1, 1, 1)
-    aimbotOn.TextScaled = true
-    aimbotOn.BorderSizePixel = 0
+    -- Aimbot Button (одна кнопка вместо двух)
+    local aimbotButton = Instance.new("TextButton", frame)
+    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35) -- Уменьшили высоту, увеличили ширину
+    aimbotButton.Position = UDim2.new(0.05, 0, 0.1, 0)
+    aimbotButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    aimbotButton.Text = "Aimbot: OFF"
+    aimbotButton.TextColor3 = Color3.new(1, 1, 1)
+    aimbotButton.TextScaled = true
+    aimbotButton.BorderSizePixel = 0
 
-    local aimbotOff = Instance.new("TextButton", frame)
-    aimbotOff.Size = UDim2.new(0.5, -5, 0.3, -5)
-    aimbotOff.Position = UDim2.new(0.5, 5, 0, 30)
-    aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    aimbotOff.Text = "Aimbot OFF ✅"
-    aimbotOff.TextColor3 = Color3.new(1, 1, 1)
-    aimbotOff.TextScaled = true
-    aimbotOff.BorderSizePixel = 0
+    -- ESP Button (одна кнопка вместо двух)
+    local espButton = Instance.new("TextButton", frame)
+    espButton.Size = UDim2.new(0.9, 0, 0, 35)
+    espButton.Position = UDim2.new(0.05, 0, 0.22, 0)
+    espButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    espButton.Text = "ESP: OFF"
+    espButton.TextColor3 = Color3.new(1, 1, 1)
+    espButton.TextScaled = true
+    espButton.BorderSizePixel = 0
 
-    local espOn = Instance.new("TextButton", frame)
-    espOn.Size = UDim2.new(0.5, -5, 0.3, -5)
-    espOn.Position = UDim2.new(0, 5, 0.35, 10)
-    espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    espOn.Text = "ESP ON"
-    espOn.TextColor3 = Color3.new(1, 1, 1)
-    espOn.TextScaled = true
-    espOn.BorderSizePixel = 0
-
-    local espOff = Instance.new("TextButton", frame)
-    espOff.Size = UDim2.new(0.5, -5, 0.3, -5)
-    espOff.Position = UDim2.new(0.5, 5, 0.35, 10)
-    espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    espOff.Text = "ESP OFF ✅"
-    espOff.TextColor3 = Color3.new(1, 1, 1)
-    espOff.TextScaled = true
-    espOff.BorderSizePixel = 0
-
-    -- Кнопки выбора цели для аимбота
+    -- Кнопки выбора цели для аимбота (после ESP)
     local targetHeadButton = Instance.new("TextButton", frame)
-    targetHeadButton.Size = UDim2.new(0.5, -5, 0.3, -5)
-    targetHeadButton.Position = UDim2.new(0, 5, 0.7, 10)
+    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35) -- Уменьшили ширину для двух кнопок в ряд
+    targetHeadButton.Position = UDim2.new(0.05, 0, 0.34, 0)
     targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-    targetHeadButton.Text = "Target: Head ✅"
+    targetHeadButton.Text = "Head ✅"
     targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
     targetHeadButton.TextScaled = true
     targetHeadButton.BorderSizePixel = 0
 
     local targetBodyButton = Instance.new("TextButton", frame)
-    targetBodyButton.Size = UDim2.new(0.5, -5, 0.3, -5)
-    targetBodyButton.Position = UDim2.new(0.5, 5, 0.7, 10)
+    targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
+    targetBodyButton.Position = UDim2.new(0.51, 0, 0.34, 0)
     targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    targetBodyButton.Text = "Target: Body"
+    targetBodyButton.Text = "Body"
     targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
     targetBodyButton.TextScaled = true
     targetBodyButton.BorderSizePixel = 0
 
-    -- FOV Slider для телефона
+    -- FOV Slider (после выбора цели)
     local fovSliderFrame = Instance.new("Frame", frame)
-    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.7, 0)
+    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 70) -- Увеличили высоту для лучшего взаимодействия
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.48, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
     local fovLabel = Instance.new("TextLabel", fovSliderFrame)
-    fovLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    fovLabel.Size = UDim2.new(1, 0, 0.25, 0)
     fovLabel.Position = UDim2.new(0, 0, 0, 0)
     fovLabel.BackgroundTransparency = 1
     fovLabel.Text = "FOV Radius: " .. fovRadius
@@ -293,8 +277,8 @@ local function createGUI()
     fovLabel.Font = Enum.Font.SourceSans
 
     local sliderBackground = Instance.new("TextButton", fovSliderFrame)
-    sliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
-    sliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
+    sliderBackground.Size = UDim2.new(1, 0, 0.35, 0)
+    sliderBackground.Position = UDim2.new(0, 0, 0.3, 0)
     sliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     sliderBackground.BorderSizePixel = 0
     sliderBackground.Text = ""
@@ -316,7 +300,7 @@ local function createGUI()
     -- Кнопки + и - для точной настройки
     local minusButton = Instance.new("TextButton", fovSliderFrame)
     minusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
-    minusButton.Position = UDim2.new(0, 0, 0.85, 0)
+    minusButton.Position = UDim2.new(0, 0, 0.7, 0)
     minusButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
     minusButton.Text = "-"
     minusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -325,7 +309,7 @@ local function createGUI()
 
     local plusButton = Instance.new("TextButton", fovSliderFrame)
     plusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
-    plusButton.Position = UDim2.new(0.8, 0, 0.85, 0)
+    plusButton.Position = UDim2.new(0.8, 0, 0.7, 0)
     plusButton.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
     plusButton.Text = "+"
     plusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -390,7 +374,7 @@ local function createGUI()
     -- Кнопки управления (ВНЕ основного фрейма)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 100, 0, 30)
-    hideButton.Position = UDim2.new(0.5, -50, 0.5, 130)
+    hideButton.Position = UDim2.new(0.5, -50, 0.5, 150)
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     hideButton.Text = "Hide GUI"
     hideButton.TextColor3 = Color3.new(1, 1, 1)
@@ -399,7 +383,7 @@ local function createGUI()
 
     local teamCheckButton = Instance.new("TextButton", gui)
     teamCheckButton.Size = UDim2.new(0, 200, 0, 30)
-    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 170)
+    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 190)
     teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
     teamCheckButton.Text = "Team Check: OFF"
     teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
@@ -411,16 +395,48 @@ local function createGUI()
         aimbotTarget = "Head"
         targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
         targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        targetHeadButton.Text = "Target: Head ✅"
-        targetBodyButton.Text = "Target: Body"
+        targetHeadButton.Text = "Head ✅"
+        targetBodyButton.Text = "Body"
     end)
 
     targetBodyButton.MouseButton1Click:Connect(function()
         aimbotTarget = "HumanoidRootPart"
         targetHeadButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
         targetBodyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-        targetHeadButton.Text = "Target: Head"
-        targetBodyButton.Text = "Target: Body ✅"
+        targetHeadButton.Text = "Head"
+        targetBodyButton.Text = "Body ✅"
+    end)
+
+    -- ОБРАБОТЧИКИ ОДНОКНОПОЧНЫХ ПЕРЕКЛЮЧАТЕЛЕЙ
+    aimbotButton.MouseButton1Click:Connect(function()
+        aimbotEnabled = not aimbotEnabled
+        if aimbotEnabled then
+            aimbotButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            aimbotButton.Text = "Aimbot: ON ✅"
+        else
+            aimbotButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            aimbotButton.Text = "Aimbot: OFF"
+        end
+    end)
+
+    espButton.MouseButton1Click:Connect(function()
+        espEnabled = not espEnabled
+        if espEnabled then
+            espButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            espButton.Text = "ESP: ON ✅"
+        else
+            espButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            espButton.Text = "ESP: OFF"
+            -- Скрываем все ESP объекты
+            for _, drawings in pairs(espObjects) do
+                if drawings then
+                    drawings.box.Visible = false
+                    drawings.name.Visible = false
+                    drawings.distance.Visible = false
+                    drawings.tracer.Visible = false
+                end
+            end
+        end
     end)
 
     -- ИСПРАВЛЕННЫЕ ОБРАБОТЧИКИ КНОПОК
@@ -434,47 +450,6 @@ local function createGUI()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
         hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
-    end)
-
-    aimbotOn.MouseButton1Click:Connect(function()
-        aimbotEnabled = true
-        aimbotOn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        aimbotOff.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        aimbotOn.Text = "Aimbot ON ✅"
-        aimbotOff.Text = "Aimbot OFF"
-    end)
-
-    aimbotOff.MouseButton1Click:Connect(function()
-        aimbotEnabled = false
-        aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        aimbotOn.Text = "Aimbot ON"
-        aimbotOff.Text = "Aimbot OFF ✅"
-    end)
-
-    espOn.MouseButton1Click:Connect(function()
-        espEnabled = true
-        espOn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        espOff.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        espOn.Text = "ESP ON ✅"
-        espOff.Text = "ESP OFF"
-    end)
-
-    espOff.MouseButton1Click:Connect(function()
-        espEnabled = false
-        espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        espOn.Text = "ESP ON"
-        espOff.Text = "ESP OFF ✅"
-        -- Скрываем все ESP объекты
-        for _, drawings in pairs(espObjects) do
-            if drawings then
-                drawings.box.Visible = false
-                drawings.name.Visible = false
-                drawings.distance.Visible = false
-                drawings.tracer.Visible = false
-            end
-        end
     end)
 end
 
