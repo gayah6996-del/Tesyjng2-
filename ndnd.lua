@@ -15,6 +15,10 @@ local guiVisible = true
 local espObjects = {}
 local aimbotTarget = "Head" -- Новая переменная для выбора цели
 
+-- Переменные для камеры
+local customCameraFOVEnabled = false
+local cameraFOV = 70 -- Значение по умолчанию
+
 -- Переменные для перемещения GUI
 local frame = nil
 local isDragging = false
@@ -162,15 +166,15 @@ local function createGUI()
     gui.Parent = player:WaitForChild("PlayerGui")
 
     frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -150, 0.5, -140) -- Увеличили ширину, сместили центр
-    frame.Size = UDim2.new(0, 300, 0, 320) -- Увеличили ширину и высоту
+    frame.Position = UDim2.new(0.5, -150, 0.5, -170) -- Увеличили высоту для новых элементов
+    frame.Size = UDim2.new(0, 300, 0, 360) -- Увеличили высоту для новых элементов
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
     frame.Visible = guiVisible
 
     local title = Instance.new("TextLabel", frame)
-    title.Size = UDim2.new(1, 0, 0, 30) -- Немного увеличили высоту заголовка
+    title.Size = UDim2.new(1, 0, 0, 30)
     title.Position = UDim2.new(0, 0, 0, 0)
     title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     title.Text = "ASTRALCHEAT V1.0 BY @SFXCL"
@@ -221,9 +225,9 @@ local function createGUI()
         end
     end)
 
-    -- Aimbot Button (одна кнопка вместо двух)
+    -- Aimbot Button
     local aimbotButton = Instance.new("TextButton", frame)
-    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35) -- Уменьшили высоту, увеличили ширину
+    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
     aimbotButton.Position = UDim2.new(0.05, 0, 0.1, 0)
     aimbotButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     aimbotButton.Text = "Aimbot: OFF"
@@ -231,20 +235,30 @@ local function createGUI()
     aimbotButton.TextScaled = true
     aimbotButton.BorderSizePixel = 0
 
-    -- ESP Button (одна кнопка вместо двух)
+    -- ESP Button
     local espButton = Instance.new("TextButton", frame)
     espButton.Size = UDim2.new(0.9, 0, 0, 35)
-    espButton.Position = UDim2.new(0.05, 0, 0.22, 0)
+    espButton.Position = UDim2.new(0.05, 0, 0.2, 0)
     espButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     espButton.Text = "ESP: OFF"
     espButton.TextColor3 = Color3.new(1, 1, 1)
     espButton.TextScaled = true
     espButton.BorderSizePixel = 0
 
-    -- Кнопки выбора цели для аимбота (после ESP)
+    -- Кнопка Custom Camera FOV
+    local cameraFOVButton = Instance.new("TextButton", frame)
+    cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.3, 0)
+    cameraFOVButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    cameraFOVButton.Text = "Custom Camera FOV: OFF"
+    cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraFOVButton.TextScaled = true
+    cameraFOVButton.BorderSizePixel = 0
+
+    -- Кнопки выбора цели для аимбота
     local targetHeadButton = Instance.new("TextButton", frame)
-    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35) -- Уменьшили ширину для двух кнопок в ряд
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.34, 0)
+    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
+    targetHeadButton.Position = UDim2.new(0.05, 0, 0.4, 0)
     targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
     targetHeadButton.Text = "Head ✅"
     targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
@@ -253,17 +267,17 @@ local function createGUI()
 
     local targetBodyButton = Instance.new("TextButton", frame)
     targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetBodyButton.Position = UDim2.new(0.51, 0, 0.34, 0)
+    targetBodyButton.Position = UDim2.new(0.51, 0, 0.4, 0)
     targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     targetBodyButton.Text = "Body"
     targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
     targetBodyButton.TextScaled = true
     targetBodyButton.BorderSizePixel = 0
 
-    -- FOV Slider (после выбора цели)
+    -- FOV Slider
     local fovSliderFrame = Instance.new("Frame", frame)
-    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 70) -- Увеличили высоту для лучшего взаимодействия
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.48, 0)
+    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 70)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.5, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -297,7 +311,7 @@ local function createGUI()
     sliderButton.BorderSizePixel = 1
     sliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
 
-    -- Кнопки + и - для точной настройки
+    -- Кнопки + и - для FOV
     local minusButton = Instance.new("TextButton", fovSliderFrame)
     minusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
     minusButton.Position = UDim2.new(0, 0, 0.7, 0)
@@ -316,6 +330,62 @@ local function createGUI()
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
 
+    -- Camera FOV Slider (новый слайдер для камеры)
+    local cameraFOVSliderFrame = Instance.new("Frame", frame)
+    cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 70)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.72, 0)
+    cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    cameraFOVSliderFrame.BorderSizePixel = 0
+
+    local cameraFOVLabel = Instance.new("TextLabel", cameraFOVSliderFrame)
+    cameraFOVLabel.Size = UDim2.new(1, 0, 0.25, 0)
+    cameraFOVLabel.Position = UDim2.new(0, 0, 0, 0)
+    cameraFOVLabel.BackgroundTransparency = 1
+    cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
+    cameraFOVLabel.TextColor3 = Color3.new(1, 1, 1)
+    cameraFOVLabel.TextScaled = true
+    cameraFOVLabel.Font = Enum.Font.SourceSans
+
+    local cameraSliderBackground = Instance.new("TextButton", cameraFOVSliderFrame)
+    cameraSliderBackground.Size = UDim2.new(1, 0, 0.35, 0)
+    cameraSliderBackground.Position = UDim2.new(0, 0, 0.3, 0)
+    cameraSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    cameraSliderBackground.BorderSizePixel = 0
+    cameraSliderBackground.Text = ""
+    cameraSliderBackground.AutoButtonColor = false
+
+    local cameraSliderFill = Instance.new("Frame", cameraSliderBackground)
+    cameraSliderFill.Size = UDim2.new((cameraFOV - 30) / 120, 0, 1, 0)
+    cameraSliderFill.Position = UDim2.new(0, 0, 0, 0)
+    cameraSliderFill.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
+    cameraSliderFill.BorderSizePixel = 0
+
+    local cameraSliderButton = Instance.new("Frame", cameraSliderBackground)
+    cameraSliderButton.Size = UDim2.new(0, 25, 1.5, 0)
+    cameraSliderButton.Position = UDim2.new((cameraFOV - 30) / 120, -12, -0.25, 0)
+    cameraSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    cameraSliderButton.BorderSizePixel = 1
+    cameraSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
+
+    -- Кнопки + и - для Camera FOV
+    local cameraMinusButton = Instance.new("TextButton", cameraFOVSliderFrame)
+    cameraMinusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
+    cameraMinusButton.Position = UDim2.new(0, 0, 0.7, 0)
+    cameraMinusButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    cameraMinusButton.Text = "-"
+    cameraMinusButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraMinusButton.TextScaled = true
+    cameraMinusButton.BorderSizePixel = 0
+
+    local cameraPlusButton = Instance.new("TextButton", cameraFOVSliderFrame)
+    cameraPlusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
+    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.7, 0)
+    cameraPlusButton.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
+    cameraPlusButton.Text = "+"
+    cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraPlusButton.TextScaled = true
+    cameraPlusButton.BorderSizePixel = 0
+
     -- Функция обновления FOV
     local function updateFOV(value)
         fovRadius = math.floor(math.clamp(value, 50, 250))
@@ -327,31 +397,57 @@ local function createGUI()
         sliderButton.Position = UDim2.new(fillSize, -12, -0.25, 0)
     end
 
-    -- Обработка тача для слайдера
+    -- Функция обновления Camera FOV
+    local function updateCameraFOV(value)
+        cameraFOV = math.floor(math.clamp(value, 30, 150))
+        cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
+        
+        local fillSize = (cameraFOV - 30) / 120
+        cameraSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
+        cameraSliderButton.Position = UDim2.new(fillSize, -12, -0.25, 0)
+        
+        -- Применяем изменения если включен custom camera FOV
+        if customCameraFOVEnabled then
+            camera.FieldOfView = cameraFOV
+        end
+    end
+
+    -- Обработка тача для FOV слайдера
     local isSliding = false
 
-    local function updateSliderFromTouch(touchPosition)
-        local sliderAbsPos = sliderBackground.AbsolutePosition
-        local sliderAbsSize = sliderBackground.AbsoluteSize
+    local function updateSliderFromTouch(touchPosition, isCameraSlider)
+        local sliderAbsPos = isCameraSlider and cameraSliderBackground.AbsolutePosition or sliderBackground.AbsolutePosition
+        local sliderAbsSize = isCameraSlider and cameraSliderBackground.AbsoluteSize or sliderBackground.AbsoluteSize
         local touchX = touchPosition.X
         
         local relativeX = (touchX - sliderAbsPos.X) / sliderAbsSize.X
         relativeX = math.clamp(relativeX, 0, 1)
         
-        local newFOV = 50 + (relativeX * 200)
-        updateFOV(newFOV)
+        if isCameraSlider then
+            local newCameraFOV = 30 + (relativeX * 120)
+            updateCameraFOV(newCameraFOV)
+        else
+            local newFOV = 50 + (relativeX * 200)
+            updateFOV(newFOV)
+        end
     end
 
-    -- Обработка начала тача
+    -- Обработка начала тача для FOV слайдера
     sliderBackground.MouseButton1Down:Connect(function(x, y)
         isSliding = true
-        updateSliderFromTouch(Vector2.new(x, y))
+        updateSliderFromTouch(Vector2.new(x, y), false)
+    end)
+
+    -- Обработка начала тача для Camera FOV слайдера
+    cameraSliderBackground.MouseButton1Down:Connect(function(x, y)
+        isSliding = true
+        updateSliderFromTouch(Vector2.new(x, y), true)
     end)
 
     -- Обработка движения тача
     userInputService.InputChanged:Connect(function(input)
         if isSliding and input.UserInputType == Enum.UserInputType.Touch then
-            updateSliderFromTouch(input.Position)
+            updateSliderFromTouch(input.Position, false)
         end
     end)
 
@@ -362,7 +458,7 @@ local function createGUI()
         end
     end)
 
-    -- Кнопки + и -
+    -- Кнопки + и - для FOV
     minusButton.MouseButton1Click:Connect(function()
         updateFOV(fovRadius - 10)
     end)
@@ -371,10 +467,19 @@ local function createGUI()
         updateFOV(fovRadius + 10)
     end)
 
+    -- Кнопки + и - для Camera FOV
+    cameraMinusButton.MouseButton1Click:Connect(function()
+        updateCameraFOV(cameraFOV - 10)
+    end)
+
+    cameraPlusButton.MouseButton1Click:Connect(function()
+        updateCameraFOV(cameraFOV + 10)
+    end)
+
     -- Кнопки управления (ВНЕ основного фрейма)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 100, 0, 30)
-    hideButton.Position = UDim2.new(0.5, -50, 0.5, 150)
+    hideButton.Position = UDim2.new(0.5, -50, 0.5, 180)
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     hideButton.Text = "Hide GUI"
     hideButton.TextColor3 = Color3.new(1, 1, 1)
@@ -383,7 +488,7 @@ local function createGUI()
 
     local teamCheckButton = Instance.new("TextButton", gui)
     teamCheckButton.Size = UDim2.new(0, 200, 0, 30)
-    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 190)
+    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 220)
     teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
     teamCheckButton.Text = "Team Check: OFF"
     teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
@@ -405,6 +510,20 @@ local function createGUI()
         targetBodyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
         targetHeadButton.Text = "Head"
         targetBodyButton.Text = "Body ✅"
+    end)
+
+    -- ОБРАБОТЧИК Custom Camera FOV
+    cameraFOVButton.MouseButton1Click:Connect(function()
+        customCameraFOVEnabled = not customCameraFOVEnabled
+        if customCameraFOVEnabled then
+            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            cameraFOVButton.Text = "Custom Camera FOV: ON ✅"
+            camera.FieldOfView = cameraFOV
+        else
+            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            cameraFOVButton.Text = "Custom Camera FOV: OFF"
+            camera.FieldOfView = 70 -- Возвращаем стандартное значение
+        end
     end)
 
     -- ОБРАБОТЧИКИ ОДНОКНОПОЧНЫХ ПЕРЕКЛЮЧАТЕЛЕЙ
