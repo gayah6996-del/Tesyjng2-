@@ -19,9 +19,9 @@ local aimbotTarget = "Head"
 local customCameraFOVEnabled = false
 local cameraFOV = 70
 
--- Переменные для Auto Tree
-local autoTreeEnabled = false
-local treeChopping = false
+-- Переменные для Kill Wolves
+local killWolvesEnabled = false
+local killingWolves = false
 
 -- Переменные для перемещения GUI
 local frame = nil
@@ -162,68 +162,76 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
--- Auto Tree Function
-local function startTreeChopping()
-    if treeChopping then return end
-    treeChopping = true
+-- Kill Wolves Function
+local function startKillingWolves()
+    if killingWolves then return end
+    killingWolves = true
     
     spawn(function()
-        while autoTreeEnabled and player.Character do
+        while killWolvesEnabled and player.Character do
             local character = player.Character
             local humanoid = character:FindFirstChild("Humanoid")
             local rootPart = character:FindFirstChild("HumanoidRootPart")
             
             if humanoid and rootPart then
-                -- Поиск топора в инвентаре
-                local axe = nil
+                -- Поиск оружия в инвентаре
+                local weapon = nil
                 for _, tool in pairs(character:GetChildren()) do
-                    if tool:IsA("Tool") and (tool.Name:lower():find("axe") or tool.Name:lower():find("топор")) then
-                        axe = tool
+                    if tool:IsA("Tool") and (tool.Name:lower():find("sword") or tool.Name:lower():find("axe") or tool.Name:lower():find("weapon") or tool.Name:lower():find("меч") or tool.Name:lower():find("топор") or tool.Name:lower():find("оружие")) then
+                        weapon = tool
                         break
                     end
                 end
                 
-                -- Если топор найден, экипируем его
-                if axe then
-                    humanoid:EquipTool(axe)
+                -- Если оружие найдено, экипируем его
+                if weapon then
+                    humanoid:EquipTool(weapon)
                     
-                    -- Поиск деревьев поблизости
-                    local nearestTree = nil
+                    -- Поиск волков поблизости
+                    local nearestWolf = nil
                     local nearestDistance = 50 -- Максимальная дистанция
                     
+                    -- Ищем волков в workspace (NPC, не игроки)
                     for _, obj in pairs(workspace:GetDescendants()) do
-                        if obj:IsA("Part") and (obj.Name:lower():find("tree") or obj.Name:lower():find("wood") or obj.Name:lower():find("дерево")) then
-                            local distance = (rootPart.Position - obj.Position).Magnitude
-                            if distance < nearestDistance then
-                                nearestTree = obj
-                                nearestDistance = distance
+                        if obj:IsA("Model") and (obj.Name:lower():find("wolf") or obj.Name:lower():find("волк") or obj.Name:lower():find("enemy") or obj.Name:lower():find("враг")) then
+                            local humanoidRootPart = obj:FindFirstChild("HumanoidRootPart") or obj:FindFirstChild("Head")
+                            if humanoidRootPart then
+                                local distance = (rootPart.Position - humanoidRootPart.Position).Magnitude
+                                if distance < nearestDistance then
+                                    nearestWolf = obj
+                                    nearestDistance = distance
+                                end
                             end
                         end
                     end
                     
-                    -- Если дерево найдено, подходим и рубим
-                    if nearestTree then
-                        -- Подход к дереву
-                        humanoid:MoveTo(nearestTree.Position)
+                    -- Если волк найден, подходим и атакуем
+                    if nearestWolf then
+                        local wolfHRP = nearestWolf:FindFirstChild("HumanoidRootPart") or nearestWolf:FindFirstChild("Head")
                         
-                        -- Ждем пока подойдем
-                        wait(1)
-                        
-                        -- Рубка дерева (активация инструмента)
-                        if axe:IsA("Tool") then
-                            for i = 1, 10 do -- 10 ударов по дереву
-                                if not autoTreeEnabled then break end
-                                axe:Activate()
-                                wait(0.5)
+                        if wolfHRP then
+                            -- Подход к волку
+                            humanoid:MoveTo(wolfHRP.Position)
+                            
+                            -- Ждем пока подойдем
+                            wait(0.5)
+                            
+                            -- Атака волка (активация оружия)
+                            if weapon:IsA("Tool") then
+                                for i = 1, 8 do -- 8 атак по волку
+                                    if not killWolvesEnabled then break end
+                                    weapon:Activate()
+                                    wait(0.3)
+                                end
                             end
                         end
                     end
                 end
             end
             
-            wait(1) -- Пауза между поиском деревьев
+            wait(0.5) -- Пауза между поиском волков
         end
-        treeChopping = false
+        killingWolves = false
     end)
 end
 
@@ -396,7 +404,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Auto Tree для 99 ночей в лесу\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Убийство волков (99 ночей в лесу)\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -429,7 +437,7 @@ local function createGUI()
     -- Кнопки выбора цели (серые)
     local targetHeadButton = Instance.new("TextButton", aimbotContainer)
     targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.25, 0) -- Отступ 5-6 см
+    targetHeadButton.Position = UDim2.new(0.05, 0, 0.15, 0) -- Отступ 2-3 см
     targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     targetHeadButton.Text = "Head ✅"
     targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
@@ -438,7 +446,7 @@ local function createGUI()
 
     local targetBodyButton = Instance.new("TextButton", aimbotContainer)
     targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetBodyButton.Position = UDim2.new(0.51, 0, 0.25, 0)
+    targetBodyButton.Position = UDim2.new(0.51, 0, 0.15, 0)
     targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     targetBodyButton.Text = "Body"
     targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
@@ -448,7 +456,7 @@ local function createGUI()
     -- FOV Slider для аимбота
     local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0) -- Отступ 5-6 см от других функций
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0) -- Отступ 2-3 см от других функций
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -503,30 +511,30 @@ local function createGUI()
 
     -- ========== ВКЛАДКА MEMORY ==========
     
-    -- Кнопка Auto Tree
-    local autoTreeButton = Instance.new("TextButton", memoryContainer)
-    autoTreeButton.Size = UDim2.new(0.9, 0, 0, 35)
-    autoTreeButton.Position = UDim2.new(0.05, 0, 0.05, 0)
-    autoTreeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    autoTreeButton.Text = "Auto Tree: OFF"
-    autoTreeButton.TextColor3 = Color3.new(1, 1, 1)
-    autoTreeButton.TextScaled = true
-    autoTreeButton.BorderSizePixel = 0
+    -- Кнопка Kill Wolves
+    local killWolvesButton = Instance.new("TextButton", memoryContainer)
+    killWolvesButton.Size = UDim2.new(0.9, 0, 0, 35)
+    killWolvesButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    killWolvesButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    killWolvesButton.Text = "Kill Wolves: OFF"
+    killWolvesButton.TextColor3 = Color3.new(1, 1, 1)
+    killWolvesButton.TextScaled = true
+    killWolvesButton.BorderSizePixel = 0
 
     -- Кнопка Camera FOV
     local cameraFOVButton = Instance.new("TextButton", memoryContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.25, 0) -- Отступ 5-6 см от Auto Tree
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.15, 0) -- Отступ 2-3 см от Kill Wolves
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider (после Camera FOV Button с отступом 5-6 см)
+    -- Camera FOV Slider (после Camera FOV Button с отступом 2-3 см)
     local cameraFOVSliderFrame = Instance.new("Frame", memoryContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0) -- Отступ 5-6 см от Camera FOV Button
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0) -- Отступ 2-3 см от Camera FOV Button
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -795,15 +803,15 @@ local function createGUI()
         end
     end)
 
-    autoTreeButton.MouseButton1Click:Connect(function()
-        autoTreeEnabled = not autoTreeEnabled
-        if autoTreeEnabled then
-            autoTreeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            autoTreeButton.Text = "Auto Tree: ON ✅"
-            startTreeChopping()
+    killWolvesButton.MouseButton1Click:Connect(function()
+        killWolvesEnabled = not killWolvesEnabled
+        if killWolvesEnabled then
+            killWolvesButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            killWolvesButton.Text = "Kill Wolves: ON ✅"
+            startKillingWolves()
         else
-            autoTreeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            autoTreeButton.Text = "Auto Tree: OFF"
+            killWolvesButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            killWolvesButton.Text = "Kill Wolves: OFF"
         end
     end)
 
