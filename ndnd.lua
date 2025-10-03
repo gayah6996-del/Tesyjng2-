@@ -24,6 +24,7 @@ local frame = nil
 local isDragging = false
 local dragStart = nil
 local frameStart = nil
+local tabOpen = false
 
 -- FOV Circle
 local circle = Drawing.new("Circle")
@@ -164,23 +165,34 @@ local function createGUI()
     gui.ResetOnSpawn = false
     gui.Parent = player:WaitForChild("PlayerGui")
 
+    -- Основной контейнер
     frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -100)
-    frame.Size = UDim2.new(0, 350, 0, 200)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -150)
+    frame.Size = UDim2.new(0, 350, 0, 300)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
     frame.Visible = guiVisible
 
-    local title = Instance.new("TextLabel", frame)
-    title.Size = UDim2.new(1, 0, 0, 30)
-    title.Position = UDim2.new(0, 0, 0, 0)
-    title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    title.Text = "ASTRALCHEAT V1.0 BY @SFXCL"
-    title.TextColor3 = Color3.new(1, 1, 1)
-    title.TextScaled = true
-    title.Font = Enum.Font.SourceSansBold
-    title.BorderSizePixel = 0
+    -- Вкладка 123
+    local tabButton = Instance.new("TextButton", frame)
+    tabButton.Size = UDim2.new(0, 60, 0, 30)
+    tabButton.Position = UDim2.new(0.5, -30, 0, 0)
+    tabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    tabButton.Text = "123"
+    tabButton.TextColor3 = Color3.new(1, 1, 1)
+    tabButton.TextScaled = true
+    tabButton.BorderSizePixel = 1
+    tabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+    tabButton.ZIndex = 2
+
+    -- Контейнер для функций (изначально скрыт)
+    local functionsContainer = Instance.new("Frame", frame)
+    functionsContainer.Size = UDim2.new(1, 0, 1, -30)
+    functionsContainer.Position = UDim2.new(0, 0, 0, 30)
+    functionsContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    functionsContainer.BorderSizePixel = 0
+    functionsContainer.Visible = false
 
     -- Функции для перемещения GUI
     local function startDrag(input)
@@ -206,13 +218,13 @@ local function createGUI()
     end
 
     -- Обработчики для перемещения
-    title.InputBegan:Connect(function(input)
+    tabButton.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             startDrag(input)
         end
     end)
 
-    title.InputEnded:Connect(function(input)
+    tabButton.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             endDrag()
         end
@@ -225,27 +237,27 @@ local function createGUI()
     end)
 
     -- Первая строка кнопок (горизонтальная)
-    local aimbotButton = Instance.new("TextButton", frame)
+    local aimbotButton = Instance.new("TextButton", functionsContainer)
     aimbotButton.Size = UDim2.new(0.3, 0, 0, 30)
-    aimbotButton.Position = UDim2.new(0.02, 0, 0.15, 0)
+    aimbotButton.Position = UDim2.new(0.02, 0, 0.05, 0)
     aimbotButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     aimbotButton.Text = "Aimbot: OFF"
     aimbotButton.TextColor3 = Color3.new(1, 1, 1)
     aimbotButton.TextScaled = true
     aimbotButton.BorderSizePixel = 0
 
-    local espButton = Instance.new("TextButton", frame)
+    local espButton = Instance.new("TextButton", functionsContainer)
     espButton.Size = UDim2.new(0.3, 0, 0, 30)
-    espButton.Position = UDim2.new(0.34, 0, 0.15, 0)
+    espButton.Position = UDim2.new(0.34, 0, 0.05, 0)
     espButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     espButton.Text = "ESP: OFF"
     espButton.TextColor3 = Color3.new(1, 1, 1)
     espButton.TextScaled = true
     espButton.BorderSizePixel = 0
 
-    local cameraFOVButton = Instance.new("TextButton", frame)
+    local cameraFOVButton = Instance.new("TextButton", functionsContainer)
     cameraFOVButton.Size = UDim2.new(0.3, 0, 0, 30)
-    cameraFOVButton.Position = UDim2.new(0.68, 0, 0.15, 0)
+    cameraFOVButton.Position = UDim2.new(0.68, 0, 0.05, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
@@ -253,42 +265,42 @@ local function createGUI()
     cameraFOVButton.BorderSizePixel = 0
 
     -- Вторая строка кнопок (горизонтальная)
-    local teamCheckButton = Instance.new("TextButton", frame)
+    local teamCheckButton = Instance.new("TextButton", functionsContainer)
     teamCheckButton.Size = UDim2.new(0.3, 0, 0, 30)
-    teamCheckButton.Position = UDim2.new(0.02, 0, 0.35, 0)
+    teamCheckButton.Position = UDim2.new(0.02, 0, 0.15, 0)
     teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
     teamCheckButton.Text = "Team: OFF"
     teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
     teamCheckButton.TextScaled = true
     teamCheckButton.BorderSizePixel = 0
 
-    local targetHeadButton = Instance.new("TextButton", frame)
+    local targetHeadButton = Instance.new("TextButton", functionsContainer)
     targetHeadButton.Size = UDim2.new(0.3, 0, 0, 30)
-    targetHeadButton.Position = UDim2.new(0.34, 0, 0.35, 0)
+    targetHeadButton.Position = UDim2.new(0.34, 0, 0.15, 0)
     targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
     targetHeadButton.Text = "Head ✅"
     targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
     targetHeadButton.TextScaled = true
     targetHeadButton.BorderSizePixel = 0
 
-    local targetBodyButton = Instance.new("TextButton", frame)
+    local targetBodyButton = Instance.new("TextButton", functionsContainer)
     targetBodyButton.Size = UDim2.new(0.3, 0, 0, 30)
-    targetBodyButton.Position = UDim2.new(0.68, 0, 0.35, 0)
+    targetBodyButton.Position = UDim2.new(0.68, 0, 0.15, 0)
     targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     targetBodyButton.Text = "Body"
     targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
     targetBodyButton.TextScaled = true
     targetBodyButton.BorderSizePixel = 0
 
-    -- FOV Slider (компактный)
-    local fovSliderFrame = Instance.new("Frame", frame)
-    fovSliderFrame.Size = UDim2.new(0.96, 0, 0, 50)
-    fovSliderFrame.Position = UDim2.new(0.02, 0, 0.55, 0)
+    -- FOV Slider
+    local fovSliderFrame = Instance.new("Frame", functionsContainer)
+    fovSliderFrame.Size = UDim2.new(0.96, 0, 0, 60)
+    fovSliderFrame.Position = UDim2.new(0.02, 0, 0.3, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
     local fovLabel = Instance.new("TextLabel", fovSliderFrame)
-    fovLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    fovLabel.Size = UDim2.new(1, 0, 0.3, 0)
     fovLabel.Position = UDim2.new(0, 0, 0, 0)
     fovLabel.BackgroundTransparency = 1
     fovLabel.Text = "FOV Radius: " .. fovRadius
@@ -298,7 +310,7 @@ local function createGUI()
 
     local sliderBackground = Instance.new("TextButton", fovSliderFrame)
     sliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
-    sliderBackground.Position = UDim2.new(0, 0, 0.5, 0)
+    sliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
     sliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     sliderBackground.BorderSizePixel = 0
     sliderBackground.Text = ""
@@ -319,8 +331,8 @@ local function createGUI()
 
     -- Кнопки + и - для FOV
     local minusButton = Instance.new("TextButton", fovSliderFrame)
-    minusButton.Size = UDim2.new(0.2, 0, 0.4, 0)
-    minusButton.Position = UDim2.new(0, 0, 0.9, 0)
+    minusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    minusButton.Position = UDim2.new(0, 0, 0.8, 0)
     minusButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
     minusButton.Text = "-"
     minusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -328,23 +340,23 @@ local function createGUI()
     minusButton.BorderSizePixel = 0
 
     local plusButton = Instance.new("TextButton", fovSliderFrame)
-    plusButton.Size = UDim2.new(0.2, 0, 0.4, 0)
-    plusButton.Position = UDim2.new(0.8, 0, 0.9, 0)
+    plusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    plusButton.Position = UDim2.new(0.8, 0, 0.8, 0)
     plusButton.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
     plusButton.Text = "+"
     plusButton.TextColor3 = Color3.new(1, 1, 1)
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider (компактный)
-    local cameraFOVSliderFrame = Instance.new("Frame", frame)
-    cameraFOVSliderFrame.Size = UDim2.new(0.96, 0, 0, 50)
-    cameraFOVSliderFrame.Position = UDim2.new(0.02, 0, 0.78, 0)
+    -- Camera FOV Slider (расположен ниже FOV Radius)
+    local cameraFOVSliderFrame = Instance.new("Frame", functionsContainer)
+    cameraFOVSliderFrame.Size = UDim2.new(0.96, 0, 0, 60)
+    cameraFOVSliderFrame.Position = UDim2.new(0.02, 0, 0.55, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
     local cameraFOVLabel = Instance.new("TextLabel", cameraFOVSliderFrame)
-    cameraFOVLabel.Size = UDim2.new(1, 0, 0.4, 0)
+    cameraFOVLabel.Size = UDim2.new(1, 0, 0.3, 0)
     cameraFOVLabel.Position = UDim2.new(0, 0, 0, 0)
     cameraFOVLabel.BackgroundTransparency = 1
     cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
@@ -354,7 +366,7 @@ local function createGUI()
 
     local cameraSliderBackground = Instance.new("TextButton", cameraFOVSliderFrame)
     cameraSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
-    cameraSliderBackground.Position = UDim2.new(0, 0, 0.5, 0)
+    cameraSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
     cameraSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     cameraSliderBackground.BorderSizePixel = 0
     cameraSliderBackground.Text = ""
@@ -375,8 +387,8 @@ local function createGUI()
 
     -- Кнопки + и - для Camera FOV
     local cameraMinusButton = Instance.new("TextButton", cameraFOVSliderFrame)
-    cameraMinusButton.Size = UDim2.new(0.2, 0, 0.4, 0)
-    cameraMinusButton.Position = UDim2.new(0, 0, 0.9, 0)
+    cameraMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    cameraMinusButton.Position = UDim2.new(0, 0, 0.8, 0)
     cameraMinusButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
     cameraMinusButton.Text = "-"
     cameraMinusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -384,8 +396,8 @@ local function createGUI()
     cameraMinusButton.BorderSizePixel = 0
 
     local cameraPlusButton = Instance.new("TextButton", cameraFOVSliderFrame)
-    cameraPlusButton.Size = UDim2.new(0.2, 0, 0.4, 0)
-    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.9, 0)
+    cameraPlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.8, 0)
     cameraPlusButton.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
     cameraPlusButton.Text = "+"
     cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -495,6 +507,18 @@ local function createGUI()
     end)
 
     -- ОБРАБОТЧИКИ КНОПОК
+    tabButton.MouseButton1Click:Connect(function()
+        tabOpen = not tabOpen
+        functionsContainer.Visible = tabOpen
+        if tabOpen then
+            tabButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            tabButton.Text = "123 ▲"
+        else
+            tabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+            tabButton.Text = "123 ▼"
+        end
+    end)
+
     hideButton.MouseButton1Click:Connect(function()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
