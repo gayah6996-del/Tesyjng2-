@@ -157,7 +157,7 @@ local function createGUI()
 
     local frame = Instance.new("Frame", gui)
     frame.Position = UDim2.new(0.5, -100, 0.5, -115)
-    frame.Size = UDim2.new(0, 200, 0, 230)
+    frame.Size = UDim2.new(0, 240, 0, 270)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
