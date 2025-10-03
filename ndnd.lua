@@ -19,6 +19,10 @@ local aimbotTarget = "Head"
 local customCameraFOVEnabled = false
 local cameraFOV = 70
 
+-- Переменные для Auto Tree
+local autoTreeEnabled = false
+local treeChopping = false
+
 -- Переменные для перемещения GUI
 local frame = nil
 local isDragging = false
@@ -158,6 +162,71 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
+-- Auto Tree Function
+local function startTreeChopping()
+    if treeChopping then return end
+    treeChopping = true
+    
+    spawn(function()
+        while autoTreeEnabled and player.Character do
+            local character = player.Character
+            local humanoid = character:FindFirstChild("Humanoid")
+            local rootPart = character:FindFirstChild("HumanoidRootPart")
+            
+            if humanoid and rootPart then
+                -- Поиск топора в инвентаре
+                local axe = nil
+                for _, tool in pairs(character:GetChildren()) do
+                    if tool:IsA("Tool") and (tool.Name:lower():find("axe") or tool.Name:lower():find("топор")) then
+                        axe = tool
+                        break
+                    end
+                end
+                
+                -- Если топор найден, экипируем его
+                if axe then
+                    humanoid:EquipTool(axe)
+                    
+                    -- Поиск деревьев поблизости
+                    local nearestTree = nil
+                    local nearestDistance = 50 -- Максимальная дистанция
+                    
+                    for _, obj in pairs(workspace:GetDescendants()) do
+                        if obj:IsA("Part") and (obj.Name:lower():find("tree") or obj.Name:lower():find("wood") or obj.Name:lower():find("дерево")) then
+                            local distance = (rootPart.Position - obj.Position).Magnitude
+                            if distance < nearestDistance then
+                                nearestTree = obj
+                                nearestDistance = distance
+                            end
+                        end
+                    end
+                    
+                    -- Если дерево найдено, подходим и рубим
+                    if nearestTree then
+                        -- Подход к дереву
+                        humanoid:MoveTo(nearestTree.Position)
+                        
+                        -- Ждем пока подойдем
+                        wait(1)
+                        
+                        -- Рубка дерева (активация инструмента)
+                        if axe:IsA("Tool") then
+                            for i = 1, 10 do -- 10 ударов по дереву
+                                if not autoTreeEnabled then break end
+                                axe:Activate()
+                                wait(0.5)
+                            end
+                        end
+                    end
+                end
+            end
+            
+            wait(1) -- Пауза между поиском деревьев
+        end
+        treeChopping = false
+    end)
+end
+
 -- GUI Creation Function
 local function createGUI()
     local gui = Instance.new("ScreenGui")
@@ -208,8 +277,8 @@ local function createGUI()
 
     -- Вкладка Info (первая)
     local infoTabButton = Instance.new("TextButton", tabsPanel)
-    infoTabButton.Size = UDim2.new(0.9, 0, 0, 30)
-    infoTabButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    infoTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    infoTabButton.Position = UDim2.new(0.05, 0, 0.02, 0)
     infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     infoTabButton.Text = "Info"
     infoTabButton.TextColor3 = Color3.new(1, 1, 1)
@@ -219,8 +288,8 @@ local function createGUI()
 
     -- Вкладка ESP (вторая)
     local espTabButton = Instance.new("TextButton", tabsPanel)
-    espTabButton.Size = UDim2.new(0.9, 0, 0, 30)
-    espTabButton.Position = UDim2.new(0.05, 0, 0.15, 0) -- Отступ 1 см
+    espTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    espTabButton.Position = UDim2.new(0.05, 0, 0.12, 0) -- Отступ 2-3 см
     espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     espTabButton.Text = "ESP"
     espTabButton.TextColor3 = Color3.new(1, 1, 1)
@@ -230,14 +299,25 @@ local function createGUI()
 
     -- Вкладка AimBot (третья)
     local aimbotTabButton = Instance.new("TextButton", tabsPanel)
-    aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 30)
-    aimbotTabButton.Position = UDim2.new(0.05, 0, 0.25, 0) -- Отступ 1 см
+    aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    aimbotTabButton.Position = UDim2.new(0.05, 0, 0.22, 0) -- Отступ 2-3 см
     aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     aimbotTabButton.Text = "AimBot"
     aimbotTabButton.TextColor3 = Color3.new(1, 1, 1)
     aimbotTabButton.TextScaled = true
     aimbotTabButton.BorderSizePixel = 1
     aimbotTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+
+    -- Вкладка Memory (четвертая)
+    local memoryTabButton = Instance.new("TextButton", tabsPanel)
+    memoryTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    memoryTabButton.Position = UDim2.new(0.05, 0, 0.32, 0) -- Отступ 2-3 см
+    memoryTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    memoryTabButton.Text = "Memory"
+    memoryTabButton.TextColor3 = Color3.new(1, 1, 1)
+    memoryTabButton.TextScaled = true
+    memoryTabButton.BorderSizePixel = 1
+    memoryTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
     -- Контейнеры для содержимого вкладок
     local infoContainer = Instance.new("Frame", contentContainer)
@@ -260,6 +340,13 @@ local function createGUI()
     aimbotContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     aimbotContainer.BorderSizePixel = 0
     aimbotContainer.Visible = false
+
+    local memoryContainer = Instance.new("Frame", contentContainer)
+    memoryContainer.Size = UDim2.new(1, 0, 1, 0)
+    memoryContainer.Position = UDim2.new(0, 0, 0, 0)
+    memoryContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    memoryContainer.BorderSizePixel = 0
+    memoryContainer.Visible = false
 
     -- Функции для перемещения GUI
     local function startDrag(input)
@@ -309,7 +396,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Auto Tree для 99 ночей в лесу\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -327,20 +414,41 @@ local function createGUI()
     espButton.TextScaled = true
     espButton.BorderSizePixel = 0
 
-    -- Кнопка Camera FOV (серая)
-    local cameraFOVButton = Instance.new("TextButton", espContainer)
-    cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.15, 0)
-    cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    cameraFOVButton.Text = "CamFOV: OFF"
-    cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
-    cameraFOVButton.TextScaled = true
-    cameraFOVButton.BorderSizePixel = 0
+    -- ========== ВКЛАДКА AIMBOT ==========
+    
+    -- Кнопка Aimbot (серая)
+    local aimbotButton = Instance.new("TextButton", aimbotContainer)
+    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
+    aimbotButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    aimbotButton.Text = "Aimbot: OFF"
+    aimbotButton.TextColor3 = Color3.new(1, 1, 1)
+    aimbotButton.TextScaled = true
+    aimbotButton.BorderSizePixel = 0
 
-    -- FOV Slider
-    local fovSliderFrame = Instance.new("Frame", espContainer)
+    -- Кнопки выбора цели (серые)
+    local targetHeadButton = Instance.new("TextButton", aimbotContainer)
+    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
+    targetHeadButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+    targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    targetHeadButton.Text = "Head ✅"
+    targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
+    targetHeadButton.TextScaled = true
+    targetHeadButton.BorderSizePixel = 0
+
+    local targetBodyButton = Instance.new("TextButton", aimbotContainer)
+    targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
+    targetBodyButton.Position = UDim2.new(0.51, 0, 0.15, 0)
+    targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    targetBodyButton.Text = "Body"
+    targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
+    targetBodyButton.TextScaled = true
+    targetBodyButton.BorderSizePixel = 0
+
+    -- FOV Slider для аимбота
+    local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.3, 0)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.3, 0) -- Отступ 2-3 см от других функций
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -393,10 +501,22 @@ local function createGUI()
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider
-    local cameraFOVSliderFrame = Instance.new("Frame", espContainer)
+    -- ========== ВКЛАДКА MEMORY ==========
+    
+    -- Кнопка Auto Tree
+    local autoTreeButton = Instance.new("TextButton", memoryContainer)
+    autoTreeButton.Size = UDim2.new(0.9, 0, 0, 35)
+    autoTreeButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    autoTreeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    autoTreeButton.Text = "Auto Tree: OFF"
+    autoTreeButton.TextColor3 = Color3.new(1, 1, 1)
+    autoTreeButton.TextScaled = true
+    autoTreeButton.BorderSizePixel = 0
+
+    -- Camera FOV Slider (после Auto Tree с отступом 2-3 см)
+    local cameraFOVSliderFrame = Instance.new("Frame", memoryContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.6, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.2, 0) -- Отступ 2-3 см от Auto Tree
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -448,37 +568,6 @@ local function createGUI()
     cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
-
-    -- ========== ВКЛАДКА AIMBOT ==========
-    
-    -- Кнопка Aimbot (серая)
-    local aimbotButton = Instance.new("TextButton", aimbotContainer)
-    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
-    aimbotButton.Position = UDim2.new(0.05, 0, 0.1, 0)
-    aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    aimbotButton.Text = "Aimbot: OFF"
-    aimbotButton.TextColor3 = Color3.new(1, 1, 1)
-    aimbotButton.TextScaled = true
-    aimbotButton.BorderSizePixel = 0
-
-    -- Кнопки выбора цели (серые)
-    local targetHeadButton = Instance.new("TextButton", aimbotContainer)
-    targetHeadButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetHeadButton.Position = UDim2.new(0.05, 0, 0.25, 0)
-    targetHeadButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    targetHeadButton.Text = "Head ✅"
-    targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
-    targetHeadButton.TextScaled = true
-    targetHeadButton.BorderSizePixel = 0
-
-    local targetBodyButton = Instance.new("TextButton", aimbotContainer)
-    targetBodyButton.Size = UDim2.new(0.44, 0, 0, 35)
-    targetBodyButton.Position = UDim2.new(0.51, 0, 0.25, 0)
-    targetBodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    targetBodyButton.Text = "Body"
-    targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
-    targetBodyButton.TextScaled = true
-    targetBodyButton.BorderSizePixel = 0
 
     -- Кнопка Hide/Show GUI (внизу экрана по центру)
     local hideButton = Instance.new("TextButton", gui)
@@ -590,11 +679,13 @@ local function createGUI()
         infoContainer.Visible = false
         espContainer.Visible = false
         aimbotContainer.Visible = false
+        memoryContainer.Visible = false
         
         -- Сбросить цвета всех вкладок
         infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        memoryTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         
         -- Показать выбранный контейнер и выделить вкладку
         if tabName == "Info" then
@@ -606,6 +697,9 @@ local function createGUI()
         elseif tabName == "AimBot" then
             aimbotContainer.Visible = true
             aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        elseif tabName == "Memory" then
+            memoryContainer.Visible = true
+            memoryTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
     end
 
@@ -620,6 +714,10 @@ local function createGUI()
 
     aimbotTabButton.MouseButton1Click:Connect(function()
         switchTab("AimBot")
+    end)
+
+    memoryTabButton.MouseButton1Click:Connect(function()
+        switchTab("Memory")
     end)
 
     hideButton.MouseButton1Click:Connect(function()
@@ -684,6 +782,18 @@ local function createGUI()
                     drawings.tracer.Visible = false
                 end
             end
+        end
+    end)
+
+    autoTreeButton.MouseButton1Click:Connect(function()
+        autoTreeEnabled = not autoTreeEnabled
+        if autoTreeEnabled then
+            autoTreeButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            autoTreeButton.Text = "Auto Tree: ON ✅"
+            startTreeChopping()
+        else
+            autoTreeButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            autoTreeButton.Text = "Auto Tree: OFF"
         end
     end)
 
