@@ -174,22 +174,23 @@ local function createGUI()
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
     frame.Visible = guiVisible
 
-    -- Вкладка 123
+    -- Большая вкладка 123
     local tabButton = Instance.new("TextButton", frame)
-    tabButton.Size = UDim2.new(0, 60, 0, 30)
-    tabButton.Position = UDim2.new(0.5, -30, 0, 0)
+    tabButton.Size = UDim2.new(1, 0, 0, 40)  -- Увеличена высота
+    tabButton.Position = UDim2.new(0, 0, 0, 0)
     tabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
     tabButton.Text = "123"
     tabButton.TextColor3 = Color3.new(1, 1, 1)
     tabButton.TextScaled = true
+    tabButton.TextSize = 20  -- Увеличен размер текста
     tabButton.BorderSizePixel = 1
     tabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
     tabButton.ZIndex = 2
 
     -- Контейнер для функций (изначально скрыт)
     local functionsContainer = Instance.new("Frame", frame)
-    functionsContainer.Size = UDim2.new(1, 0, 1, -30)
-    functionsContainer.Position = UDim2.new(0, 0, 0, 30)
+    functionsContainer.Size = UDim2.new(1, 0, 1, -40)  -- Учтена увеличенная высота вкладки
+    functionsContainer.Position = UDim2.new(0, 0, 0, 40)
     functionsContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     functionsContainer.BorderSizePixel = 0
     functionsContainer.Visible = false
@@ -404,10 +405,10 @@ local function createGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- Кнопка Show/Hide GUI (вне основного фрейма)
+    -- Кнопка Hide/Show GUI (внизу экрана по центру)
     local hideButton = Instance.new("TextButton", gui)
-    hideButton.Size = UDim2.new(0, 120, 0, 30)
-    hideButton.Position = UDim2.new(0.5, -60, 0, 10)
+    hideButton.Size = UDim2.new(0, 150, 0, 40)
+    hideButton.Position = UDim2.new(0.5, -75, 1, -50)  -- Внизу экрана по центру
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     hideButton.Text = "Hide GUI"
     hideButton.TextColor3 = Color3.new(1, 1, 1)
