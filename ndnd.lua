@@ -404,7 +404,7 @@ local function createGUI()
     bodyButton.TextScaled = true
     bodyButton.BorderSizePixel = 0
 
-    -- FOV Slider для аимбота
+    -- FOV Slider для аимбота (исходная позиция)
     local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
     fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
@@ -460,7 +460,7 @@ local function createGUI()
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
 
-    -- Distance Slider для аимбота
+    -- Distance Slider для аимбота (исходная позиция)
     local distanceSliderFrame = Instance.new("Frame", aimbotContainer)
     distanceSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
     distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
@@ -644,6 +644,25 @@ local function createGUI()
             bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         dropdownContainer.Visible = false
+        -- Возвращаем слайдеры в исходное положение при закрытии меню
+        fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+        distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+    end
+
+    -- Функция для открытия/закрытия выпадающего списка
+    local function toggleDropdown()
+        local isOpening = not dropdownContainer.Visible
+        dropdownContainer.Visible = isOpening
+        
+        if isOpening then
+            -- Сдвигаем слайдеры вниз на 4 см при открытии меню
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0)  -- +0.20 от исходного
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.70, 0)  -- +0.20 от исходного
+        else
+            -- Возвращаем слайдеры в исходное положение при закрытии меню
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+        end
     end
 
     -- Обработка для слайдеров
@@ -746,7 +765,7 @@ local function createGUI()
 
     -- Обработчики для выпадающего списка выбора цели
     targetDropdown.MouseButton1Click:Connect(function()
-        dropdownContainer.Visible = not dropdownContainer.Visible
+        toggleDropdown()
     end)
 
     headButton.MouseButton1Click:Connect(function()
@@ -772,6 +791,9 @@ local function createGUI()
                    not (mousePos.X >= targetDropdownAbsPos.X and mousePos.X <= targetDropdownAbsPos.X + targetDropdownAbsSize.X and
                        mousePos.Y >= targetDropdownAbsPos.Y and mousePos.Y <= targetDropdownAbsPos.Y + targetDropdownAbsSize.Y) then
                     dropdownContainer.Visible = false
+                    -- Возвращаем слайдеры в исходное положение при закрытии меню
+                    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+                    distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
                 end
             end
         end
@@ -808,8 +830,10 @@ local function createGUI()
             cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         
-        -- Скрыть выпадающий список при переключении вкладок
+        -- Скрыть выпадающий список при переключении вкладок и вернуть слайдеры в исходное положение
         dropdownContainer.Visible = false
+        fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+        distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     end
 
     -- ОБРАБОТЧИКИ КНОПОК ВКЛАДОК
