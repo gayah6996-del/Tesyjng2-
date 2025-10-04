@@ -609,7 +609,7 @@ local function createMainGUI()
     -- 2. Кнопка Infinite Jump (вторая) - УВЕЛИЧЕН ОТСТУП
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.12, 10) -- Увеличено с 20 до 40
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.20, 10) -- Увеличено с 20 до 40
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
     infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
@@ -629,7 +629,7 @@ local function createMainGUI()
     -- 4. Camera FOV Slider (четвертый) - УВЕЛИЧЕН ОТСТУП
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.23, 70) -- Увеличено с 70 до 120
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.25, 70) -- Увеличено с 70 до 120
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
