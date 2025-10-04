@@ -41,6 +41,9 @@ local keyStartTime = nil
 local keyDuration = 20 * 60 -- 20 минут в секундах
 local keyTimerConnection = nil
 
+-- Переменная для невидимости
+local invisibleEnabled = false
+
 -- FOV Circle
 local circle = Drawing.new("Circle")
 circle.Color = Color3.fromRGB(255, 255, 255)
@@ -58,12 +61,22 @@ local function disableAllFeatures()
     customCameraFOVEnabled = false
     infiniteJumpEnabled = false
     speedHackEnabled = false
+    invisibleEnabled = false
     
     -- Восстанавливаем настройки
     if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
         player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = originalWalkSpeed
     end
     camera.FieldOfView = 70
+    
+    -- Восстанавливаем видимость персонажа
+    if player.Character then
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 0
+            end
+        end
+    end
     
     -- Удаляем Drawing объекты
     if circle then
@@ -85,6 +98,27 @@ local function disableAllFeatures()
     if keyTimerConnection then
         keyTimerConnection:Disconnect()
         keyTimerConnection = nil
+    end
+end
+
+-- Функция для включения/выключения невидимости
+local function toggleInvisibility()
+    if not player.Character then return end
+    
+    if invisibleEnabled then
+        -- Включаем невидимость
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 1
+            end
+        end
+    else
+        -- Выключаем невидимость
+        for _, part in pairs(player.Character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Transparency = 0
+            end
+        end
     end
 end
 
@@ -150,7 +184,7 @@ local function showNotification()
     textLabel.Position = UDim2.new(1, -260, 1, -60)
     textLabel.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
     textLabel.BorderSizePixel = 0
-    textLabel.Text = "ASTRALCHEAT успешно запущен✅!"
+    textLabel.Text = "ASTRALCHEAT успешно запущен!"
     textLabel.TextColor3 = Color3.new(1, 1, 1)
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.SourceSansBold
@@ -481,7 +515,7 @@ local function createMainGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n• SpeedHack\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n• SpeedHack\n• Невидимость\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -498,6 +532,16 @@ local function createMainGUI()
     espButton.TextColor3 = Color3.new(1, 1, 1)
     espButton.TextScaled = true
     espButton.BorderSizePixel = 0
+
+    -- Кнопка Invisible (серая)
+    local invisibleButton = Instance.new("TextButton", espContainer)
+    invisibleButton.Size = UDim2.new(0.9, 0, 0, 35)
+    invisibleButton.Position = UDim2.new(0.05, 0, 0.20, 0)
+    invisibleButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    invisibleButton.Text = "Invisible: OFF"
+    invisibleButton.TextColor3 = Color3.new(1, 1, 1)
+    invisibleButton.TextScaled = true
+    invisibleButton.BorderSizePixel = 0
 
     -- ========== ВКЛАДКА AIMBOT ==========
     
@@ -1116,7 +1160,7 @@ local function createMainGUI()
     end)
 
     cameraTabButton.MouseButton1Click:Connect(function()
-        switchTab("Camera")
+        switchTab("Misc")
     end)
 
     -- ОБРАБОТЧИКИ ОСНОВНЫХ КНОПОК
@@ -1162,7 +1206,7 @@ local function createMainGUI()
         speedHackEnabled = not speedHackEnabled
         if speedHackEnabled then
             speedHackButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            speedHackButton.Text = "SpeedHack: ON ✅"
+            speedHackButton.Text = "SpeedHack: ON "
             if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
                 originalWalkSpeed = player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed
             end
@@ -1178,7 +1222,7 @@ local function createMainGUI()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
             infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            infiniteJumpButton.Text = "Infinite Jump: ON ✅"
+            infiniteJumpButton.Text = "Infinite Jump: ON "
         else
             infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             infiniteJumpButton.Text = "Infinite Jump: OFF"
@@ -1190,7 +1234,7 @@ local function createMainGUI()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            cameraFOVButton.Text = "CamFOV: ON ✅"
+            cameraFOVButton.Text = "CamFOV: ON "
             camera.FieldOfView = cameraFOV
         else
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -1199,11 +1243,24 @@ local function createMainGUI()
         end
     end)
 
+    -- Обработчик для кнопки Invisible
+    invisibleButton.MouseButton1Click:Connect(function()
+        invisibleEnabled = not invisibleEnabled
+        if invisibleEnabled then
+            invisibleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            invisibleButton.Text = "Invisible: ON "
+        else
+            invisibleButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            invisibleButton.Text = "Invisible: OFF"
+        end
+        toggleInvisibility()
+    end)
+
     aimbotButton.MouseButton1Click:Connect(function()
         aimbotEnabled = not aimbotEnabled
         if aimbotEnabled then
             aimbotButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            aimbotButton.Text = "Aimbot: ON ✅"
+            aimbotButton.Text = "Aimbot: ON "
         else
             aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             aimbotButton.Text = "Aimbot: OFF"
@@ -1214,7 +1271,7 @@ local function createMainGUI()
         espEnabled = not espEnabled
         if espEnabled then
             espButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            espButton.Text = "ESP: ON ✅"
+            espButton.Text = "ESP: ON "
         else
             espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             espButton.Text = "ESP: OFF"
@@ -1239,7 +1296,7 @@ local function createMainGUI()
     keyTimerConnection = runService.Heartbeat:Connect(function()
         local timeText = updateKeyTime()
         if timeText and infoText then
-            infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n• SpeedHack\n\n" .. timeText .. "\n\nИспользуйте на свой страх и риск!"
+            infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n• SpeedHack\n• Невидимость\n\n" .. timeText .. "\n\nИспользуйте на свой страх и риск!"
         end
     end)
 end
@@ -1341,6 +1398,9 @@ player.CharacterAdded:Connect(function(character)
     end
     if speedHackEnabled then
         updateSpeed()
+    end
+    if invisibleEnabled then
+        toggleInvisibility()
     end
 end)
 
