@@ -23,6 +23,11 @@ local cameraFOV = 70
 -- Переменные для Infinite Jump
 local infiniteJumpEnabled = false
 
+-- Переменные для SpeedHack
+local speedHackEnabled = false
+local speedMultiplier = 1
+local originalWalkSpeed = 16
+
 -- Переменные для перемещения GUI
 local frame = nil
 local isDragging = false
@@ -45,6 +50,18 @@ userInputService.JumpRequest:connect(function()
         game:GetService"Players".LocalPlayer.Character:FindFirstChildOfClass'Humanoid':ChangeState("Jumping")
     end
 end)
+
+-- SpeedHack Functionality
+local function updateSpeed()
+    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if speedHackEnabled then
+            humanoid.WalkSpeed = originalWalkSpeed * speedMultiplier
+        else
+            humanoid.WalkSpeed = originalWalkSpeed
+        end
+    end
+end
 
 -- Show Notification
 local function showNotification()
@@ -396,7 +413,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n• SpeedHack\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -579,30 +596,40 @@ local function createGUI()
 
     -- ========== ВКЛАДКА CAMERA ==========
     
-    -- Кнопка Infinite Jump (самая первая)
+    -- 1. Кнопка SpeedHack (самая первая)
+    local speedHackButton = Instance.new("TextButton", cameraContainer)
+    speedHackButton.Size = UDim2.new(0.9, 0, 0, 35)
+    speedHackButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    speedHackButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    speedHackButton.Text = "SpeedHack: OFF"
+    speedHackButton.TextColor3 = Color3.new(1, 1, 1)
+    speedHackButton.TextScaled = true
+    speedHackButton.BorderSizePixel = 0
+
+    -- 2. Кнопка Infinite Jump (вторая)
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.20, 0)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
     infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
     infiniteJumpButton.TextScaled = true
     infiniteJumpButton.BorderSizePixel = 0
 
-    -- Кнопка Camera FOV (после Infinite Jump)
+    -- 3. Кнопка Camera FOV (третья)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.20, 0)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.35, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider (после кнопки CamFOV)
+    -- 4. Camera FOV Slider (четвертый)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -655,6 +682,62 @@ local function createGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
+    -- 5. SpeedHack Multiplier Slider (пятый)
+    local speedHackSliderFrame = Instance.new("Frame", cameraContainer)
+    speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)
+    speedHackSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    speedHackSliderFrame.BorderSizePixel = 0
+
+    local speedHackLabel = Instance.new("TextLabel", speedHackSliderFrame)
+    speedHackLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    speedHackLabel.Position = UDim2.new(0, 0, 0, 0)
+    speedHackLabel.BackgroundTransparency = 1
+    speedHackLabel.Text = "Speed Multiplier: " .. speedMultiplier .. "x"
+    speedHackLabel.TextColor3 = Color3.new(1, 1, 1)
+    speedHackLabel.TextScaled = true
+    speedHackLabel.Font = Enum.Font.SourceSans
+
+    local speedSliderBackground = Instance.new("TextButton", speedHackSliderFrame)
+    speedSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
+    speedSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
+    speedSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    speedSliderBackground.BorderSizePixel = 0
+    speedSliderBackground.Text = ""
+    speedSliderBackground.AutoButtonColor = false
+
+    local speedSliderFill = Instance.new("Frame", speedSliderBackground)
+    speedSliderFill.Size = UDim2.new((speedMultiplier - 1) / 9, 0, 1, 0) -- Диапазон 1-10
+    speedSliderFill.Position = UDim2.new(0, 0, 0, 0)
+    speedSliderFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    speedSliderFill.BorderSizePixel = 0
+
+    local speedSliderButton = Instance.new("Frame", speedSliderBackground)
+    speedSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
+    speedSliderButton.Position = UDim2.new((speedMultiplier - 1) / 9, -7, -0.25, 0) -- Диапазон 1-10
+    speedSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    speedSliderButton.BorderSizePixel = 1
+    speedSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
+
+    -- Кнопки + и - для SpeedHack
+    local speedMinusButton = Instance.new("TextButton", speedHackSliderFrame)
+    speedMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    speedMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    speedMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    speedMinusButton.Text = "-"
+    speedMinusButton.TextColor3 = Color3.new(1, 1, 1)
+    speedMinusButton.TextScaled = true
+    speedMinusButton.BorderSizePixel = 0
+
+    local speedPlusButton = Instance.new("TextButton", speedHackSliderFrame)
+    speedPlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    speedPlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    speedPlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    speedPlusButton.Text = "+"
+    speedPlusButton.TextColor3 = Color3.new(1, 1, 1)
+    speedPlusButton.TextScaled = true
+    speedPlusButton.BorderSizePixel = 0
+
     -- Кнопка Hide/Show GUI (перемещаемая)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 150, 0, 40)
@@ -701,6 +784,18 @@ local function createGUI()
         distanceSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
     end
 
+    -- Функция обновления множителя скорости
+    local function updateSpeedMultiplier(value)
+        speedMultiplier = math.floor(math.clamp(value, 1, 10)) -- Диапазон 1-10
+        speedHackLabel.Text = "Speed Multiplier: " .. speedMultiplier .. "x"
+        
+        local fillSize = (speedMultiplier - 1) / 9 -- Диапазон 1-10
+        speedSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
+        speedSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
+        
+        updateSpeed()
+    end
+
     -- Функция для выбора цели через выпадающий список
     local function selectTarget(target)
         if target == "Head" then
@@ -740,6 +835,7 @@ local function createGUI()
     local isFOVSliding = false
     local isCameraSliding = false
     local isDistanceSliding = false
+    local isSpeedSliding = false
 
     local function updateSliderFromTouch(touchPosition, sliderType)
         local sliderAbsPos, sliderAbsSize
@@ -753,6 +849,9 @@ local function createGUI()
         elseif sliderType == "distance" then
             sliderAbsPos = distanceSliderBackground.AbsolutePosition
             sliderAbsSize = distanceSliderBackground.AbsoluteSize
+        elseif sliderType == "speed" then
+            sliderAbsPos = speedSliderBackground.AbsolutePosition
+            sliderAbsSize = speedSliderBackground.AbsoluteSize
         end
         
         local touchX = touchPosition.X
@@ -768,6 +867,9 @@ local function createGUI()
         elseif sliderType == "distance" then
             local newDistance = 10 + (relativeX * 190)
             updateAimbotDistance(newDistance)
+        elseif sliderType == "speed" then
+            local newSpeed = 1 + (relativeX * 9) -- Диапазон 1-10
+            updateSpeedMultiplier(newSpeed)
         end
     end
 
@@ -789,6 +891,12 @@ local function createGUI()
         updateSliderFromTouch(Vector2.new(x, y), "distance")
     end)
 
+    -- Обработка для Speed слайдера
+    speedSliderBackground.MouseButton1Down:Connect(function(x, y)
+        isSpeedSliding = true
+        updateSliderFromTouch(Vector2.new(x, y), "speed")
+    end)
+
     userInputService.InputChanged:Connect(function(input)
         if isFOVSliding and input.UserInputType == Enum.UserInputType.Touch then
             updateSliderFromTouch(input.Position, "fov")
@@ -796,6 +904,8 @@ local function createGUI()
             updateSliderFromTouch(input.Position, "camera")
         elseif isDistanceSliding and input.UserInputType == Enum.UserInputType.Touch then
             updateSliderFromTouch(input.Position, "distance")
+        elseif isSpeedSliding and input.UserInputType == Enum.UserInputType.Touch then
+            updateSliderFromTouch(input.Position, "speed")
         end
     end)
 
@@ -804,6 +914,7 @@ local function createGUI()
             isFOVSliding = false
             isCameraSliding = false
             isDistanceSliding = false
+            isSpeedSliding = false
         end
     end)
 
@@ -832,6 +943,15 @@ local function createGUI()
 
     distancePlusButton.MouseButton1Click:Connect(function()
         updateAimbotDistance(aimbotMaxDistance + 10)
+    end)
+
+    -- Кнопки + и - для Speed
+    speedMinusButton.MouseButton1Click:Connect(function()
+        updateSpeedMultiplier(speedMultiplier - 1)
+    end)
+
+    speedPlusButton.MouseButton1Click:Connect(function()
+        updateSpeedMultiplier(speedMultiplier + 1)
     end)
 
     -- Обработчики для выпадающего списка выбора цели
@@ -975,7 +1095,24 @@ local function createGUI()
         end
     end)
 
-    -- Обработчик для кнопки Infinite Jump (первая в списке)
+    -- Обработчик для кнопки SpeedHack (первая в списке)
+    speedHackButton.MouseButton1Click:Connect(function()
+        speedHackEnabled = not speedHackEnabled
+        if speedHackEnabled then
+            speedHackButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            speedHackButton.Text = "SpeedHack: ON ✅"
+            -- Сохраняем оригинальную скорость
+            if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+                originalWalkSpeed = player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed
+            end
+        else
+            speedHackButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            speedHackButton.Text = "SpeedHack: OFF"
+        end
+        updateSpeed()
+    end)
+
+    -- Обработчик для кнопки Infinite Jump (вторая в списке)
     infiniteJumpButton.MouseButton1Click:Connect(function()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
@@ -987,7 +1124,7 @@ local function createGUI()
         end
     end)
 
-    -- Обработчик для кнопки Camera FOV (вторая в списке)
+    -- Обработчик для кнопки Camera FOV (третья в списке)
     cameraFOVButton.MouseButton1Click:Connect(function()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
@@ -1042,10 +1179,14 @@ end
 createGUI()
 showNotification()
 
-player.CharacterAdded:Connect(function()
+player.CharacterAdded:Connect(function(character)
     task.wait(1)
     if not player:WaitForChild("PlayerGui"):FindFirstChild(guiName) then
         createGUI()
+    end
+    -- При появлении нового персонажа обновляем скорость, если SpeedHack включен
+    if speedHackEnabled then
+        updateSpeed()
     end
 end)
 
