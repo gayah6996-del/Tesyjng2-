@@ -222,9 +222,12 @@ local function toggleInvisibility()
 end
 
 -- Infinite Jump Functionality
-userInputService.JumpRequest:connect(function()
-    if infiniteJumpEnabled then
-        game:GetService"Players".LocalPlayer.Character:FindFirstChildOfClass'Humanoid':ChangeState("Jumping")
+userInputService.JumpRequest:Connect(function()
+    if infiniteJumpEnabled and player.Character then
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState("Jumping")
+        end
     end
 end)
 
@@ -330,7 +333,9 @@ end
 local function removeESPForPlayer(p)
     if espObjects[p] then
         for _, drawing in pairs(espObjects[p]) do
-            drawing:Remove()
+            if drawing then
+                drawing:Remove()
+            end
         end
         espObjects[p] = nil
     end
@@ -1122,8 +1127,9 @@ local function createMainGUI()
         end)
         
         userInputService.InputChanged:Connect(function(input)
-            if isSliding and input.UserInputType == Enum.UserInputType.Touch then
-                local relativeX = (input.Position.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
+            if isSliding and input.UserInputType == Enum.UserInputType.MouseMovement then
+                local mouse = userInputService:GetMouseLocation()
+                local relativeX = (mouse.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
                 relativeX = math.clamp(relativeX, 0, 1)
                 local newValue = minVal + (relativeX * (maxVal - minVal))
                 updateSlider(newValue)
@@ -1131,7 +1137,7 @@ local function createMainGUI()
         end)
         
         userInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch then
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
                 isSliding = false
             end
         end)
@@ -1166,26 +1172,26 @@ local function createMainGUI()
     end
 
     title.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             startDrag(input)
         end
     end)
 
     title.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             endDrag()
         end
     end)
 
     userInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
             updateDrag(input)
         end
     end)
 
     -- Закрытие выпадающих списков при клике вне их
     userInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mousePos = input.Position
             
             -- Закрытие выпадающего списка цели
@@ -1354,7 +1360,7 @@ runService.RenderStepped:Connect(function()
 
             local drawings = espObjects[p]
             local char = p.Character
-            if espEnabled and char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
+            if espEnabled and char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                 if teamCheckEnabled and p.Team == player.Team then
                     if drawings then
                         drawings.box.Visible = false
