@@ -582,7 +582,7 @@ local function createGUI()
     -- Camera FOV Slider (отступ 2-3 см от Camera FOV)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.20, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -659,7 +659,7 @@ local function createGUI()
 
     -- Функция обновления Camera FOV
     local function updateCameraFOV(value)
-        cameraFOV = math.floor(math.clamp(value, 30, 150))
+        cameraFOV = math.floor(math.clamp(value, 30, 120))
         cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
         
         local fillSize = (cameraFOV - 30) / 120
