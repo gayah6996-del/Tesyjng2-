@@ -606,30 +606,30 @@ local function createMainGUI()
     speedHackButton.TextScaled = true
     speedHackButton.BorderSizePixel = 0
 
-    -- 2. Кнопка Infinite Jump (вторая) - СДВИНУТА НА 65 ПИКСЕЛЕЙ ВНИЗ
+    -- 2. Кнопка Infinite Jump (вторая) - УВЕЛИЧЕН ОТСТУП
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.15, 20)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.15, 40) -- Увеличено с 20 до 40
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
     infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
     infiniteJumpButton.TextScaled = true
     infiniteJumpButton.BorderSizePixel = 0
 
-    -- 3. Кнопка Camera FOV (третья) - СДВИНУТА НА 130 ПИКСЕЛЕЙ ВНИЗ
+    -- 3. Кнопка Camera FOV (третья) - УВЕЛИЧЕН ОТСТУП
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.25, 45)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.25, 80) -- Увеличено с 45 до 80
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- 4. Camera FOV Slider (четвертый) - СДВИНУТ НА 195 ПИКСЕЛЕЙ ВНИЗ
+    -- 4. Camera FOV Slider (четвертый) - УВЕЛИЧЕН ОТСТУП
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 70)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 120) -- Увеличено с 70 до 120
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -682,10 +682,10 @@ local function createMainGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- 5. SpeedHack Multiplier Slider (пятый) - СДВИНУТ НА 260 ПИКСЕЛЕЙ ВНИЗ
+    -- 5. SpeedHack Multiplier Slider (пятый) - УВЕЛИЧЕН ОТСТУП
     local speedHackSliderFrame = Instance.new("Frame", cameraContainer)
     speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 100)
+    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 160) -- Увеличено с 100 до 160
     speedHackSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     speedHackSliderFrame.BorderSizePixel = 0
 
