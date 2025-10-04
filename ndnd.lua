@@ -20,6 +20,9 @@ local aimbotTarget = "Head"
 local customCameraFOVEnabled = false
 local cameraFOV = 70
 
+-- Переменные для Infinite Jump
+local infiniteJumpEnabled = false
+
 -- Переменные для перемещения GUI
 local frame = nil
 local isDragging = false
@@ -35,6 +38,13 @@ circle.Filled = false
 circle.Radius = fovRadius
 circle.Visible = true
 circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+
+-- Infinite Jump Functionality
+userInputService.JumpRequest:connect(function()
+    if infiniteJumpEnabled then
+        game:GetService"Players".LocalPlayer.Character:FindFirstChildOfClass'Humanoid':ChangeState("Jumping")
+    end
+end)
 
 -- Show Notification
 local function showNotification()
@@ -386,7 +396,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -634,6 +644,16 @@ local function createGUI()
     cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
+
+    -- Кнопка Infinite Jump (добавлена в раздел Camera)
+    local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
+    infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.40, 0)
+    infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    infiniteJumpButton.Text = "Infinite Jump: OFF"
+    infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
+    infiniteJumpButton.TextScaled = true
+    infiniteJumpButton.BorderSizePixel = 0
 
     -- Кнопка Hide/Show GUI (перемещаемая)
     local hideButton = Instance.new("TextButton", gui)
@@ -952,6 +972,18 @@ local function createGUI()
                 hideButtonStartPos.Y.Scale, 
                 hideButtonStartPos.Y.Offset + delta.Y
             )
+        end
+    end)
+
+    -- Обработчик для кнопки Infinite Jump
+    infiniteJumpButton.MouseButton1Click:Connect(function()
+        infiniteJumpEnabled = not infiniteJumpEnabled
+        if infiniteJumpEnabled then
+            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            infiniteJumpButton.Text = "Infinite Jump: ON ✅"
+        else
+            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            infiniteJumpButton.Text = "Infinite Jump: OFF"
         end
     end)
 
