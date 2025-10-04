@@ -19,7 +19,6 @@ local aimbotTarget = "Head"
 -- Переменные для камеры
 local customCameraFOVEnabled = false
 local cameraFOV = 70
-local infinityJumpEnabled = false
 
 -- Переменные для перемещения GUI
 local frame = nil
@@ -167,26 +166,6 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
--- Infinity Jump Function
-local function enableInfinityJump()
-    spawn(function()
-        while infinityJumpEnabled do
-            if player.Character and player.Character:FindFirstChild("Humanoid") then
-                local humanoid = player.Character.Humanoid
-                -- Проверяем, нажата ли клавиша прыжка (Space)
-                if userInputService:IsKeyDown(Enum.KeyCode.Space) then
-                    -- Устанавливаем вертикальную скорость для бесконечного прыжка
-                    humanoid.JumpPower = 100
-                    humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                else
-                    humanoid.JumpPower = 50 -- Возвращаем нормальную силу прыжка
-                end
-            end
-            wait(0.1)
-        end
-    end)
-end
-
 -- GUI Creation Function
 local function createGUI()
     local gui = Instance.new("ScreenGui")
@@ -213,6 +192,57 @@ local function createGUI()
     title.TextScaled = true
     title.Font = Enum.Font.SourceSansBold
     title.BorderSizePixel = 0
+
+    -- Кнопка закрытия (крестик)
+    local closeButton = Instance.new("TextButton", frame)
+    closeButton.Size = UDim2.new(0, 25, 0, 25)
+    closeButton.Position = UDim2.new(1, -25, 0, 0)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.new(1, 1, 1)
+    closeButton.TextScaled = true
+    closeButton.BorderSizePixel = 0
+    closeButton.ZIndex = 2
+
+    -- Контейнер для подтверждения закрытия
+    local confirmFrame = Instance.new("Frame", gui)
+    confirmFrame.Size = UDim2.new(0, 300, 0, 120)
+    confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
+    confirmFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    confirmFrame.BorderSizePixel = 1
+    confirmFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    confirmFrame.Visible = false
+    confirmFrame.ZIndex = 100
+
+    local confirmText = Instance.new("TextLabel", confirmFrame)
+    confirmText.Size = UDim2.new(0.9, 0, 0.4, 0)
+    confirmText.Position = UDim2.new(0.05, 0, 0.1, 0)
+    confirmText.BackgroundTransparency = 1
+    confirmText.Text = "Вы хотите закрыть меню?"
+    confirmText.TextColor3 = Color3.new(1, 1, 1)
+    confirmText.TextScaled = true
+    confirmText.Font = Enum.Font.SourceSansBold
+    confirmText.ZIndex = 101
+
+    local yesButton = Instance.new("TextButton", confirmFrame)
+    yesButton.Size = UDim2.new(0.4, 0, 0.3, 0)
+    yesButton.Position = UDim2.new(0.05, 0, 0.55, 0)
+    yesButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    yesButton.Text = "Да"
+    yesButton.TextColor3 = Color3.new(1, 1, 1)
+    yesButton.TextScaled = true
+    yesButton.BorderSizePixel = 0
+    yesButton.ZIndex = 101
+
+    local noButton = Instance.new("TextButton", confirmFrame)
+    noButton.Size = UDim2.new(0.4, 0, 0.3, 0)
+    noButton.Position = UDim2.new(0.55, 0, 0.55, 0)
+    noButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+    noButton.Text = "Нет"
+    noButton.TextColor3 = Color3.new(1, 1, 1)
+    noButton.TextScaled = true
+    noButton.BorderSizePixel = 0
+    noButton.ZIndex = 101
 
     -- Контейнер для вкладок и контента
     local mainContainer = Instance.new("Frame", frame)
@@ -356,7 +386,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Бесконечный прыжок\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
@@ -549,20 +579,10 @@ local function createGUI()
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Кнопка Infinity Jump (отступ 2-3 см от Camera FOV)
-    local infinityJumpButton = Instance.new("TextButton", cameraContainer)
-    infinityJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infinityJumpButton.Position = UDim2.new(0.05, 0, 0.15, 0)
-    infinityJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    infinityJumpButton.Text = "Infinity Jump: OFF"
-    infinityJumpButton.TextColor3 = Color3.new(1, 1, 1)
-    infinityJumpButton.TextScaled = true
-    infinityJumpButton.BorderSizePixel = 0
-
-    -- Camera FOV Slider (отступ 2-3 см от Infinity Jump)
+    -- Camera FOV Slider (отступ 2-3 см от Camera FOV)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.25, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.15, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -615,7 +635,7 @@ local function createGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- Кнопка Hide/Show GUI
+    -- Кнопка Hide/Show GUI (перемещаемая)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 150, 0, 40)
     hideButton.Position = UDim2.new(0.5, -75, 1, -50)
@@ -807,17 +827,17 @@ local function createGUI()
         selectTarget("Body")
     end)
 
-    -- Обработчик для Infinity Jump
-    infinityJumpButton.MouseButton1Click:Connect(function()
-        infinityJumpEnabled = not infinityJumpEnabled
-        if infinityJumpEnabled then
-            infinityJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            infinityJumpButton.Text = "Infinity Jump: ON ✅"
-            enableInfinityJump()
-        else
-            infinityJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            infinityJumpButton.Text = "Infinity Jump: OFF"
-        end
+    -- Обработчики для кнопки закрытия
+    closeButton.MouseButton1Click:Connect(function()
+        confirmFrame.Visible = true
+    end)
+
+    yesButton.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+
+    noButton.MouseButton1Click:Connect(function()
+        confirmFrame.Visible = false
     end)
 
     -- Закрытие выпадающего списка при клике вне его
@@ -902,6 +922,37 @@ local function createGUI()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
         hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
+    end)
+
+    -- Добавляем функционал перемещения для кнопки Hide/Show GUI
+    local isHideButtonDragging = false
+    local hideButtonDragStart = nil
+    local hideButtonStartPos = nil
+
+    hideButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isHideButtonDragging = true
+            hideButtonDragStart = input.Position
+            hideButtonStartPos = hideButton.Position
+        end
+    end)
+
+    hideButton.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isHideButtonDragging = false
+        end
+    end)
+
+    userInputService.InputChanged:Connect(function(input)
+        if isHideButtonDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            local delta = input.Position - hideButtonDragStart
+            hideButton.Position = UDim2.new(
+                hideButtonStartPos.X.Scale, 
+                hideButtonStartPos.X.Offset + delta.X,
+                hideButtonStartPos.Y.Scale, 
+                hideButtonStartPos.Y.Offset + delta.Y
+            )
+        end
     end)
 
     cameraFOVButton.MouseButton1Click:Connect(function()
