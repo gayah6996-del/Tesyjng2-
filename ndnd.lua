@@ -606,30 +606,30 @@ local function createMainGUI()
     speedHackButton.TextScaled = true
     speedHackButton.BorderSizePixel = 0
 
-    -- 2. Кнопка Infinite Jump (вторая)
+    -- 2. Кнопка Infinite Jump (вторая) - СДВИНУТА НА 65 ПИКСЕЛЕЙ ВНИЗ
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.15, 0)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.15, 65)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
     infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
     infiniteJumpButton.TextScaled = true
     infiniteJumpButton.BorderSizePixel = 0
 
-    -- 3. Кнопка Camera FOV (третья)
+    -- 3. Кнопка Camera FOV (третья) - СДВИНУТА НА 130 ПИКСЕЛЕЙ ВНИЗ
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.25, 0)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.25, 130)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- 4. Camera FOV Slider (четвертый)
+    -- 4. Camera FOV Slider (четвертый) - СДВИНУТ НА 195 ПИКСЕЛЕЙ ВНИЗ
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 195)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -682,10 +682,10 @@ local function createMainGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- 5. SpeedHack Multiplier Slider (пятый) - ПОДНЯТ НА 1 СМ ВЫШЕ
+    -- 5. SpeedHack Multiplier Slider (пятый) - СДВИНУТ НА 260 ПИКСЕЛЕЙ ВНИЗ
     local speedHackSliderFrame = Instance.new("Frame", cameraContainer)
     speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0) -- Было 0.65, теперь 0.55
+    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 260)
     speedHackSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     speedHackSliderFrame.BorderSizePixel = 0
 
@@ -796,7 +796,7 @@ local function createMainGUI()
         updateSpeed()
     end
 
-    -- Функция для выбора цели через выпадающий список
+    -- Функция для выбора цели через выпадающий списко
     local function selectTarget(target)
         if target == "Head" then
             aimbotTarget = "Head"
@@ -999,7 +999,7 @@ local function createMainGUI()
         end
     end)
 
-    -- Функция переключения вкладок (ВОЗВРАЩЕН ПРЕЖНИЙ РАЗМЕР МЕНЮ)
+    -- Функция переключения вкладок
     local function switchTab(tabName)
         activeTab = tabName
         
@@ -1013,23 +1013,27 @@ local function createMainGUI()
         aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         
-        -- УБРАНО ИЗМЕНЕНИЕ РАЗМЕРА МЕНЮ ДЛЯ ВКЛАДКИ CAMERA
-        -- Всегда используем фиксированный размер 350x300
-        frame.Size = UDim2.new(0, 350, 0, 300)
-        frame.Position = UDim2.new(0.5, -175, 0.5, -150)
-        
         if tabName == "Info" then
             infoContainer.Visible = true
             infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            frame.Size = UDim2.new(0, 350, 0, 300)
+            frame.Position = UDim2.new(0.5, -175, 0.5, -150)
         elseif tabName == "ESP" then
             espContainer.Visible = true
             espTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            frame.Size = UDim2.new(0, 350, 0, 300)
+            frame.Position = UDim2.new(0.5, -175, 0.5, -150)
         elseif tabName == "AimBot" then
             aimbotContainer.Visible = true
             aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            frame.Size = UDim2.new(0, 350, 0, 300)
+            frame.Position = UDim2.new(0.5, -175, 0.5, -150)
         elseif tabName == "Camera" then
             cameraContainer.Visible = true
             cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            -- Увеличиваем размер меню для вкладки Camera
+            frame.Size = UDim2.new(0, 350, 0, 500)
+            frame.Position = UDim2.new(0.5, -175, 0.5, -250)
         end
         
         dropdownContainer.Visible = false
@@ -1232,7 +1236,7 @@ local function createKeyGUI()
     submitButton.MouseButton1Click:Connect(function()
         if keyBox.Text == "SFXCL" then
             keyGui:Destroy()
-            createMainGUI() -- ВОТ ЭТА СТРОКА БЫЛА ПРОПУЩЕНА!
+            createMainGUI()
             showNotification()
         else
             messageLabel.Text = "Key None"
@@ -1244,7 +1248,7 @@ local function createKeyGUI()
         if enterPressed then
             if keyBox.Text == "SFXCL" then
                 keyGui:Destroy()
-                createMainGUI() -- И ЭТА ТОЖЕ!
+                createMainGUI()
                 showNotification()
             else
                 messageLabel.Text = "Key None"
