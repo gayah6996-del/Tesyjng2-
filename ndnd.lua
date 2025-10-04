@@ -505,7 +505,7 @@ local function createGUI()
     -- Кнопки + и - для FOV
     local minusButton = Instance.new("TextButton", fovSliderFrame)
     minusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    minusButton.Position = UDim2.new(0, 0, 0.8, 0)
+    minusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
     minusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     minusButton.Text = "-"
     minusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -514,7 +514,7 @@ local function createGUI()
 
     local plusButton = Instance.new("TextButton", fovSliderFrame)
     plusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    plusButton.Position = UDim2.new(0.8, 0, 0.8, 0)
+    plusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
     plusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     plusButton.Text = "+"
     plusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -561,7 +561,7 @@ local function createGUI()
     -- Кнопки + и - для Distance
     local distanceMinusButton = Instance.new("TextButton", distanceSliderFrame)
     distanceMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    distanceMinusButton.Position = UDim2.new(0, 0, 0.8, 0)
+    distanceMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
     distanceMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     distanceMinusButton.Text = "-"
     distanceMinusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -570,7 +570,7 @@ local function createGUI()
 
     local distancePlusButton = Instance.new("TextButton", distanceSliderFrame)
     distancePlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    distancePlusButton.Position = UDim2.new(0.8, 0, 0.8, 0)
+    distancePlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
     distancePlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     distancePlusButton.Text = "+"
     distancePlusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -624,14 +624,14 @@ local function createGUI()
     cameraSliderBackground.AutoButtonColor = false
 
     local cameraSliderFill = Instance.new("Frame", cameraSliderBackground)
-    cameraSliderFill.Size = UDim2.new((cameraFOV - 30) / 120, 0, 1, 0)
+    cameraSliderFill.Size = UDim2.new((cameraFOV - 30) / 90, 0, 1, 0) -- Изменен диапазон на 30-120
     cameraSliderFill.Position = UDim2.new(0, 0, 0, 0)
     cameraSliderFill.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
     cameraSliderFill.BorderSizePixel = 0
 
     local cameraSliderButton = Instance.new("Frame", cameraSliderBackground)
     cameraSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
-    cameraSliderButton.Position = UDim2.new((cameraFOV - 30) / 120, -7, -0.25, 0)
+    cameraSliderButton.Position = UDim2.new((cameraFOV - 30) / 90, -7, -0.25, 0) -- Изменен диапазон на 30-120
     cameraSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     cameraSliderButton.BorderSizePixel = 1
     cameraSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
@@ -639,7 +639,7 @@ local function createGUI()
     -- Кнопки + и - для Camera FOV
     local cameraMinusButton = Instance.new("TextButton", cameraFOVSliderFrame)
     cameraMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    cameraMinusButton.Position = UDim2.new(0, 0, 0.8, 0)
+    cameraMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
     cameraMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraMinusButton.Text = "-"
     cameraMinusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -648,7 +648,7 @@ local function createGUI()
 
     local cameraPlusButton = Instance.new("TextButton", cameraFOVSliderFrame)
     cameraPlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.8, 0)
+    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
     cameraPlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraPlusButton.Text = "+"
     cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -679,10 +679,10 @@ local function createGUI()
 
     -- Функция обновления Camera FOV
     local function updateCameraFOV(value)
-        cameraFOV = math.floor(math.clamp(value, 30, 120))
+        cameraFOV = math.floor(math.clamp(value, 30, 120)) -- Максимум 120
         cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
         
-        local fillSize = (cameraFOV - 30) / 120
+        local fillSize = (cameraFOV - 30) / 90 -- Изменен диапазон на 30-120
         cameraSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
         cameraSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
         
@@ -701,7 +701,7 @@ local function createGUI()
         distanceSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
     end
 
-    -- Функция для выбора цели через выпадающий списко
+    -- Функция для выбора цели через выпадающий список
     local function selectTarget(target)
         if target == "Head" then
             aimbotTarget = "Head"
@@ -763,7 +763,7 @@ local function createGUI()
             local newFOV = 50 + (relativeX * 200)
             updateFOV(newFOV)
         elseif sliderType == "camera" then
-            local newCameraFOV = 30 + (relativeX * 120)
+            local newCameraFOV = 30 + (relativeX * 90) -- Изменен диапазон на 30-120
             updateCameraFOV(newCameraFOV)
         elseif sliderType == "distance" then
             local newDistance = 10 + (relativeX * 190)
