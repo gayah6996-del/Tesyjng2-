@@ -652,7 +652,7 @@ local function createMainGUI()
     
     -- 1. Кнопка SpeedHack (самая первая)
     local speedHackButton = Instance.new("TextButton", cameraContainer)
-    speedHackButton.Size = UDim2.new(0.9, 0, 0, 35)
+    speedHackButton.Size = UDim2.new(0.9, 0, 0, 30)
     speedHackButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     speedHackButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     speedHackButton.Text = "SpeedHack: OFF"
@@ -662,7 +662,7 @@ local function createMainGUI()
 
     -- 2. Кнопка Infinite Jump (вторая)
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
-    infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
+    infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 30)
     infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.20, 0)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
@@ -672,7 +672,7 @@ local function createMainGUI()
 
     -- 3. Кнопка Camera FOV (третья)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
-    cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
+    cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 30)
     cameraFOVButton.Position = UDim2.new(0.05, 0, 0.32, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
@@ -682,7 +682,7 @@ local function createMainGUI()
 
     -- 4. Camera FOV Slider (четвертый)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
-    cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 50)
     cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.45, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
@@ -738,7 +738,7 @@ local function createMainGUI()
 
     -- 5. SpeedHack Multiplier Slider (пятый)
     local speedHackSliderFrame = Instance.new("Frame", cameraContainer)
-    speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 50)
     speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.66, 0)
     speedHackSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     speedHackSliderFrame.BorderSizePixel = 0
