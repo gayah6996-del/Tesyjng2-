@@ -50,6 +50,44 @@ circle.Radius = fovRadius
 circle.Visible = true
 circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
 
+-- Функция для полного отключения всех функций
+local function disableAllFeatures()
+    -- Отключаем все функции
+    aimbotEnabled = false
+    espEnabled = false
+    customCameraFOVEnabled = false
+    infiniteJumpEnabled = false
+    speedHackEnabled = false
+    
+    -- Восстанавливаем настройки
+    if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+        player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = originalWalkSpeed
+    end
+    camera.FieldOfView = 70
+    
+    -- Удаляем Drawing объекты
+    if circle then
+        circle:Remove()
+    end
+    
+    for _, drawings in pairs(espObjects) do
+        if drawings then
+            for _, drawing in pairs(drawings) do
+                if drawing then
+                    drawing:Remove()
+                end
+            end
+        end
+    end
+    espObjects = {}
+    
+    -- Отключаем таймер ключа
+    if keyTimerConnection then
+        keyTimerConnection:Disconnect()
+        keyTimerConnection = nil
+    end
+end
+
 -- Infinite Jump Functionality
 userInputService.JumpRequest:connect(function()
     if infiniteJumpEnabled then
@@ -77,35 +115,11 @@ local function updateKeyTime()
     local remaining = keyDuration - elapsed
     
     if remaining <= 0 then
-        -- Время ключа истекло
-        if keyTimerConnection then
-            keyTimerConnection:Disconnect()
-        end
-        
-        -- Отключаем все функции
-        aimbotEnabled = false
-        espEnabled = false
-        customCameraFOVEnabled = false
-        infiniteJumpEnabled = false
-        speedHackEnabled = false
-        
-        -- Восстанавливаем настройки
-        if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
-            player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = originalWalkSpeed
-        end
-        camera.FieldOfView = 70
+        disableAllFeatures()
         
         -- Удаляем GUI
         if frame and frame.Parent then
             frame.Parent:Destroy()
-        end
-        
-        -- Удаляем Drawing объекты
-        circle:Remove()
-        for _, drawings in pairs(espObjects) do
-            for _, drawing in pairs(drawings) do
-                drawing:Remove()
-            end
         end
         
         return
@@ -663,7 +677,7 @@ local function createMainGUI()
     -- 2. Кнопка Infinite Jump (вторая)
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 30)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.19, 0)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.18, 0)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
     infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
@@ -673,7 +687,7 @@ local function createMainGUI()
     -- 3. Кнопка Camera FOV (третья)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 30)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.31, 0)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.30, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
@@ -683,7 +697,7 @@ local function createMainGUI()
     -- 4. Camera FOV Slider (четвертый)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 50)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.45, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.43, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -739,7 +753,7 @@ local function createMainGUI()
     -- 5. SpeedHack Multiplier Slider (пятый)
     local speedHackSliderFrame = Instance.new("Frame", cameraContainer)
     speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 50)
-    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.70, 0)
+    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.69, 0)
     speedHackSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     speedHackSliderFrame.BorderSizePixel = 0
 
@@ -1024,6 +1038,8 @@ local function createMainGUI()
     end)
 
     yesButton.MouseButton1Click:Connect(function()
+        -- Отключаем все функции перед удалением GUI
+        disableAllFeatures()
         gui:Destroy()
     end)
 
