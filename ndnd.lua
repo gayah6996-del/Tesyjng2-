@@ -193,89 +193,6 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
--- Key System
-local function createKeyGUI()
-    local keyGui = Instance.new("ScreenGui")
-    keyGui.Name = "KeyGUI"
-    keyGui.ResetOnSpawn = false
-    keyGui.Parent = player:WaitForChild("PlayerGui")
-
-    local mainFrame = Instance.new("Frame")
-    mainFrame.Size = UDim2.new(0, 300, 0, 200)
-    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    mainFrame.BorderSizePixel = 1
-    mainFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    mainFrame.Parent = keyGui
-
-    local title = Instance.new("TextLabel")
-    title.Size = UDim2.new(1, 0, 0, 40)
-    title.Position = UDim2.new(0, 0, 0, 0)
-    title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    title.Text = "ASTRALCHEAT - Введите ключ"
-    title.TextColor3 = Color3.new(1, 1, 1)
-    title.TextScaled = true
-    title.Font = Enum.Font.SourceSansBold
-    title.BorderSizePixel = 0
-    title.Parent = mainFrame
-
-    local keyBox = Instance.new("TextBox")
-    keyBox.Size = UDim2.new(0.8, 0, 0, 35)
-    keyBox.Position = UDim2.new(0.1, 0, 0.3, 0)
-    keyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    keyBox.BorderSizePixel = 1
-    keyBox.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    keyBox.Text = ""
-    keyBox.PlaceholderText = "Введите ключ..."
-    keyBox.TextColor3 = Color3.new(1, 1, 1)
-    keyBox.TextScaled = true
-    keyBox.Parent = mainFrame
-
-    local submitButton = Instance.new("TextButton")
-    submitButton.Size = UDim2.new(0.6, 0, 0, 35)
-    submitButton.Position = UDim2.new(0.2, 0, 0.6, 0)
-    submitButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-    submitButton.Text = "Проверить ключ"
-    submitButton.TextColor3 = Color3.new(1, 1, 1)
-    submitButton.TextScaled = true
-    submitButton.BorderSizePixel = 0
-    submitButton.Parent = mainFrame
-
-    local messageLabel = Instance.new("TextLabel")
-    messageLabel.Size = UDim2.new(0.8, 0, 0, 20)
-    messageLabel.Position = UDim2.new(0.1, 0, 0.85, 0)
-    messageLabel.BackgroundTransparency = 1
-    messageLabel.Text = ""
-    messageLabel.TextColor3 = Color3.new(1, 1, 1)
-    messageLabel.TextScaled = true
-    messageLabel.Font = Enum.Font.SourceSans
-    messageLabel.Parent = mainFrame
-
-    submitButton.MouseButton1Click:Connect(function()
-        if keyBox.Text == "SFXCL" then
-            keyGui:Destroy()
-            createMainGUI()
-            showNotification()
-        else
-            messageLabel.Text = "Key None"
-            messageLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-        end
-    end)
-
-    keyBox.FocusLost:Connect(function(enterPressed)
-        if enterPressed then
-            if keyBox.Text == "SFXCL" then
-                keyGui:Destroy()
-                createMainGUI()
-                showNotification()
-            else
-                messageLabel.Text = "Key None"
-                messageLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-            end
-        end
-    end)
-end
-
 -- Main GUI Creation Function
 local function createMainGUI()
     local gui = Instance.new("ScreenGui")
@@ -1252,6 +1169,89 @@ local function createMainGUI()
     
     -- Инициализация выпадающего списка
     selectTarget("Head")
+end
+
+-- Key System
+local function createKeyGUI()
+    local keyGui = Instance.new("ScreenGui")
+    keyGui.Name = "KeyGUI"
+    keyGui.ResetOnSpawn = false
+    keyGui.Parent = player:WaitForChild("PlayerGui")
+
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 300, 0, 200)
+    mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    mainFrame.BorderSizePixel = 1
+    mainFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    mainFrame.Parent = keyGui
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, 0, 0, 40)
+    title.Position = UDim2.new(0, 0, 0, 0)
+    title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    title.Text = "ASTRALCHEAT - Введите ключ"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.TextScaled = true
+    title.Font = Enum.Font.SourceSansBold
+    title.BorderSizePixel = 0
+    title.Parent = mainFrame
+
+    local keyBox = Instance.new("TextBox")
+    keyBox.Size = UDim2.new(0.8, 0, 0, 35)
+    keyBox.Position = UDim2.new(0.1, 0, 0.3, 0)
+    keyBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    keyBox.BorderSizePixel = 1
+    keyBox.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    keyBox.Text = ""
+    keyBox.PlaceholderText = "Введите ключ..."
+    keyBox.TextColor3 = Color3.new(1, 1, 1)
+    keyBox.TextScaled = true
+    keyBox.Parent = mainFrame
+
+    local submitButton = Instance.new("TextButton")
+    submitButton.Size = UDim2.new(0.6, 0, 0, 35)
+    submitButton.Position = UDim2.new(0.2, 0, 0.6, 0)
+    submitButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    submitButton.Text = "Проверить ключ"
+    submitButton.TextColor3 = Color3.new(1, 1, 1)
+    submitButton.TextScaled = true
+    submitButton.BorderSizePixel = 0
+    submitButton.Parent = mainFrame
+
+    local messageLabel = Instance.new("TextLabel")
+    messageLabel.Size = UDim2.new(0.8, 0, 0, 20)
+    messageLabel.Position = UDim2.new(0.1, 0, 0.85, 0)
+    messageLabel.BackgroundTransparency = 1
+    messageLabel.Text = ""
+    messageLabel.TextColor3 = Color3.new(1, 1, 1)
+    messageLabel.TextScaled = true
+    messageLabel.Font = Enum.Font.SourceSans
+    messageLabel.Parent = mainFrame
+
+    submitButton.MouseButton1Click:Connect(function()
+        if keyBox.Text == "SFXCL" then
+            keyGui:Destroy()
+            createMainGUI() -- ВОТ ЭТА СТРОКА БЫЛА ПРОПУЩЕНА!
+            showNotification()
+        else
+            messageLabel.Text = "Key None"
+            messageLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+        end
+    end)
+
+    keyBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            if keyBox.Text == "SFXCL" then
+                keyGui:Destroy()
+                createMainGUI() -- И ЭТА ТОЖЕ!
+                showNotification()
+            else
+                messageLabel.Text = "Key None"
+                messageLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+            end
+        end
+    end)
 end
 
 -- Основной код
