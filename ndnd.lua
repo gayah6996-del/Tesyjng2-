@@ -603,6 +603,7 @@ local function createMainGUI()
     headButton.TextColor3 = Color3.new(1, 1, 1)
     headButton.TextScaled = true
     headButton.BorderSizePixel = 0
+    headButton.ZIndex = 11
 
     local bodyButton = Instance.new("TextButton", dropdownContainer)
     bodyButton.Size = UDim2.new(1, 0, 0, 35)
@@ -612,6 +613,7 @@ local function createMainGUI()
     bodyButton.TextColor3 = Color3.new(1, 1, 1)
     bodyButton.TextScaled = true
     bodyButton.BorderSizePixel = 0
+    bodyButton.ZIndex = 11
 
     -- FOV Slider
     local fovSliderFrame = Instance.new("Frame", aimbotContainer)
@@ -843,19 +845,21 @@ local function createMainGUI()
     russianButton.Size = UDim2.new(1, 0, 0, 35)
     russianButton.Position = UDim2.new(0, 0, 0, 0)
     russianButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    russianButton.Text = t("russian")
+    russianButton.Text = "Русский"
     russianButton.TextColor3 = Color3.new(1, 1, 1)
     russianButton.TextScaled = true
     russianButton.BorderSizePixel = 0
+    russianButton.ZIndex = 11
 
     local englishButton = Instance.new("TextButton", languageDropdownContainer)
     englishButton.Size = UDim2.new(1, 0, 0, 35)
     englishButton.Position = UDim2.new(0, 0, 0, 35)
     englishButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    englishButton.Text = t("english")
+    englishButton.Text = "English"
     englishButton.TextColor3 = Color3.new(1, 1, 1)
     englishButton.TextScaled = true
     englishButton.BorderSizePixel = 0
+    englishButton.ZIndex = 11
 
     -- Кнопка Hide/Show GUI
     local hideButton = Instance.new("TextButton", gui)
@@ -878,8 +882,6 @@ local function createMainGUI()
         infoText.Text = t("infoText")
         languageText.Text = t("selectLanguage")
         languageDropdown.Text = t("language") .. ": " .. t(currentLanguage:lower())
-        russianButton.Text = t("russian")
-        englishButton.Text = t("english")
         
         -- Обновляем названия вкладок
         for tabName, button in pairs(tabButtons) do
@@ -900,7 +902,7 @@ local function createMainGUI()
         distanceLabel.Text = t("aimbotDistance") .. ": " .. aimbotMaxDistance
         cameraFOVLabel.Text = t("cameraFOV") .. ": " .. cameraFOV
         
-        -- Обновляем выпадающий список
+        -- Обновляем выпадающий список цели
         headButton.Text = t("head")
         bodyButton.Text = t("body")
     end
@@ -1205,13 +1207,8 @@ local function createMainGUI()
             if languageDropdownContainer.Visible then
                 local dropdownAbsPos = languageDropdownContainer.AbsolutePosition
                 local dropdownAbsSize = languageDropdownContainer.AbsoluteSize
-                local languageDropdownAbsPos = languageDropdown.AbsolutePosition
-                local languageDropdownAbsSize = languageDropdown.AbsoluteSize
-
                 if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
-                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
-                   not (mousePos.X >= languageDropdownAbsPos.X and mousePos.X <= languageDropdownAbsPos.X + languageDropdownAbsSize.X and
-                       mousePos.Y >= languageDropdownAbsPos.Y and mousePos.Y <= languageDropdownAbsPos.Y + languageDropdownAbsSize.Y) then
+                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) then
                     toggleLanguageDropdown()
                 end
             end
@@ -1329,7 +1326,7 @@ player.CharacterAdded:Connect(function(character)
     if invisibleEnabled then
         toggleInvisibility()
     end
-end)
+end
 
 runService.RenderStepped:Connect(function()
     circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
