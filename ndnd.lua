@@ -585,7 +585,7 @@ local function createMainGUI()
     targetDropdown.TextScaled = true
     targetDropdown.BorderSizePixel = 0
 
-    -- Контейнер для выпадающего списка
+    -- Контейнер для выпадающего списка цели
     local dropdownContainer = Instance.new("Frame", aimbotContainer)
     dropdownContainer.Size = UDim2.new(0.9, 0, 0, 70)
     dropdownContainer.Position = UDim2.new(0.05, 0, 0.20, 35)
@@ -593,6 +593,7 @@ local function createMainGUI()
     dropdownContainer.BorderSizePixel = 1
     dropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
     dropdownContainer.Visible = false
+    dropdownContainer.ZIndex = 10
 
     local headButton = Instance.new("TextButton", dropdownContainer)
     headButton.Size = UDim2.new(1, 0, 0, 35)
@@ -819,19 +820,38 @@ local function createMainGUI()
     languageText.TextScaled = true
     languageText.Font = Enum.Font.SourceSansBold
 
-    local russianButton = Instance.new("TextButton", languageContainer)
-    russianButton.Size = UDim2.new(0.9, 0, 0, 35)
-    russianButton.Position = UDim2.new(0.05, 0, 0.3, 0)
-    russianButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    local languageDropdown = Instance.new("TextButton", languageContainer)
+    languageDropdown.Size = UDim2.new(0.9, 0, 0, 35)
+    languageDropdown.Position = UDim2.new(0.05, 0, 0.3, 0)
+    languageDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    languageDropdown.Text = t("language") .. ": " .. t(currentLanguage:lower())
+    languageDropdown.TextColor3 = Color3.new(1, 1, 1)
+    languageDropdown.TextScaled = true
+    languageDropdown.BorderSizePixel = 0
+
+    -- Контейнер для выпадающего списка языка
+    local languageDropdownContainer = Instance.new("Frame", languageContainer)
+    languageDropdownContainer.Size = UDim2.new(0.9, 0, 0, 70)
+    languageDropdownContainer.Position = UDim2.new(0.05, 0, 0.3, 35)
+    languageDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    languageDropdownContainer.BorderSizePixel = 1
+    languageDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    languageDropdownContainer.Visible = false
+    languageDropdownContainer.ZIndex = 10
+
+    local russianButton = Instance.new("TextButton", languageDropdownContainer)
+    russianButton.Size = UDim2.new(1, 0, 0, 35)
+    russianButton.Position = UDim2.new(0, 0, 0, 0)
+    russianButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     russianButton.Text = t("russian")
     russianButton.TextColor3 = Color3.new(1, 1, 1)
     russianButton.TextScaled = true
     russianButton.BorderSizePixel = 0
 
-    local englishButton = Instance.new("TextButton", languageContainer)
-    englishButton.Size = UDim2.new(0.9, 0, 0, 35)
-    englishButton.Position = UDim2.new(0.05, 0, 0.5, 0)
-    englishButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    local englishButton = Instance.new("TextButton", languageDropdownContainer)
+    englishButton.Size = UDim2.new(1, 0, 0, 35)
+    englishButton.Position = UDim2.new(0, 0, 0, 35)
+    englishButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     englishButton.Text = t("english")
     englishButton.TextColor3 = Color3.new(1, 1, 1)
     englishButton.TextScaled = true
@@ -857,6 +877,7 @@ local function createMainGUI()
         hideButton.Text = guiVisible and t("hideGUI") or t("showGUI")
         infoText.Text = t("infoText")
         languageText.Text = t("selectLanguage")
+        languageDropdown.Text = t("language") .. ": " .. t(currentLanguage:lower())
         russianButton.Text = t("russian")
         englishButton.Text = t("english")
         
@@ -899,7 +920,34 @@ local function createMainGUI()
             activeTab = tabName
         end
         
+        -- Закрываем все выпадающие меню при переключении вкладок
         dropdownContainer.Visible = false
+        languageDropdownContainer.Visible = false
+        
+        -- Возвращаем слайдеры на место
+        fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+        distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+    end
+
+    -- Функция для открытия/закрытия выпадающего списка цели
+    local function toggleTargetDropdown()
+        local isOpening = not dropdownContainer.Visible
+        dropdownContainer.Visible = isOpening
+        
+        if isOpening then
+            -- Сдвигаем слайдеры вниз
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.60, 0)
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)
+        else
+            -- Возвращаем слайдеры на место
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+        end
+    end
+
+    -- Функция для открытия/закрытия выпадающего списка языка
+    local function toggleLanguageDropdown()
+        languageDropdownContainer.Visible = not languageDropdownContainer.Visible
     end
 
     -- Обработчики вкладок
@@ -990,19 +1038,21 @@ local function createMainGUI()
     end)
 
     targetDropdown.MouseButton1Click:Connect(function()
-        dropdownContainer.Visible = not dropdownContainer.Visible
+        toggleTargetDropdown()
     end)
 
     headButton.MouseButton1Click:Connect(function()
         aimbotTarget = "Head"
         targetDropdown.Text = t("target") .. ": " .. t("head")
-        dropdownContainer.Visible = false
+        toggleTargetDropdown()
+        updateInterfaceTexts()
     end)
 
     bodyButton.MouseButton1Click:Connect(function()
         aimbotTarget = "HumanoidRootPart"
         targetDropdown.Text = t("target") .. ": " .. t("body")
-        dropdownContainer.Visible = false
+        toggleTargetDropdown()
+        updateInterfaceTexts()
     end)
 
     speedHackButton.MouseButton1Click:Connect(function()
@@ -1029,14 +1079,20 @@ local function createMainGUI()
         end
     end)
 
+    languageDropdown.MouseButton1Click:Connect(function()
+        toggleLanguageDropdown()
+    end)
+
     russianButton.MouseButton1Click:Connect(function()
         currentLanguage = "Russian"
         updateInterfaceTexts()
+        toggleLanguageDropdown()
     end)
 
     englishButton.MouseButton1Click:Connect(function()
         currentLanguage = "English"
         updateInterfaceTexts()
+        toggleLanguageDropdown()
     end)
 
     -- Обработчики слайдеров
@@ -1122,6 +1178,43 @@ local function createMainGUI()
     userInputService.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
             updateDrag(input)
+        end
+    end)
+
+    -- Закрытие выпадающих списков при клике вне их
+    userInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            local mousePos = input.Position
+            
+            -- Закрытие выпадающего списка цели
+            if dropdownContainer.Visible then
+                local dropdownAbsPos = dropdownContainer.AbsolutePosition
+                local dropdownAbsSize = dropdownContainer.AbsoluteSize
+                local targetDropdownAbsPos = targetDropdown.AbsolutePosition
+                local targetDropdownAbsSize = targetDropdown.AbsoluteSize
+
+                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
+                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
+                   not (mousePos.X >= targetDropdownAbsPos.X and mousePos.X <= targetDropdownAbsPos.X + targetDropdownAbsSize.X and
+                       mousePos.Y >= targetDropdownAbsPos.Y and mousePos.Y <= targetDropdownAbsPos.Y + targetDropdownAbsSize.Y) then
+                    toggleTargetDropdown()
+                end
+            end
+            
+            -- Закрытие выпадающего списка языка
+            if languageDropdownContainer.Visible then
+                local dropdownAbsPos = languageDropdownContainer.AbsolutePosition
+                local dropdownAbsSize = languageDropdownContainer.AbsoluteSize
+                local languageDropdownAbsPos = languageDropdown.AbsolutePosition
+                local languageDropdownAbsSize = languageDropdown.AbsoluteSize
+
+                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
+                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
+                   not (mousePos.X >= languageDropdownAbsPos.X and mousePos.X <= languageDropdownAbsPos.X + languageDropdownAbsSize.X and
+                       mousePos.Y >= languageDropdownAbsPos.Y and mousePos.Y <= languageDropdownAbsPos.Y + languageDropdownAbsSize.Y) then
+                    toggleLanguageDropdown()
+                end
+            end
         end
     end)
 
