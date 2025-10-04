@@ -1160,7 +1160,7 @@ local function createMainGUI()
     end)
 
     cameraTabButton.MouseButton1Click:Connect(function()
-        switchTab("Misc")
+        switchTab("Camera")
     end)
 
     -- ОБРАБОТЧИКИ ОСНОВНЫХ КНОПОК
