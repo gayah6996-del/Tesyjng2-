@@ -50,42 +50,52 @@ local translations = {
     Russian = {
         infoTitle = "ASTRALCHEAT v1.0",
         infoText = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n• SpeedHack\n• Невидимость\n\nИспользуйте на свой страх и риск!",
-        espButton = "ESP: ВЫКЛ",
-        invisibleButton = "Невидимость: ВЫКЛ",
-        aimbotButton = "Aimbot: ВЫКЛ",
+        espButton = "ESP: ",
+        invisibleButton = "Невидимость: ",
+        aimbotButton = "Aimbot: ",
         targetDropdown = "Цель: Голова",
-        cameraFOVButton = "FOV камеры: ВЫКЛ",
-        infiniteJumpButton = "Беск. прыжок: ВЫКЛ",
-        speedHackButton = "SpeedHack: ВЫКЛ",
+        cameraFOVButton = "FOV камеры: ",
+        infiniteJumpButton = "Беск. прыжок: ",
+        speedHackButton = "SpeedHack: ",
         hideButton = "Скрыть GUI",
-        languageButton = "Язык: Русский",
+        showButton = "Показать GUI",
+        languageButton = "Язык",
         keyTimeText = "Оставшееся время ключа: %02d:%02d",
         fovLabel = "Радиус FOV: ",
         distanceLabel = "Дистанция аимбота: ",
         cameraFOVLabel = "FOV камеры: ",
-        speedMultiplierLabel = "Множитель скорости: ",
-        stateON = " ВКЛ",
-        stateOFF = " ВЫКЛ"
+        stateON = "ВКЛ",
+        stateOFF = "ВЫКЛ",
+        head = "Голова",
+        body = "Тело",
+        targetText = "Цель: ",
+        russian = "Русский",
+        english = "Английский"
     },
     English = {
         infoTitle = "ASTRALCHEAT v1.0",
         infoText = "ASTRALCHEAT v1.0\n\nDeveloper: @SFXCL\n\nFeatures:\n• Aimbot with settings\n• ESP with boxes\n• FOV settings\n• Custom camera FOV\n• Aimbot distance limit\n• Infinite Jump\n• SpeedHack\n• Invisibility\n\nUse at your own risk!",
-        espButton = "ESP: OFF",
-        invisibleButton = "Invisible: OFF",
-        aimbotButton = "Aimbot: OFF",
+        espButton = "ESP: ",
+        invisibleButton = "Invisible: ",
+        aimbotButton = "Aimbot: ",
         targetDropdown = "Target: Head",
-        cameraFOVButton = "CamFOV: OFF",
-        infiniteJumpButton = "Infinite Jump: OFF",
-        speedHackButton = "SpeedHack: OFF",
+        cameraFOVButton = "CamFOV: ",
+        infiniteJumpButton = "Infinite Jump: ",
+        speedHackButton = "SpeedHack: ",
         hideButton = "Hide GUI",
-        languageButton = "Language: English",
+        showButton = "Show GUI",
+        languageButton = "Language",
         keyTimeText = "Key time remaining: %02d:%02d",
         fovLabel = "FOV Radius: ",
         distanceLabel = "Aimbot Distance: ",
         cameraFOVLabel = "Camera FOV: ",
-        speedMultiplierLabel = "Speed Multiplier: ",
-        stateON = " ON",
-        stateOFF = " OFF"
+        stateON = "ON",
+        stateOFF = "OFF",
+        head = "Head",
+        body = "Body",
+        targetText = "Target: ",
+        russian = "Russian",
+        english = "English"
     }
 }
 
@@ -103,70 +113,87 @@ local function t(key)
     return translations[currentLanguage][key] or key
 end
 
+-- Функция для обновления текстов кнопок с состояниями
+local function updateButtonTexts()
+    if not frame then return end
+    
+    -- Обновляем кнопки состояний
+    if frame.ESPButton then
+        frame.ESPButton.Text = t("espButton") .. (espEnabled and t("stateON") or t("stateOFF"))
+    end
+    
+    if frame.InvisibleButton then
+        frame.InvisibleButton.Text = t("invisibleButton") .. (invisibleEnabled and t("stateON") or t("stateOFF"))
+    end
+    
+    if frame.AimbotButton then
+        frame.AimbotButton.Text = t("aimbotButton") .. (aimbotEnabled and t("stateON") or t("stateOFF"))
+    end
+    
+    if frame.CameraFOVButton then
+        frame.CameraFOVButton.Text = t("cameraFOVButton") .. (customCameraFOVEnabled and t("stateON") or t("stateOFF"))
+    end
+    
+    if frame.InfiniteJumpButton then
+        frame.InfiniteJumpButton.Text = t("infiniteJumpButton") .. (infiniteJumpEnabled and t("stateON") or t("stateOFF"))
+    end
+    
+    if frame.SpeedHackButton then
+        frame.SpeedHackButton.Text = t("speedHackButton") .. (speedHackEnabled and t("stateON") or t("stateOFF"))
+    end
+    
+    -- Обновляем кнопку скрытия/показа GUI
+    if frame.HideButton then
+        frame.HideButton.Text = guiVisible and t("hideButton") or t("showButton")
+    end
+    
+    -- Обновляем выпадающий список цели
+    if frame.TargetDropdown then
+        frame.TargetDropdown.Text = t("targetText") .. (aimbotTarget == "Head" and t("head") or t("body"))
+    end
+    
+    -- Обновляем кнопки выбора языка
+    if frame.RussianButton then
+        frame.RussianButton.Text = t("russian")
+    end
+    
+    if frame.EnglishButton then
+        frame.EnglishButton.Text = t("english")
+    end
+end
+
 -- Функция для применения текущего языка ко всем элементам GUI
 local function applyLanguage()
     if not frame then return end
     
     -- Обновляем тексты элементов
-    if frame:FindFirstChild("Title") then
+    if frame.Title then
         frame.Title.Text = t("infoTitle")
     end
     
-    -- Обновляем кнопки состояний
-    if frame:FindFirstChild("ESPButton") then
-        frame.ESPButton.Text = t("espButton") .. (espEnabled and t("stateON") or t("stateOFF"))
+    if frame.InfoText then
+        frame.InfoText.Text = t("infoText")
     end
     
-    if frame:FindFirstChild("InvisibleButton") then
-        frame.InvisibleButton.Text = t("invisibleButton") .. (invisibleEnabled and t("stateON") or t("stateOFF"))
-    end
-    
-    if frame:FindFirstChild("AimbotButton") then
-        frame.AimbotButton.Text = t("aimbotButton") .. (aimbotEnabled and t("stateON") or t("stateOFF"))
-    end
-    
-    if frame:FindFirstChild("CameraFOVButton") then
-        frame.CameraFOVButton.Text = t("cameraFOVButton") .. (customCameraFOVEnabled and t("stateON") or t("stateOFF"))
-    end
-    
-    if frame:FindFirstChild("InfiniteJumpButton") then
-        frame.InfiniteJumpButton.Text = t("infiniteJumpButton") .. (infiniteJumpEnabled and t("stateON") or t("stateOFF"))
-    end
-    
-    if frame:FindFirstChild("SpeedHackButton") then
-        frame.SpeedHackButton.Text = t("speedHackButton") .. (speedHackEnabled and t("stateON") or t("stateOFF"))
-    end
-    
-    if frame:FindFirstChild("LanguageButton") then
+    if frame.LanguageButton then
         frame.LanguageButton.Text = t("languageButton")
     end
     
     -- Обновляем тексты слайдеров
-    if frame:FindFirstChild("FOVLabel") then
+    if frame.FOVLabel then
         frame.FOVLabel.Text = t("fovLabel") .. fovRadius
     end
     
-    if frame:FindFirstChild("DistanceLabel") then
-        frame.DistanceLabel.Text = t("distanceLabel") .. aimbotMaxDistance .. "m"
+    if frame.DistanceLabel then
+        frame.DistanceLabel.Text = t("distanceLabel") .. aimbotMaxDistance
     end
     
-    if frame:FindFirstChild("CameraFOVLabel") then
+    if frame.CameraFOVLabel then
         frame.CameraFOVLabel.Text = t("cameraFOVLabel") .. cameraFOV
     end
     
-    if frame:FindFirstChild("SpeedMultiplierLabel") then
-        frame.SpeedMultiplierLabel.Text = t("speedMultiplierLabel") .. speedMultiplier .. "x"
-    end
-    
-    -- Обновляем выпадающий список цели
-    if frame:FindFirstChild("TargetDropdown") then
-        frame.TargetDropdown.Text = aimbotTarget == "Head" and t("targetDropdown") or "Target: Body"
-    end
-    
-    -- Обновляем кнопку скрытия GUI
-    if frame.Parent and frame.Parent:FindFirstChild("HideButton") then
-        frame.Parent.HideButton.Text = t("hideButton")
-    end
+    -- Обновляем кнопки с состояниями
+    updateButtonTexts()
 end
 
 -- Функция для полного отключения всех функций
@@ -647,6 +674,7 @@ local function createMainGUI()
     -- ========== ВКЛАДКА INFO ==========
     
     local infoText = Instance.new("TextLabel", infoContainer)
+    infoText.Name = "InfoText"
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
@@ -661,6 +689,7 @@ local function createMainGUI()
     -- Кнопка ESP (серая)
     local espButton = Instance.new("TextButton", espContainer)
     espButton.Name = "ESPButton"
+    frame.ESPButton = espButton
     espButton.Size = UDim2.new(0.9, 0, 0, 35)
     espButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -672,6 +701,7 @@ local function createMainGUI()
     -- Кнопка Invisible (серая)
     local invisibleButton = Instance.new("TextButton", espContainer)
     invisibleButton.Name = "InvisibleButton"
+    frame.InvisibleButton = invisibleButton
     invisibleButton.Size = UDim2.new(0.9, 0, 0, 35)
     invisibleButton.Position = UDim2.new(0.05, 0, 0.20, 0)
     invisibleButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -685,6 +715,7 @@ local function createMainGUI()
     -- Кнопка Aimbot (серая)
     local aimbotButton = Instance.new("TextButton", aimbotContainer)
     aimbotButton.Name = "AimbotButton"
+    frame.AimbotButton = aimbotButton
     aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
     aimbotButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -696,10 +727,11 @@ local function createMainGUI()
     -- Выпадающий список для выбора цели
     local targetDropdown = Instance.new("TextButton", aimbotContainer)
     targetDropdown.Name = "TargetDropdown"
+    frame.TargetDropdown = targetDropdown
     targetDropdown.Size = UDim2.new(0.9, 0, 0, 35)
     targetDropdown.Position = UDim2.new(0.05, 0, 0.20, 0)
     targetDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    targetDropdown.Text = t("targetDropdown")
+    targetDropdown.Text = t("targetText") .. t("head")
     targetDropdown.TextColor3 = Color3.new(1, 1, 1)
     targetDropdown.TextScaled = true
     targetDropdown.BorderSizePixel = 0
@@ -718,7 +750,7 @@ local function createMainGUI()
     headButton.Size = UDim2.new(1, 0, 0, 35)
     headButton.Position = UDim2.new(0, 0, 0, 0)
     headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    headButton.Text = "Head"
+    headButton.Text = t("head")
     headButton.TextColor3 = Color3.new(1, 1, 1)
     headButton.TextScaled = true
     headButton.BorderSizePixel = 0
@@ -728,7 +760,7 @@ local function createMainGUI()
     bodyButton.Size = UDim2.new(1, 0, 0, 35)
     bodyButton.Position = UDim2.new(0, 0, 0, 35)
     bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    bodyButton.Text = "Body"
+    bodyButton.Text = t("body")
     bodyButton.TextColor3 = Color3.new(1, 1, 1)
     bodyButton.TextScaled = true
     bodyButton.BorderSizePixel = 0
@@ -742,6 +774,7 @@ local function createMainGUI()
 
     local fovLabel = Instance.new("TextLabel", fovSliderFrame)
     fovLabel.Name = "FOVLabel"
+    frame.FOVLabel = fovLabel
     fovLabel.Size = UDim2.new(1, 0, 0.3, 0)
     fovLabel.Position = UDim2.new(0, 0, 0, 0)
     fovLabel.BackgroundTransparency = 1
@@ -799,10 +832,11 @@ local function createMainGUI()
 
     local distanceLabel = Instance.new("TextLabel", distanceSliderFrame)
     distanceLabel.Name = "DistanceLabel"
+    frame.DistanceLabel = distanceLabel
     distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
     distanceLabel.Position = UDim2.new(0, 0, 0, 0)
     distanceLabel.BackgroundTransparency = 1
-    distanceLabel.Text = t("distanceLabel") .. aimbotMaxDistance .. "m"
+    distanceLabel.Text = t("distanceLabel") .. aimbotMaxDistance
     distanceLabel.TextColor3 = Color3.new(1, 1, 1)
     distanceLabel.TextScaled = true
     distanceLabel.Font = Enum.Font.SourceSans
@@ -852,6 +886,7 @@ local function createMainGUI()
     -- 1. Кнопка SpeedHack (самая первая)
     local speedHackButton = Instance.new("TextButton", cameraContainer)
     speedHackButton.Name = "SpeedHackButton"
+    frame.SpeedHackButton = speedHackButton
     speedHackButton.Size = UDim2.new(0.9, 0, 0, 30)
     speedHackButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     speedHackButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -863,6 +898,7 @@ local function createMainGUI()
     -- 2. Кнопка Infinite Jump (вторая)
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Name = "InfiniteJumpButton"
+    frame.InfiniteJumpButton = infiniteJumpButton
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 30)
     infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.18, 0)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -874,6 +910,7 @@ local function createMainGUI()
     -- 3. Кнопка Camera FOV (третья)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Name = "CameraFOVButton"
+    frame.CameraFOVButton = cameraFOVButton
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 30)
     cameraFOVButton.Position = UDim2.new(0.05, 0, 0.30, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -891,6 +928,7 @@ local function createMainGUI()
 
     local cameraFOVLabel = Instance.new("TextLabel", cameraFOVSliderFrame)
     cameraFOVLabel.Name = "CameraFOVLabel"
+    frame.CameraFOVLabel = cameraFOVLabel
     cameraFOVLabel.Size = UDim2.new(1, 0, 0.3, 0)
     cameraFOVLabel.Position = UDim2.new(0, 0, 0, 0)
     cameraFOVLabel.BackgroundTransparency = 1
@@ -944,6 +982,7 @@ local function createMainGUI()
     -- Кнопка Language (серая)
     local languageButton = Instance.new("TextButton", languageContainer)
     languageButton.Name = "LanguageButton"
+    frame.LanguageButton = languageButton
     languageButton.Size = UDim2.new(0.9, 0, 0, 35)
     languageButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     languageButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -963,20 +1002,24 @@ local function createMainGUI()
 
     -- Кнопка выбора русского
     local russianButton = Instance.new("TextButton", languageDropdown)
+    russianButton.Name = "RussianButton"
+    frame.RussianButton = russianButton
     russianButton.Size = UDim2.new(1, 0, 0, 40)
     russianButton.Position = UDim2.new(0, 0, 0, 0)
     russianButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    russianButton.Text = "Русский"
+    russianButton.Text = t("russian")
     russianButton.TextColor3 = Color3.new(1, 1, 1)
     russianButton.TextScaled = true
     russianButton.BorderSizePixel = 0
 
     -- Кнопка выбора английского
     local englishButton = Instance.new("TextButton", languageDropdown)
+    englishButton.Name = "EnglishButton"
+    frame.EnglishButton = englishButton
     englishButton.Size = UDim2.new(1, 0, 0, 40)
     englishButton.Position = UDim2.new(0, 0, 0, 40)
     englishButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    englishButton.Text = "English"
+    englishButton.Text = t("english")
     englishButton.TextColor3 = Color3.new(1, 1, 1)
     englishButton.TextScaled = true
     englishButton.BorderSizePixel = 0
@@ -984,6 +1027,7 @@ local function createMainGUI()
     -- Кнопка Hide/Show GUI (перемещаемая)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Name = "HideButton"
+    frame.HideButton = hideButton
     hideButton.Size = UDim2.new(0, 150, 0, 40)
     hideButton.Position = UDim2.new(0.5, -75, 1, -50)
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -1021,7 +1065,7 @@ local function createMainGUI()
     -- Функция обновления дистанции аимбота
     local function updateAimbotDistance(value)
         aimbotMaxDistance = math.floor(math.clamp(value, 10, 200))
-        distanceLabel.Text = t("distanceLabel") .. aimbotMaxDistance .. "m"
+        distanceLabel.Text = t("distanceLabel") .. aimbotMaxDistance
         
         local fillSize = (aimbotMaxDistance - 10) / 190
         distanceSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
@@ -1038,18 +1082,17 @@ local function createMainGUI()
     local function selectTarget(target)
         if target == "Head" then
             aimbotTarget = "Head"
-            targetDropdown.Text = t("targetDropdown")
             headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
             bodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         else
             aimbotTarget = "HumanoidRootPart"
-            targetDropdown.Text = "Target: Body"
             headButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         dropdownContainer.Visible = false
         fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
         distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+        updateButtonTexts()
     end
 
     -- Функция для открытия/закрытия выпадающего списка
@@ -1320,7 +1363,7 @@ local function createMainGUI()
     hideButton.MouseButton1Click:Connect(function()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
-        hideButton.Text = guiVisible and t("hideButton") or "Show GUI"
+        updateButtonTexts()
     end)
 
     -- Добавляем функционал перемещения для кнопки Hide/Show GUI
@@ -1359,15 +1402,14 @@ local function createMainGUI()
         speedHackEnabled = not speedHackEnabled
         if speedHackEnabled then
             speedHackButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            speedHackButton.Text = t("speedHackButton") .. t("stateON")
             if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
                 originalWalkSpeed = player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed
             end
         else
             speedHackButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            speedHackButton.Text = t("speedHackButton") .. t("stateOFF")
         end
         updateSpeed()
+        updateButtonTexts()
     end)
 
     -- Обработчик для кнопки Infinite Jump
@@ -1375,11 +1417,10 @@ local function createMainGUI()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
             infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            infiniteJumpButton.Text = t("infiniteJumpButton") .. t("stateON")
         else
             infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            infiniteJumpButton.Text = t("infiniteJumpButton") .. t("stateOFF")
         end
+        updateButtonTexts()
     end)
 
     -- Обработчик для кнопки Camera FOV
@@ -1387,13 +1428,12 @@ local function createMainGUI()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            cameraFOVButton.Text = t("cameraFOVButton") .. t("stateON")
             camera.FieldOfView = cameraFOV
         else
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            cameraFOVButton.Text = t("cameraFOVButton") .. t("stateOFF")
             camera.FieldOfView = 70
         end
+        updateButtonTexts()
     end)
 
     -- Обработчик для кнопки Invisible
@@ -1401,33 +1441,29 @@ local function createMainGUI()
         invisibleEnabled = not invisibleEnabled
         if invisibleEnabled then
             invisibleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            invisibleButton.Text = t("invisibleButton") .. t("stateON")
         else
             invisibleButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            invisibleButton.Text = t("invisibleButton") .. t("stateOFF")
         end
         toggleInvisibility()
+        updateButtonTexts()
     end)
 
     aimbotButton.MouseButton1Click:Connect(function()
         aimbotEnabled = not aimbotEnabled
         if aimbotEnabled then
             aimbotButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            aimbotButton.Text = t("aimbotButton") .. t("stateON")
         else
             aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            aimbotButton.Text = t("aimbotButton") .. t("stateOFF")
         end
+        updateButtonTexts()
     end)
 
     espButton.MouseButton1Click:Connect(function()
         espEnabled = not espEnabled
         if espEnabled then
             espButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            espButton.Text = t("espButton") .. t("stateON")
         else
             espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            espButton.Text = t("espButton") .. t("stateOFF")
             for _, drawings in pairs(espObjects) do
                 if drawings then
                     drawings.box.Visible = false
@@ -1437,6 +1473,7 @@ local function createMainGUI()
                 end
             end
         end
+        updateButtonTexts()
     end)
 
     -- Инициализация вкладок
