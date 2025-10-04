@@ -579,20 +579,30 @@ local function createGUI()
 
     -- ========== ВКЛАДКА CAMERA ==========
     
-    -- Кнопка Camera FOV (отступ 5% от верха)
+    -- Кнопка Infinite Jump (самая первая)
+    local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
+    infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    infiniteJumpButton.Text = "Infinite Jump: OFF"
+    infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
+    infiniteJumpButton.TextScaled = true
+    infiniteJumpButton.BorderSizePixel = 0
+
+    -- Кнопка Camera FOV (после Infinite Jump)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.20, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- Camera FOV Slider (отступ 2-3 см от Camera FOV)
+    -- Camera FOV Slider (после кнопки CamFOV)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.20, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -645,16 +655,6 @@ local function createGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- Кнопка Infinite Jump (добавлена в раздел Camera)
-    local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
-    infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.40, 0)
-    infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    infiniteJumpButton.Text = "Infinite Jump: OFF"
-    infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
-    infiniteJumpButton.TextScaled = true
-    infiniteJumpButton.BorderSizePixel = 0
-
     -- Кнопка Hide/Show GUI (перемещаемая)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 150, 0, 40)
@@ -701,7 +701,7 @@ local function createGUI()
         distanceSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
     end
 
-    -- Функция для выбора цели через выпадающий список
+    -- Функция для выбора цели через выпадающий списко
     local function selectTarget(target)
         if target == "Head" then
             aimbotTarget = "Head"
@@ -975,7 +975,7 @@ local function createGUI()
         end
     end)
 
-    -- Обработчик для кнопки Infinite Jump
+    -- Обработчик для кнопки Infinite Jump (первая в списке)
     infiniteJumpButton.MouseButton1Click:Connect(function()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
@@ -987,6 +987,7 @@ local function createGUI()
         end
     end)
 
+    -- Обработчик для кнопки Camera FOV (вторая в списке)
     cameraFOVButton.MouseButton1Click:Connect(function()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
