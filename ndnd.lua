@@ -65,7 +65,7 @@ local function showNotification()
     textLabel.Position = UDim2.new(1, -260, 1, -60)
     textLabel.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
     textLabel.BorderSizePixel = 0
-    textLabel.Text = "ASTRALCHEAT успешно запущен!"
+    textLabel.Text = "ASTRALCHEAT успешно запущен✅!"
     textLabel.TextColor3 = Color3.new(1, 1, 1)
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.SourceSansBold
@@ -582,7 +582,7 @@ local function createGUI()
     -- Кнопка Camera FOV (отступ 5% от верха)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.45, 0)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
@@ -648,7 +648,7 @@ local function createGUI()
     -- Кнопка Infinite Jump (добавлена в раздел Camera)
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.40, 0)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
     infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
@@ -980,7 +980,7 @@ local function createGUI()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
             infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            infiniteJumpButton.Text = "Infinite Jump: ON "
+            infiniteJumpButton.Text = "Infinite Jump: ON ✅"
         else
             infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             infiniteJumpButton.Text = "Infinite Jump: OFF"
@@ -991,7 +991,7 @@ local function createGUI()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            cameraFOVButton.Text = "CamFOV: ON "
+            cameraFOVButton.Text = "CamFOV: ON ✅"
             camera.FieldOfView = cameraFOV
         else
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -1004,7 +1004,7 @@ local function createGUI()
         aimbotEnabled = not aimbotEnabled
         if aimbotEnabled then
             aimbotButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            aimbotButton.Text = "Aimbot: ON "
+            aimbotButton.Text = "Aimbot: ON ✅"
         else
             aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             aimbotButton.Text = "Aimbot: OFF"
@@ -1015,7 +1015,7 @@ local function createGUI()
         espEnabled = not espEnabled
         if espEnabled then
             espButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            espButton.Text = "ESP: ON "
+            espButton.Text = "ESP: ON ✅"
         else
             espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             espButton.Text = "ESP: OFF"
