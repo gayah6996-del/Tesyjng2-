@@ -200,10 +200,10 @@ local function createGUI()
     gui.ResetOnSpawn = false
     gui.Parent = player:WaitForChild("PlayerGui")
 
-    -- Основной контейнер
+    -- Основной контейнер (увеличили высоту до 400)
     frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -150)
-    frame.Size = UDim2.new(0, 350, 0, 300)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -200)
+    frame.Size = UDim2.new(0, 350, 0, 400)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -609,7 +609,7 @@ local function createGUI()
     -- 2. Кнопка Infinite Jump (вторая)
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.20, 0)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.15, 0)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
     infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
@@ -619,7 +619,7 @@ local function createGUI()
     -- 3. Кнопка Camera FOV (третья)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.35, 0)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.25, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
@@ -629,7 +629,7 @@ local function createGUI()
     -- 4. Camera FOV Slider (четвертый)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -651,14 +651,14 @@ local function createGUI()
     cameraSliderBackground.AutoButtonColor = false
 
     local cameraSliderFill = Instance.new("Frame", cameraSliderBackground)
-    cameraSliderFill.Size = UDim2.new((cameraFOV - 30) / 90, 0, 1, 0) -- Изменен диапазон на 30-120
+    cameraSliderFill.Size = UDim2.new((cameraFOV - 30) / 90, 0, 1, 0)
     cameraSliderFill.Position = UDim2.new(0, 0, 0, 0)
     cameraSliderFill.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
     cameraSliderFill.BorderSizePixel = 0
 
     local cameraSliderButton = Instance.new("Frame", cameraSliderBackground)
     cameraSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
-    cameraSliderButton.Position = UDim2.new((cameraFOV - 30) / 90, -7, -0.25, 0) -- Изменен диапазон на 30-120
+    cameraSliderButton.Position = UDim2.new((cameraFOV - 30) / 90, -7, -0.25, 0)
     cameraSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     cameraSliderButton.BorderSizePixel = 1
     cameraSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
@@ -666,7 +666,7 @@ local function createGUI()
     -- Кнопки + и - для Camera FOV
     local cameraMinusButton = Instance.new("TextButton", cameraFOVSliderFrame)
     cameraMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    cameraMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    cameraMinusButton.Position = UDim2.new(0, 0, 0.8, 10)
     cameraMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraMinusButton.Text = "-"
     cameraMinusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -675,17 +675,17 @@ local function createGUI()
 
     local cameraPlusButton = Instance.new("TextButton", cameraFOVSliderFrame)
     cameraPlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.8, 10)
     cameraPlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraPlusButton.Text = "+"
     cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- 5. SpeedHack Multiplier Slider (пятый)
+    -- 5. SpeedHack Multiplier Slider (пятый) - сдвинут на 2 см ниже
     local speedHackSliderFrame = Instance.new("Frame", cameraContainer)
     speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)
+    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0)
     speedHackSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     speedHackSliderFrame.BorderSizePixel = 0
 
@@ -707,14 +707,14 @@ local function createGUI()
     speedSliderBackground.AutoButtonColor = false
 
     local speedSliderFill = Instance.new("Frame", speedSliderBackground)
-    speedSliderFill.Size = UDim2.new((speedMultiplier - 1) / 9, 0, 1, 0) -- Диапазон 1-10
+    speedSliderFill.Size = UDim2.new((speedMultiplier - 1) / 9, 0, 1, 0)
     speedSliderFill.Position = UDim2.new(0, 0, 0, 0)
     speedSliderFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     speedSliderFill.BorderSizePixel = 0
 
     local speedSliderButton = Instance.new("Frame", speedSliderBackground)
     speedSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
-    speedSliderButton.Position = UDim2.new((speedMultiplier - 1) / 9, -7, -0.25, 0) -- Диапазон 1-10
+    speedSliderButton.Position = UDim2.new((speedMultiplier - 1) / 9, -7, -0.25, 0)
     speedSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     speedSliderButton.BorderSizePixel = 1
     speedSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
@@ -722,7 +722,7 @@ local function createGUI()
     -- Кнопки + и - для SpeedHack
     local speedMinusButton = Instance.new("TextButton", speedHackSliderFrame)
     speedMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    speedMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    speedMinusButton.Position = UDim2.new(0, 0, 0.8, 10)
     speedMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     speedMinusButton.Text = "-"
     speedMinusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -731,7 +731,7 @@ local function createGUI()
 
     local speedPlusButton = Instance.new("TextButton", speedHackSliderFrame)
     speedPlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    speedPlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    speedPlusButton.Position = UDim2.new(0.8, 0, 0.8, 10)
     speedPlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     speedPlusButton.Text = "+"
     speedPlusButton.TextColor3 = Color3.new(1, 1, 1)
@@ -741,7 +741,7 @@ local function createGUI()
     -- Кнопка Hide/Show GUI (перемещаемая)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 150, 0, 40)
-    hideButton.Position = UDim2.new(0.5, -75, 1, -50)
+    hideButton.Position = UDim2.new(0.5, -75, 1, -100)
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     hideButton.Text = "Hide GUI"
     hideButton.TextColor3 = Color3.new(1, 1, 1)
@@ -762,10 +762,10 @@ local function createGUI()
 
     -- Функция обновления Camera FOV
     local function updateCameraFOV(value)
-        cameraFOV = math.floor(math.clamp(value, 30, 120)) -- Максимум 120
+        cameraFOV = math.floor(math.clamp(value, 30, 120))
         cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
         
-        local fillSize = (cameraFOV - 30) / 90 -- Изменен диапазон на 30-120
+        local fillSize = (cameraFOV - 30) / 90
         cameraSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
         cameraSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
         
@@ -786,10 +786,10 @@ local function createGUI()
 
     -- Функция обновления множителя скорости
     local function updateSpeedMultiplier(value)
-        speedMultiplier = math.floor(math.clamp(value, 1, 10)) -- Диапазон 1-10
+        speedMultiplier = math.floor(math.clamp(value, 1, 10))
         speedHackLabel.Text = "Speed Multiplier: " .. speedMultiplier .. "x"
         
-        local fillSize = (speedMultiplier - 1) / 9 -- Диапазон 1-10
+        local fillSize = (speedMultiplier - 1) / 9
         speedSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
         speedSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
         
@@ -810,7 +810,6 @@ local function createGUI()
             bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         dropdownContainer.Visible = false
-        -- Возвращаем слайдеры в исходное положение при закрытии меню
         fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
         distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     end
@@ -821,11 +820,9 @@ local function createGUI()
         dropdownContainer.Visible = isOpening
         
         if isOpening then
-            -- Сдвигаем слайдеры вниз на 5 см при открытии меню
-            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.60, 0)  -- +0.25 от исходного
-            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)  -- +0.25 от исходного
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.60, 0)
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)
         else
-            -- Возвращаем слайдеры в исходное положение при закрытии меню
             fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
             distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
         end
@@ -862,13 +859,13 @@ local function createGUI()
             local newFOV = 50 + (relativeX * 200)
             updateFOV(newFOV)
         elseif sliderType == "camera" then
-            local newCameraFOV = 30 + (relativeX * 90) -- Изменен диапазон на 30-120
+            local newCameraFOV = 30 + (relativeX * 90)
             updateCameraFOV(newCameraFOV)
         elseif sliderType == "distance" then
             local newDistance = 10 + (relativeX * 190)
             updateAimbotDistance(newDistance)
         elseif sliderType == "speed" then
-            local newSpeed = 1 + (relativeX * 9) -- Диапазон 1-10
+            local newSpeed = 1 + (relativeX * 9)
             updateSpeedMultiplier(newSpeed)
         end
     end
@@ -995,7 +992,6 @@ local function createGUI()
                    not (mousePos.X >= targetDropdownAbsPos.X and mousePos.X <= targetDropdownAbsPos.X + targetDropdownAbsSize.X and
                        mousePos.Y >= targetDropdownAbsPos.Y and mousePos.Y <= targetDropdownAbsPos.Y + targetDropdownAbsSize.Y) then
                     dropdownContainer.Visible = false
-                    -- Возвращаем слайдеры в исходное положение при закрытии меню
                     fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
                     distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
                 end
@@ -1007,19 +1003,16 @@ local function createGUI()
     local function switchTab(tabName)
         activeTab = tabName
         
-        -- Скрыть все контейнеры
         infoContainer.Visible = false
         espContainer.Visible = false
         aimbotContainer.Visible = false
         cameraContainer.Visible = false
         
-        -- Сбросить цвета всех вкладок
         infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         
-        -- Показать выбранный контейнер и выделить вкладку
         if tabName == "Info" then
             infoContainer.Visible = true
             infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -1034,7 +1027,6 @@ local function createGUI()
             cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         
-        -- Скрыть выпадающий список при переключении вкладок и вернуть слайдеры в исходное положение
         dropdownContainer.Visible = false
         fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
         distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
@@ -1095,13 +1087,12 @@ local function createGUI()
         end
     end)
 
-    -- Обработчик для кнопки SpeedHack (первая в списке)
+    -- Обработчик для кнопки SpeedHack
     speedHackButton.MouseButton1Click:Connect(function()
         speedHackEnabled = not speedHackEnabled
         if speedHackEnabled then
             speedHackButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
             speedHackButton.Text = "SpeedHack: ON ✅"
-            -- Сохраняем оригинальную скорость
             if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
                 originalWalkSpeed = player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed
             end
@@ -1112,7 +1103,7 @@ local function createGUI()
         updateSpeed()
     end)
 
-    -- Обработчик для кнопки Infinite Jump (вторая в списке)
+    -- Обработчик для кнопки Infinite Jump
     infiniteJumpButton.MouseButton1Click:Connect(function()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
@@ -1124,7 +1115,7 @@ local function createGUI()
         end
     end)
 
-    -- Обработчик для кнопки Camera FOV (третья в списке)
+    -- Обработчик для кнопки Camera FOV
     cameraFOVButton.MouseButton1Click:Connect(function()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
@@ -1184,7 +1175,6 @@ player.CharacterAdded:Connect(function(character)
     if not player:WaitForChild("PlayerGui"):FindFirstChild(guiName) then
         createGUI()
     end
-    -- При появлении нового персонажа обновляем скорость, если SpeedHack включен
     if speedHackEnabled then
         updateSpeed()
     end
