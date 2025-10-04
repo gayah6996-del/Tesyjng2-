@@ -200,10 +200,10 @@ local function createGUI()
     gui.ResetOnSpawn = false
     gui.Parent = player:WaitForChild("PlayerGui")
 
-    -- Основной контейнер (увеличили высоту до 400)
+    -- Основной контейнер (исходный размер)
     frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -200)
-    frame.Size = UDim2.new(0, 350, 0, 400)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -150)
+    frame.Size = UDim2.new(0, 350, 0, 300)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -682,10 +682,10 @@ local function createGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- 5. SpeedHack Multiplier Slider (пятый) - сдвинут на 2 см ниже
+    -- 5. SpeedHack Multiplier Slider (пятый) - сдвинут еще ниже на 2 см
     local speedHackSliderFrame = Instance.new("Frame", cameraContainer)
     speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.55, 0)
+    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.65, 0)
     speedHackSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     speedHackSliderFrame.BorderSizePixel = 0
 
@@ -741,7 +741,7 @@ local function createGUI()
     -- Кнопка Hide/Show GUI (перемещаемая)
     local hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 150, 0, 40)
-    hideButton.Position = UDim2.new(0.5, -75, 1, -100)
+    hideButton.Position = UDim2.new(0.5, -75, 1, -50)
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     hideButton.Text = "Hide GUI"
     hideButton.TextColor3 = Color3.new(1, 1, 1)
@@ -1012,6 +1012,15 @@ local function createGUI()
         espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        
+        -- Изменяем размер меню только для вкладки Camera
+        if tabName == "Camera" then
+            frame.Size = UDim2.new(0, 350, 0, 400)
+            frame.Position = UDim2.new(0.5, -175, 0.5, -200)
+        else
+            frame.Size = UDim2.new(0, 350, 0, 300)
+            frame.Position = UDim2.new(0.5, -175, 0.5, -150)
+        end
         
         if tabName == "Info" then
             infoContainer.Visible = true
