@@ -35,6 +35,12 @@ local dragStart = nil
 local frameStart = nil
 local activeTab = "Info"
 
+-- Переменные для системы ключа
+local keyActivated = false
+local keyStartTime = nil
+local keyDuration = 20 * 60 -- 20 минут в секундах
+local keyTimerConnection = nil
+
 -- FOV Circle
 local circle = Drawing.new("Circle")
 circle.Color = Color3.fromRGB(255, 255, 255)
@@ -61,6 +67,54 @@ local function updateSpeed()
             humanoid.WalkSpeed = originalWalkSpeed
         end
     end
+end
+
+-- Функция для обновления времени ключа в Info
+local function updateKeyTime()
+    if not keyStartTime then return end
+    
+    local elapsed = os.time() - keyStartTime
+    local remaining = keyDuration - elapsed
+    
+    if remaining <= 0 then
+        -- Время ключа истекло
+        if keyTimerConnection then
+            keyTimerConnection:Disconnect()
+        end
+        
+        -- Отключаем все функции
+        aimbotEnabled = false
+        espEnabled = false
+        customCameraFOVEnabled = false
+        infiniteJumpEnabled = false
+        speedHackEnabled = false
+        
+        -- Восстанавливаем настройки
+        if player.Character and player.Character:FindFirstChildOfClass("Humanoid") then
+            player.Character:FindFirstChildOfClass("Humanoid").WalkSpeed = originalWalkSpeed
+        end
+        camera.FieldOfView = 70
+        
+        -- Удаляем GUI
+        if frame and frame.Parent then
+            frame.Parent:Destroy()
+        end
+        
+        -- Удаляем Drawing объекты
+        circle:Remove()
+        for _, drawings in pairs(espObjects) do
+            for _, drawing in pairs(drawings) do
+                drawing:Remove()
+            end
+        end
+        
+        return
+    end
+    
+    local minutes = math.floor(remaining / 60)
+    local seconds = remaining % 60
+    
+    return string.format("Оставшееся время ключа: %02d:%02d", minutes, seconds)
 end
 
 -- Show Notification
@@ -606,30 +660,30 @@ local function createMainGUI()
     speedHackButton.TextScaled = true
     speedHackButton.BorderSizePixel = 0
 
-    -- 2. Кнопка Infinite Jump (вторая) - УВЕЛИЧЕН ОТСТУП
+    -- 2. Кнопка Infinite Jump (вторая)
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.11, 10) -- Увеличено с 20 до 40
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.12, 0)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     infiniteJumpButton.Text = "Infinite Jump: OFF"
     infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
     infiniteJumpButton.TextScaled = true
     infiniteJumpButton.BorderSizePixel = 0
 
-    -- 3. Кнопка Camera FOV (третья) - УВЕЛИЧЕН ОТСТУП
+    -- 3. Кнопка Camera FOV (третья)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.16, 30) -- Увеличено с 45 до 80
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.19, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
     cameraFOVButton.TextScaled = true
     cameraFOVButton.BorderSizePixel = 0
 
-    -- 4. Camera FOV Slider (четвертый) - УВЕЛИЧЕН ОТСТУП
+    -- 4. Camera FOV Slider (четвертый)
     local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.21, 70) -- Увеличено с 70 до 120
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.26, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
@@ -682,10 +736,10 @@ local function createMainGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
-    -- 5. SpeedHack Multiplier Slider (пятый) - УВЕЛИЧЕН ОТСТУП
+    -- 5. SpeedHack Multiplier Slider (пятый)
     local speedHackSliderFrame = Instance.new("Frame", cameraContainer)
     speedHackSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.26, 110) -- Увеличено с 100 до 160
+    speedHackSliderFrame.Position = UDim2.new(0.05, 0, 0.33, 0)
     speedHackSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     speedHackSliderFrame.BorderSizePixel = 0
 
@@ -1016,24 +1070,15 @@ local function createMainGUI()
         if tabName == "Info" then
             infoContainer.Visible = true
             infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            frame.Size = UDim2.new(0, 350, 0, 300)
-            frame.Position = UDim2.new(0.5, -175, 0.5, -150)
         elseif tabName == "ESP" then
             espContainer.Visible = true
             espTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            frame.Size = UDim2.new(0, 350, 0, 300)
-            frame.Position = UDim2.new(0.5, -175, 0.5, -150)
         elseif tabName == "AimBot" then
             aimbotContainer.Visible = true
             aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            frame.Size = UDim2.new(0, 350, 0, 300)
-            frame.Position = UDim2.new(0.5, -175, 0.5, -150)
         elseif tabName == "Camera" then
             cameraContainer.Visible = true
             cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            -- Увеличиваем размер меню для вкладки Camera
-            frame.Size = UDim2.new(0, 350, 0, 500)
-            frame.Position = UDim2.new(0.5, -175, 0.5, -250)
         end
         
         dropdownContainer.Visible = false
@@ -1173,6 +1218,14 @@ local function createMainGUI()
     
     -- Инициализация выпадающего списка
     selectTarget("Head")
+    
+    -- Запускаем таймер для обновления времени ключа
+    keyTimerConnection = runService.Heartbeat:Connect(function()
+        local timeText = updateKeyTime()
+        if timeText and infoText then
+            infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n• SpeedHack\n\n" .. timeText .. "\n\nИспользуйте на свой страх и риск!"
+        end
+    end)
 end
 
 -- Key System
@@ -1235,6 +1288,8 @@ local function createKeyGUI()
 
     submitButton.MouseButton1Click:Connect(function()
         if keyBox.Text == "SFXCL" then
+            keyActivated = true
+            keyStartTime = os.time()
             keyGui:Destroy()
             createMainGUI()
             showNotification()
@@ -1247,6 +1302,8 @@ local function createKeyGUI()
     keyBox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             if keyBox.Text == "SFXCL" then
+                keyActivated = true
+                keyStartTime = os.time()
                 keyGui:Destroy()
                 createMainGUI()
                 showNotification()
