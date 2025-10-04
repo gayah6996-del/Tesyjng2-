@@ -582,7 +582,7 @@ local function createGUI()
     -- Кнопка Camera FOV (отступ 5% от верха)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0, 0, 0, 0)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.45, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     cameraFOVButton.Text = "CamFOV: OFF"
     cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
@@ -598,7 +598,7 @@ local function createGUI()
 
     local cameraFOVLabel = Instance.new("TextLabel", cameraFOVSliderFrame)
     cameraFOVLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    cameraFOVLabel.Position = UDim2.new(0.05, 0, 0.45, 0)
+    cameraFOVLabel.Position = UDim2.new(0, 0, 0, 0)
     cameraFOVLabel.BackgroundTransparency = 1
     cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
     cameraFOVLabel.TextColor3 = Color3.new(1, 1, 1)
