@@ -90,6 +90,105 @@ local MinimizeCorner = Instance.new("UICorner")
 MinimizeCorner.CornerRadius = UDim.new(0, 5)
 MinimizeCorner.Parent = MinimizeButton
 
+-- Tree Health Display Function
+local function CreateTreeHealthDisplay(tree)
+    if not tree then return end
+    
+    -- Create BillboardGui for health display
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "TreeHealthDisplay"
+    billboard.Adornee = tree
+    billboard.Size = UDim2.new(0, 100, 0, 20)
+    billboard.StudsOffset = Vector3.new(0, 8, 0)
+    billboard.AlwaysOnTop = true
+    billboard.Parent = tree
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 0.3
+    frame.BorderSizePixel = 0
+    frame.Parent = billboard
+    
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(0, 4)
+    UICorner.Parent = frame
+    
+    local healthBar = Instance.new("Frame")
+    healthBar.Name = "HealthBar"
+    healthBar.Size = UDim2.new(1, 0, 1, 0)
+    healthBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    healthBar.BorderSizePixel = 0
+    healthBar.Parent = frame
+    
+    local healthCorner = Instance.new("UICorner")
+    healthCorner.CornerRadius = UDim.new(0, 4)
+    healthCorner.Parent = healthBar
+    
+    local healthText = Instance.new("TextLabel")
+    healthText.Size = UDim2.new(1, 0, 1, 0)
+    healthText.BackgroundTransparency = 1
+    healthText.Text = "100%"
+    healthText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    healthText.TextSize = 12
+    healthText.Font = Enum.Font.GothamBold
+    healthText.Parent = frame
+    
+    return billboard
+end
+
+-- Function to update tree health display
+local function UpdateTreeHealth(tree, health, maxHealth)
+    if not tree then return end
+    
+    local billboard = tree:FindFirstChild("TreeHealthDisplay")
+    if not billboard then
+        billboard = CreateTreeHealthDisplay(tree)
+    end
+    
+    if billboard then
+        local healthBar = billboard.Frame.HealthBar
+        local healthText = billboard.Frame.TextLabel
+        
+        local healthPercent = health / maxHealth
+        healthBar.Size = UDim2.new(healthPercent, 0, 1, 0)
+        
+        -- Change color based on health percentage
+        if healthPercent > 0.7 then
+            healthBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green
+        elseif healthPercent > 0.3 then
+            healthBar.BackgroundColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+        else
+            healthBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red
+        end
+        
+        healthText.Text = math.floor(healthPercent * 100) .. "%"
+    end
+end
+
+-- Function to find tree health
+local function GetTreeHealth(tree)
+    if not tree then return 100, 100 end
+    
+    -- Try to find health in various possible locations
+    local humanoid = tree:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        return humanoid.Health, humanoid.MaxHealth
+    end
+    
+    -- Look for health values in tree model
+    for _, part in pairs(tree:GetDescendants()) do
+        if part:IsA("BasePart") and part:FindFirstChild("Health") then
+            local healthValue = part.Health
+            if typeof(healthValue) == "number" then
+                return healthValue, 100 -- Assuming max health is 100
+            end
+        end
+    end
+    
+    return 100, 100 -- Default values if health not found
+end
+
 -- Notification Function
 local function ShowNotification(message)
     local Notification = Instance.new("TextLabel")
@@ -199,110 +298,73 @@ end)
 -- Variables
 local MoneyFarmActive = false
 local AutoTreeFarmEnabled = false
+local minDistance = 0
 local VirtualInputManager = game:GetService('VirtualInputManager')
 
--- Auto Tree Farm Function for Mobile
-local treesBeingChopped = {}
-local MAX_TREES = 10
-local CHOP_RADIUS = 50
-
--- Function to chop trees using remote events (common in many games)
-local function findChoppingRemote()
-    -- Try to find a remote event for chopping
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("RemoteEvent") and (obj.Name:lower():find("chop") or obj.Name:lower():find("tree") or obj.Name:lower():find("hit")) then
-            return obj
-        end
-    end
-    
-    -- Check player scripts
-    local playerScripts = LocalPlayer:FindFirstChild("PlayerScripts")
-    if playerScripts then
-        for _, obj in pairs(playerScripts:GetDescendants()) do
-            if obj:IsA("RemoteEvent") and (obj.Name:lower():find("chop") or obj.Name:lower():find("tree") or obj.Name:lower():find("hit")) then
-                return obj
-            end
-        end
-    end
-    
-    return nil
+-- Mouse click function
+local function mouse1click()
+    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, false)
+    task.wait()
+    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, false)
 end
 
--- Main tree chopping function
+-- Auto Tree Farm Function
+local badTrees = {}
+
 task.spawn(function()
-    local chopRemote = findChoppingRemote()
-    
     while true do
         if AutoTreeFarmEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local characterPos = LocalPlayer.Character.HumanoidRootPart.Position
-            
-            -- Find all trees in radius
+            local ignoreDistanceFrom = LocalPlayer.Character.HumanoidRootPart.Position
             local trees = {}
             for _, obj in pairs(workspace:GetDescendants()) do
                 if obj.Name == "Trunk" and obj.Parent and obj.Parent.Name == "Small Tree" then
-                    local distance = (obj.Position - characterPos).Magnitude
-                    if distance < CHOP_RADIUS and not treesBeingChopped[obj] then
+                    local distance = (obj.Position - ignoreDistanceFrom).Magnitude
+                    if distance > minDistance and not badTrees[obj:GetFullName()] then
                         table.insert(trees, obj)
                     end
                 end
             end
 
-            -- Sort by distance
             table.sort(trees, function(a, b)
-                return (a.Position - characterPos).Magnitude < (b.Position - characterPos).Magnitude
+                return (a.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <
+                       (b.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
             end)
 
-            -- Chop up to MAX_TREES trees simultaneously
-            for i = 1, math.min(MAX_TREES, #trees) do
-                local tree = trees[i]
-                if AutoTreeFarmEnabled and tree and tree.Parent and tree.Parent.Name == "Small Tree" then
-                    treesBeingChopped[tree] = true
+            for _, trunk in ipairs(trees) do
+                if not AutoTreeFarmEnabled then break end
+                LocalPlayer.Character:PivotTo(trunk.CFrame + Vector3.new(0, 3, 0))
+                task.wait(0.2)
+                
+                local tree = trunk.Parent
+                local startTime = tick()
+                
+                -- Create health display for current tree
+                local health, maxHealth = GetTreeHealth(tree)
+                UpdateTreeHealth(tree, health, maxHealth)
+                
+                while AutoTreeFarmEnabled and trunk and trunk.Parent and trunk.Parent.Name == "Small Tree" do
+                    mouse1click()
+                    task.wait(0.2)
                     
-                    -- Start chopping this tree in a separate thread
-                    task.spawn(function()
-                        local attempts = 0
-                        while AutoTreeFarmEnabled and tree and tree.Parent and tree.Parent.Name == "Small Tree" and attempts < 20 do
-                            attempts += 1
-                            
-                            -- Method 1: Try using remote event if found
-                            if chopRemote then
-                                chopRemote:FireServer(tree, "Chop")
-                                task.wait(0.3)
-                            end
-                            
-                            -- Method 2: Try firetouchinterest (works on mobile)
-                            if tree:IsA("BasePart") then
-                                local humanoidRootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                                if humanoidRootPart then
-                                    firetouchinterest(humanoidRootPart, tree, 0)
-                                    firetouchinterest(humanoidRootPart, tree, 1)
-                                end
-                            else
-                                -- If tree is a model, try to find its primary part
-                                local primaryPart = tree.PrimaryPart or tree:FindFirstChildWhichIsA("BasePart")
-                                if primaryPart then
-                                    local humanoidRootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                                    if humanoidRootPart then
-                                        firetouchinterest(humanoidRootPart, primaryPart, 0)
-                                        firetouchinterest(humanoidRootPart, primaryPart, 1)
-                                    end
-                                end
-                            end
-                            
-                            -- Method 3: Try clicking on tree (for mobile tap simulation)
-                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, false)
-                            task.wait(0.1)
-                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, false)
-                            
-                            task.wait(0.5) -- Wait between chop attempts
-                        end
-                        
-                        treesBeingChopped[tree] = nil
-                    end)
+                    -- Update tree health display
+                    local currentHealth, currentMaxHealth = GetTreeHealth(tree)
+                    UpdateTreeHealth(tree, currentHealth, currentMaxHealth)
+                    
+                    if tick() - startTime > 12 then
+                        badTrees[trunk:GetFullName()] = true
+                        break
+                    end
                 end
+                
+                -- Clean up health display when done with tree
+                if tree and tree:FindFirstChild("TreeHealthDisplay") then
+                    tree.TreeHealthDisplay:Destroy()
+                end
+                
+                task.wait(0.3)
             end
         end
-        task.wait(1) -- Wait before next scan
+        task.wait(1.5)
     end
 end)
 
@@ -311,8 +373,7 @@ AutoTreeButton.MouseButton1Click:Connect(function()
     AutoTreeButton.Text = "Auto Tree: " .. (AutoTreeFarmEnabled and "ON" or "OFF")
     AutoTreeButton.BackgroundColor3 = AutoTreeFarmEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
     if AutoTreeFarmEnabled then
-        ShowNotification("Auto Tree Farm enabled. Chopping trees in 50m radius.")
-        treesBeingChopped = {}
+        ShowNotification("Auto Tree Farm enabled.")
     else
         ShowNotification("Auto Tree Farm disabled.")
     end
