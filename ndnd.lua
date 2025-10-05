@@ -600,41 +600,37 @@ local DistanceSlider = CreateDistanceSlider("Distance", 0, 1000, 25, 130)
 local ActiveAutoChopTree = false
 local DistanceForAutoChopTree = 25
 
--- Auto Tree Function (исправленная версия)
-local function AutoTreeCallback(Value)
-    ActiveAutoChopTree = Value 
-    task.spawn(function()
-        while ActiveAutoChopTree do 
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
-            
-            for _, bunny in pairs(workspace.Map.Foliage:GetChildren()) do
-                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
-                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForAutoChopTree then
-                        task.spawn(function()		
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                        end)		
-                    end
-                end
-            end 
-            
-            for _, bunny in pairs(workspace.Map.Landmarks:GetChildren()) do
-                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
-                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForAutoChopTree then
-                        task.spawn(function()	
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                        end)			
-                    end
-                end
-            end
-            wait(0.01)
-        end
-    end)
+task.spawn(function()
+while ActiveAutoChopTree do 
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+for _, bunny in pairs(workspace.Map.Foliage:GetChildren()) do
+	if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2")  and bunny.PrimaryPart then
+		local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
+		if distance <= DistanceForAutoChopTree then
+task.spawn(function()		
+local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+end)		
 end
+	end
+end 
+for _, bunny in pairs(workspace.Map.Landmarks:GetChildren()) do
+	if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2")  and bunny.PrimaryPart then
+		local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
+		if distance <= DistanceForAutoChopTree then
+	task.spawn(function()	
+local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+end)			
+end
+	end
+end
+wait(0.01)
+end
+end)
+end,
+})
 
 -- Auto Tree Toggle Function
 AutoTreeToggle:FindFirstChildOfClass("TextButton").MouseButton1Click:Connect(function()
