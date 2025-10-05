@@ -44,7 +44,7 @@ local EchelonLabel = Instance.new("TextLabel")
 EchelonLabel.Size = UDim2.new(0, 120, 0, 25)
 EchelonLabel.Position = UDim2.new(0, 10, 0, 8)
 EchelonLabel.BackgroundTransparency = 1
-EchelonLabel.Text = "ASTRALCHEAT"
+EchelonLabel.Text = "Echelon"
 EchelonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 EchelonLabel.TextSize = 18
 EchelonLabel.Font = Enum.Font.GothamBold
@@ -267,6 +267,25 @@ ItemSelectionStroke.Color = Color3.fromRGB(255, 0, 0)
 ItemSelectionStroke.Thickness = 2
 ItemSelectionStroke.Transparency = 0.5
 ItemSelectionStroke.Parent = ItemSelectionFrame
+
+-- Close Button for Item Selection
+local ItemSelectionCloseButton = Instance.new("TextButton")
+ItemSelectionCloseButton.Size = UDim2.new(0, 25, 0, 25)
+ItemSelectionCloseButton.Position = UDim2.new(1, -35, 0, 8)
+ItemSelectionCloseButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+ItemSelectionCloseButton.Text = "X"
+ItemSelectionCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ItemSelectionCloseButton.TextSize = 14
+ItemSelectionCloseButton.Font = Enum.Font.GothamBold
+ItemSelectionCloseButton.Parent = ItemSelectionFrame
+
+local ItemSelectionCloseCorner = Instance.new("UICorner")
+ItemSelectionCloseCorner.CornerRadius = UDim.new(0, 5)
+ItemSelectionCloseCorner.Parent = ItemSelectionCloseButton
+
+ItemSelectionCloseButton.MouseButton1Click:Connect(function()
+    ItemSelectionFrame.Visible = false
+end)
 
 local ItemSelectionTitle = Instance.new("TextLabel")
 ItemSelectionTitle.Size = UDim2.new(0, 200, 0, 30)
@@ -558,13 +577,6 @@ AutoTreeButton.MouseButton1Click:Connect(function()
         ShowNotification("Auto Tree Farm enabled.")
     else
         ShowNotification("Auto Tree Farm disabled.")
-    end
-end)
-
--- Close Item Selection
-ItemSelectionFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        ItemSelectionFrame.Visible = false
     end
 end)
 
