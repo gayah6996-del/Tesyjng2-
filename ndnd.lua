@@ -4,6 +4,7 @@ local camera = workspace.CurrentCamera
 local players = game:GetService("Players")
 local runService = game:GetService("RunService")
 local userInputService = game:GetService("UserInputService")
+local tweenService = game:GetService("TweenService")
 
 -- Aimbot & ESP Variables
 local aimbotEnabled = false
@@ -48,14 +49,11 @@ local invisibleEnabled = false
 local currentLanguage = "Russian"
 local translations = {
     Russian = {
-        -- Вкладки
         tabInfo = "Инфо",
         tabESP = "ESP", 
         tabAimBot = "АимБот",
         tabCamera = "Камера",
         tabLanguage = "Язык",
-        
-        -- Общие
         infoTitle = "ASTRALCHEAT v1.0",
         close = "Закрыть",
         hideGUI = "Скрыть GUI",
@@ -64,46 +62,31 @@ local translations = {
         off = "ВЫКЛ",
         head = "Голова",
         body = "Тело",
-        
-        -- Info tab
         infoText = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n• SpeedHack\n• Невидимость\n\nИспользуйте на свой страх и риск!",
         keyTime = "Оставшееся время ключа: %02d:%02d",
-        
-        -- ESP tab
         esp = "ESP",
         invisible = "Невидимость",
-        
-        -- AimBot tab
         aimbot = "Aimbot",
         target = "Цель",
         fovRadius = "Радиус FOV",
         aimbotDistance = "Дистанция аимбота",
-        
-        -- Camera tab
         speedHack = "SpeedHack",
         infiniteJump = "Беск. прыжок",
         cameraFOV = "FOV камеры",
-        
-        -- Language tab
         language = "Язык",
         russian = "Русский",
         english = "Английский",
         selectLanguage = "Выберите язык",
-        
-        -- Подтверждение закрытия
         confirmClose = "Вы хотите закрыть меню?",
         yes = "Да",
         no = "Нет"
     },
     English = {
-        -- Вкладки
         tabInfo = "Info",
         tabESP = "ESP",
         tabAimBot = "AimBot", 
         tabCamera = "Camera",
         tabLanguage = "Language",
-        
-        -- Общие
         infoTitle = "ASTRALCHEAT v1.0",
         close = "Close",
         hideGUI = "Hide GUI",
@@ -112,47 +95,26 @@ local translations = {
         off = "OFF",
         head = "Head",
         body = "Body",
-        
-        -- Info tab
         infoText = "ASTRALCHEAT v1.0\n\nDeveloper: @SFXCL\n\nFeatures:\n• Aimbot with settings\n• ESP with boxes\n• FOV settings\n• Custom camera FOV\n• Aimbot distance limit\n• Infinite Jump\n• SpeedHack\n• Invisibility\n\nUse at your own risk!",
         keyTime = "Key time remaining: %02d:%02d",
-        
-        -- ESP tab
         esp = "ESP",
         invisible = "Invisible",
-        
-        -- AimBot tab
         aimbot = "Aimbot",
         target = "Target",
         fovRadius = "FOV Radius",
         aimbotDistance = "Aimbot Distance",
-        
-        -- Camera tab
         speedHack = "SpeedHack",
         infiniteJump = "Infinite Jump",
         cameraFOV = "Camera FOV",
-        
-        -- Language tab
         language = "Language",
         russian = "Russian",
         english = "English",
         selectLanguage = "Select language",
-        
-        -- Подтверждение закрытия
         confirmClose = "Do you want to close menu?",
         yes = "Yes",
         no = "No"
     }
 }
-
--- FOV Circle
-local circle = Drawing.new("Circle")
-circle.Color = Color3.fromRGB(255, 255, 255)
-circle.Thickness = 1
-circle.Filled = false
-circle.Radius = fovRadius
-circle.Visible = true
-circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
 
 -- Функция для получения перевода
 local function t(key)
@@ -179,10 +141,6 @@ local function disableAllFeatures()
                 part.Transparency = 0
             end
         end
-    end
-    
-    if circle then
-        circle:Remove()
     end
     
     for _, drawings in pairs(espObjects) do
@@ -226,7 +184,7 @@ userInputService.JumpRequest:Connect(function()
     if infiniteJumpEnabled and player.Character then
         local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
         if humanoid then
-            humanoid:ChangeState("Jumping")
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         end
     end
 end)
@@ -271,12 +229,6 @@ local function showNotification()
     notification.ResetOnSpawn = false
     notification.Parent = player:WaitForChild("PlayerGui")
 
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://9125402735"
-    sound.Volume = 1
-    sound.Parent = notification
-    sound:Play()
-
     local textLabel = Instance.new("TextLabel")
     textLabel.Parent = notification
     textLabel.Size = UDim2.new(0, 250, 0, 50)
@@ -288,75 +240,30 @@ local function showNotification()
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.SourceSansBold
 
-    task.delay(3, function()
-        for i = 1, 10 do
-            textLabel.TextTransparency = i * 0.1
-            textLabel.BackgroundTransparency = i * 0.1
-            task.wait(0.05)
-        end
-        notification:Destroy()
-    end)
-end
-
--- Create ESP for a player
-local function createESPForPlayer(p)
-    local nameTag = Drawing.new("Text")
-    nameTag.Size = 14
-    nameTag.Color = Color3.fromRGB(255, 0, 0)
-    nameTag.Center = true
-    nameTag.Outline = true
-
-    local distanceTag = Drawing.new("Text")
-    distanceTag.Size = 13
-    distanceTag.Color = Color3.fromRGB(255, 0, 0)
-    distanceTag.Center = true
-    distanceTag.Outline = true
-
-    local box = Drawing.new("Square")
-    box.Thickness = 1
-    box.Color = Color3.fromRGB(255, 0, 0)
-    box.Filled = false
-
-    local tracer = Drawing.new("Line")
-    tracer.Thickness = 1
-    tracer.Color = Color3.fromRGB(255, 0, 0)
-
-    espObjects[p] = {
-        name = nameTag,
-        distance = distanceTag,
-        box = box,
-        tracer = tracer
-    }
-end
-
--- Remove ESP
-local function removeESPForPlayer(p)
-    if espObjects[p] then
-        for _, drawing in pairs(espObjects[p]) do
-            if drawing then
-                drawing:Remove()
-            end
-        end
-        espObjects[p] = nil
+    wait(3)
+    for i = 1, 10 do
+        textLabel.TextTransparency = i * 0.1
+        textLabel.BackgroundTransparency = i * 0.1
+        wait(0.05)
     end
+    notification:Destroy()
 end
-
-players.PlayerRemoving:Connect(removeESPForPlayer)
 
 -- Visibility Check
 local function isVisible(part)
     if not part then return false end
     local origin = camera.CFrame.Position
-    local direction = (part.Position - origin)
-    local rayParams = RaycastParams.new()
-    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-    rayParams.FilterDescendantsInstances = { player.Character or workspace }
-    local result = workspace:Raycast(origin, direction, rayParams)
+    local direction = (part.Position - origin).Unit * 1000
+    local raycastParams = RaycastParams.new()
+    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+    raycastParams.FilterDescendantsInstances = {player.Character}
+    local result = workspace:Raycast(origin, direction, raycastParams)
+    
     if result then
-        return part:IsDescendantOf(result.Instance.Parent) or result.Instance:IsDescendantOf(part.Parent)
-    else
-        return true
+        local hitPart = result.Instance
+        return hitPart:IsDescendantOf(part.Parent)
     end
+    return true
 end
 
 -- Closest Player Function (with team check and distance check)
@@ -367,7 +274,7 @@ local function getClosestPlayer()
     for _, p in pairs(players:GetPlayers()) do
         if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
             if teamCheckEnabled and p.Team == player.Team then
-                continue
+                goto continue
             end
             
             local targetPart = p.Character:FindFirstChild(aimbotTarget)
@@ -378,7 +285,7 @@ local function getClosestPlayer()
             if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
                 local distanceToPlayer = (player.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
                 if distanceToPlayer > aimbotMaxDistance then
-                    continue
+                    goto continue
                 end
             end
             
@@ -391,6 +298,7 @@ local function getClosestPlayer()
                 end
             end
         end
+        ::continue::
     end
 
     return closestPlayer
@@ -930,26 +838,11 @@ local function createMainGUI()
         -- Закрываем все выпадающие меню при переключении вкладок
         dropdownContainer.Visible = false
         languageDropdownContainer.Visible = false
-        
-        -- Возвращаем слайдеры на место
-        fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-        distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     end
 
     -- Функция для открытия/закрытия выпадающего списка цели
     local function toggleTargetDropdown()
-        local isOpening = not dropdownContainer.Visible
-        dropdownContainer.Visible = isOpening
-        
-        if isOpening then
-            -- Сдвигаем слайдеры вниз
-            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.60, 0)
-            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)
-        else
-            -- Возвращаем слайдеры на место
-            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-        end
+        dropdownContainer.Visible = not dropdownContainer.Visible
     end
 
     -- Функция для открытия/закрытия выпадающего списка языка
@@ -967,7 +860,6 @@ local function createMainGUI()
     -- Функции обновления значений
     local function updateFOV(value)
         fovRadius = math.floor(math.clamp(value, 50, 250))
-        circle.Radius = fovRadius
         fovLabel.Text = t("fovRadius") .. ": " .. fovRadius
         
         local fillSize = (fovRadius - 50) / 200
@@ -1021,16 +913,6 @@ local function createMainGUI()
     espButton.MouseButton1Click:Connect(function()
         espEnabled = not espEnabled
         espButton.Text = t("esp") .. ": " .. (espEnabled and t("on") or t("off"))
-        if not espEnabled then
-            for _, drawings in pairs(espObjects) do
-                if drawings then
-                    drawings.box.Visible = false
-                    drawings.name.Visible = false
-                    drawings.distance.Visible = false
-                    drawings.tracer.Visible = false
-                end
-            end
-        end
     end)
 
     invisibleButton.MouseButton1Click:Connect(function()
@@ -1110,12 +992,8 @@ local function createMainGUI()
             updateFunc(value)
         end
         
-        sliderBg.MouseButton1Down:Connect(function(x, y)
+        sliderBg.MouseButton1Down:Connect(function()
             isSliding = true
-            local relativeX = (x - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
-            relativeX = math.clamp(relativeX, 0, 1)
-            local newValue = minVal + (relativeX * (maxVal - minVal))
-            updateSlider(newValue)
         end)
         
         minusBtn.MouseButton1Click:Connect(function()
@@ -1128,8 +1006,8 @@ local function createMainGUI()
         
         userInputService.InputChanged:Connect(function(input)
             if isSliding and input.UserInputType == Enum.UserInputType.MouseMovement then
-                local mouse = userInputService:GetMouseLocation()
-                local relativeX = (mouse.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
+                local mousePos = userInputService:GetMouseLocation()
+                local relativeX = (mousePos.X - sliderBg.AbsolutePosition.X) / sliderBg.AbsoluteSize.X
                 relativeX = math.clamp(relativeX, 0, 1)
                 local newValue = minVal + (relativeX * (maxVal - minVal))
                 updateSlider(newValue)
@@ -1186,38 +1064,6 @@ local function createMainGUI()
     userInputService.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement then
             updateDrag(input)
-        end
-    end)
-
-    -- Закрытие выпадающих списков при клике вне их
-    userInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local mousePos = input.Position
-            
-            -- Закрытие выпадающего списка цели
-            if dropdownContainer.Visible then
-                local dropdownAbsPos = dropdownContainer.AbsolutePosition
-                local dropdownAbsSize = dropdownContainer.AbsoluteSize
-                local targetDropdownAbsPos = targetDropdown.AbsolutePosition
-                local targetDropdownAbsSize = targetDropdown.AbsoluteSize
-
-                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
-                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
-                   not (mousePos.X >= targetDropdownAbsPos.X and mousePos.X <= targetDropdownAbsPos.X + targetDropdownAbsSize.X and
-                       mousePos.Y >= targetDropdownAbsPos.Y and mousePos.Y <= targetDropdownAbsPos.Y + targetDropdownAbsSize.Y) then
-                    toggleTargetDropdown()
-                end
-            end
-            
-            -- Закрытие выпадающего списка языка
-            if languageDropdownContainer.Visible then
-                local dropdownAbsPos = languageDropdownContainer.AbsolutePosition
-                local dropdownAbsSize = languageDropdownContainer.AbsoluteSize
-                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
-                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) then
-                    toggleLanguageDropdown()
-                end
-            end
         end
     end)
 
@@ -1325,18 +1171,16 @@ end
 createKeyGUI()
 
 player.CharacterAdded:Connect(function(character)
-    task.wait(1)
+    wait(1)
     if speedHackEnabled then
         updateSpeed()
     end
     if invisibleEnabled then
         toggleInvisibility()
     end
-end
+end)
 
 runService.RenderStepped:Connect(function()
-    circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
-
     if aimbotEnabled then
         local target = getClosestPlayer()
         if target and target.Character then
@@ -1348,65 +1192,6 @@ runService.RenderStepped:Connect(function()
             if targetPart then
                 local targetPos = targetPart.Position
                 camera.CFrame = CFrame.new(camera.CFrame.Position, targetPos)
-            end
-        end
-    end
-
-    for _, p in pairs(players:GetPlayers()) do
-        if p ~= player then
-            if not espObjects[p] then
-                createESPForPlayer(p)
-            end
-
-            local drawings = espObjects[p]
-            local char = p.Character
-            if espEnabled and char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                if teamCheckEnabled and p.Team == player.Team then
-                    if drawings then
-                        drawings.box.Visible = false
-                        drawings.name.Visible = false
-                        drawings.distance.Visible = false
-                        drawings.tracer.Visible = false
-                    end
-                    continue
-                end
-
-                local head = char.Head
-                local hrp = char.HumanoidRootPart
-                local headPos2D, onScreen1 = camera:WorldToViewportPoint(head.Position)
-                local rootPos2D, onScreen2 = camera:WorldToViewportPoint(hrp.Position)
-
-                if onScreen1 and onScreen2 and drawings then
-                    local height = (headPos2D - rootPos2D).Magnitude * 2
-                    local width = height / 2
-
-                    drawings.box.Size = Vector2.new(width, height)
-                    drawings.box.Position = Vector2.new(rootPos2D.X - width/2, rootPos2D.Y - height/2)
-                    drawings.box.Visible = true
-
-                    drawings.name.Text = p.Name
-                    drawings.name.Position = Vector2.new(headPos2D.X, headPos2D.Y - 20)
-                    drawings.name.Visible = true
-
-                    local distance = math.floor((player.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
-                    drawings.distance.Text = tostring(distance) .. "m"
-                    drawings.distance.Position = Vector2.new(rootPos2D.X, rootPos2D.Y + height/2 + 5)
-                    drawings.distance.Visible = true
-
-                    drawings.tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
-                    drawings.tracer.To = Vector2.new(rootPos2D.X, rootPos2D.Y)
-                    drawings.tracer.Visible = true
-                elseif drawings then
-                    drawings.box.Visible = false
-                    drawings.name.Visible = false
-                    drawings.distance.Visible = false
-                    drawings.tracer.Visible = false
-                end
-            elseif drawings then
-                drawings.box.Visible = false
-                drawings.name.Visible = false
-                drawings.distance.Visible = false
-                drawings.tracer.Visible = false
             end
         end
     end
