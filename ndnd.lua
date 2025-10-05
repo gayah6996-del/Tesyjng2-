@@ -1,526 +1,568 @@
-local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local VirtualUser = game:GetService("VirtualUser")
-local LocalPlayer = Players.LocalPlayer
+-- Services
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local players = game:GetService("Players")
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
 
--- Anti-AFK
-warn("Anti-AFK running")
-LocalPlayer.Idled:Connect(function()
-    warn("Anti-AFK triggered")
-    VirtualUser:CaptureController()
-    VirtualUser:ClickButton2(Vector2.new())
-end)
+-- Aimbot & ESP Variables
+local aimbotEnabled = false
+local espEnabled = false
+local teamCheckEnabled = false
+local fovRadius = 100
+local guiName = "AimbotToggleGUI"
+local guiVisible = true
+local espObjects = {}
+local aimbotTarget = "Head" -- Новая переменная для выбора цели
 
--- GUI Setup
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game:GetService("CoreGui")
-ScreenGui.Name = "EchelonCheatGUI"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.IgnoreGuiInset = true
-ScreenGui.DisplayOrder = 1000
+-- Переменные для перемещения GUI
+local frame = nil
+local isDragging = false
+local dragStart = nil
+local frameStart = nil
 
-local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 280, 0, 200)
-Frame.Position = UDim2.new(0.5, -140, 0.1, 0)
-Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-Frame.BorderSizePixel = 0
-Frame.Parent = ScreenGui
+-- FOV Circle
+local circle = Drawing.new("Circle")
+circle.Color = Color3.fromRGB(255, 255, 255)
+circle.Thickness = 1
+circle.Filled = false
+circle.Radius = fovRadius
+circle.Visible = true
+circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 12)
-UICorner.Parent = Frame
+-- Show Notification
+local function showNotification()
+    local notification = Instance.new("ScreenGui")
+    notification.Name = "NotificationGUI"
+    notification.ResetOnSpawn = false
+    notification.Parent = player:WaitForChild("PlayerGui")
 
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(255, 0, 0)
-UIStroke.Thickness = 2
-UIStroke.Transparency = 0.5
-UIStroke.Parent = Frame
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://9125402735"
+    sound.Volume = 1
+    sound.Parent = notification
+    sound:Play()
 
--- Echelon Label
-local EchelonLabel = Instance.new("TextLabel")
-EchelonLabel.Size = UDim2.new(0, 120, 0, 25)
-EchelonLabel.Position = UDim2.new(0, 10, 0, 8)
-EchelonLabel.BackgroundTransparency = 1
-EchelonLabel.Text = "Echelon"
-EchelonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-EchelonLabel.TextSize = 18
-EchelonLabel.Font = Enum.Font.GothamBold
-EchelonLabel.Parent = Frame
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Parent = notification
+    textLabel.Size = UDim2.new(0, 250, 0, 50)
+    textLabel.Position = UDim2.new(1, -260, 1, -60)
+    textLabel.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    textLabel.BorderSizePixel = 0
+    textLabel.Text = "Скрипт успешно запущен✅!"
+    textLabel.TextColor3 = Color3.new(1, 1, 1)
+    textLabel.TextScaled = true
+    textLabel.Font = Enum.Font.SourceSansBold
 
-local EchelonGlow = Instance.new("UIGradient")
-EchelonGlow.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 0, 0)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 0, 0))
-})
-EchelonGlow.Parent = EchelonLabel
-local tweenEchelon = TweenService:Create(EchelonGlow, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1, true), {Rotation = 360})
-tweenEchelon:Play()
-
--- Close Button
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 25, 0, 25)
-CloseButton.Position = UDim2.new(1, -35, 0, 8)
-CloseButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 14
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Parent = Frame
-
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 5)
-CloseCorner.Parent = CloseButton
-
--- Minimize Button
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
-MinimizeButton.Position = UDim2.new(1, -65, 0, 8)
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(75, 0, 0)
-MinimizeButton.Text = "-"
-MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeButton.TextSize = 14
-MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.Parent = Frame
-
-local MinimizeCorner = Instance.new("UICorner")
-MinimizeCorner.CornerRadius = UDim.new(0, 5)
-MinimizeCorner.Parent = MinimizeButton
-
--- Tree Health Display Function
-local function CreateTreeHealthDisplay(tree)
-    if not tree then return end
-    
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "TreeHealthDisplay"
-    billboard.Adornee = tree
-    billboard.Size = UDim2.new(0, 100, 0, 20)
-    billboard.StudsOffset = Vector3.new(0, 8, 0)
-    billboard.AlwaysOnTop = true
-    billboard.Parent = tree
-    
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    frame.BackgroundTransparency = 0.3
-    frame.BorderSizePixel = 0
-    frame.Parent = billboard
-    
-    local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(0, 4)
-    UICorner.Parent = frame
-    
-    local healthBar = Instance.new("Frame")
-    healthBar.Name = "HealthBar"
-    healthBar.Size = UDim2.new(1, 0, 1, 0)
-    healthBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    healthBar.BorderSizePixel = 0
-    healthBar.Parent = frame
-    
-    local healthCorner = Instance.new("UICorner")
-    healthCorner.CornerRadius = UDim.new(0, 4)
-    healthCorner.Parent = healthBar
-    
-    local healthText = Instance.new("TextLabel")
-    healthText.Size = UDim2.new(1, 0, 1, 0)
-    healthText.BackgroundTransparency = 1
-    healthText.Text = "100%"
-    healthText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    healthText.TextSize = 12
-    healthText.Font = Enum.Font.GothamBold
-    healthText.Parent = frame
-    
-    return billboard
-end
-
--- Function to update tree health display
-local function UpdateTreeHealth(tree, health, maxHealth)
-    if not tree then return end
-    
-    local billboard = tree:FindFirstChild("TreeHealthDisplay")
-    if not billboard then
-        billboard = CreateTreeHealthDisplay(tree)
-    end
-    
-    if billboard then
-        local healthBar = billboard.Frame.HealthBar
-        local healthText = billboard.Frame.TextLabel
-        
-        local healthPercent = health / maxHealth
-        healthBar.Size = UDim2.new(healthPercent, 0, 1, 0)
-        
-        if healthPercent > 0.7 then
-            healthBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        elseif healthPercent > 0.3 then
-            healthBar.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-        else
-            healthBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    task.delay(3, function()
+        for i = 1, 10 do
+            textLabel.TextTransparency = i * 0.1
+            textLabel.BackgroundTransparency = i * 0.1
+            task.wait(0.05)
         end
-        
-        healthText.Text = math.floor(healthPercent * 100) .. "%"
+        notification:Destroy()
+    end)
+end
+
+-- Create ESP for a player
+local function createESPForPlayer(p)
+    local nameTag = Drawing.new("Text")
+    nameTag.Size = 14
+    nameTag.Color = Color3.fromRGB(255, 0, 0)
+    nameTag.Center = true
+    nameTag.Outline = true
+
+    local distanceTag = Drawing.new("Text")
+    distanceTag.Size = 13
+    distanceTag.Color = Color3.fromRGB(255, 0, 0)
+    distanceTag.Center = true
+    distanceTag.Outline = true
+
+    local box = Drawing.new("Square")
+    box.Thickness = 1
+    box.Color = Color3.fromRGB(255, 0, 0)
+    box.Filled = false
+
+    local tracer = Drawing.new("Line")
+    tracer.Thickness = 1
+    tracer.Color = Color3.fromRGB(255, 0, 0)
+
+    espObjects[p] = {
+        name = nameTag,
+        distance = distanceTag,
+        box = box,
+        tracer = tracer
+    }
+end
+
+-- Remove ESP
+local function removeESPForPlayer(p)
+    if espObjects[p] then
+        for _, drawing in pairs(espObjects[p]) do
+            drawing:Remove()
+        end
+        espObjects[p] = nil
     end
 end
 
--- Function to find tree health
-local function GetTreeHealth(tree)
-    if not tree then return 100, 100 end
-    
-    local humanoid = tree:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        return humanoid.Health, humanoid.MaxHealth
+players.PlayerRemoving:Connect(removeESPForPlayer)
+
+-- Visibility Check
+local function isVisible(part)
+    if not part then return false end
+    local origin = camera.CFrame.Position
+    local direction = (part.Position - origin)
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+    rayParams.FilterDescendantsInstances = { player.Character or workspace }
+    local result = workspace:Raycast(origin, direction, rayParams)
+    if result then
+        return part:IsDescendantOf(result.Instance.Parent) or result.Instance:IsDescendantOf(part.Parent)
+    else
+        return true
     end
-    
-    for _, part in pairs(tree:GetDescendants()) do
-        if part:IsA("BasePart") and part:FindFirstChild("Health") then
-            local healthValue = part.Health
-            if typeof(healthValue) == "number" then
-                return healthValue, 100
+end
+
+-- Closest Player Function (with team check)
+local function getClosestPlayer()
+    local closestPlayer = nil
+    local shortestDistance = fovRadius
+
+    for _, p in pairs(players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+            if teamCheckEnabled and p.Team == player.Team then
+                continue
+            end
+            
+            -- Проверяем выбранную часть тела
+            local targetPart = p.Character:FindFirstChild(aimbotTarget)
+            if not targetPart then
+                targetPart = p.Character.Head -- Fallback на голову если выбранная часть не найдена
+            end
+            
+            local screenPos, onScreen = camera:WorldToViewportPoint(targetPart.Position)
+            if onScreen then
+                local distanceFromCenter = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)).Magnitude
+                if distanceFromCenter < shortestDistance and isVisible(targetPart) then
+                    shortestDistance = distanceFromCenter
+                    closestPlayer = p
+                end
             end
         end
     end
-    
-    return 100, 100
+
+    return closestPlayer
 end
 
--- Notification Function
-local function ShowNotification(message)
-    local Notification = Instance.new("TextLabel")
-    Notification.Size = UDim2.new(0, 300, 0, 40)
-    Notification.Position = UDim2.new(0.5, -150, 0.9, -50)
-    Notification.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
-    Notification.Text = message
-    Notification.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Notification.TextSize = 14
-    Notification.Font = Enum.Font.Gotham
-    Notification.TextWrapped = true
-    Notification.Parent = ScreenGui
+-- GUI Creation Function
+local function createGUI()
+    local gui = Instance.new("ScreenGui")
+    gui.Name = guiName
+    gui.ResetOnSpawn = false
+    gui.Parent = player:WaitForChild("PlayerGui")
 
-    local NotifCorner = Instance.new("UICorner")
-    NotifCorner.CornerRadius = UDim.new(0, 8)
-    NotifCorner.Parent = Notification
+    frame = Instance.new("Frame", gui)
+    frame.Position = UDim2.new(0.5, -100, 0.5, -115)
+    frame.Size = UDim2.new(0, 240, 0, 270)
+    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    frame.BorderSizePixel = 1
+    frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    frame.Visible = guiVisible
 
-    local NotifStroke = Instance.new("UIStroke")
-    NotifStroke.Color = Color3.fromRGB(255, 0, 0)
-    NotifStroke.Thickness = 1.5
-    NotifStroke.Transparency = 0.5
-    NotifStroke.Parent = Notification
+    local title = Instance.new("TextLabel", frame)
+    title.Size = UDim2.new(1, 0, 0, 25)
+    title.Position = UDim2.new(0, 0, 0, 0)
+    title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    title.Text = "ASTRALCHEAT V1.0 BY @SFXCL"
+    title.TextColor3 = Color3.new(1, 1, 1)
+    title.TextScaled = true
+    title.Font = Enum.Font.SourceSansBold
+    title.BorderSizePixel = 0
 
-    task.spawn(function()
-        task.wait(5)
-        Notification:Destroy()
-    end)
-end
-
--- Button Creation
-local function CreateButton(name, yPos, parent)
-    parent = parent or Frame
-    local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(0, 240, 0, 35)
-    Button.Position = UDim2.new(0, 20, 0, yPos)
-    Button.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Button.Text = name
-    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.TextSize = 14
-    Button.Font = Enum.Font.Gotham
-    Button.Parent = parent
-
-    local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 8)
-    ButtonCorner.Parent = Button
-
-    local ButtonGlow = Instance.new("UIStroke")
-    ButtonGlow.Color = Color3.fromRGB(255, 0, 0)
-    ButtonGlow.Thickness = 1.5
-    ButtonGlow.Transparency = 0.5
-    ButtonGlow.Parent = Button
-
-    Button.MouseEnter:Connect(function()
-        TweenService:Create(ButtonGlow, TweenInfo.new(0.3), {Transparency = 0}):Play()
-    end)
-    Button.MouseLeave:Connect(function()
-        TweenService:Create(ButtonGlow, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
-    end)
-
-    return Button
-end
-
--- Item Selection Menu
-local ItemSelectionFrame = Instance.new("Frame")
-ItemSelectionFrame.Size = UDim2.new(0, 280, 0, 350)
-ItemSelectionFrame.Position = UDim2.new(0.5, -140, 0.5, -175)
-ItemSelectionFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-ItemSelectionFrame.BorderSizePixel = 0
-ItemSelectionFrame.Visible = false
-ItemSelectionFrame.Parent = ScreenGui
-
-local ItemSelectionCorner = Instance.new("UICorner")
-ItemSelectionCorner.CornerRadius = UDim.new(0, 12)
-ItemSelectionCorner.Parent = ItemSelectionFrame
-
-local ItemSelectionStroke = Instance.new("UIStroke")
-ItemSelectionStroke.Color = Color3.fromRGB(255, 0, 0)
-ItemSelectionStroke.Thickness = 2
-ItemSelectionStroke.Transparency = 0.5
-ItemSelectionStroke.Parent = ItemSelectionFrame
-
--- Close Button for Item Selection
-local ItemSelectionCloseButton = Instance.new("TextButton")
-ItemSelectionCloseButton.Size = UDim2.new(0, 25, 0, 25)
-ItemSelectionCloseButton.Position = UDim2.new(1, -35, 0, 8)
-ItemSelectionCloseButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
-ItemSelectionCloseButton.Text = "X"
-ItemSelectionCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ItemSelectionCloseButton.TextSize = 14
-ItemSelectionCloseButton.Font = Enum.Font.GothamBold
-ItemSelectionCloseButton.Parent = ItemSelectionFrame
-
-local ItemSelectionCloseCorner = Instance.new("UICorner")
-ItemSelectionCloseCorner.CornerRadius = UDim.new(0, 5)
-ItemSelectionCloseCorner.Parent = ItemSelectionCloseButton
-
-ItemSelectionCloseButton.MouseButton1Click:Connect(function()
-    ItemSelectionFrame.Visible = false
-end)
-
-local ItemSelectionTitle = Instance.new("TextLabel")
-ItemSelectionTitle.Size = UDim2.new(0, 200, 0, 30)
-ItemSelectionTitle.Position = UDim2.new(0, 40, 0, 10)
-ItemSelectionTitle.BackgroundTransparency = 1
-ItemSelectionTitle.Text = "Select Items to Collect"
-ItemSelectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-ItemSelectionTitle.TextSize = 16
-ItemSelectionTitle.Font = Enum.Font.GothamBold
-ItemSelectionTitle.Parent = ItemSelectionFrame
-
--- Available items
-local availableItems = {
-    "Tyre",
-    "Sheet Metal",
-    "Broken Fan",
-    "Bolt",
-    "Old Radio",
-    "UFO Junk",
-    "UFO Scrap",
-    "Broken Microwave"
-}
-
-local selectedItems = {}
-local itemCheckboxes = {}
-
--- Create checkboxes for items
-for i, itemName in ipairs(availableItems) do
-    local yPos = 40 + (i-1) * 35
-    
-    local checkbox = Instance.new("TextButton")
-    checkbox.Size = UDim2.new(0, 25, 0, 25)
-    checkbox.Position = UDim2.new(0, 20, 0, yPos)
-    checkbox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    checkbox.Text = ""
-    checkbox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    checkbox.TextSize = 14
-    checkbox.Font = Enum.Font.GothamBold
-    checkbox.Parent = ItemSelectionFrame
-    
-    local checkboxCorner = Instance.new("UICorner")
-    checkboxCorner.CornerRadius = UDim.new(0, 4)
-    checkboxCorner.Parent = checkbox
-    
-    local checkboxStroke = Instance.new("UIStroke")
-    checkboxStroke.Color = Color3.fromRGB(255, 0, 0)
-    checkboxStroke.Thickness = 1
-    checkboxStroke.Transparency = 0.5
-    checkboxStroke.Parent = checkbox
-    
-    local itemLabel = Instance.new("TextLabel")
-    itemLabel.Size = UDim2.new(0, 180, 0, 25)
-    itemLabel.Position = UDim2.new(0, 55, 0, yPos)
-    itemLabel.BackgroundTransparency = 1
-    itemLabel.Text = itemName
-    itemLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    itemLabel.TextSize = 14
-    itemLabel.Font = Enum.Font.Gotham
-    itemLabel.TextXAlignment = Enum.TextXAlignment.Left
-    itemLabel.Parent = ItemSelectionFrame
-    
-    checkbox.MouseButton1Click:Connect(function()
-        selectedItems[itemName] = not selectedItems[itemName]
-        if selectedItems[itemName] then
-            checkbox.Text = "✓"
-            checkbox.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-        else
-            checkbox.Text = ""
-            checkbox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        end
-    end)
-    
-    itemCheckboxes[itemName] = checkbox
-end
-
--- Start Collection Button
-local StartCollectionButton = CreateButton("Start Collection", 290, ItemSelectionFrame)
-StartCollectionButton.Size = UDim2.new(0, 240, 0, 35)
-StartCollectionButton.Position = UDim2.new(0, 20, 0, 310)
-
--- Main buttons
-local CollectItemsButton = CreateButton("Collect Items", 40)
-
--- Draggable GUI for main frame
-local dragging = false
-local dragInput = nil
-local dragStart = nil
-local startPos = nil
-
-local function update(input)
-    if dragging then
-        local delta = input.Position - dragStart
-        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end
-
-Frame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
+    -- Функции для перемещения GUI
+    local function startDrag(input)
+        isDragging = true
         dragStart = input.Position
-        startPos = Frame.Position
+        frameStart = frame.Position
+    end
+
+    local function endDrag()
+        isDragging = false
+    end
+
+    local function updateDrag(input)
+        if isDragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(
+                frameStart.X.Scale, 
+                frameStart.X.Offset + delta.X,
+                frameStart.Y.Scale, 
+                frameStart.Y.Offset + delta.Y
+            )
+        end
+    end
+
+    -- Обработчики для перемещения
+    title.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            startDrag(input)
+        end
+    end)
+
+    title.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            endDrag()
+        end
+    end)
+
+    userInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+            updateDrag(input)
+        end
+    end)
+
+    local aimbotOn = Instance.new("TextButton", frame)
+    aimbotOn.Size = UDim2.new(0.5, -5, 0.3, -5)
+    aimbotOn.Position = UDim2.new(0, 5, 0, 30)
+    aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    aimbotOn.Text = "Aimbot ON"
+    aimbotOn.TextColor3 = Color3.new(1, 1, 1)
+    aimbotOn.TextScaled = true
+    aimbotOn.BorderSizePixel = 0
+
+    local aimbotOff = Instance.new("TextButton", frame)
+    aimbotOff.Size = UDim2.new(0.5, -5, 0.3, -5)
+    aimbotOff.Position = UDim2.new(0.5, 5, 0, 30)
+    aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    aimbotOff.Text = "Aimbot OFF ✅"
+    aimbotOff.TextColor3 = Color3.new(1, 1, 1)
+    aimbotOff.TextScaled = true
+    aimbotOff.BorderSizePixel = 0
+
+    local espOn = Instance.new("TextButton", frame)
+    espOn.Size = UDim2.new(0.5, -5, 0.3, -5)
+    espOn.Position = UDim2.new(0, 5, 0.35, 10)
+    espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    espOn.Text = "ESP ON"
+    espOn.TextColor3 = Color3.new(1, 1, 1)
+    espOn.TextScaled = true
+    espOn.BorderSizePixel = 0
+
+    local espOff = Instance.new("TextButton", frame)
+    espOff.Size = UDim2.new(0.5, -5, 0.3, -5)
+    espOff.Position = UDim2.new(0.5, 5, 0.35, 10)
+    espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    espOff.Text = "ESP OFF ✅"
+    espOff.TextColor3 = Color3.new(1, 1, 1)
+    espOff.TextScaled = true
+    espOff.BorderSizePixel = 0
+
+    -- Кнопки выбора цели для аимбота
+    local targetHeadButton = Instance.new("TextButton", frame)
+    targetHeadButton.Size = UDim2.new(0.5, -5, 0.3, -5)
+    targetHeadButton.Position = UDim2.new(0, 5, 0.7, 10)
+    targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    targetHeadButton.Text = "Target: Head ✅"
+    targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
+    targetHeadButton.TextScaled = true
+    targetHeadButton.BorderSizePixel = 0
+
+    local targetBodyButton = Instance.new("TextButton", frame)
+    targetBodyButton.Size = UDim2.new(0.5, -5, 0.3, -5)
+    targetBodyButton.Position = UDim2.new(0.5, 5, 0.7, 10)
+    targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    targetBodyButton.Text = "Target: Body"
+    targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
+    targetBodyButton.TextScaled = true
+    targetBodyButton.BorderSizePixel = 0
+
+    -- FOV Slider для телефона
+    local fovSliderFrame = Instance.new("Frame", frame)
+    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.7, 0)
+    fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    fovSliderFrame.BorderSizePixel = 0
+
+    local fovLabel = Instance.new("TextLabel", fovSliderFrame)
+    fovLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    fovLabel.Position = UDim2.new(0, 0, 0, 0)
+    fovLabel.BackgroundTransparency = 1
+    fovLabel.Text = "FOV Radius: " .. fovRadius
+    fovLabel.TextColor3 = Color3.new(1, 1, 1)
+    fovLabel.TextScaled = true
+    fovLabel.Font = Enum.Font.SourceSans
+
+    local sliderBackground = Instance.new("TextButton", fovSliderFrame)
+    sliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
+    sliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
+    sliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    sliderBackground.BorderSizePixel = 0
+    sliderBackground.Text = ""
+    sliderBackground.AutoButtonColor = false
+
+    local sliderFill = Instance.new("Frame", sliderBackground)
+    sliderFill.Size = UDim2.new((fovRadius - 50) / 200, 0, 1, 0)
+    sliderFill.Position = UDim2.new(0, 0, 0, 0)
+    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    sliderFill.BorderSizePixel = 0
+
+    local sliderButton = Instance.new("Frame", sliderBackground)
+    sliderButton.Size = UDim2.new(0, 25, 1.5, 0)
+    sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -12, -0.25, 0)
+    sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    sliderButton.BorderSizePixel = 1
+    sliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
+
+    -- Кнопки + и - для точной настройки
+    local minusButton = Instance.new("TextButton", fovSliderFrame)
+    minusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
+    minusButton.Position = UDim2.new(0, 0, 0.85, 0)
+    minusButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    minusButton.Text = "-"
+    minusButton.TextColor3 = Color3.new(1, 1, 1)
+    minusButton.TextScaled = true
+    minusButton.BorderSizePixel = 0
+
+    local plusButton = Instance.new("TextButton", fovSliderFrame)
+    plusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
+    plusButton.Position = UDim2.new(0.8, 0, 0.85, 0)
+    plusButton.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
+    plusButton.Text = "+"
+    plusButton.TextColor3 = Color3.new(1, 1, 1)
+    plusButton.TextScaled = true
+    plusButton.BorderSizePixel = 0
+
+    -- Функция обновления FOV
+    local function updateFOV(value)
+        fovRadius = math.floor(math.clamp(value, 50, 250))
+        circle.Radius = fovRadius
+        fovLabel.Text = "FOV Radius: " .. fovRadius
         
-        -- Capture the input for smoother dragging
-        input:Capture()
+        local fillSize = (fovRadius - 50) / 200
+        sliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
+        sliderButton.Position = UDim2.new(fillSize, -12, -0.25, 0)
     end
-end)
 
-Frame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
+    -- Обработка тача для слайдера
+    local isSliding = false
+
+    local function updateSliderFromTouch(touchPosition)
+        local sliderAbsPos = sliderBackground.AbsolutePosition
+        local sliderAbsSize = sliderBackground.AbsoluteSize
+        local touchX = touchPosition.X
+        
+        local relativeX = (touchX - sliderAbsPos.X) / sliderAbsSize.X
+        relativeX = math.clamp(relativeX, 0, 1)
+        
+        local newFOV = 50 + (relativeX * 200)
+        updateFOV(newFOV)
     end
-end)
 
-Frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        dragInput = input
-    end
-end)
+    -- Обработка начала тача
+    sliderBackground.MouseButton1Down:Connect(function(x, y)
+        isSliding = true
+        updateSliderFromTouch(Vector2.new(x, y))
+    end)
 
--- Draggable GUI for item selection frame
-local itemSelectionDragging = false
-local itemSelectionDragInput = nil
-local itemSelectionDragStart = nil
-local itemSelectionStartPos = nil
+    -- Обработка движения тача
+    userInputService.InputChanged:Connect(function(input)
+        if isSliding and input.UserInputType == Enum.UserInputType.Touch then
+            updateSliderFromTouch(input.Position)
+        end
+    end)
 
-local function updateItemSelection(input)
-    if itemSelectionDragging then
-        local delta = input.Position - itemSelectionDragStart
-        ItemSelectionFrame.Position = UDim2.new(itemSelectionStartPos.X.Scale, itemSelectionStartPos.X.Offset + delta.X, itemSelectionStartPos.Y.Scale, itemSelectionStartPos.Y.Offset + delta.Y)
-    end
+    -- Обработка окончания тача
+    userInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isSliding = false
+        end
+    end)
+
+    -- Кнопки + и -
+    minusButton.MouseButton1Click:Connect(function()
+        updateFOV(fovRadius - 10)
+    end)
+
+    plusButton.MouseButton1Click:Connect(function()
+        updateFOV(fovRadius + 10)
+    end)
+
+    -- Кнопки управления (ВНЕ основного фрейма)
+    local hideButton = Instance.new("TextButton", gui)
+    hideButton.Size = UDim2.new(0, 100, 0, 30)
+    hideButton.Position = UDim2.new(0.5, -50, 0.5, 130)
+    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    hideButton.Text = "Hide GUI"
+    hideButton.TextColor3 = Color3.new(1, 1, 1)
+    hideButton.TextScaled = true
+    hideButton.BorderSizePixel = 0
+
+    local teamCheckButton = Instance.new("TextButton", gui)
+    teamCheckButton.Size = UDim2.new(0, 200, 0, 30)
+    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 170)
+    teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
+    teamCheckButton.Text = "Team Check: OFF"
+    teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
+    teamCheckButton.TextScaled = true
+    teamCheckButton.BorderSizePixel = 0
+
+    -- ОБРАБОТЧИКИ КНОПОК ВЫБОРА ЦЕЛИ
+    targetHeadButton.MouseButton1Click:Connect(function()
+        aimbotTarget = "Head"
+        targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        targetHeadButton.Text = "Target: Head ✅"
+        targetBodyButton.Text = "Target: Body"
+    end)
+
+    targetBodyButton.MouseButton1Click:Connect(function()
+        aimbotTarget = "HumanoidRootPart"
+        targetHeadButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        targetBodyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        targetHeadButton.Text = "Target: Head"
+        targetBodyButton.Text = "Target: Body ✅"
+    end)
+
+    -- ИСПРАВЛЕННЫЕ ОБРАБОТЧИКИ КНОПОК
+    teamCheckButton.MouseButton1Click:Connect(function()
+        teamCheckEnabled = not teamCheckEnabled
+        teamCheckButton.Text = "Team Check: " .. (teamCheckEnabled and "ON ✅" or "OFF")
+        teamCheckButton.BackgroundColor3 = teamCheckEnabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(120, 120, 255)
+    end)
+
+    hideButton.MouseButton1Click:Connect(function()
+        guiVisible = not guiVisible
+        frame.Visible = guiVisible
+        hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
+    end)
+
+    aimbotOn.MouseButton1Click:Connect(function()
+        aimbotEnabled = true
+        aimbotOn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        aimbotOff.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        aimbotOn.Text = "Aimbot ON ✅"
+        aimbotOff.Text = "Aimbot OFF"
+    end)
+
+    aimbotOff.MouseButton1Click:Connect(function()
+        aimbotEnabled = false
+        aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        aimbotOn.Text = "Aimbot ON"
+        aimbotOff.Text = "Aimbot OFF ✅"
+    end)
+
+    espOn.MouseButton1Click:Connect(function()
+        espEnabled = true
+        espOn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        espOff.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        espOn.Text = "ESP ON ✅"
+        espOff.Text = "ESP OFF"
+    end)
+
+    espOff.MouseButton1Click:Connect(function()
+        espEnabled = false
+        espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        espOn.Text = "ESP ON"
+        espOff.Text = "ESP OFF ✅"
+        -- Скрываем все ESP объекты
+        for _, drawings in pairs(espObjects) do
+            if drawings then
+                drawings.box.Visible = false
+                drawings.name.Visible = false
+                drawings.distance.Visible = false
+                drawings.tracer.Visible = false
+            end
+        end
+    end)
 end
 
-ItemSelectionFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        itemSelectionDragging = true
-        itemSelectionDragStart = input.Position
-        itemSelectionStartPos = ItemSelectionFrame.Position
-        input:Capture()
+createGUI()
+showNotification()
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    if not player:WaitForChild("PlayerGui"):FindFirstChild(guiName) then
+        createGUI()
     end
 end)
 
-ItemSelectionFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        itemSelectionDragging = false
-    end
-end)
+runService.RenderStepped:Connect(function()
+    circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
 
-ItemSelectionFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        itemSelectionDragInput = input
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if dragging and input == dragInput then
-        update(input)
-    elseif itemSelectionDragging and input == itemSelectionDragInput then
-        updateItemSelection(input)
-    end
-end)
-
--- Variables
-local CollectItemsActive = false
-
--- DragItem function
-local function DragItem(obj)
-    if obj and obj.PrimaryPart then
-        local character = LocalPlayer.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            obj:SetPrimaryPartCFrame(character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0))
+    if aimbotEnabled then
+        local target = getClosestPlayer()
+        if target and target.Character then
+            -- Используем выбранную часть тела для прицеливания
+            local targetPart = target.Character:FindFirstChild(aimbotTarget)
+            if not targetPart then
+                targetPart = target.Character:FindFirstChild("Head") -- Fallback на голову
+            end
+            
+            if targetPart then
+                local targetPos = targetPart.Position
+                camera.CFrame = CFrame.new(camera.CFrame.Position, targetPos)
+            end
         end
     end
-end
 
--- Collection Function
-local function CollectionFunction()
-    while CollectItemsActive do
-        for _, Obj in pairs(Workspace.Items:GetChildren()) do
-            if not CollectItemsActive then break end
-            if selectedItems[Obj.Name] and Obj:IsA("Model") and Obj.PrimaryPart then 
-                DragItem(Obj)
-                task.wait(0.2)
-            end 
+    for _, p in pairs(players:GetPlayers()) do
+        if p ~= player then
+            if not espObjects[p] then
+                createESPForPlayer(p)
+            end
+
+            local drawings = espObjects[p]
+            local char = p.Character
+            if espEnabled and char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
+                if teamCheckEnabled and p.Team == player.Team then
+                    if drawings then
+                        drawings.box.Visible = false
+                        drawings.name.Visible = false
+                        drawings.distance.Visible = false
+                        drawings.tracer.Visible = false
+                    end
+                    continue
+                end
+
+                local head = char.Head
+                local hrp = char.HumanoidRootPart
+                local headPos2D, onScreen1 = camera:WorldToViewportPoint(head.Position)
+                local rootPos2D, onScreen2 = camera:WorldToViewportPoint(hrp.Position)
+
+                if onScreen1 and onScreen2 and drawings then
+                    local height = (headPos2D - rootPos2D).Magnitude * 2
+                    local width = height / 2
+
+                    drawings.box.Size = Vector2.new(width, height)
+                    drawings.box.Position = Vector2.new(rootPos2D.X - width/2, rootPos2D.Y - height/2)
+                    drawings.box.Visible = true
+
+                    drawings.name.Text = p.Name
+                    drawings.name.Position = Vector2.new(headPos2D.X, headPos2D.Y - 20)
+                    drawings.name.Visible = true
+
+                    local distance = math.floor((player.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
+                    drawings.distance.Text = tostring(distance) .. "m"
+                    drawings.distance.Position = Vector2.new(rootPos2D.X, rootPos2D.Y + height/2 + 5)
+                    drawings.distance.Visible = true
+
+                    drawings.tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
+                    drawings.tracer.To = Vector2.new(rootPos2D.X, rootPos2D.Y)
+                    drawings.tracer.Visible = true
+                elseif drawings then
+                    drawings.box.Visible = false
+                    drawings.name.Visible = false
+                    drawings.distance.Visible = false
+                    drawings.tracer.Visible = false
+                end
+            elseif drawings then
+                drawings.box.Visible = false
+                drawings.name.Visible = false
+                drawings.distance.Visible = false
+                drawings.tracer.Visible = false
+            end
         end
-        task.wait(1)
     end
-end
-
--- Button Functions
-CollectItemsButton.MouseButton1Click:Connect(function()
-    ItemSelectionFrame.Visible = true
 end)
-
-StartCollectionButton.MouseButton1Click:Connect(function()
-    -- Check if any items are selected
-    local hasSelected = false
-    for _, selected in pairs(selectedItems) do
-        if selected then
-            hasSelected = true
-            break
-        end
-    end
-    
-    if not hasSelected then
-        ShowNotification("Please select at least one item!")
-        return
-    end
-    
-    CollectItemsActive = true
-    CollectItemsButton.Text = "Collect Items: ON"
-    CollectItemsButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-    ItemSelectionFrame.Visible = false
-    
-    -- Show which items are selected
-    local selectedList = ""
-    for itemName, selected in pairs(selectedItems) do
-        if selected then
-            selectedList = selectedList .. itemName .. ", "
-        end
-    end
-    selectedList = selectedList:sub(1, -3) -- Remove last comma
-    
-    ShowNotification("Collecting: " .. selectedList)
-    task.spawn(CollectionFunction)
-end)
-
--- Close and Minimize Functions
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
-MinimizeButton.MouseButton1Click:Connect(function()
-    local Minimized = not (Frame.Size == UDim2.new(0, 280, 0, 40))
-    MinimizeButton.Text = Minimized and "+" or "-"
-    CollectItemsButton.Visible = not Minimized
-    Frame.Size = Minimized and UDim2.new(0, 280, 0, 40) or UDim2.new(0, 280, 0, 200)
-end)
-
--- Initial notification
-ShowNotification("Echelon GUI Loaded!")
