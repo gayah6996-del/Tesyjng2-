@@ -36,7 +36,7 @@ local currentLanguage = "English" -- Default language
 -- Translations
 local translations = {
     English = {
-        title = "ASTRALCHEAT v1.0",
+        title = "ASTRALCHEAT v2.0",
         infoTab = "Info",
         espTab = "ESP",
         aimbotTab = "AimBot",
@@ -49,7 +49,7 @@ local translations = {
         showGUI = "Show GUI",
         
         -- Info Tab
-        infoText = "ASTRALCHEAT v1.0\n\nDeveloper: @SFXCL\n\nFeatures:\n• Aimbot with settings\n• ESP with boxes\n• FOV customization\n• Custom Camera FOV\n• Aimbot distance limit\n• Infinite Jump\nLanguage:English\nUse at your own risk!",
+        infoText = "ASTRALCHEAT v2.0\n\nDeveloper: @SFXCL\n\nFeatures:\n• Aimbot with settings\n• ESP with boxes\n• FOV customization\n• Custom Camera FOV\n• Aimbot distance limit\n• Infinite Jump\nLanguage:English\nUse at your own risk!",
         
         -- ESP Tab
         espButton = "ESP: OFF",
@@ -81,7 +81,7 @@ local translations = {
     },
     
     Russian = {
-        title = "ASTRALCHEAT v1.0",
+        title = "ASTRALCHEAT v2.0",
         infoTab = "Инфо",
         espTab = "ESP",
         aimbotTab = "АимБот",
@@ -94,7 +94,7 @@ local translations = {
         showGUI = "Показать GUI",
         
         -- Info Tab
-        infoText = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\nЯзык:Русский\nИспользуйте на свой страх и риск!",
+        infoText = "ASTRALCHEAT v2.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\nЯзык:Русский\nИспользуйте на свой страх и риск!",
         
         -- ESP Tab
         espButton = "ESP: ВЫКЛ",
@@ -104,7 +104,7 @@ local translations = {
         aimbotButton = "АимБот: ВЫКЛ",
         aimbotOn = "АимБот: ВКЛ ✅",
         targetDropdown = "Цель: Голова",
-        fovLabel = "Радиус FOV: ",
+        fovLabel = "Радиус Круга: ",
         distanceLabel = "Дистанция аимбота: ",
         targetHead = "Голова",
         targetBody = "Тело",
@@ -112,9 +112,9 @@ local translations = {
         -- Camera Tab
         infiniteJumpButton = "Беск. Прыжок: ВЫКЛ",
         infiniteJumpOn = "Беск. Прыжок: ВКЛ ✅",
-        cameraFOVButton = "FOV Камеры: ВЫКЛ",
-        cameraFOVOn = "FOV Камеры: ВКЛ ✅",
-        cameraFOVLabel = "FOV Камеры: ",
+        cameraFOVButton = "Обзор Камеры: ВЫКЛ",
+        cameraFOVOn = "Обзор Камеры: ВКЛ ✅",
+        cameraFOVLabel = "ОбзорКамеры: ",
         
         -- Language Tab
         languageTitle = "Выберите язык:",
@@ -126,7 +126,7 @@ local translations = {
     },
     
     Chinese = {
-        title = "ASTRALCHEAT v1.0",
+        title = "ASTRALCHEAT v2.0",
         infoTab = "信息",
         espTab = "ESP",
         aimbotTab = "瞄准辅助",
@@ -139,7 +139,7 @@ local translations = {
         showGUI = "显示界面",
         
         -- Info Tab
-        infoText = "ASTRALCHEAT v1.0\n\n开发者: @SFXCL\n\n功能:\n• 可配置的瞄准辅助\n• 方框ESP\n• FOV自定义\n• 自定义相机FOV\n• 瞄准辅助距离限制\n• 无限跳跃\n语言:中文\n使用风险自负!",
+        infoText = "ASTRALCHEAT v2.0\n\n开发者: @SFXCL\n\n功能:\n• 可配置的瞄准辅助\n• 方框ESP\n• FOV自定义\n• 自定义相机FOV\n• 瞄准辅助距离限制\n• 无限跳跃\n语言:中文\n使用风险自负!",
         
         -- ESP Tab
         espButton = "ESP: 关闭",
@@ -390,7 +390,7 @@ local function updateLanguage()
                     child.Text = aimbotTarget == "Head" and t.targetDropdown:gsub("Head", t.targetHead) or t.targetDropdown:gsub("Head", t.targetBody)
                 end
             elseif child:IsA("TextLabel") then
-                if child.Text:find("FOV Radius") or child.Text:find("Радиус FOV") or child.Text:find("FOV半径") then
+                if child.Text:find("FOV Radius") or child.Text:find("Радиус Круга") or child.Text:find("FOV半径") then
                     child.Text = t.fovLabel .. fovRadius
                 elseif child.Text:find("Aimbot Distance") or child.Text:find("Дистанция аимбота") or child.Text:find("瞄准距离") then
                     child.Text = t.distanceLabel .. aimbotMaxDistance .. "m"
@@ -484,7 +484,7 @@ local function createGUI()
     title.Size = UDim2.new(1, 0, 0, 25)
     title.Position = UDim2.new(0, 0, 0, 0)
     title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    title.Text = "ASTRALCHEAT v1.0"
+    title.Text = "ASTRALCHEAT v2.0"
     title.TextColor3 = Color3.new(1, 1, 1)
     title.TextScaled = true
     title.Font = Enum.Font.SourceSansBold
@@ -664,7 +664,7 @@ local function createGUI()
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n\nИспользуйте на свой страх и риск!"
+    infoText.Text = "ASTRALCHEAT v2.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n\nИспользуйте на свой страх и риск!"
     infoText.TextColor3 = Color3.new(1, 1, 1)
     infoText.TextScaled = true
     infoText.TextWrapped = true
