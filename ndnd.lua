@@ -49,7 +49,7 @@ local translations = {
         showGUI = "Show GUI",
         
         -- Info Tab
-        infoText = "ASTRALCHEAT v1.0\n\nDeveloper: @SFXCL\n\nFeatures:\n• Aimbot with settings\n• ESP with boxes\n• FOV customization\n• Custom Camera FOV\n• Aimbot distance limit\n• Infinite Jump\n\nUse at your own risk!",
+        infoText = "ASTRALCHEAT v1.0\n\nDeveloper: @SFXCL\n\nFeatures:\n• Aimbot with settings\n• ESP with boxes\n• FOV customization\n• Custom Camera FOV\n• Aimbot distance limit\n• Infinite Jump\nLanguage:English\nUse at your own risk!",
         
         -- ESP Tab
         espButton = "ESP: OFF",
@@ -73,8 +73,10 @@ local translations = {
         
         -- Language Tab
         languageTitle = "Select Language:",
-        englishButton = "English",
-        russianButton = "Russian",
+        languageDropdown = "Language: English",
+        englishButton = "English🇬🇧",
+        russianButton = "Russian🇷🇺",
+        chineseButton = "Chinese🇨🇳",
         currentLanguage = "Current: English"
     },
     
@@ -92,7 +94,7 @@ local translations = {
         showGUI = "Показать GUI",
         
         -- Info Tab
-        infoText = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n\nИспользуйте на свой страх и риск!",
+        infoText = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\nЯзык:Русский\nИспользуйте на свой страх и риск!",
         
         -- ESP Tab
         espButton = "ESP: ВЫКЛ",
@@ -116,9 +118,56 @@ local translations = {
         
         -- Language Tab
         languageTitle = "Выберите язык:",
+        languageDropdown = "Язык: Русский",
         englishButton = "Английский",
         russianButton = "Русский",
+        chineseButton = "Китайский",
         currentLanguage = "Текущий: Русский"
+    },
+    
+    Chinese = {
+        title = "ASTRALCHEAT v1.0",
+        infoTab = "信息",
+        espTab = "ESP",
+        aimbotTab = "瞄准辅助",
+        cameraTab = "相机",
+        languageTab = "语言",
+        close = "关闭菜单?",
+        yes = "是",
+        no = "否",
+        hideGUI = "隐藏界面",
+        showGUI = "显示界面",
+        
+        -- Info Tab
+        infoText = "ASTRALCHEAT v1.0\n\n开发者: @SFXCL\n\n功能:\n• 可配置的瞄准辅助\n• 方框ESP\n• FOV自定义\n• 自定义相机FOV\n• 瞄准辅助距离限制\n• 无限跳跃\n语言:中文\n使用风险自负!",
+        
+        -- ESP Tab
+        espButton = "ESP: 关闭",
+        espOn = "ESP: 开启 ✅",
+        
+        -- Aimbot Tab
+        aimbotButton = "瞄准辅助: 关闭",
+        aimbotOn = "瞄准辅助: 开启 ✅",
+        targetDropdown = "目标: 头部",
+        fovLabel = "FOV半径: ",
+        distanceLabel = "瞄准距离: ",
+        targetHead = "头部",
+        targetBody = "身体",
+        
+        -- Camera Tab
+        infiniteJumpButton = "无限跳跃: 关闭",
+        infiniteJumpOn = "无限跳跃: 开启 ✅",
+        cameraFOVButton = "相机FOV: 关闭",
+        cameraFOVOn = "相机FOV: 开启 ✅",
+        cameraFOVLabel = "相机FOV: ",
+        
+        -- Language Tab
+        languageTitle = "选择语言:",
+        languageDropdown = "语言: 中文",
+        englishButton = "英语",
+        russianButton = "俄语",
+        chineseButton = "中文",
+        currentLanguage = "当前: 中文"
     }
 }
 
@@ -301,9 +350,9 @@ local function updateLanguage()
         confirmFrame:FindFirstChildOfClass("TextLabel").Text = t.close
         for _, child in pairs(confirmFrame:GetChildren()) do
             if child:IsA("TextButton") then
-                if child.Text == "Yes" or child.Text == "Да" then
+                if child.Text == "Yes" or child.Text == "Да" or child.Text == "是" then
                     child.Text = t.yes
-                elseif child.Text == "No" or child.Text == "Нет" then
+                elseif child.Text == "No" or child.Text == "Нет" or child.Text == "否" then
                     child.Text = t.no
                 end
             end
@@ -341,9 +390,9 @@ local function updateLanguage()
                     child.Text = aimbotTarget == "Head" and t.targetDropdown:gsub("Head", t.targetHead) or t.targetDropdown:gsub("Head", t.targetBody)
                 end
             elseif child:IsA("TextLabel") then
-                if child.Text:find("FOV Radius") then
+                if child.Text:find("FOV Radius") or child.Text:find("Радиус FOV") or child.Text:find("FOV半径") then
                     child.Text = t.fovLabel .. fovRadius
-                elseif child.Text:find("Aimbot Distance") then
+                elseif child.Text:find("Aimbot Distance") or child.Text:find("Дистанция аимбота") or child.Text:find("瞄准距离") then
                     child.Text = t.distanceLabel .. aimbotMaxDistance .. "m"
                 end
             end
@@ -353,9 +402,9 @@ local function updateLanguage()
         if dropdownContainer then
             for _, child in pairs(dropdownContainer:GetChildren()) do
                 if child:IsA("TextButton") then
-                    if child.Text == "Head" or child.Text == "Голова" then
+                    if child.Text == "Head" or child.Text == "Голова" or child.Text == "头部" then
                         child.Text = t.targetHead
-                    elseif child.Text == "Body" or child.Text == "Тело" then
+                    elseif child.Text == "Body" or child.Text == "Тело" or child.Text == "身体" then
                         child.Text = t.targetBody
                     end
                 end
@@ -373,7 +422,7 @@ local function updateLanguage()
                     child.Text = customCameraFOVEnabled and t.cameraFOVOn or t.cameraFOVButton
                 end
             elseif child:IsA("TextLabel") then
-                if child.Text:find("Camera FOV") then
+                if child.Text:find("Camera FOV") or child.Text:find("FOV Камеры") or child.Text:find("相机FOV") then
                     child.Text = t.cameraFOVLabel .. cameraFOV
                 end
             end
@@ -392,12 +441,22 @@ local function updateLanguage()
             currentLabel.Text = t.currentLanguage
         end
         
-        for _, child in pairs(languageContainer:GetChildren()) do
-            if child:IsA("TextButton") then
-                if child.Name == "EnglishButton" then
-                    child.Text = t.englishButton
-                elseif child.Name == "RussianButton" then
-                    child.Text = t.russianButton
+        local dropdownButton = languageContainer:FindFirstChild("LanguageDropdown")
+        if dropdownButton then
+            dropdownButton.Text = t.languageDropdown
+        end
+        
+        -- Update dropdown options
+        if languageDropdownContainer then
+            for _, child in pairs(languageDropdownContainer:GetChildren()) do
+                if child:IsA("TextButton") then
+                    if child.Name == "EnglishOption" then
+                        child.Text = t.englishButton
+                    elseif child.Name == "RussianOption" then
+                        child.Text = t.russianButton
+                    elseif child.Name == "ChineseOption" then
+                        child.Text = t.chineseButton
+                    end
                 end
             end
         end
@@ -892,27 +951,58 @@ local function createGUI()
     currentLanguageLabel.TextScaled = true
     currentLanguageLabel.Font = Enum.Font.SourceSans
 
-    -- Кнопка English
-    local englishButton = Instance.new("TextButton", languageContainer)
-    englishButton.Name = "EnglishButton"
-    englishButton.Size = UDim2.new(0.9, 0, 0, 35)
-    englishButton.Position = UDim2.new(0.05, 0, 0.30, 0)
-    englishButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    englishButton.Text = "English"
-    englishButton.TextColor3 = Color3.new(1, 1, 1)
-    englishButton.TextScaled = true
-    englishButton.BorderSizePixel = 0
+    -- Выпадающий список для выбора языка
+    local languageDropdown = Instance.new("TextButton", languageContainer)
+    languageDropdown.Name = "LanguageDropdown"
+    languageDropdown.Size = UDim2.new(0.9, 0, 0, 35)
+    languageDropdown.Position = UDim2.new(0.05, 0, 0.30, 0)
+    languageDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    languageDropdown.Text = "Language: English"
+    languageDropdown.TextColor3 = Color3.new(1, 1, 1)
+    languageDropdown.TextScaled = true
+    languageDropdown.BorderSizePixel = 0
 
-    -- Кнопка Russian
-    local russianButton = Instance.new("TextButton", languageContainer)
-    russianButton.Name = "RussianButton"
-    russianButton.Size = UDim2.new(0.9, 0, 0, 35)
-    russianButton.Position = UDim2.new(0.05, 0, 0.45, 0)
-    russianButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    russianButton.Text = "Russian"
-    russianButton.TextColor3 = Color3.new(1, 1, 1)
-    russianButton.TextScaled = true
-    russianButton.BorderSizePixel = 0
+    -- Контейнер для выпадающего списка языков
+    languageDropdownContainer = Instance.new("Frame", languageContainer)
+    languageDropdownContainer.Size = UDim2.new(0.9, 0, 0, 105)
+    languageDropdownContainer.Position = UDim2.new(0.05, 0, 0.30, 35)
+    languageDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    languageDropdownContainer.BorderSizePixel = 1
+    languageDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    languageDropdownContainer.Visible = false
+
+    -- Кнопка выбора English
+    local englishOption = Instance.new("TextButton", languageDropdownContainer)
+    englishOption.Name = "EnglishOption"
+    englishOption.Size = UDim2.new(1, 0, 0, 35)
+    englishOption.Position = UDim2.new(0, 0, 0, 0)
+    englishOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    englishOption.Text = "English"
+    englishOption.TextColor3 = Color3.new(1, 1, 1)
+    englishOption.TextScaled = true
+    englishOption.BorderSizePixel = 0
+
+    -- Кнопка выбора Russian
+    local russianOption = Instance.new("TextButton", languageDropdownContainer)
+    russianOption.Name = "RussianOption"
+    russianOption.Size = UDim2.new(1, 0, 0, 35)
+    russianOption.Position = UDim2.new(0, 0, 0, 35)
+    russianOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    russianOption.Text = "Russian"
+    russianOption.TextColor3 = Color3.new(1, 1, 1)
+    russianOption.TextScaled = true
+    russianOption.BorderSizePixel = 0
+
+    -- Кнопка выбора Chinese
+    local chineseOption = Instance.new("TextButton", languageDropdownContainer)
+    chineseOption.Name = "ChineseOption"
+    chineseOption.Size = UDim2.new(1, 0, 0, 35)
+    chineseOption.Position = UDim2.new(0, 0, 0, 70)
+    chineseOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    chineseOption.Text = "Chinese"
+    chineseOption.TextColor3 = Color3.new(1, 1, 1)
+    chineseOption.TextScaled = true
+    chineseOption.BorderSizePixel = 0
 
     -- Кнопка Hide/Show GUI (перемещаемая)
     hideButton = Instance.new("TextButton", gui)
@@ -980,8 +1070,29 @@ local function createGUI()
         distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     end
 
-    -- Функция для открытия/закрытия выпадающего списка
-    local function toggleDropdown()
+    -- Функция для выбора языка
+    local function selectLanguage(lang)
+        currentLanguage = lang
+        updateLanguage()
+        
+        -- Обновляем цвета кнопок в выпадающем списке
+        englishOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        russianOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        chineseOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        
+        if lang == "English" then
+            englishOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        elseif lang == "Russian" then
+            russianOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        elseif lang == "Chinese" then
+            chineseOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        end
+        
+        languageDropdownContainer.Visible = false
+    end
+
+    -- Функция для открытия/закрытия выпадающего списка цели
+    local function toggleTargetDropdown()
         local isOpening = not dropdownContainer.Visible
         dropdownContainer.Visible = isOpening
         
@@ -994,6 +1105,11 @@ local function createGUI()
             fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
             distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
         end
+    end
+
+    -- Функция для открытия/закрытия выпадающего списка языка
+    local function toggleLanguageDropdown()
+        languageDropdownContainer.Visible = not languageDropdownContainer.Visible
     end
 
     -- Обработка для слайдеров
@@ -1096,7 +1212,7 @@ local function createGUI()
 
     -- Обработчики для выпадающего списка выбора цели
     targetDropdown.MouseButton1Click:Connect(function()
-        toggleDropdown()
+        toggleTargetDropdown()
     end)
 
     headButton.MouseButton1Click:Connect(function()
@@ -1105,6 +1221,23 @@ local function createGUI()
 
     bodyButton.MouseButton1Click:Connect(function()
         selectTarget("Body")
+    end)
+
+    -- Обработчики для выпадающего списка выбора языка
+    languageDropdown.MouseButton1Click:Connect(function()
+        toggleLanguageDropdown()
+    end)
+
+    englishOption.MouseButton1Click:Connect(function()
+        selectLanguage("English")
+    end)
+
+    russianOption.MouseButton1Click:Connect(function()
+        selectLanguage("Russian")
+    end)
+
+    chineseOption.MouseButton1Click:Connect(function()
+        selectLanguage("Chinese")
     end)
 
     -- Обработчики для кнопки закрытия
@@ -1120,24 +1253,10 @@ local function createGUI()
         confirmFrame.Visible = false
     end)
 
-    -- Обработчики для кнопок языка
-    englishButton.MouseButton1Click:Connect(function()
-        currentLanguage = "English"
-        updateLanguage()
-        englishButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        russianButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    end)
-
-    russianButton.MouseButton1Click:Connect(function()
-        currentLanguage = "Russian"
-        updateLanguage()
-        englishButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        russianButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    end)
-
-    -- Закрытие выпадающего списка при клике вне его
+    -- Закрытие выпадающих списков при клике вне их
     userInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            -- Закрытие выпадающего списка цели
             if dropdownContainer.Visible then
                 local mousePos = input.Position
                 local dropdownAbsPos = dropdownContainer.AbsolutePosition
@@ -1153,6 +1272,22 @@ local function createGUI()
                     -- Возвращаем слайдеры в исходное положение при закрытии меню
                     fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
                     distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+                end
+            end
+            
+            -- Закрытие выпадающего списка языка
+            if languageDropdownContainer.Visible then
+                local mousePos = input.Position
+                local dropdownAbsPos = languageDropdownContainer.AbsolutePosition
+                local dropdownAbsSize = languageDropdownContainer.AbsoluteSize
+                local languageDropdownAbsPos = languageDropdown.AbsolutePosition
+                local languageDropdownAbsSize = languageDropdown.AbsoluteSize
+
+                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
+                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
+                   not (mousePos.X >= languageDropdownAbsPos.X and mousePos.X <= languageDropdownAbsPos.X + languageDropdownAbsSize.X and
+                       mousePos.Y >= languageDropdownAbsPos.Y and mousePos.Y <= languageDropdownAbsPos.Y + languageDropdownAbsSize.Y) then
+                    languageDropdownContainer.Visible = false
                 end
             end
         end
@@ -1194,8 +1329,9 @@ local function createGUI()
             languageTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         
-        -- Скрыть выпадающий список при переключении вкладок и вернуть слайдеры в исходное положение
+        -- Скрыть выпадающие списки при переключении вкладок и вернуть слайдеры в исходное положение
         dropdownContainer.Visible = false
+        languageDropdownContainer.Visible = false
         fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
         distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     end
@@ -1318,8 +1454,9 @@ local function createGUI()
     -- Инициализация вкладок
     switchTab("Info")
     
-    -- Инициализация выпадающего списка
+    -- Инициализация выпадающих списков
     selectTarget("Head")
+    selectLanguage("English")
     
     -- Инициализация языка
     updateLanguage()
