@@ -211,51 +211,53 @@ end
 
 -- Auto Tree Farm Function
 local badTrees = {}
+local treesBeingChopped = {}
 
 task.spawn(function()
     while true do
         if AutoTreeFarmEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local ignoreDistanceFrom = LocalPlayer.Character.HumanoidRootPart.Position
+            local characterPos = LocalPlayer.Character.HumanoidRootPart.Position
+            
+            -- Находим все деревья в радиусе
             local trees = {}
             for _, obj in pairs(workspace:GetDescendants()) do
                 if obj.Name == "Trunk" and obj.Parent and obj.Parent.Name == "Small Tree" then
-                    local distance = (obj.Position - ignoreDistanceFrom).Magnitude
-                    if distance > minDistance and not badTrees[obj:GetFullName()] then
+                    local distance = (obj.Position - characterPos).Magnitude
+                    if distance < 50 and distance > minDistance and not badTrees[obj:GetFullName()] and not treesBeingChopped[obj] then
                         table.insert(trees, obj)
                     end
                 end
             end
 
+            -- Сортируем по расстоянию
             table.sort(trees, function(a, b)
-                return (a.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <
-                       (b.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                return (a.Position - characterPos).Magnitude < (b.Position - characterPos).Magnitude
             end)
 
-            for _, trunk in ipairs(trees) do
-                if not AutoTreeFarmEnabled then break end
-                
-                -- Телепортируемся к дереву
-                LocalPlayer.Character:PivotTo(trunk.CFrame + Vector3.new(0, 3, 0))
-                task.wait(0.1)
-                
-                local startTime = tick()
-                while AutoTreeFarmEnabled and trunk and trunk.Parent and trunk.Parent.Name == "Small Tree" do
-                    mouse1click()
-                    task.wait(0.2)
-                    if tick() - startTime > 12 then
-                        badTrees[trunk:GetFullName()] = true
-                        break
-                    end
-                end
-                
-                -- Если дерево срублено, немедленно переходим к следующему
-                if not (trunk and trunk.Parent and trunk.Parent.Name == "Small Tree") then
-                    -- Дерево срублено, переходим к следующему без задержки
-                    continue
+            -- Рубим до 10 ближайших деревьев одновременно
+            for i = 1, math.min(10, #trees) do
+                local trunk = trees[i]
+                if AutoTreeFarmEnabled and trunk and trunk.Parent and trunk.Parent.Name == "Small Tree" then
+                    treesBeingChopped[trunk] = true
+                    
+                    task.spawn(function()
+                        local startTime = tick()
+                        while AutoTreeFarmEnabled and trunk and trunk.Parent and trunk.Parent.Name == "Small Tree" do
+                            -- Наводим курсор на дерево (если нужно)
+                            mouse1click()
+                            task.wait(0.3)
+                            
+                            if tick() - startTime > 15 then
+                                badTrees[trunk:GetFullName()] = true
+                                break
+                            end
+                        end
+                        treesBeingChopped[trunk] = nil
+                    end)
                 end
             end
         end
-        task.wait(0.5) -- Уменьшил задержку между поисками деревьев
+        task.wait(1)
     end
 end)
 
@@ -264,7 +266,10 @@ AutoTreeButton.MouseButton1Click:Connect(function()
     AutoTreeButton.Text = "Auto Tree: " .. (AutoTreeFarmEnabled and "ON" or "OFF")
     AutoTreeButton.BackgroundColor3 = AutoTreeFarmEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
     if AutoTreeFarmEnabled then
-        ShowNotification("Auto Tree Farm enabled.")
+        ShowNotification("Auto Tree Farm enabled. Chopping trees in radius.")
+        -- Очищаем список плохих деревьев при каждом новом запуске
+        badTrees = {}
+        treesBeingChopped = {}
     else
         ShowNotification("Auto Tree Farm disabled.")
     end
