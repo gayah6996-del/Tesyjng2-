@@ -30,6 +30,98 @@ local dragStart = nil
 local frameStart = nil
 local activeTab = "Info"
 
+-- Language System
+local currentLanguage = "English" -- Default language
+
+-- Translations
+local translations = {
+    English = {
+        title = "ASTRALCHEAT v1.0",
+        infoTab = "Info",
+        espTab = "ESP",
+        aimbotTab = "AimBot",
+        cameraTab = "Camera",
+        languageTab = "Language",
+        close = "Close Menu?",
+        yes = "Yes",
+        no = "No",
+        hideGUI = "Hide GUI",
+        showGUI = "Show GUI",
+        
+        -- Info Tab
+        infoText = "ASTRALCHEAT v1.0\n\nDeveloper: @SFXCL\n\nFeatures:\n• Aimbot with settings\n• ESP with boxes\n• FOV customization\n• Custom Camera FOV\n• Aimbot distance limit\n• Infinite Jump\n\nUse at your own risk!",
+        
+        -- ESP Tab
+        espButton = "ESP: OFF",
+        espOn = "ESP: ON ✅",
+        
+        -- Aimbot Tab
+        aimbotButton = "Aimbot: OFF",
+        aimbotOn = "Aimbot: ON ✅",
+        targetDropdown = "Target: Head",
+        fovLabel = "FOV Radius: ",
+        distanceLabel = "Aimbot Distance: ",
+        targetHead = "Head",
+        targetBody = "Body",
+        
+        -- Camera Tab
+        infiniteJumpButton = "Infinite Jump: OFF",
+        infiniteJumpOn = "Infinite Jump: ON ✅",
+        cameraFOVButton = "CamFOV: OFF",
+        cameraFOVOn = "CamFOV: ON ✅",
+        cameraFOVLabel = "Camera FOV: ",
+        
+        -- Language Tab
+        languageTitle = "Select Language:",
+        englishButton = "English",
+        russianButton = "Russian",
+        currentLanguage = "Current: English"
+    },
+    
+    Russian = {
+        title = "ASTRALCHEAT v1.0",
+        infoTab = "Инфо",
+        espTab = "ESP",
+        aimbotTab = "АимБот",
+        cameraTab = "Камера",
+        languageTab = "Язык",
+        close = "Закрыть меню?",
+        yes = "Да",
+        no = "Нет",
+        hideGUI = "Скрыть GUI",
+        showGUI = "Показать GUI",
+        
+        -- Info Tab
+        infoText = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n\nИспользуйте на свой страх и риск!",
+        
+        -- ESP Tab
+        espButton = "ESP: ВЫКЛ",
+        espOn = "ESP: ВКЛ ✅",
+        
+        -- Aimbot Tab
+        aimbotButton = "АимБот: ВЫКЛ",
+        aimbotOn = "АимБот: ВКЛ ✅",
+        targetDropdown = "Цель: Голова",
+        fovLabel = "Радиус FOV: ",
+        distanceLabel = "Дистанция аимбота: ",
+        targetHead = "Голова",
+        targetBody = "Тело",
+        
+        -- Camera Tab
+        infiniteJumpButton = "Беск. Прыжок: ВЫКЛ",
+        infiniteJumpOn = "Беск. Прыжок: ВКЛ ✅",
+        cameraFOVButton = "FOV Камеры: ВЫКЛ",
+        cameraFOVOn = "FOV Камеры: ВКЛ ✅",
+        cameraFOVLabel = "FOV Камеры: ",
+        
+        -- Language Tab
+        languageTitle = "Выберите язык:",
+        englishButton = "Английский",
+        russianButton = "Русский",
+        currentLanguage = "Текущий: Русский"
+    }
+}
+
 -- FOV Circle
 local circle = Drawing.new("Circle")
 circle.Color = Color3.fromRGB(255, 255, 255)
@@ -176,6 +268,142 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
+-- Function to update all GUI texts based on current language
+local function updateLanguage()
+    local t = translations[currentLanguage]
+    
+    -- Update main title
+    if frame then
+        frame:FindFirstChildOfClass("TextLabel").Text = t.title
+    end
+    
+    -- Update tab buttons
+    if tabsPanel then
+        for _, child in pairs(tabsPanel:GetChildren()) do
+            if child:IsA("TextButton") then
+                if child.Name == "InfoTab" then
+                    child.Text = t.infoTab
+                elseif child.Name == "ESPTab" then
+                    child.Text = t.espTab
+                elseif child.Name == "AimBotTab" then
+                    child.Text = t.aimbotTab
+                elseif child.Name == "CameraTab" then
+                    child.Text = t.cameraTab
+                elseif child.Name == "LanguageTab" then
+                    child.Text = t.languageTab
+                end
+            end
+        end
+    end
+    
+    -- Update close confirmation
+    if confirmFrame then
+        confirmFrame:FindFirstChildOfClass("TextLabel").Text = t.close
+        for _, child in pairs(confirmFrame:GetChildren()) do
+            if child:IsA("TextButton") then
+                if child.Text == "Yes" or child.Text == "Да" then
+                    child.Text = t.yes
+                elseif child.Text == "No" or child.Text == "Нет" then
+                    child.Text = t.no
+                end
+            end
+        end
+    end
+    
+    -- Update hide button
+    if hideButton then
+        hideButton.Text = guiVisible and t.hideGUI or t.showGUI
+    end
+    
+    -- Update Info tab
+    if infoContainer then
+        local infoTextLabel = infoContainer:FindFirstChildOfClass("TextLabel")
+        if infoTextLabel then
+            infoTextLabel.Text = t.infoText
+        end
+    end
+    
+    -- Update ESP tab
+    if espContainer then
+        local espButton = espContainer:FindFirstChildOfClass("TextButton")
+        if espButton then
+            espButton.Text = espEnabled and t.espOn or t.espButton
+        end
+    end
+    
+    -- Update Aimbot tab
+    if aimbotContainer then
+        for _, child in pairs(aimbotContainer:GetChildren()) do
+            if child:IsA("TextButton") then
+                if child.Name == "AimbotButton" then
+                    child.Text = aimbotEnabled and t.aimbotOn or t.aimbotButton
+                elseif child.Name == "TargetDropdown" then
+                    child.Text = aimbotTarget == "Head" and t.targetDropdown:gsub("Head", t.targetHead) or t.targetDropdown:gsub("Head", t.targetBody)
+                end
+            elseif child:IsA("TextLabel") then
+                if child.Text:find("FOV Radius") then
+                    child.Text = t.fovLabel .. fovRadius
+                elseif child.Text:find("Aimbot Distance") then
+                    child.Text = t.distanceLabel .. aimbotMaxDistance .. "m"
+                end
+            end
+        end
+        
+        -- Update dropdown options
+        if dropdownContainer then
+            for _, child in pairs(dropdownContainer:GetChildren()) do
+                if child:IsA("TextButton") then
+                    if child.Text == "Head" or child.Text == "Голова" then
+                        child.Text = t.targetHead
+                    elseif child.Text == "Body" or child.Text == "Тело" then
+                        child.Text = t.targetBody
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Update Camera tab
+    if cameraContainer then
+        for _, child in pairs(cameraContainer:GetChildren()) do
+            if child:IsA("TextButton") then
+                if child.Name == "InfiniteJumpButton" then
+                    child.Text = infiniteJumpEnabled and t.infiniteJumpOn or t.infiniteJumpButton
+                elseif child.Name == "CameraFOVButton" then
+                    child.Text = customCameraFOVEnabled and t.cameraFOVOn or t.cameraFOVButton
+                end
+            elseif child:IsA("TextLabel") then
+                if child.Text:find("Camera FOV") then
+                    child.Text = t.cameraFOVLabel .. cameraFOV
+                end
+            end
+        end
+    end
+    
+    -- Update Language tab
+    if languageContainer then
+        local titleLabel = languageContainer:FindFirstChild("LanguageTitle")
+        if titleLabel then
+            titleLabel.Text = t.languageTitle
+        end
+        
+        local currentLabel = languageContainer:FindFirstChild("CurrentLanguage")
+        if currentLabel then
+            currentLabel.Text = t.currentLanguage
+        end
+        
+        for _, child in pairs(languageContainer:GetChildren()) do
+            if child:IsA("TextButton") then
+                if child.Name == "EnglishButton" then
+                    child.Text = t.englishButton
+                elseif child.Name == "RussianButton" then
+                    child.Text = t.russianButton
+                end
+            end
+        end
+    end
+end
+
 -- GUI Creation Function
 local function createGUI()
     local gui = Instance.new("ScreenGui")
@@ -262,7 +490,7 @@ local function createGUI()
     mainContainer.BorderSizePixel = 0
 
     -- Панель вкладок (вертикальная)
-    local tabsPanel = Instance.new("Frame", mainContainer)
+    tabsPanel = Instance.new("Frame", mainContainer)
     tabsPanel.Size = UDim2.new(0, 80, 1, 0)
     tabsPanel.Position = UDim2.new(0, 0, 0, 0)
     tabsPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -277,6 +505,7 @@ local function createGUI()
 
     -- Вкладка Info (первая)
     local infoTabButton = Instance.new("TextButton", tabsPanel)
+    infoTabButton.Name = "InfoTab"
     infoTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     infoTabButton.Position = UDim2.new(0.05, 0, 0.02, 0)
     infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -288,6 +517,7 @@ local function createGUI()
 
     -- Вкладка ESP (вторая)
     local espTabButton = Instance.new("TextButton", tabsPanel)
+    espTabButton.Name = "ESPTab"
     espTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     espTabButton.Position = UDim2.new(0.05, 0, 0.12, 0)
     espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
@@ -299,6 +529,7 @@ local function createGUI()
 
     -- Вкладка AimBot (третья)
     local aimbotTabButton = Instance.new("TextButton", tabsPanel)
+    aimbotTabButton.Name = "AimBotTab"
     aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     aimbotTabButton.Position = UDim2.new(0.05, 0, 0.22, 0)
     aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
@@ -310,6 +541,7 @@ local function createGUI()
 
     -- Вкладка Camera (четвертая)
     local cameraTabButton = Instance.new("TextButton", tabsPanel)
+    cameraTabButton.Name = "CameraTab"
     cameraTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     cameraTabButton.Position = UDim2.new(0.05, 0, 0.32, 0)
     cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
@@ -319,76 +551,53 @@ local function createGUI()
     cameraTabButton.BorderSizePixel = 1
     cameraTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
+    -- Вкладка Language (пятая)
+    local languageTabButton = Instance.new("TextButton", tabsPanel)
+    languageTabButton.Name = "LanguageTab"
+    languageTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    languageTabButton.Position = UDim2.new(0.05, 0, 0.42, 0)
+    languageTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    languageTabButton.Text = "Language"
+    languageTabButton.TextColor3 = Color3.new(1, 1, 1)
+    languageTabButton.TextScaled = true
+    languageTabButton.BorderSizePixel = 1
+    languageTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+
     -- Контейнеры для содержимого вкладок
-    local infoContainer = Instance.new("Frame", contentContainer)
+    infoContainer = Instance.new("Frame", contentContainer)
     infoContainer.Size = UDim2.new(1, 0, 1, 0)
     infoContainer.Position = UDim2.new(0, 0, 0, 0)
     infoContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     infoContainer.BorderSizePixel = 0
     infoContainer.Visible = true
 
-    local espContainer = Instance.new("Frame", contentContainer)
+    espContainer = Instance.new("Frame", contentContainer)
     espContainer.Size = UDim2.new(1, 0, 1, 0)
     espContainer.Position = UDim2.new(0, 0, 0, 0)
     espContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     espContainer.BorderSizePixel = 0
     espContainer.Visible = false
 
-    local aimbotContainer = Instance.new("Frame", contentContainer)
+    aimbotContainer = Instance.new("Frame", contentContainer)
     aimbotContainer.Size = UDim2.new(1, 0, 1, 0)
     aimbotContainer.Position = UDim2.new(0, 0, 0, 0)
     aimbotContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     aimbotContainer.BorderSizePixel = 0
     aimbotContainer.Visible = false
 
-    local cameraContainer = Instance.new("Frame", contentContainer)
+    cameraContainer = Instance.new("Frame", contentContainer)
     cameraContainer.Size = UDim2.new(1, 0, 1, 0)
     cameraContainer.Position = UDim2.new(0, 0, 0, 0)
     cameraContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     cameraContainer.BorderSizePixel = 0
     cameraContainer.Visible = false
 
-    -- Функции для перемещения GUI
-    local function startDrag(input)
-        isDragging = true
-        dragStart = input.Position
-        frameStart = frame.Position
-    end
-
-    local function endDrag()
-        isDragging = false
-    end
-
-    local function updateDrag(input)
-        if isDragging then
-            local delta = input.Position - dragStart
-            frame.Position = UDim2.new(
-                frameStart.X.Scale, 
-                frameStart.X.Offset + delta.X,
-                frameStart.Y.Scale, 
-                frameStart.Y.Offset + delta.Y
-            )
-        end
-    end
-
-    -- Обработчики для перемещения
-    title.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            startDrag(input)
-        end
-    end)
-
-    title.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            endDrag()
-        end
-    end)
-
-    userInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
-            updateDrag(input)
-        end
-    end)
+    languageContainer = Instance.new("Frame", contentContainer)
+    languageContainer.Size = UDim2.new(1, 0, 1, 0)
+    languageContainer.Position = UDim2.new(0, 0, 0, 0)
+    languageContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    languageContainer.BorderSizePixel = 0
+    languageContainer.Visible = false
 
     -- ========== ВКЛАДКА INFO ==========
     
@@ -418,6 +627,7 @@ local function createGUI()
     
     -- Кнопка Aimbot (серая)
     local aimbotButton = Instance.new("TextButton", aimbotContainer)
+    aimbotButton.Name = "AimbotButton"
     aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
     aimbotButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -428,6 +638,7 @@ local function createGUI()
 
     -- Выпадающий список для выбора цели
     local targetDropdown = Instance.new("TextButton", aimbotContainer)
+    targetDropdown.Name = "TargetDropdown"
     targetDropdown.Size = UDim2.new(0.9, 0, 0, 35)
     targetDropdown.Position = UDim2.new(0.05, 0, 0.20, 0)
     targetDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -437,7 +648,7 @@ local function createGUI()
     targetDropdown.BorderSizePixel = 0
 
     -- Контейнер для выпадающего списка
-    local dropdownContainer = Instance.new("Frame", aimbotContainer)
+    dropdownContainer = Instance.new("Frame", aimbotContainer)
     dropdownContainer.Size = UDim2.new(0.9, 0, 0, 70)
     dropdownContainer.Position = UDim2.new(0.05, 0, 0.20, 35)
     dropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -581,6 +792,7 @@ local function createGUI()
     
     -- Кнопка Infinite Jump (самая первая)
     local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
+    infiniteJumpButton.Name = "InfiniteJumpButton"
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
     infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -591,6 +803,7 @@ local function createGUI()
 
     -- Кнопка Camera FOV (после Infinite Jump)
     local cameraFOVButton = Instance.new("TextButton", cameraContainer)
+    cameraFOVButton.Name = "CameraFOVButton"
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
     cameraFOVButton.Position = UDim2.new(0.05, 0, 0.20, 0)
     cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -655,8 +868,54 @@ local function createGUI()
     cameraPlusButton.TextScaled = true
     cameraPlusButton.BorderSizePixel = 0
 
+    -- ========== ВКЛАДКА LANGUAGE ==========
+    
+    -- Заголовок
+    local languageTitle = Instance.new("TextLabel", languageContainer)
+    languageTitle.Name = "LanguageTitle"
+    languageTitle.Size = UDim2.new(0.9, 0, 0, 30)
+    languageTitle.Position = UDim2.new(0.05, 0, 0.05, 0)
+    languageTitle.BackgroundTransparency = 1
+    languageTitle.Text = "Select Language:"
+    languageTitle.TextColor3 = Color3.new(1, 1, 1)
+    languageTitle.TextScaled = true
+    languageTitle.Font = Enum.Font.SourceSansBold
+
+    -- Текущий язык
+    local currentLanguageLabel = Instance.new("TextLabel", languageContainer)
+    currentLanguageLabel.Name = "CurrentLanguage"
+    currentLanguageLabel.Size = UDim2.new(0.9, 0, 0, 25)
+    currentLanguageLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
+    currentLanguageLabel.BackgroundTransparency = 1
+    currentLanguageLabel.Text = "Current: English"
+    currentLanguageLabel.TextColor3 = Color3.new(1, 1, 1)
+    currentLanguageLabel.TextScaled = true
+    currentLanguageLabel.Font = Enum.Font.SourceSans
+
+    -- Кнопка English
+    local englishButton = Instance.new("TextButton", languageContainer)
+    englishButton.Name = "EnglishButton"
+    englishButton.Size = UDim2.new(0.9, 0, 0, 35)
+    englishButton.Position = UDim2.new(0.05, 0, 0.30, 0)
+    englishButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    englishButton.Text = "English"
+    englishButton.TextColor3 = Color3.new(1, 1, 1)
+    englishButton.TextScaled = true
+    englishButton.BorderSizePixel = 0
+
+    -- Кнопка Russian
+    local russianButton = Instance.new("TextButton", languageContainer)
+    russianButton.Name = "RussianButton"
+    russianButton.Size = UDim2.new(0.9, 0, 0, 35)
+    russianButton.Position = UDim2.new(0.05, 0, 0.45, 0)
+    russianButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    russianButton.Text = "Russian"
+    russianButton.TextColor3 = Color3.new(1, 1, 1)
+    russianButton.TextScaled = true
+    russianButton.BorderSizePixel = 0
+
     -- Кнопка Hide/Show GUI (перемещаемая)
-    local hideButton = Instance.new("TextButton", gui)
+    hideButton = Instance.new("TextButton", gui)
     hideButton.Size = UDim2.new(0, 150, 0, 40)
     hideButton.Position = UDim2.new(0.5, -75, 1, -50)
     hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -670,7 +929,7 @@ local function createGUI()
     local function updateFOV(value)
         fovRadius = math.floor(math.clamp(value, 50, 250))
         circle.Radius = fovRadius
-        fovLabel.Text = "FOV Radius: " .. fovRadius
+        fovLabel.Text = translations[currentLanguage].fovLabel .. fovRadius
         
         local fillSize = (fovRadius - 50) / 200
         sliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
@@ -680,7 +939,7 @@ local function createGUI()
     -- Функция обновления Camera FOV
     local function updateCameraFOV(value)
         cameraFOV = math.floor(math.clamp(value, 30, 120)) -- Максимум 120
-        cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
+        cameraFOVLabel.Text = translations[currentLanguage].cameraFOVLabel .. cameraFOV
         
         local fillSize = (cameraFOV - 30) / 90 -- Изменен диапазон на 30-120
         cameraSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
@@ -694,7 +953,7 @@ local function createGUI()
     -- Функция обновления дистанции аимбота
     local function updateAimbotDistance(value)
         aimbotMaxDistance = math.floor(math.clamp(value, 10, 200))
-        distanceLabel.Text = "Aimbot Distance: " .. aimbotMaxDistance .. "m"
+        distanceLabel.Text = translations[currentLanguage].distanceLabel .. aimbotMaxDistance .. "m"
         
         local fillSize = (aimbotMaxDistance - 10) / 190
         distanceSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
@@ -703,14 +962,15 @@ local function createGUI()
 
     -- Функция для выбора цели через выпадающий список
     local function selectTarget(target)
+        local t = translations[currentLanguage]
         if target == "Head" then
             aimbotTarget = "Head"
-            targetDropdown.Text = "Target: Head"
+            targetDropdown.Text = t.targetDropdown:gsub("Head", t.targetHead)
             headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
             bodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         else
             aimbotTarget = "HumanoidRootPart"
-            targetDropdown.Text = "Target: Body"
+            targetDropdown.Text = t.targetDropdown:gsub("Head", t.targetBody)
             headButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
@@ -860,6 +1120,21 @@ local function createGUI()
         confirmFrame.Visible = false
     end)
 
+    -- Обработчики для кнопок языка
+    englishButton.MouseButton1Click:Connect(function()
+        currentLanguage = "English"
+        updateLanguage()
+        englishButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        russianButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    end)
+
+    russianButton.MouseButton1Click:Connect(function()
+        currentLanguage = "Russian"
+        updateLanguage()
+        englishButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        russianButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    end)
+
     -- Закрытие выпадающего списка при клике вне его
     userInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -892,12 +1167,14 @@ local function createGUI()
         espContainer.Visible = false
         aimbotContainer.Visible = false
         cameraContainer.Visible = false
+        languageContainer.Visible = false
         
         -- Сбросить цвета всех вкладок
         infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        languageTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         
         -- Показать выбранный контейнер и выделить вкладку
         if tabName == "Info" then
@@ -912,6 +1189,9 @@ local function createGUI()
         elseif tabName == "Camera" then
             cameraContainer.Visible = true
             cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        elseif tabName == "Language" then
+            languageContainer.Visible = true
+            languageTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         
         -- Скрыть выпадающий список при переключении вкладок и вернуть слайдеры в исходное положение
@@ -937,11 +1217,15 @@ local function createGUI()
         switchTab("Camera")
     end)
 
+    languageTabButton.MouseButton1Click:Connect(function()
+        switchTab("Language")
+    end)
+
     -- ОБРАБОТЧИКИ ОСНОВНЫХ КНОПОК
     hideButton.MouseButton1Click:Connect(function()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
-        hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
+        hideButton.Text = guiVisible and translations[currentLanguage].hideGUI or translations[currentLanguage].showGUI
     end)
 
     -- Добавляем функционал перемещения для кнопки Hide/Show GUI
@@ -980,10 +1264,10 @@ local function createGUI()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
             infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            infiniteJumpButton.Text = "Infinite Jump: ON ✅"
+            infiniteJumpButton.Text = translations[currentLanguage].infiniteJumpOn
         else
             infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            infiniteJumpButton.Text = "Infinite Jump: OFF"
+            infiniteJumpButton.Text = translations[currentLanguage].infiniteJumpButton
         end
     end)
 
@@ -992,11 +1276,11 @@ local function createGUI()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            cameraFOVButton.Text = "CamFOV: ON ✅"
+            cameraFOVButton.Text = translations[currentLanguage].cameraFOVOn
             camera.FieldOfView = cameraFOV
         else
             cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            cameraFOVButton.Text = "CamFOV: OFF"
+            cameraFOVButton.Text = translations[currentLanguage].cameraFOVButton
             camera.FieldOfView = 70
         end
     end)
@@ -1005,10 +1289,10 @@ local function createGUI()
         aimbotEnabled = not aimbotEnabled
         if aimbotEnabled then
             aimbotButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            aimbotButton.Text = "Aimbot: ON ✅"
+            aimbotButton.Text = translations[currentLanguage].aimbotOn
         else
             aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            aimbotButton.Text = "Aimbot: OFF"
+            aimbotButton.Text = translations[currentLanguage].aimbotButton
         end
     end)
 
@@ -1016,10 +1300,10 @@ local function createGUI()
         espEnabled = not espEnabled
         if espEnabled then
             espButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            espButton.Text = "ESP: ON ✅"
+            espButton.Text = translations[currentLanguage].espOn
         else
             espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            espButton.Text = "ESP: OFF"
+            espButton.Text = translations[currentLanguage].espButton
             for _, drawings in pairs(espObjects) do
                 if drawings then
                     drawings.box.Visible = false
@@ -1036,6 +1320,9 @@ local function createGUI()
     
     -- Инициализация выпадающего списка
     selectTarget("Head")
+    
+    -- Инициализация языка
+    updateLanguage()
 end
 
 -- Основной код
