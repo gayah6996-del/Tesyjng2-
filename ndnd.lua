@@ -23,8 +23,8 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.DisplayOrder = 1000
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 250, 0, 100)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -50)
+Frame.Size = UDim2.new(0, 250, 0, 180)
+Frame.Position = UDim2.new(0.5, -125, 0.5, -90)
 Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 Frame.BorderSizePixel = 0
 Frame.Parent = ScreenGui
@@ -249,6 +249,223 @@ local function CreateButton(name, yPos, parent)
     return Button
 end
 
+-- Toggle Creation
+local function CreateToggle(name, yPos, parent)
+    parent = parent or Frame
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Size = UDim2.new(0, 210, 0, 40)
+    ToggleFrame.Position = UDim2.new(0, 20, 0, yPos)
+    ToggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    ToggleFrame.Parent = parent
+
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
+    ToggleCorner.Parent = ToggleFrame
+
+    local ToggleGlow = Instance.new("UIStroke")
+    ToggleGlow.Color = Color3.fromRGB(255, 0, 0)
+    ToggleGlow.Thickness = 1.5
+    ToggleGlow.Transparency = 0.5
+    ToggleGlow.Parent = ToggleFrame
+
+    local ToggleLabel = Instance.new("TextLabel")
+    ToggleLabel.Size = UDim2.new(0, 150, 0, 40)
+    ToggleLabel.Position = UDim2.new(0, 10, 0, 0)
+    ToggleLabel.BackgroundTransparency = 1
+    ToggleLabel.Text = name
+    ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleLabel.TextSize = 14
+    ToggleLabel.Font = Enum.Font.Gotham
+    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleLabel.Parent = ToggleFrame
+
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Size = UDim2.new(0, 40, 0, 20)
+    ToggleButton.Position = UDim2.new(1, -50, 0.5, -10)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+    ToggleButton.Text = ""
+    ToggleButton.Parent = ToggleFrame
+
+    local ToggleButtonCorner = Instance.new("UICorner")
+    ToggleButtonCorner.CornerRadius = UDim.new(0, 10)
+    ToggleButtonCorner.Parent = ToggleButton
+
+    local ToggleKnob = Instance.new("Frame")
+    ToggleKnob.Size = UDim2.new(0, 16, 0, 16)
+    ToggleKnob.Position = UDim2.new(0, 2, 0, 2)
+    ToggleKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleKnob.Parent = ToggleButton
+
+    local ToggleKnobCorner = Instance.new("UICorner")
+    ToggleKnobCorner.CornerRadius = UDim.new(0, 8)
+    ToggleKnobCorner.Parent = ToggleKnob
+
+    local isToggled = false
+
+    local function updateToggle()
+        if isToggled then
+            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 150, 0)}):Play()
+            TweenService:Create(ToggleKnob, TweenInfo.new(0.2), {Position = UDim2.new(0, 22, 0, 2)}):Play()
+        else
+            TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(150, 0, 0)}):Play()
+            TweenService:Create(ToggleKnob, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0, 2)}):Play()
+        end
+    end
+
+    ToggleButton.MouseButton1Click:Connect(function()
+        isToggled = not isToggled
+        updateToggle()
+    end)
+
+    ToggleFrame.MouseEnter:Connect(function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 215, 0, 42)}):Play()
+        TweenService:Create(ToggleGlow, TweenInfo.new(0.3), {Transparency = 0}):Play()
+    end)
+    ToggleFrame.MouseLeave:Connect(function()
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 210, 0, 40)}):Play()
+        TweenService:Create(ToggleGlow, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
+    end)
+
+    return ToggleFrame, ToggleButton, function() return isToggled end, function(value) isToggled = value; updateToggle() end
+end
+
+-- Slider Creation
+local function CreateSlider(name, minValue, maxValue, defaultValue, yPos, parent)
+    parent = parent or Frame
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Size = UDim2.new(0, 210, 0, 60)
+    SliderFrame.Position = UDim2.new(0, 20, 0, yPos)
+    SliderFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    SliderFrame.Parent = parent
+
+    local SliderCorner = Instance.new("UICorner")
+    SliderCorner.CornerRadius = UDim.new(0, 8)
+    SliderCorner.Parent = SliderFrame
+
+    local SliderGlow = Instance.new("UIStroke")
+    SliderGlow.Color = Color3.fromRGB(255, 0, 0)
+    SliderGlow.Thickness = 1.5
+    SliderGlow.Transparency = 0.5
+    SliderGlow.Parent = SliderFrame
+
+    local SliderLabel = Instance.new("TextLabel")
+    SliderLabel.Size = UDim2.new(0, 190, 0, 20)
+    SliderLabel.Position = UDim2.new(0, 10, 0, 5)
+    SliderLabel.BackgroundTransparency = 1
+    SliderLabel.Text = name
+    SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SliderLabel.TextSize = 12
+    SliderLabel.Font = Enum.Font.Gotham
+    SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SliderLabel.Parent = SliderFrame
+
+    local ValueLabel = Instance.new("TextLabel")
+    ValueLabel.Size = UDim2.new(0, 50, 0, 20)
+    ValueLabel.Position = UDim2.new(1, -60, 0, 5)
+    ValueLabel.BackgroundTransparency = 1
+    ValueLabel.Text = tostring(defaultValue)
+    ValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ValueLabel.TextSize = 12
+    ValueLabel.Font = Enum.Font.GothamBold
+    ValueLabel.Parent = SliderFrame
+
+    local Track = Instance.new("Frame")
+    Track.Size = UDim2.new(0, 190, 0, 6)
+    Track.Position = UDim2.new(0, 10, 0, 35)
+    Track.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    Track.Parent = SliderFrame
+
+    local TrackCorner = Instance.new("UICorner")
+    TrackCorner.CornerRadius = UDim.new(0, 3)
+    TrackCorner.Parent = Track
+
+    local Fill = Instance.new("Frame")
+    Fill.Size = UDim2.new(0, 0, 0, 6)
+    Fill.Position = UDim2.new(0, 0, 0, 0)
+    Fill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    Fill.Parent = Track
+
+    local FillCorner = Instance.new("UICorner")
+    FillCorner.CornerRadius = UDim.new(0, 3)
+    FillCorner.Parent = Fill
+
+    local Thumb = Instance.new("TextButton")
+    Thumb.Size = UDim2.new(0, 16, 0, 16)
+    Thumb.Position = UDim2.new(0, -8, 0, -5)
+    Thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Thumb.Text = ""
+    Thumb.Parent = Track
+
+    local ThumbCorner = Instance.new("UICorner")
+    ThumbCorner.CornerRadius = UDim.new(0, 8)
+    ThumbCorner.Parent = Thumb
+
+    local currentValue = defaultValue
+    local isDragging = false
+
+    local function updateSlider(value)
+        currentValue = math.clamp(value, minValue, maxValue)
+        local percent = (currentValue - minValue) / (maxValue - minValue)
+        Fill.Size = UDim2.new(percent, 0, 0, 6)
+        Thumb.Position = UDim2.new(percent, -8, 0, -5)
+        ValueLabel.Text = tostring(math.floor(currentValue * 10) / 10)
+    end
+
+    updateSlider(defaultValue)
+
+    local function onInputChanged(input)
+        if isDragging then
+            local relativeX = (input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X
+            local value = minValue + (maxValue - minValue) * math.clamp(relativeX, 0, 1)
+            updateSlider(value)
+        end
+    end
+
+    Thumb.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+        end
+    end)
+
+    Thumb.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
+
+    Track.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+            local relativeX = (input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X
+            local value = minValue + (maxValue - minValue) * math.clamp(relativeX, 0, 1)
+            updateSlider(value)
+        end
+    end)
+
+    Track.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            onInputChanged(input)
+        end
+    end)
+
+    SliderFrame.MouseEnter:Connect(function()
+        TweenService:Create(SliderFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 215, 0, 62)}):Play()
+        TweenService:Create(SliderGlow, TweenInfo.new(0.3), {Transparency = 0}):Play()
+    end)
+    SliderFrame.MouseLeave:Connect(function()
+        TweenService:Create(SliderFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 210, 0, 60)}):Play()
+        TweenService:Create(SliderGlow, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
+    end)
+
+    return SliderFrame, function() return currentValue end
+end
+
 -- Item Selection Menu
 local ItemSelectionFrame = Instance.new("Frame")
 ItemSelectionFrame.Size = UDim2.new(0, 250, 0, 300)
@@ -368,6 +585,63 @@ StartCollectionButton.Position = UDim2.new(0, 20, 0, 260)
 
 -- Main buttons
 local CollectItemsButton = CreateButton("Collect Items", 40)
+
+-- Auto Tree Toggle and Slider
+local AutoTreeToggle, AutoTreeToggleButton, GetAutoTreeState, SetAutoTreeState = CreateToggle("Auto Chop Tree", 90)
+local DistanceSlider, GetDistanceValue = CreateSlider("Chop Distance (Recommended < 250)", 0, 1000, 25, 140)
+
+-- Auto Tree Variables
+local ActiveAutoChopTree = false
+local DistanceForAutoChopTree = 25
+
+-- Auto Tree Function
+local function AutoChopTreeFunction()
+    while ActiveAutoChopTree do
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+        
+        for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+            if ActiveAutoChopTree and tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                if distance <= DistanceForAutoChopTree then
+                    task.spawn(function()		
+                        local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                    end)		
+                end
+            end
+        end 
+        
+        for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+            if ActiveAutoChopTree and tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                if distance <= DistanceForAutoChopTree then
+                    task.spawn(function()	
+                        local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                    end)			
+                end
+            end
+        end
+        task.wait(0.01)
+    end
+end
+
+-- Update distance from slider
+RunService.Heartbeat:Connect(function()
+    DistanceForAutoChopTree = GetDistanceValue()
+end)
+
+-- Auto Tree Toggle Function
+AutoTreeToggleButton.MouseButton1Click:Connect(function()
+    ActiveAutoChopTree = GetAutoTreeState()
+    if ActiveAutoChopTree then
+        ShowNotification("Auto Chop Tree: ON")
+        task.spawn(AutoChopTreeFunction)
+    else
+        ShowNotification("Auto Chop Tree: OFF")
+    end
+end)
 
 -- Draggable GUI for main frame
 local dragging = false
@@ -528,5 +802,7 @@ MinimizeButton.MouseButton1Click:Connect(function()
     local Minimized = not (Frame.Size == UDim2.new(0, 250, 0, 40))
     MinimizeButton.Text = Minimized and "+" or "-"
     CollectItemsButton.Visible = not Minimized
-    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 100)
+    AutoTreeToggle.Visible = not Minimized
+    DistanceSlider.Visible = not Minimized
+    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 180)
 end)
