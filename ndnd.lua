@@ -333,11 +333,11 @@ local function CreateToggle(name, yPos, parent)
     end
 end
 
--- Simple Slider Creation for Mobile
-local function CreateSimpleSlider(name, minValue, maxValue, defaultValue, yPos, parent)
+-- Updated Slider Creation based on provided code
+local function CreateDistanceSlider(name, minValue, maxValue, defaultValue, yPos, parent)
     parent = parent or Frame
     local SliderFrame = Instance.new("Frame")
-    SliderFrame.Size = UDim2.new(0, 240, 0, 50)
+    SliderFrame.Size = UDim2.new(0, 240, 0, 60)
     SliderFrame.Position = UDim2.new(0, 20, 0, yPos)
     SliderFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     SliderFrame.Parent = parent
@@ -353,21 +353,22 @@ local function CreateSimpleSlider(name, minValue, maxValue, defaultValue, yPos, 
     SliderGlow.Parent = SliderFrame
 
     local SliderLabel = Instance.new("TextLabel")
-    SliderLabel.Size = UDim2.new(0, 220, 0, 20)
+    SliderLabel.Size = UDim2.new(0, 220, 0, 30)
     SliderLabel.Position = UDim2.new(0, 10, 0, 5)
     SliderLabel.BackgroundTransparency = 1
-    SliderLabel.Text = name
+    SliderLabel.Text = "Distance For Auto Chop Tree (Recommended < 250)"
     SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SliderLabel.TextSize = 12
+    SliderLabel.TextSize = 11
     SliderLabel.Font = Enum.Font.Gotham
     SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SliderLabel.TextWrapped = true
     SliderLabel.Parent = SliderFrame
 
     local ValueLabel = Instance.new("TextLabel")
-    ValueLabel.Size = UDim2.new(0, 60, 0, 20)
-    ValueLabel.Position = UDim2.new(1, -70, 0, 5)
+    ValueLabel.Size = UDim2.new(0, 80, 0, 20)
+    ValueLabel.Position = UDim2.new(1, -90, 0, 8)
     ValueLabel.BackgroundTransparency = 1
-    ValueLabel.Text = tostring(defaultValue)
+    ValueLabel.Text = tostring(defaultValue) .. " Distance"
     ValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     ValueLabel.TextSize = 12
     ValueLabel.Font = Enum.Font.GothamBold
@@ -375,7 +376,7 @@ local function CreateSimpleSlider(name, minValue, maxValue, defaultValue, yPos, 
 
     local Track = Instance.new("Frame")
     Track.Size = UDim2.new(0, 220, 0, 10)
-    Track.Position = UDim2.new(0, 10, 0, 30)
+    Track.Position = UDim2.new(0, 10, 0, 40)
     Track.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Track.Parent = SliderFrame
 
@@ -393,13 +394,29 @@ local function CreateSimpleSlider(name, minValue, maxValue, defaultValue, yPos, 
     FillCorner.CornerRadius = UDim.new(0, 5)
     FillCorner.Parent = Fill
 
+    local Thumb = Instance.new("TextButton")
+    Thumb.Size = UDim2.new(0, 20, 0, 20)
+    Thumb.Position = UDim2.new(0, -10, 0, -5)
+    Thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Thumb.Text = ""
+    Thumb.Parent = Track
+
+    local ThumbCorner = Instance.new("UICorner")
+    ThumbCorner.CornerRadius = UDim.new(0, 10)
+    ThumbCorner.Parent = Thumb
+
     local currentValue = defaultValue
+    local isDragging = false
 
     local function updateSlider(value)
         currentValue = math.clamp(value, minValue, maxValue)
         local percent = (currentValue - minValue) / (maxValue - minValue)
         Fill.Size = UDim2.new(percent, 0, 0, 10)
-        ValueLabel.Text = tostring(math.floor(currentValue))
+        Thumb.Position = UDim2.new(percent, -10, 0, -5)
+        ValueLabel.Text = tostring(math.floor(currentValue * 10) / 10) .. " Distance"
+        
+        -- Callback function from provided code
+        DistanceForAutoChopTree = currentValue
     end
 
     updateSlider(defaultValue)
@@ -413,14 +430,34 @@ local function CreateSimpleSlider(name, minValue, maxValue, defaultValue, yPos, 
         end
     end
 
-    Track.InputBegan:Connect(function(input)
+    local function startDragging(input)
         if input.UserInputType == Enum.UserInputType.Touch then
+            isDragging = true
+            input:Capture()
+            onTouchInput(input)
+        end
+    end
+
+    local function stopDragging(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            isDragging = false
+        end
+    end
+
+    Thumb.InputBegan:Connect(startDragging)
+    Track.InputBegan:Connect(startDragging)
+    
+    Thumb.InputEnded:Connect(stopDragging)
+    Track.InputEnded:Connect(stopDragging)
+
+    Thumb.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch and isDragging then
             onTouchInput(input)
         end
     end)
 
     Track.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
+        if input.UserInputType == Enum.UserInputType.Touch and isDragging then
             onTouchInput(input)
         end
     end)
@@ -432,7 +469,7 @@ local function CreateSimpleSlider(name, minValue, maxValue, defaultValue, yPos, 
         TweenService:Create(SliderGlow, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
     end)
 
-    return SliderFrame, function() return currentValue end
+    return SliderFrame
 end
 
 -- Item Selection Menu
@@ -557,83 +594,59 @@ local CollectItemsButton = CreateButton("Collect Items", 40)
 
 -- Auto Tree Toggle and Slider
 local AutoTreeToggle, GetAutoTreeState, SetAutoTreeState = CreateToggle("Auto Chop Tree", 85)
-local DistanceSlider, GetDistanceValue = CreateSimpleSlider("Chop Distance", 0, 1000, 25, 130)
+local DistanceSlider = CreateDistanceSlider("Distance", 0, 1000, 25, 130)
 
 -- Auto Tree Variables
 local ActiveAutoChopTree = false
 local DistanceForAutoChopTree = 25
 
--- Auto Tree Function
-local function AutoChopTreeFunction()
-    while ActiveAutoChopTree and task.wait(0.1) do
-        local player = game.Players.LocalPlayer
-        local character = player.Character
-        if not character then continue end
-        
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if not hrp then continue end
-        
-        local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
-                       player.Inventory:FindFirstChild("Good Axe") or 
-                       player.Inventory:FindFirstChild("Strong Axe") or 
-                       player.Inventory:FindFirstChild("Chainsaw"))
-        
-        if not weapon then
-            ShowNotification("No axe found in inventory!")
-            ActiveAutoChopTree = false
-            SetAutoTreeState(false)
-            break
-        end
-        
-        -- Check trees in Foliage
-        for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-            if not ActiveAutoChopTree then break end
-            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                if distance <= DistanceForAutoChopTree then
-                    local success = pcall(function()
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                    end)
-                    if not success then
-                        warn("Failed to damage tree")
+-- Auto Tree Function (исправленная версия)
+local function AutoTreeCallback(Value)
+    ActiveAutoChopTree = Value 
+    task.spawn(function()
+        while ActiveAutoChopTree do 
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart")
+            local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+            
+            for _, bunny in pairs(workspace.Map.Foliage:GetChildren()) do
+                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
+                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
+                    if distance <= DistanceForAutoChopTree then
+                        task.spawn(function()		
+                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                        end)		
                     end
-                    task.wait(0.2)
+                end
+            end 
+            
+            for _, bunny in pairs(workspace.Map.Landmarks:GetChildren()) do
+                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
+                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
+                    if distance <= DistanceForAutoChopTree then
+                        task.spawn(function()	
+                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                        end)			
+                    end
                 end
             end
-        end 
-        
-        -- Check trees in Landmarks
-        for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
-            if not ActiveAutoChopTree then break end
-            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                if distance <= DistanceForAutoChopTree then
-                    local success = pcall(function()
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                    end)
-                    if not success then
-                        warn("Failed to damage tree")
-                    end
-                    task.wait(0.2)
-                end
-            end
+            wait(0.01)
         end
-    end
+    end)
 end
-
--- Update distance from slider
-RunService.Heartbeat:Connect(function()
-    DistanceForAutoChopTree = GetDistanceValue()
-end)
 
 -- Auto Tree Toggle Function
 AutoTreeToggle:FindFirstChildOfClass("TextButton").MouseButton1Click:Connect(function()
-    ActiveAutoChopTree = GetAutoTreeState()
-    if ActiveAutoChopTree then
+    local newState = GetAutoTreeState()
+    SetAutoTreeState(newState)
+    
+    if newState then
         ShowNotification("Auto Chop Tree: ON - Distance: " .. DistanceForAutoChopTree)
-        task.spawn(AutoChopTreeFunction)
+        AutoTreeCallback(true)
     else
         ShowNotification("Auto Chop Tree: OFF")
+        AutoTreeCallback(false)
     end
 end)
 
@@ -717,7 +730,6 @@ end)
 
 -- Variables
 local CollectItemsActive = false
-local VirtualInputManager = game:GetService('VirtualInputManager')
 
 -- DragItem function
 local function DragItem(obj)
