@@ -23,8 +23,8 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.DisplayOrder = 1000
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 250, 0, 200)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -100)
+Frame.Size = UDim2.new(0, 250, 0, 150)
+Frame.Position = UDim2.new(0.5, -125, 0.5, -75)
 Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 Frame.BorderSizePixel = 0
 Frame.Parent = ScreenGui
@@ -368,63 +368,7 @@ StartCollectionButton.Position = UDim2.new(0, 20, 0, 260)
 
 -- Main buttons
 local CollectItemsButton = CreateButton("Collect Items", 40)
-
--- Distance Slider
-local DistanceLabel = Instance.new("TextLabel")
-DistanceLabel.Size = UDim2.new(0, 150, 0, 20)
-DistanceLabel.Position = UDim2.new(0, 20, 0, 90)
-DistanceLabel.BackgroundTransparency = 1
-DistanceLabel.Text = "Distance: 0"
-DistanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-DistanceLabel.TextSize = 14
-DistanceLabel.Font = Enum.Font.Gotham
-DistanceLabel.TextXAlignment = Enum.TextXAlignment.Left
-DistanceLabel.Parent = Frame
-
--- Slider Track
-local SliderTrack = Instance.new("Frame")
-SliderTrack.Size = UDim2.new(0, 210, 0, 5)
-SliderTrack.Position = UDim2.new(0, 20, 0, 115)
-SliderTrack.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-SliderTrack.BorderSizePixel = 0
-SliderTrack.Parent = Frame
-
-local SliderTrackCorner = Instance.new("UICorner")
-SliderTrackCorner.CornerRadius = UDim.new(0, 3)
-SliderTrackCorner.Parent = SliderTrack
-
--- Slider Fill
-local SliderFill = Instance.new("Frame")
-SliderFill.Size = UDim2.new(0, 0, 0, 5)
-SliderFill.Position = UDim2.new(0, 0, 0, 0)
-SliderFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-SliderFill.BorderSizePixel = 0
-SliderFill.Parent = SliderTrack
-
-local SliderFillCorner = Instance.new("UICorner")
-SliderFillCorner.CornerRadius = UDim.new(0, 3)
-SliderFillCorner.Parent = SliderFill
-
--- Slider Thumb
-local SliderThumb = Instance.new("TextButton")
-SliderThumb.Size = UDim2.new(0, 15, 0, 15)
-SliderThumb.Position = UDim2.new(0, 0, 0, -5)
-SliderThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-SliderThumb.Text = ""
-SliderThumb.Parent = SliderTrack
-
-local SliderThumbCorner = Instance.new("UICorner")
-SliderThumbCorner.CornerRadius = UDim.new(1, 0)
-SliderThumbCorner.Parent = SliderThumb
-
-local SliderThumbStroke = Instance.new("UIStroke")
-SliderThumbStroke.Color = Color3.fromRGB(255, 0, 0)
-SliderThumbStroke.Thickness = 2
-SliderThumbStroke.Parent = SliderThumb
-
--- Auto Tree Button
-local AutoTreeButton = CreateButton("Auto Chop Tree", 140)
-AutoTreeButton.Text = "Auto Chop Tree: OFF"
+local AutoTreeButton = CreateButton("Auto Tree", 90)
 
 -- Draggable GUI for main frame
 local dragging = false
@@ -541,99 +485,42 @@ local function CollectionFunction()
 end
 
 -- Auto Tree Farm Function
-local badTrees = {}
+local AutoTreeFarmEnabled = false
 
 task.spawn(function()
     while true do
         if AutoTreeFarmEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local ignoreDistanceFrom = LocalPlayer.Character.HumanoidRootPart.Position
-            local trees = {}
-            for _, obj in pairs(workspace:GetDescendants()) do
-                if obj.Name == "Trunk" and obj.Parent and obj.Parent.Name == "Small Tree" then
-                    local distance = (obj.Position - ignoreDistanceFrom).Magnitude
-                    if distance > minDistance and not badTrees[obj:GetFullName()] then
-                        table.insert(trees, obj)
+            local player = game.Players.LocalPlayer
+            local character = player.Character
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            
+            if hrp then
+                local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+                
+                for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                    if AutoTreeFarmEnabled and tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                        local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                        if distance <= minDistance then
+                            task.spawn(function()		
+                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                            end)		
+                        end
+                    end
+                end 
+                
+                for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                    if AutoTreeFarmEnabled and tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                        local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                        if distance <= minDistance then
+                            task.spawn(function()	
+                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                            end)			
+                        end
                     end
                 end
-            end
-
-            table.sort(trees, function(a, b)
-                return (a.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude <
-                       (b.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-            end)
-
-            for _, trunk in ipairs(trees) do
-                if not AutoTreeFarmEnabled then break end
-                LocalPlayer.Character:PivotTo(trunk.CFrame + Vector3.new(0, 3, 0))
-                task.wait(0.2)
-                
-                local tree = trunk.Parent
-                local startTime = tick()
-                
-                local health, maxHealth = GetTreeHealth(tree)
-                UpdateTreeHealth(tree, health, maxHealth)
-                
-                while AutoTreeFarmEnabled and trunk and trunk.Parent and trunk.Parent.Name == "Small Tree" do
-                    mouse1click()
-                    task.wait(0.2)
-                    
-                    local currentHealth, currentMaxHealth = GetTreeHealth(tree)
-                    UpdateTreeHealth(tree, currentHealth, currentMaxHealth)
-                    
-                    if tick() - startTime > 12 then
-                        badTrees[trunk:GetFullName()] = true
-                        break
-                    end
-                end
-                
-                if tree and tree:FindFirstChild("TreeHealthDisplay") then
-                    tree.TreeHealthDisplay:Destroy()
-                end
-                
-                task.wait(0.3)
             end
         end
-        task.wait(1.5)
-    end
-end)
-
--- Slider Functionality
-local sliderDragging = false
-local function updateSlider(value)
-    local maxDistance = 100
-    local percentage = math.clamp(value / maxDistance, 0, 1)
-    
-    SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
-    SliderThumb.Position = UDim2.new(percentage, -7, 0, -5)
-    
-    minDistance = math.floor(percentage * maxDistance)
-    DistanceLabel.Text = "Distance: " .. minDistance
-end
-
--- Initialize slider
-updateSlider(0)
-
--- Slider dragging
-SliderThumb.MouseButton1Down:Connect(function()
-    sliderDragging = true
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        sliderDragging = false
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if sliderDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-        local mousePos = UserInputService:GetMouseLocation()
-        local sliderAbsolutePos = SliderTrack.AbsolutePosition
-        local sliderAbsoluteSize = SliderTrack.AbsoluteSize
-        
-        local relativeX = (mousePos.X - sliderAbsolutePos.X) / sliderAbsoluteSize.X
-        relativeX = math.clamp(relativeX, 0, 1)
-        
-        updateSlider(relativeX * 100)
+        task.wait(0.01)
     end
 end)
 
@@ -677,10 +564,10 @@ end)
 
 AutoTreeButton.MouseButton1Click:Connect(function()
     AutoTreeFarmEnabled = not AutoTreeFarmEnabled
-    AutoTreeButton.Text = "Auto Chop Tree: " .. (AutoTreeFarmEnabled and "ON" or "OFF")
+    AutoTreeButton.Text = "Auto Tree: " .. (AutoTreeFarmEnabled and "ON" or "OFF")
     AutoTreeButton.BackgroundColor3 = AutoTreeFarmEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
     if AutoTreeFarmEnabled then
-        ShowNotification("Auto Tree Farm enabled. Distance: " .. minDistance)
+        ShowNotification("Auto Tree Farm enabled.")
     else
         ShowNotification("Auto Tree Farm disabled.")
     end
@@ -695,8 +582,6 @@ MinimizeButton.MouseButton1Click:Connect(function()
     local Minimized = not (Frame.Size == UDim2.new(0, 250, 0, 40))
     MinimizeButton.Text = Minimized and "+" or "-"
     CollectItemsButton.Visible = not Minimized
-    DistanceLabel.Visible = not Minimized
-    SliderTrack.Visible = not Minimized
     AutoTreeButton.Visible = not Minimized
-    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 200)
+    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 150)
 end)
