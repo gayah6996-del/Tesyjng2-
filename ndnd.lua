@@ -53,11 +53,11 @@ local translations = {
         
         -- ESP Tab
         espButton = "ESP: OFF",
-        espOn = "ESP: ON ✅",
+        espOn = "ESP: ON v",
         
         -- Aimbot Tab
         aimbotButton = "Aimbot: OFF",
-        aimbotOn = "Aimbot: ON ✅",
+        aimbotOn = "Aimbot: ON v",
         targetDropdown = "Target: Head",
         fovLabel = "FOV Radius: ",
         distanceLabel = "Aimbot Distance: ",
@@ -66,9 +66,9 @@ local translations = {
         
         -- Camera Tab
         infiniteJumpButton = "Infinite Jump: OFF",
-        infiniteJumpOn = "Infinite Jump: ON ✅",
+        infiniteJumpOn = "Infinite Jump: ON v",
         cameraFOVButton = "CamFOV: OFF",
-        cameraFOVOn = "CamFOV: ON ✅",
+        cameraFOVOn = "CamFOV: ON v",
         cameraFOVLabel = "Camera FOV: ",
         
         -- Language Tab
@@ -98,11 +98,11 @@ local translations = {
         
         -- ESP Tab
         espButton = "ESP: ВЫКЛ",
-        espOn = "ESP: ВКЛ ✅",
+        espOn = "ESP: ВКЛ v",
         
         -- Aimbot Tab
         aimbotButton = "АимБот: ВЫКЛ",
-        aimbotOn = "АимБот: ВКЛ ✅",
+        aimbotOn = "АимБот: ВКЛ v",
         targetDropdown = "Цель: Голова",
         fovLabel = "Радиус Круга: ",
         distanceLabel = "Дистанция аимбота: ",
@@ -111,9 +111,9 @@ local translations = {
         
         -- Camera Tab
         infiniteJumpButton = "Беск. Прыжок: ВЫКЛ",
-        infiniteJumpOn = "Беск. Прыжок: ВКЛ ✅",
+        infiniteJumpOn = "Беск. Прыжок: ВКЛ v",
         cameraFOVButton = "Обзор Камеры: ВЫКЛ",
-        cameraFOVOn = "Обзор Камеры: ВКЛ ✅",
+        cameraFOVOn = "Обзор Камеры: ВКЛ v",
         cameraFOVLabel = "ОбзорКамеры: ",
         
         -- Language Tab
@@ -143,11 +143,11 @@ local translations = {
         
         -- ESP Tab
         espButton = "ESP: 关闭",
-        espOn = "ESP: 开启 ✅",
+        espOn = "ESP: 开启 v",
         
         -- Aimbot Tab
         aimbotButton = "瞄准辅助: 关闭",
-        aimbotOn = "瞄准辅助: 开启 ✅",
+        aimbotOn = "瞄准辅助: 开启 v",
         targetDropdown = "目标: 头部",
         fovLabel = "FOV半径: ",
         distanceLabel = "瞄准距离: ",
@@ -156,9 +156,9 @@ local translations = {
         
         -- Camera Tab
         infiniteJumpButton = "无限跳跃: 关闭",
-        infiniteJumpOn = "无限跳跃: 开启 ✅",
+        infiniteJumpOn = "无限跳跃: 开启 v",
         cameraFOVButton = "相机FOV: 关闭",
-        cameraFOVOn = "相机FOV: 开启 ✅",
+        cameraFOVOn = "相机FOV: 开启 v",
         cameraFOVLabel = "相机FOV: ",
         
         -- Language Tab
@@ -206,7 +206,7 @@ local function showNotification()
     textLabel.Position = UDim2.new(1, -260, 1, -60)
     textLabel.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
     textLabel.BorderSizePixel = 0
-    textLabel.Text = "ASTRALCHEAT успешно запущен✅!"
+    textLabel.Text = "ASTRALCHEAT успешно запущен!"
     textLabel.TextColor3 = Color3.new(1, 1, 1)
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.SourceSansBold
@@ -1060,7 +1060,7 @@ local function createGUI()
             bodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         else
             aimbotTarget = "HumanoidRootPart"
-            targetDropdown.Text = t.targetDropdown:gsub("Head", t.targetBody)
+            targetDropdown.Text = t.targetDropdown:gsub("Body", t.targetBody)
             headButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
