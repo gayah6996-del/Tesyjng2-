@@ -23,8 +23,8 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.DisplayOrder = 1000
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 250, 0, 150)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -75)
+Frame.Size = UDim2.new(0, 250, 0, 100)
+Frame.Position = UDim2.new(0.5, -125, 0.5, -50)
 Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 Frame.BorderSizePixel = 0
 Frame.Parent = ScreenGui
@@ -368,7 +368,6 @@ StartCollectionButton.Position = UDim2.new(0, 20, 0, 260)
 
 -- Main buttons
 local CollectItemsButton = CreateButton("Collect Items", 40)
-local AutoTreeButton = CreateButton("Auto Tree", 90)
 
 -- Draggable GUI for main frame
 local dragging = false
@@ -448,8 +447,6 @@ end)
 
 -- Variables
 local CollectItemsActive = false
-local AutoTreeFarmEnabled = false
-local minDistance = 0
 local VirtualInputManager = game:GetService('VirtualInputManager')
 
 -- Mouse click function
@@ -483,46 +480,6 @@ local function CollectionFunction()
         task.wait(1)
     end
 end
-
--- Auto Tree Farm Function
-local AutoTreeFarmEnabled = false
-
-task.spawn(function()
-    while true do
-        if AutoTreeFarmEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local player = game.Players.LocalPlayer
-            local character = player.Character
-            local hrp = character:FindFirstChild("HumanoidRootPart")
-            
-            if hrp then
-                local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
-                
-                for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-                    if AutoTreeFarmEnabled and tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                        local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                        if distance <= minDistance then
-                            task.spawn(function()		
-                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                            end)		
-                        end
-                    end
-                end 
-                
-                for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
-                    if AutoTreeFarmEnabled and tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                        local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                        if distance <= minDistance then
-                            task.spawn(function()	
-                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                            end)			
-                        end
-                    end
-                end
-            end
-        end
-        task.wait(0.01)
-    end
-end)
 
 -- Button Functions
 CollectItemsButton.MouseButton1Click:Connect(function()
@@ -562,17 +519,6 @@ StartCollectionButton.MouseButton1Click:Connect(function()
     task.spawn(CollectionFunction)
 end)
 
-AutoTreeButton.MouseButton1Click:Connect(function()
-    AutoTreeFarmEnabled = not AutoTreeFarmEnabled
-    AutoTreeButton.Text = "Auto Tree: " .. (AutoTreeFarmEnabled and "ON" or "OFF")
-    AutoTreeButton.BackgroundColor3 = AutoTreeFarmEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
-    if AutoTreeFarmEnabled then
-        ShowNotification("Auto Tree Farm enabled.")
-    else
-        ShowNotification("Auto Tree Farm disabled.")
-    end
-end)
-
 -- Button Functions
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
@@ -582,6 +528,5 @@ MinimizeButton.MouseButton1Click:Connect(function()
     local Minimized = not (Frame.Size == UDim2.new(0, 250, 0, 40))
     MinimizeButton.Text = Minimized and "+" or "-"
     CollectItemsButton.Visible = not Minimized
-    AutoTreeButton.Visible = not Minimized
-    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 150)
+    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 100)
 end)
