@@ -199,65 +199,110 @@ end)
 -- Variables
 local MoneyFarmActive = false
 local AutoTreeFarmEnabled = false
-local minDistance = 0
 local VirtualInputManager = game:GetService('VirtualInputManager')
 
--- Mouse click function
-local function mouse1click()
-    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, false)
-    task.wait()
-    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, false)
+-- Auto Tree Farm Function for Mobile
+local treesBeingChopped = {}
+local MAX_TREES = 10
+local CHOP_RADIUS = 50
+
+-- Function to chop trees using remote events (common in many games)
+local function findChoppingRemote()
+    -- Try to find a remote event for chopping
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("RemoteEvent") and (obj.Name:lower():find("chop") or obj.Name:lower():find("tree") or obj.Name:lower():find("hit")) then
+            return obj
+        end
+    end
+    
+    -- Check player scripts
+    local playerScripts = LocalPlayer:FindFirstChild("PlayerScripts")
+    if playerScripts then
+        for _, obj in pairs(playerScripts:GetDescendants()) do
+            if obj:IsA("RemoteEvent") and (obj.Name:lower():find("chop") or obj.Name:lower():find("tree") or obj.Name:lower():find("hit")) then
+                return obj
+            end
+        end
+    end
+    
+    return nil
 end
 
--- Auto Tree Farm Function
-local badTrees = {}
-local treesBeingChopped = {}
-
+-- Main tree chopping function
 task.spawn(function()
+    local chopRemote = findChoppingRemote()
+    
     while true do
         if AutoTreeFarmEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             local characterPos = LocalPlayer.Character.HumanoidRootPart.Position
             
-            -- Находим все деревья в радиусе
+            -- Find all trees in radius
             local trees = {}
             for _, obj in pairs(workspace:GetDescendants()) do
                 if obj.Name == "Trunk" and obj.Parent and obj.Parent.Name == "Small Tree" then
                     local distance = (obj.Position - characterPos).Magnitude
-                    if distance < 50 and distance > minDistance and not badTrees[obj:GetFullName()] and not treesBeingChopped[obj] then
+                    if distance < CHOP_RADIUS and not treesBeingChopped[obj] then
                         table.insert(trees, obj)
                     end
                 end
             end
 
-            -- Сортируем по расстоянию
+            -- Sort by distance
             table.sort(trees, function(a, b)
                 return (a.Position - characterPos).Magnitude < (b.Position - characterPos).Magnitude
             end)
 
-            -- Рубим до 10 ближайших деревьев одновременно
-            for i = 1, math.min(10, #trees) do
-                local trunk = trees[i]
-                if AutoTreeFarmEnabled and trunk and trunk.Parent and trunk.Parent.Name == "Small Tree" then
-                    treesBeingChopped[trunk] = true
+            -- Chop up to MAX_TREES trees simultaneously
+            for i = 1, math.min(MAX_TREES, #trees) do
+                local tree = trees[i]
+                if AutoTreeFarmEnabled and tree and tree.Parent and tree.Parent.Name == "Small Tree" then
+                    treesBeingChopped[tree] = true
                     
+                    -- Start chopping this tree in a separate thread
                     task.spawn(function()
-                        local startTime = tick()
-                        while AutoTreeFarmEnabled and trunk and trunk.Parent and trunk.Parent.Name == "Small Tree" do
-                            -- Наводим курсор на дерево (если нужно)
-                            mouse1click()
-                            task.wait(0.3)
+                        local attempts = 0
+                        while AutoTreeFarmEnabled and tree and tree.Parent and tree.Parent.Name == "Small Tree" and attempts < 20 do
+                            attempts += 1
                             
-                            if tick() - startTime > 15 then
-                                badTrees[trunk:GetFullName()] = true
-                                break
+                            -- Method 1: Try using remote event if found
+                            if chopRemote then
+                                chopRemote:FireServer(tree, "Chop")
+                                task.wait(0.3)
                             end
+                            
+                            -- Method 2: Try firetouchinterest (works on mobile)
+                            if tree:IsA("BasePart") then
+                                local humanoidRootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                                if humanoidRootPart then
+                                    firetouchinterest(humanoidRootPart, tree, 0)
+                                    firetouchinterest(humanoidRootPart, tree, 1)
+                                end
+                            else
+                                -- If tree is a model, try to find its primary part
+                                local primaryPart = tree.PrimaryPart or tree:FindFirstChildWhichIsA("BasePart")
+                                if primaryPart then
+                                    local humanoidRootPart = LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                                    if humanoidRootPart then
+                                        firetouchinterest(humanoidRootPart, primaryPart, 0)
+                                        firetouchinterest(humanoidRootPart, primaryPart, 1)
+                                    end
+                                end
+                            end
+                            
+                            -- Method 3: Try clicking on tree (for mobile tap simulation)
+                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, false)
+                            task.wait(0.1)
+                            VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, false)
+                            
+                            task.wait(0.5) -- Wait between chop attempts
                         end
-                        treesBeingChopped[trunk] = nil
+                        
+                        treesBeingChopped[tree] = nil
                     end)
                 end
             end
         end
-        task.wait(1)
+        task.wait(1) -- Wait before next scan
     end
 end)
 
@@ -266,9 +311,7 @@ AutoTreeButton.MouseButton1Click:Connect(function()
     AutoTreeButton.Text = "Auto Tree: " .. (AutoTreeFarmEnabled and "ON" or "OFF")
     AutoTreeButton.BackgroundColor3 = AutoTreeFarmEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
     if AutoTreeFarmEnabled then
-        ShowNotification("Auto Tree Farm enabled. Chopping trees in radius.")
-        -- Очищаем список плохих деревьев при каждом новом запуске
-        badTrees = {}
+        ShowNotification("Auto Tree Farm enabled. Chopping trees in 50m radius.")
         treesBeingChopped = {}
     else
         ShowNotification("Auto Tree Farm disabled.")
