@@ -40,7 +40,7 @@ local translations = {
         infoTab = "Info",
         espTab = "ESP",
         aimbotTab = "AimBot",
-        cameraTab = "Camera",
+        cameraTab = "Memory",
         languageTab = "Language",
         close = "Close Menu?",
         yes = "Yes",
@@ -85,7 +85,7 @@ local translations = {
         infoTab = "Инфо",
         espTab = "ESP",
         aimbotTab = "АимБот",
-        cameraTab = "Камера",
+        cameraTab = "Мемори",
         languageTab = "Язык",
         close = "Закрыть меню?",
         yes = "Да",
@@ -119,9 +119,9 @@ local translations = {
         -- Language Tab
         languageTitle = "Выберите язык:",
         languageDropdown = "Язык: Русский",
-        englishButton = "Английский",
-        russianButton = "Русский",
-        chineseButton = "Китайский",
+        englishButton = "Английский🇬🇧",
+        russianButton = "Русский🇷🇺",
+        chineseButton = "Китайский🇨🇳",
         currentLanguage = "Текущий: Русский"
     },
     
@@ -164,9 +164,9 @@ local translations = {
         -- Language Tab
         languageTitle = "选择语言:",
         languageDropdown = "语言: 中文",
-        englishButton = "英语",
-        russianButton = "俄语",
-        chineseButton = "中文",
+        englishButton = "英语🇬🇧",
+        russianButton = "俄语🇷🇺",
+        chineseButton = "中文🇨🇳",
         currentLanguage = "当前: 中文"
     }
 }
