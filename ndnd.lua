@@ -233,8 +233,11 @@ task.spawn(function()
 
             for _, trunk in ipairs(trees) do
                 if not AutoTreeFarmEnabled then break end
+                
+                -- Телепортируемся к дереву
                 LocalPlayer.Character:PivotTo(trunk.CFrame + Vector3.new(0, 3, 0))
-                task.wait(0.2)
+                task.wait(0.1)
+                
                 local startTime = tick()
                 while AutoTreeFarmEnabled and trunk and trunk.Parent and trunk.Parent.Name == "Small Tree" do
                     mouse1click()
@@ -244,10 +247,15 @@ task.spawn(function()
                         break
                     end
                 end
-                task.wait(0.3)
+                
+                -- Если дерево срублено, немедленно переходим к следующему
+                if not (trunk and trunk.Parent and trunk.Parent.Name == "Small Tree") then
+                    -- Дерево срублено, переходим к следующему без задержки
+                    continue
+                end
             end
         end
-        task.wait(1.5)
+        task.wait(0.5) -- Уменьшил задержку между поисками деревьев
     end
 end)
 
