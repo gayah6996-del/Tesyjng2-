@@ -44,7 +44,7 @@ local EchelonLabel = Instance.new("TextLabel")
 EchelonLabel.Size = UDim2.new(0, 120, 0, 25)
 EchelonLabel.Position = UDim2.new(0, 10, 0, 8)
 EchelonLabel.BackgroundTransparency = 1
-EchelonLabel.Text = "Echelon"
+EchelonLabel.Text = "ASTRALCHEAT"
 EchelonLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 EchelonLabel.TextSize = 18
 EchelonLabel.Font = Enum.Font.GothamBold
@@ -94,7 +94,6 @@ MinimizeCorner.Parent = MinimizeButton
 local function CreateTreeHealthDisplay(tree)
     if not tree then return end
     
-    -- Create BillboardGui for health display
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "TreeHealthDisplay"
     billboard.Adornee = tree
@@ -153,13 +152,12 @@ local function UpdateTreeHealth(tree, health, maxHealth)
         local healthPercent = health / maxHealth
         healthBar.Size = UDim2.new(healthPercent, 0, 1, 0)
         
-        -- Change color based on health percentage
         if healthPercent > 0.7 then
-            healthBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green
+            healthBar.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
         elseif healthPercent > 0.3 then
-            healthBar.BackgroundColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+            healthBar.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
         else
-            healthBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red
+            healthBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
         end
         
         healthText.Text = math.floor(healthPercent * 100) .. "%"
@@ -170,23 +168,21 @@ end
 local function GetTreeHealth(tree)
     if not tree then return 100, 100 end
     
-    -- Try to find health in various possible locations
     local humanoid = tree:FindFirstChildOfClass("Humanoid")
     if humanoid then
         return humanoid.Health, humanoid.MaxHealth
     end
     
-    -- Look for health values in tree model
     for _, part in pairs(tree:GetDescendants()) do
         if part:IsA("BasePart") and part:FindFirstChild("Health") then
             local healthValue = part.Health
             if typeof(healthValue) == "number" then
-                return healthValue, 100 -- Assuming max health is 100
+                return healthValue, 100
             end
         end
     end
     
-    return 100, 100 -- Default values if health not found
+    return 100, 100
 end
 
 -- Notification Function
@@ -219,16 +215,17 @@ local function ShowNotification(message)
 end
 
 -- Button Creation
-local function CreateButton(name, yPos)
+local function CreateButton(name, yPos, parent)
+    parent = parent or Frame
     local Button = Instance.new("TextButton")
     Button.Size = UDim2.new(0, 210, 0, 40)
     Button.Position = UDim2.new(0, 20, 0, yPos)
     Button.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-    Button.Text = name .. ": OFF"
+    Button.Text = name
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.TextSize = 14
     Button.Font = Enum.Font.Gotham
-    Button.Parent = Frame
+    Button.Parent = parent
 
     local ButtonCorner = Instance.new("UICorner")
     ButtonCorner.CornerRadius = UDim.new(0, 8)
@@ -252,7 +249,132 @@ local function CreateButton(name, yPos)
     return Button
 end
 
-local NOSkaButton = CreateButton("NOska", 40)
+-- Item Selection Menu
+local ItemSelectionFrame = Instance.new("Frame")
+ItemSelectionFrame.Size = UDim2.new(0, 250, 0, 300)
+ItemSelectionFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+ItemSelectionFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+ItemSelectionFrame.BorderSizePixel = 0
+ItemSelectionFrame.Visible = false
+ItemSelectionFrame.Parent = ScreenGui
+
+local ItemSelectionCorner = Instance.new("UICorner")
+ItemSelectionCorner.CornerRadius = UDim.new(0, 12)
+ItemSelectionCorner.Parent = ItemSelectionFrame
+
+local ItemSelectionStroke = Instance.new("UIStroke")
+ItemSelectionStroke.Color = Color3.fromRGB(255, 0, 0)
+ItemSelectionStroke.Thickness = 2
+ItemSelectionStroke.Transparency = 0.5
+ItemSelectionStroke.Parent = ItemSelectionFrame
+
+local ItemSelectionTitle = Instance.new("TextLabel")
+ItemSelectionTitle.Size = UDim2.new(0, 200, 0, 30)
+ItemSelectionTitle.Position = UDim2.new(0, 25, 0, 10)
+ItemSelectionTitle.BackgroundTransparency = 1
+ItemSelectionTitle.Text = "Select Items to Collect"
+ItemSelectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+ItemSelectionTitle.TextSize = 16
+ItemSelectionTitle.Font = Enum.Font.GothamBold
+ItemSelectionTitle.Parent = ItemSelectionFrame
+
+-- Available items
+local availableItems = {
+    "Tyre",
+    "Sheet Metal",
+    "Broken Fan",
+    "Bolt",
+    "Old Radio",
+    "UFO Junk",
+    "UFO Scrap",
+    "Broken Microwave"
+}
+
+local selectedItems = {}
+local itemCheckboxes = {}
+
+-- Create checkboxes for items
+for i, itemName in ipairs(availableItems) do
+    local yPos = 40 + (i-1) * 30
+    
+    local checkbox = Instance.new("TextButton")
+    checkbox.Size = UDim2.new(0, 20, 0, 20)
+    checkbox.Position = UDim2.new(0, 20, 0, yPos)
+    checkbox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    checkbox.Text = ""
+    checkbox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    checkbox.TextSize = 14
+    checkbox.Font = Enum.Font.GothamBold
+    checkbox.Parent = ItemSelectionFrame
+    
+    local checkboxCorner = Instance.new("UICorner")
+    checkboxCorner.CornerRadius = UDim.new(0, 4)
+    checkboxCorner.Parent = checkbox
+    
+    local checkboxStroke = Instance.new("UIStroke")
+    checkboxStroke.Color = Color3.fromRGB(255, 0, 0)
+    checkboxStroke.Thickness = 1
+    checkboxStroke.Transparency = 0.5
+    checkboxStroke.Parent = checkbox
+    
+    local itemLabel = Instance.new("TextLabel")
+    itemLabel.Size = UDim2.new(0, 150, 0, 20)
+    itemLabel.Position = UDim2.new(0, 50, 0, yPos)
+    itemLabel.BackgroundTransparency = 1
+    itemLabel.Text = itemName
+    itemLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    itemLabel.TextSize = 14
+    itemLabel.Font = Enum.Font.Gotham
+    itemLabel.TextXAlignment = Enum.TextXAlignment.Left
+    itemLabel.Parent = ItemSelectionFrame
+    
+    checkbox.MouseButton1Click:Connect(function()
+        selectedItems[itemName] = not selectedItems[itemName]
+        if selectedItems[itemName] then
+            checkbox.Text = "✓"
+            checkbox.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+        else
+            checkbox.Text = ""
+            checkbox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        end
+    end)
+    
+    itemCheckboxes[itemName] = checkbox
+end
+
+-- Select All Button
+local SelectAllButton = CreateButton("Select All", 260, ItemSelectionFrame)
+SelectAllButton.Size = UDim2.new(0, 100, 0, 30)
+SelectAllButton.Position = UDim2.new(0, 20, 0, 260)
+
+SelectAllButton.MouseButton1Click:Connect(function()
+    for itemName, checkbox in pairs(itemCheckboxes) do
+        selectedItems[itemName] = true
+        checkbox.Text = "✓"
+        checkbox.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
+    end
+end)
+
+-- Deselect All Button
+local DeselectAllButton = CreateButton("Deselect All", 260, ItemSelectionFrame)
+DeselectAllButton.Size = UDim2.new(0, 100, 0, 30)
+DeselectAllButton.Position = UDim2.new(0, 130, 0, 260)
+
+DeselectAllButton.MouseButton1Click:Connect(function()
+    for itemName, checkbox in pairs(itemCheckboxes) do
+        selectedItems[itemName] = false
+        checkbox.Text = ""
+        checkbox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    end
+end)
+
+-- Start Collection Button
+local StartCollectionButton = CreateButton("Start Collection", 300, ItemSelectionFrame)
+StartCollectionButton.Size = UDim2.new(0, 210, 0, 35)
+StartCollectionButton.Position = UDim2.new(0, 20, 0, 300)
+
+-- Main buttons
+local CollectItemsButton = CreateButton("Collect Items", 40)
 local AutoTreeButton = CreateButton("Auto Tree", 90)
 
 -- Draggable GUI
@@ -296,7 +418,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- Variables
-local NOSkaActive = false
+local CollectItemsActive = false
 local AutoTreeFarmEnabled = false
 local minDistance = 0
 local VirtualInputManager = game:GetService('VirtualInputManager')
@@ -308,29 +430,28 @@ local function mouse1click()
     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, false)
 end
 
--- DragItem function for NOska
+-- DragItem function
 local function DragItem(obj)
     if obj and obj.PrimaryPart then
         local character = LocalPlayer.Character
         if character and character:FindFirstChild("HumanoidRootPart") then
-            -- Move the object to player's position
             obj:SetPrimaryPartCFrame(character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0))
         end
     end
 end
 
--- NOska Function (Bring All Scraps)
-local function NOskaFunction()
-    while NOSkaActive do
+-- Collection Function
+local function CollectionFunction()
+    while CollectItemsActive do
         task.spawn(function()
             for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
-                if (Obj.Name == "Tyre" or Obj.Name == "Sheet Metal" or Obj.Name == "Broken Fan" or Obj.Name == "Bolt" or Obj.Name == "Old Radio" or Obj.Name == "UFO Junk" or Obj.Name == "UFO Scrap" or Obj.Name == "Broken Microwave") and Obj:IsA("Model") and Obj.PrimaryPart then 
+                if CollectItemsActive and selectedItems[Obj.Name] and Obj:IsA("Model") and Obj.PrimaryPart then 
                     DragItem(Obj)
-                    task.wait(0.1) -- Small delay to prevent lag
+                    task.wait(0.1)
                 end 
             end
         end)
-        task.wait(1) -- Check every second
+        task.wait(1)
     end
 end
 
@@ -364,7 +485,6 @@ task.spawn(function()
                 local tree = trunk.Parent
                 local startTime = tick()
                 
-                -- Create health display for current tree
                 local health, maxHealth = GetTreeHealth(tree)
                 UpdateTreeHealth(tree, health, maxHealth)
                 
@@ -372,7 +492,6 @@ task.spawn(function()
                     mouse1click()
                     task.wait(0.2)
                     
-                    -- Update tree health display
                     local currentHealth, currentMaxHealth = GetTreeHealth(tree)
                     UpdateTreeHealth(tree, currentHealth, currentMaxHealth)
                     
@@ -382,7 +501,6 @@ task.spawn(function()
                     end
                 end
                 
-                -- Clean up health display when done with tree
                 if tree and tree:FindFirstChild("TreeHealthDisplay") then
                     tree.TreeHealthDisplay:Destroy()
                 end
@@ -392,6 +510,44 @@ task.spawn(function()
         end
         task.wait(1.5)
     end
+end)
+
+-- Button Functions
+CollectItemsButton.MouseButton1Click:Connect(function()
+    ItemSelectionFrame.Visible = true
+end)
+
+StartCollectionButton.MouseButton1Click:Connect(function()
+    -- Check if any items are selected
+    local hasSelected = false
+    for _, selected in pairs(selectedItems) do
+        if selected then
+            hasSelected = true
+            break
+        end
+    end
+    
+    if not hasSelected then
+        ShowNotification("Please select at least one item!")
+        return
+    end
+    
+    CollectItemsActive = true
+    CollectItemsButton.Text = "Collect Items: ON"
+    CollectItemsButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    ItemSelectionFrame.Visible = false
+    
+    -- Show which items are selected
+    local selectedList = ""
+    for itemName, selected in pairs(selectedItems) do
+        if selected then
+            selectedList = selectedList .. itemName .. ", "
+        end
+    end
+    selectedList = selectedList:sub(1, -3) -- Remove last comma
+    
+    ShowNotification("Collecting: " .. selectedList)
+    task.spawn(CollectionFunction)
 end)
 
 AutoTreeButton.MouseButton1Click:Connect(function()
@@ -405,16 +561,10 @@ AutoTreeButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- NOska Button Functionality
-NOSkaButton.MouseButton1Click:Connect(function()
-    NOSkaActive = not NOSkaActive
-    NOSkaButton.Text = "NOska: " .. (NOSkaActive and "ON" or "OFF")
-    NOSkaButton.BackgroundColor3 = NOSkaActive and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
-    if NOSkaActive then
-        ShowNotification("NOska enabled - collecting all scraps.")
-        task.spawn(NOskaFunction)
-    else
-        ShowNotification("NOska disabled.")
+-- Close Item Selection
+ItemSelectionFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        ItemSelectionFrame.Visible = false
     end
 end)
 
@@ -426,7 +576,7 @@ end)
 MinimizeButton.MouseButton1Click:Connect(function()
     local Minimized = not (Frame.Size == UDim2.new(0, 250, 0, 40))
     MinimizeButton.Text = Minimized and "+" or "-"
-    NOSkaButton.Visible = not Minimized
+    CollectItemsButton.Visible = not Minimized
     AutoTreeButton.Visible = not Minimized
     Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 150)
 end)
