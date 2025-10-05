@@ -23,8 +23,8 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.DisplayOrder = 1000
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 250, 0, 150)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -75)
+Frame.Size = UDim2.new(0, 250, 0, 200)
+Frame.Position = UDim2.new(0.5, -125, 0.5, -100)
 Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 Frame.BorderSizePixel = 0
 Frame.Parent = ScreenGui
@@ -361,42 +361,72 @@ for i, itemName in ipairs(availableItems) do
     itemCheckboxes[itemName] = checkbox
 end
 
--- Select All Button
-local SelectAllButton = CreateButton("Select All", 260, ItemSelectionFrame)
-SelectAllButton.Size = UDim2.new(0, 100, 0, 30)
-SelectAllButton.Position = UDim2.new(0, 20, 0, 260)
-
-SelectAllButton.MouseButton1Click:Connect(function()
-    for itemName, checkbox in pairs(itemCheckboxes) do
-        selectedItems[itemName] = true
-        checkbox.Text = "✓"
-        checkbox.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-    end
-end)
-
--- Deselect All Button
-local DeselectAllButton = CreateButton("Deselect All", 260, ItemSelectionFrame)
-DeselectAllButton.Size = UDim2.new(0, 100, 0, 30)
-DeselectAllButton.Position = UDim2.new(0, 130, 0, 260)
-
-DeselectAllButton.MouseButton1Click:Connect(function()
-    for itemName, checkbox in pairs(itemCheckboxes) do
-        selectedItems[itemName] = false
-        checkbox.Text = ""
-        checkbox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    end
-end)
-
 -- Start Collection Button
-local StartCollectionButton = CreateButton("Start Collection", 300, ItemSelectionFrame)
+local StartCollectionButton = CreateButton("Start Collection", 260, ItemSelectionFrame)
 StartCollectionButton.Size = UDim2.new(0, 210, 0, 35)
-StartCollectionButton.Position = UDim2.new(0, 20, 0, 300)
+StartCollectionButton.Position = UDim2.new(0, 20, 0, 260)
 
 -- Main buttons
 local CollectItemsButton = CreateButton("Collect Items", 40)
-local AutoTreeButton = CreateButton("Auto Tree", 90)
 
--- Draggable GUI
+-- Distance Slider
+local DistanceLabel = Instance.new("TextLabel")
+DistanceLabel.Size = UDim2.new(0, 150, 0, 20)
+DistanceLabel.Position = UDim2.new(0, 20, 0, 90)
+DistanceLabel.BackgroundTransparency = 1
+DistanceLabel.Text = "Distance: 0"
+DistanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+DistanceLabel.TextSize = 14
+DistanceLabel.Font = Enum.Font.Gotham
+DistanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+DistanceLabel.Parent = Frame
+
+-- Slider Track
+local SliderTrack = Instance.new("Frame")
+SliderTrack.Size = UDim2.new(0, 210, 0, 5)
+SliderTrack.Position = UDim2.new(0, 20, 0, 115)
+SliderTrack.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+SliderTrack.BorderSizePixel = 0
+SliderTrack.Parent = Frame
+
+local SliderTrackCorner = Instance.new("UICorner")
+SliderTrackCorner.CornerRadius = UDim.new(0, 3)
+SliderTrackCorner.Parent = SliderTrack
+
+-- Slider Fill
+local SliderFill = Instance.new("Frame")
+SliderFill.Size = UDim2.new(0, 0, 0, 5)
+SliderFill.Position = UDim2.new(0, 0, 0, 0)
+SliderFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+SliderFill.BorderSizePixel = 0
+SliderFill.Parent = SliderTrack
+
+local SliderFillCorner = Instance.new("UICorner")
+SliderFillCorner.CornerRadius = UDim.new(0, 3)
+SliderFillCorner.Parent = SliderFill
+
+-- Slider Thumb
+local SliderThumb = Instance.new("TextButton")
+SliderThumb.Size = UDim2.new(0, 15, 0, 15)
+SliderThumb.Position = UDim2.new(0, 0, 0, -5)
+SliderThumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+SliderThumb.Text = ""
+SliderThumb.Parent = SliderTrack
+
+local SliderThumbCorner = Instance.new("UICorner")
+SliderThumbCorner.CornerRadius = UDim.new(1, 0)
+SliderThumbCorner.Parent = SliderThumb
+
+local SliderThumbStroke = Instance.new("UIStroke")
+SliderThumbStroke.Color = Color3.fromRGB(255, 0, 0)
+SliderThumbStroke.Thickness = 2
+SliderThumbStroke.Parent = SliderThumb
+
+-- Auto Tree Button
+local AutoTreeButton = CreateButton("Auto Chop Tree", 140)
+AutoTreeButton.Text = "Auto Chop Tree: OFF"
+
+-- Draggable GUI for main frame
 local dragging = false
 local dragInput = nil
 local dragStart = nil
@@ -430,9 +460,45 @@ Frame.InputChanged:Connect(function(input)
     end
 end)
 
+-- Draggable GUI for item selection frame
+local itemSelectionDragging = false
+local itemSelectionDragInput = nil
+local itemSelectionDragStart = nil
+local itemSelectionStartPos = nil
+
+local function updateItemSelection(input)
+    if itemSelectionDragging then
+        local delta = input.Position - itemSelectionDragStart
+        ItemSelectionFrame.Position = UDim2.new(itemSelectionStartPos.X.Scale, itemSelectionStartPos.X.Offset + delta.X, itemSelectionStartPos.Y.Scale, itemSelectionStartPos.Y.Offset + delta.Y)
+    end
+end
+
+ItemSelectionFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        itemSelectionDragging = true
+        itemSelectionDragStart = input.Position
+        itemSelectionStartPos = ItemSelectionFrame.Position
+    end
+end)
+
+ItemSelectionFrame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        itemSelectionDragging = false
+        itemSelectionDragInput = nil
+    end
+end)
+
+ItemSelectionFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        itemSelectionDragInput = input
+    end
+end)
+
 UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
+    if dragging and input == dragInput then
         update(input)
+    elseif itemSelectionDragging and input == itemSelectionDragInput then
+        updateItemSelection(input)
     end
 end)
 
@@ -531,6 +597,46 @@ task.spawn(function()
     end
 end)
 
+-- Slider Functionality
+local sliderDragging = false
+local function updateSlider(value)
+    local maxDistance = 100
+    local percentage = math.clamp(value / maxDistance, 0, 1)
+    
+    SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
+    SliderThumb.Position = UDim2.new(percentage, -7, 0, -5)
+    
+    minDistance = math.floor(percentage * maxDistance)
+    DistanceLabel.Text = "Distance: " .. minDistance
+end
+
+-- Initialize slider
+updateSlider(0)
+
+-- Slider dragging
+SliderThumb.MouseButton1Down:Connect(function()
+    sliderDragging = true
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        sliderDragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if sliderDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local mousePos = UserInputService:GetMouseLocation()
+        local sliderAbsolutePos = SliderTrack.AbsolutePosition
+        local sliderAbsoluteSize = SliderTrack.AbsoluteSize
+        
+        local relativeX = (mousePos.X - sliderAbsolutePos.X) / sliderAbsoluteSize.X
+        relativeX = math.clamp(relativeX, 0, 1)
+        
+        updateSlider(relativeX * 100)
+    end
+end)
+
 -- Button Functions
 CollectItemsButton.MouseButton1Click:Connect(function()
     ItemSelectionFrame.Visible = true
@@ -571,10 +677,10 @@ end)
 
 AutoTreeButton.MouseButton1Click:Connect(function()
     AutoTreeFarmEnabled = not AutoTreeFarmEnabled
-    AutoTreeButton.Text = "Auto Tree: " .. (AutoTreeFarmEnabled and "ON" or "OFF")
+    AutoTreeButton.Text = "Auto Chop Tree: " .. (AutoTreeFarmEnabled and "ON" or "OFF")
     AutoTreeButton.BackgroundColor3 = AutoTreeFarmEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
     if AutoTreeFarmEnabled then
-        ShowNotification("Auto Tree Farm enabled.")
+        ShowNotification("Auto Tree Farm enabled. Distance: " .. minDistance)
     else
         ShowNotification("Auto Tree Farm disabled.")
     end
@@ -589,6 +695,8 @@ MinimizeButton.MouseButton1Click:Connect(function()
     local Minimized = not (Frame.Size == UDim2.new(0, 250, 0, 40))
     MinimizeButton.Text = Minimized and "+" or "-"
     CollectItemsButton.Visible = not Minimized
+    DistanceLabel.Visible = not Minimized
+    SliderTrack.Visible = not Minimized
     AutoTreeButton.Visible = not Minimized
-    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 150)
+    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 200)
 end)
