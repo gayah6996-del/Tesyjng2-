@@ -23,8 +23,8 @@ ScreenGui.IgnoreGuiInset = true
 ScreenGui.DisplayOrder = 1000
 
 local Frame = Instance.new("Frame")
-Frame.Size = UDim2.new(0, 250, 0, 180)
-Frame.Position = UDim2.new(0.5, -125, 0.5, -90)
+Frame.Size = UDim2.new(0, 280, 0, 200)
+Frame.Position = UDim2.new(0.5, -140, 0.1, 0)
 Frame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 Frame.BorderSizePixel = 0
 Frame.Parent = ScreenGui
@@ -218,7 +218,7 @@ end
 local function CreateButton(name, yPos, parent)
     parent = parent or Frame
     local Button = Instance.new("TextButton")
-    Button.Size = UDim2.new(0, 210, 0, 40)
+    Button.Size = UDim2.new(0, 240, 0, 35)
     Button.Position = UDim2.new(0, 20, 0, yPos)
     Button.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     Button.Text = name
@@ -238,11 +238,9 @@ local function CreateButton(name, yPos, parent)
     ButtonGlow.Parent = Button
 
     Button.MouseEnter:Connect(function()
-        TweenService:Create(Button, TweenInfo.new(0.3), {Size = UDim2.new(0, 215, 0, 42)}):Play()
         TweenService:Create(ButtonGlow, TweenInfo.new(0.3), {Transparency = 0}):Play()
     end)
     Button.MouseLeave:Connect(function()
-        TweenService:Create(Button, TweenInfo.new(0.3), {Size = UDim2.new(0, 210, 0, 40)}):Play()
         TweenService:Create(ButtonGlow, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
     end)
 
@@ -253,7 +251,7 @@ end
 local function CreateToggle(name, yPos, parent)
     parent = parent or Frame
     local ToggleFrame = Instance.new("Frame")
-    ToggleFrame.Size = UDim2.new(0, 210, 0, 40)
+    ToggleFrame.Size = UDim2.new(0, 240, 0, 35)
     ToggleFrame.Position = UDim2.new(0, 20, 0, yPos)
     ToggleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     ToggleFrame.Parent = parent
@@ -269,7 +267,7 @@ local function CreateToggle(name, yPos, parent)
     ToggleGlow.Parent = ToggleFrame
 
     local ToggleLabel = Instance.new("TextLabel")
-    ToggleLabel.Size = UDim2.new(0, 150, 0, 40)
+    ToggleLabel.Size = UDim2.new(0, 150, 0, 35)
     ToggleLabel.Position = UDim2.new(0, 10, 0, 0)
     ToggleLabel.BackgroundTransparency = 1
     ToggleLabel.Text = name
@@ -306,34 +304,40 @@ local function CreateToggle(name, yPos, parent)
         if isToggled then
             TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 150, 0)}):Play()
             TweenService:Create(ToggleKnob, TweenInfo.new(0.2), {Position = UDim2.new(0, 22, 0, 2)}):Play()
+            ToggleLabel.Text = name .. ": ON"
         else
             TweenService:Create(ToggleButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(150, 0, 0)}):Play()
             TweenService:Create(ToggleKnob, TweenInfo.new(0.2), {Position = UDim2.new(0, 2, 0, 2)}):Play()
+            ToggleLabel.Text = name .. ": OFF"
         end
     end
 
     ToggleButton.MouseButton1Click:Connect(function()
         isToggled = not isToggled
         updateToggle()
+        return isToggled
     end)
 
     ToggleFrame.MouseEnter:Connect(function()
-        TweenService:Create(ToggleFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 215, 0, 42)}):Play()
         TweenService:Create(ToggleGlow, TweenInfo.new(0.3), {Transparency = 0}):Play()
     end)
     ToggleFrame.MouseLeave:Connect(function()
-        TweenService:Create(ToggleFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 210, 0, 40)}):Play()
         TweenService:Create(ToggleGlow, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
     end)
 
-    return ToggleFrame, ToggleButton, function() return isToggled end, function(value) isToggled = value; updateToggle() end
+    updateToggle()
+
+    return ToggleFrame, function() return isToggled end, function(value) 
+        isToggled = value
+        updateToggle()
+    end
 end
 
--- Slider Creation
-local function CreateSlider(name, minValue, maxValue, defaultValue, yPos, parent)
+-- Simple Slider Creation for Mobile
+local function CreateSimpleSlider(name, minValue, maxValue, defaultValue, yPos, parent)
     parent = parent or Frame
     local SliderFrame = Instance.new("Frame")
-    SliderFrame.Size = UDim2.new(0, 210, 0, 60)
+    SliderFrame.Size = UDim2.new(0, 240, 0, 50)
     SliderFrame.Position = UDim2.new(0, 20, 0, yPos)
     SliderFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     SliderFrame.Parent = parent
@@ -349,7 +353,7 @@ local function CreateSlider(name, minValue, maxValue, defaultValue, yPos, parent
     SliderGlow.Parent = SliderFrame
 
     local SliderLabel = Instance.new("TextLabel")
-    SliderLabel.Size = UDim2.new(0, 190, 0, 20)
+    SliderLabel.Size = UDim2.new(0, 220, 0, 20)
     SliderLabel.Position = UDim2.new(0, 10, 0, 5)
     SliderLabel.BackgroundTransparency = 1
     SliderLabel.Text = name
@@ -360,8 +364,8 @@ local function CreateSlider(name, minValue, maxValue, defaultValue, yPos, parent
     SliderLabel.Parent = SliderFrame
 
     local ValueLabel = Instance.new("TextLabel")
-    ValueLabel.Size = UDim2.new(0, 50, 0, 20)
-    ValueLabel.Position = UDim2.new(1, -60, 0, 5)
+    ValueLabel.Size = UDim2.new(0, 60, 0, 20)
+    ValueLabel.Position = UDim2.new(1, -70, 0, 5)
     ValueLabel.BackgroundTransparency = 1
     ValueLabel.Text = tostring(defaultValue)
     ValueLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -370,96 +374,61 @@ local function CreateSlider(name, minValue, maxValue, defaultValue, yPos, parent
     ValueLabel.Parent = SliderFrame
 
     local Track = Instance.new("Frame")
-    Track.Size = UDim2.new(0, 190, 0, 6)
-    Track.Position = UDim2.new(0, 10, 0, 35)
+    Track.Size = UDim2.new(0, 220, 0, 10)
+    Track.Position = UDim2.new(0, 10, 0, 30)
     Track.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     Track.Parent = SliderFrame
 
     local TrackCorner = Instance.new("UICorner")
-    TrackCorner.CornerRadius = UDim.new(0, 3)
+    TrackCorner.CornerRadius = UDim.new(0, 5)
     TrackCorner.Parent = Track
 
     local Fill = Instance.new("Frame")
-    Fill.Size = UDim2.new(0, 0, 0, 6)
+    Fill.Size = UDim2.new(0, 0, 0, 10)
     Fill.Position = UDim2.new(0, 0, 0, 0)
     Fill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     Fill.Parent = Track
 
     local FillCorner = Instance.new("UICorner")
-    FillCorner.CornerRadius = UDim.new(0, 3)
+    FillCorner.CornerRadius = UDim.new(0, 5)
     FillCorner.Parent = Fill
 
-    local Thumb = Instance.new("TextButton")
-    Thumb.Size = UDim2.new(0, 16, 0, 16)
-    Thumb.Position = UDim2.new(0, -8, 0, -5)
-    Thumb.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Thumb.Text = ""
-    Thumb.Parent = Track
-
-    local ThumbCorner = Instance.new("UICorner")
-    ThumbCorner.CornerRadius = UDim.new(0, 8)
-    ThumbCorner.Parent = Thumb
-
     local currentValue = defaultValue
-    local isDragging = false
 
     local function updateSlider(value)
         currentValue = math.clamp(value, minValue, maxValue)
         local percent = (currentValue - minValue) / (maxValue - minValue)
-        Fill.Size = UDim2.new(percent, 0, 0, 6)
-        Thumb.Position = UDim2.new(percent, -8, 0, -5)
-        ValueLabel.Text = tostring(math.floor(currentValue * 10) / 10)
+        Fill.Size = UDim2.new(percent, 0, 0, 10)
+        ValueLabel.Text = tostring(math.floor(currentValue))
     end
 
     updateSlider(defaultValue)
 
-    local function onInputChanged(input)
-        if isDragging then
+    -- Mobile-friendly slider controls
+    local function onTouchInput(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
             local relativeX = (input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X
             local value = minValue + (maxValue - minValue) * math.clamp(relativeX, 0, 1)
             updateSlider(value)
         end
     end
 
-    Thumb.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = true
-        end
-    end)
-
-    Thumb.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = false
-        end
-    end)
-
     Track.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = true
-            local relativeX = (input.Position.X - Track.AbsolutePosition.X) / Track.AbsoluteSize.X
-            local value = minValue + (maxValue - minValue) * math.clamp(relativeX, 0, 1)
-            updateSlider(value)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            onTouchInput(input)
         end
     end)
 
-    Track.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = false
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            onInputChanged(input)
+    Track.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            onTouchInput(input)
         end
     end)
 
     SliderFrame.MouseEnter:Connect(function()
-        TweenService:Create(SliderFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 215, 0, 62)}):Play()
         TweenService:Create(SliderGlow, TweenInfo.new(0.3), {Transparency = 0}):Play()
     end)
     SliderFrame.MouseLeave:Connect(function()
-        TweenService:Create(SliderFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 210, 0, 60)}):Play()
         TweenService:Create(SliderGlow, TweenInfo.new(0.3), {Transparency = 0.5}):Play()
     end)
 
@@ -468,8 +437,8 @@ end
 
 -- Item Selection Menu
 local ItemSelectionFrame = Instance.new("Frame")
-ItemSelectionFrame.Size = UDim2.new(0, 250, 0, 300)
-ItemSelectionFrame.Position = UDim2.new(0.5, -125, 0.5, -150)
+ItemSelectionFrame.Size = UDim2.new(0, 280, 0, 350)
+ItemSelectionFrame.Position = UDim2.new(0.5, -140, 0.5, -175)
 ItemSelectionFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 ItemSelectionFrame.BorderSizePixel = 0
 ItemSelectionFrame.Visible = false
@@ -506,7 +475,7 @@ end)
 
 local ItemSelectionTitle = Instance.new("TextLabel")
 ItemSelectionTitle.Size = UDim2.new(0, 200, 0, 30)
-ItemSelectionTitle.Position = UDim2.new(0, 25, 0, 10)
+ItemSelectionTitle.Position = UDim2.new(0, 40, 0, 10)
 ItemSelectionTitle.BackgroundTransparency = 1
 ItemSelectionTitle.Text = "Select Items to Collect"
 ItemSelectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -531,10 +500,10 @@ local itemCheckboxes = {}
 
 -- Create checkboxes for items
 for i, itemName in ipairs(availableItems) do
-    local yPos = 40 + (i-1) * 30
+    local yPos = 40 + (i-1) * 35
     
     local checkbox = Instance.new("TextButton")
-    checkbox.Size = UDim2.new(0, 20, 0, 20)
+    checkbox.Size = UDim2.new(0, 25, 0, 25)
     checkbox.Position = UDim2.new(0, 20, 0, yPos)
     checkbox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     checkbox.Text = ""
@@ -554,8 +523,8 @@ for i, itemName in ipairs(availableItems) do
     checkboxStroke.Parent = checkbox
     
     local itemLabel = Instance.new("TextLabel")
-    itemLabel.Size = UDim2.new(0, 150, 0, 20)
-    itemLabel.Position = UDim2.new(0, 50, 0, yPos)
+    itemLabel.Size = UDim2.new(0, 180, 0, 25)
+    itemLabel.Position = UDim2.new(0, 55, 0, yPos)
     itemLabel.BackgroundTransparency = 1
     itemLabel.Text = itemName
     itemLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -579,16 +548,16 @@ for i, itemName in ipairs(availableItems) do
 end
 
 -- Start Collection Button
-local StartCollectionButton = CreateButton("Start Collection", 260, ItemSelectionFrame)
-StartCollectionButton.Size = UDim2.new(0, 210, 0, 35)
-StartCollectionButton.Position = UDim2.new(0, 20, 0, 260)
+local StartCollectionButton = CreateButton("Start Collection", 290, ItemSelectionFrame)
+StartCollectionButton.Size = UDim2.new(0, 240, 0, 35)
+StartCollectionButton.Position = UDim2.new(0, 20, 0, 310)
 
 -- Main buttons
 local CollectItemsButton = CreateButton("Collect Items", 40)
 
 -- Auto Tree Toggle and Slider
-local AutoTreeToggle, AutoTreeToggleButton, GetAutoTreeState, SetAutoTreeState = CreateToggle("Auto Chop Tree", 90)
-local DistanceSlider, GetDistanceValue = CreateSlider("Chop Distance (Recommended < 250)", 0, 1000, 25, 140)
+local AutoTreeToggle, GetAutoTreeState, SetAutoTreeState = CreateToggle("Auto Chop Tree", 85)
+local DistanceSlider, GetDistanceValue = CreateSimpleSlider("Chop Distance", 0, 1000, 25, 130)
 
 -- Auto Tree Variables
 local ActiveAutoChopTree = false
@@ -596,34 +565,59 @@ local DistanceForAutoChopTree = 25
 
 -- Auto Tree Function
 local function AutoChopTreeFunction()
-    while ActiveAutoChopTree do
+    while ActiveAutoChopTree and task.wait(0.1) do
         local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart")
-        local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+        local character = player.Character
+        if not character then continue end
         
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if not hrp then continue end
+        
+        local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                       player.Inventory:FindFirstChild("Good Axe") or 
+                       player.Inventory:FindFirstChild("Strong Axe") or 
+                       player.Inventory:FindFirstChild("Chainsaw"))
+        
+        if not weapon then
+            ShowNotification("No axe found in inventory!")
+            ActiveAutoChopTree = false
+            SetAutoTreeState(false)
+            break
+        end
+        
+        -- Check trees in Foliage
         for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-            if ActiveAutoChopTree and tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+            if not ActiveAutoChopTree then break end
+            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
                 local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
                 if distance <= DistanceForAutoChopTree then
-                    task.spawn(function()		
-                        local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                    end)		
+                    local success = pcall(function()
+                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                    end)
+                    if not success then
+                        warn("Failed to damage tree")
+                    end
+                    task.wait(0.2)
                 end
             end
         end 
         
+        -- Check trees in Landmarks
         for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
-            if ActiveAutoChopTree and tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+            if not ActiveAutoChopTree then break end
+            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
                 local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
                 if distance <= DistanceForAutoChopTree then
-                    task.spawn(function()	
-                        local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                    end)			
+                    local success = pcall(function()
+                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                    end)
+                    if not success then
+                        warn("Failed to damage tree")
+                    end
+                    task.wait(0.2)
                 end
             end
         end
-        task.wait(0.01)
     end
 end
 
@@ -633,10 +627,10 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- Auto Tree Toggle Function
-AutoTreeToggleButton.MouseButton1Click:Connect(function()
+AutoTreeToggle:FindFirstChildOfClass("TextButton").MouseButton1Click:Connect(function()
     ActiveAutoChopTree = GetAutoTreeState()
     if ActiveAutoChopTree then
-        ShowNotification("Auto Chop Tree: ON")
+        ShowNotification("Auto Chop Tree: ON - Distance: " .. DistanceForAutoChopTree)
         task.spawn(AutoChopTreeFunction)
     else
         ShowNotification("Auto Chop Tree: OFF")
@@ -657,22 +651,24 @@ local function update(input)
 end
 
 Frame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.Touch then
         dragging = true
         dragStart = input.Position
         startPos = Frame.Position
+        
+        -- Capture the input for smoother dragging
+        input:Capture()
     end
 end)
 
 Frame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.Touch then
         dragging = false
-        dragInput = nil
     end
 end)
 
 Frame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.Touch then
         dragInput = input
     end
 end)
@@ -691,22 +687,22 @@ local function updateItemSelection(input)
 end
 
 ItemSelectionFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.Touch then
         itemSelectionDragging = true
         itemSelectionDragStart = input.Position
         itemSelectionStartPos = ItemSelectionFrame.Position
+        input:Capture()
     end
 end)
 
 ItemSelectionFrame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.Touch then
         itemSelectionDragging = false
-        itemSelectionDragInput = nil
     end
 end)
 
 ItemSelectionFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+    if input.UserInputType == Enum.UserInputType.Touch then
         itemSelectionDragInput = input
     end
 end)
@@ -723,13 +719,6 @@ end)
 local CollectItemsActive = false
 local VirtualInputManager = game:GetService('VirtualInputManager')
 
--- Mouse click function
-local function mouse1click()
-    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, false)
-    task.wait()
-    VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, false)
-end
-
 -- DragItem function
 local function DragItem(obj)
     if obj and obj.PrimaryPart then
@@ -743,14 +732,13 @@ end
 -- Collection Function
 local function CollectionFunction()
     while CollectItemsActive do
-        task.spawn(function()
-            for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
-                if CollectItemsActive and selectedItems[Obj.Name] and Obj:IsA("Model") and Obj.PrimaryPart then 
-                    DragItem(Obj)
-                    task.wait(0.1)
-                end 
-            end
-        end)
+        for _, Obj in pairs(Workspace.Items:GetChildren()) do
+            if not CollectItemsActive then break end
+            if selectedItems[Obj.Name] and Obj:IsA("Model") and Obj.PrimaryPart then 
+                DragItem(Obj)
+                task.wait(0.2)
+            end 
+        end
         task.wait(1)
     end
 end
@@ -777,7 +765,7 @@ StartCollectionButton.MouseButton1Click:Connect(function()
     
     CollectItemsActive = true
     CollectItemsButton.Text = "Collect Items: ON"
-    CollectItemsButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    CollectItemsButton.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
     ItemSelectionFrame.Visible = false
     
     -- Show which items are selected
@@ -793,16 +781,19 @@ StartCollectionButton.MouseButton1Click:Connect(function()
     task.spawn(CollectionFunction)
 end)
 
--- Button Functions
+-- Close and Minimize Functions
 CloseButton.MouseButton1Click:Connect(function()
     ScreenGui:Destroy()
 end)
 
 MinimizeButton.MouseButton1Click:Connect(function()
-    local Minimized = not (Frame.Size == UDim2.new(0, 250, 0, 40))
+    local Minimized = not (Frame.Size == UDim2.new(0, 280, 0, 40))
     MinimizeButton.Text = Minimized and "+" or "-"
     CollectItemsButton.Visible = not Minimized
     AutoTreeToggle.Visible = not Minimized
     DistanceSlider.Visible = not Minimized
-    Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 180)
+    Frame.Size = Minimized and UDim2.new(0, 280, 0, 40) or UDim2.new(0, 280, 0, 200)
 end)
+
+-- Initial notification
+ShowNotification("Echelon GUI Loaded!")
