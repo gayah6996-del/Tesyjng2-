@@ -10,16 +10,25 @@ local aimbotEnabled = false
 local espEnabled = false
 local teamCheckEnabled = false
 local fovRadius = 100
-local guiName = "AimbotToggleGUI"
+local aimbotMaxDistance = 100
+local guiName = "ASTRALCHEAT"
 local guiVisible = true
 local espObjects = {}
-local aimbotTarget = "Head" -- Новая переменная для выбора цели
+local aimbotTarget = "Head"
+
+-- Переменные для камеры
+local customCameraFOVEnabled = false
+local cameraFOV = 70
+
+-- Переменные для Infinite Jump
+local infiniteJumpEnabled = false
 
 -- Переменные для перемещения GUI
 local frame = nil
 local isDragging = false
 local dragStart = nil
 local frameStart = nil
+local activeTab = "Info"
 
 -- FOV Circle
 local circle = Drawing.new("Circle")
@@ -29,6 +38,13 @@ circle.Filled = false
 circle.Radius = fovRadius
 circle.Visible = true
 circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+
+-- Infinite Jump Functionality
+userInputService.JumpRequest:connect(function()
+    if infiniteJumpEnabled then
+        game:GetService"Players".LocalPlayer.Character:FindFirstChildOfClass'Humanoid':ChangeState("Jumping")
+    end
+end)
 
 -- Show Notification
 local function showNotification()
@@ -49,7 +65,7 @@ local function showNotification()
     textLabel.Position = UDim2.new(1, -260, 1, -60)
     textLabel.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
     textLabel.BorderSizePixel = 0
-    textLabel.Text = "Скрипт успешно запущен✅!"
+    textLabel.Text = "ASTRALCHEAT успешно запущен✅!"
     textLabel.TextColor3 = Color3.new(1, 1, 1)
     textLabel.TextScaled = true
     textLabel.Font = Enum.Font.SourceSansBold
@@ -123,7 +139,7 @@ local function isVisible(part)
     end
 end
 
--- Closest Player Function (with team check)
+-- Closest Player Function (with team check and distance check)
 local function getClosestPlayer()
     local closestPlayer = nil
     local shortestDistance = fovRadius
@@ -134,10 +150,16 @@ local function getClosestPlayer()
                 continue
             end
             
-            -- Проверяем выбранную часть тела
             local targetPart = p.Character:FindFirstChild(aimbotTarget)
             if not targetPart then
-                targetPart = p.Character.Head -- Fallback на голову если выбранная часть не найдена
+                targetPart = p.Character.Head
+            end
+            
+            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                local distanceToPlayer = (player.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
+                if distanceToPlayer > aimbotMaxDistance then
+                    continue
+                end
             end
             
             local screenPos, onScreen = camera:WorldToViewportPoint(targetPart.Position)
@@ -161,23 +183,170 @@ local function createGUI()
     gui.ResetOnSpawn = false
     gui.Parent = player:WaitForChild("PlayerGui")
 
+    -- Основной контейнер
     frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -100, 0.5, -115)
-    frame.Size = UDim2.new(0, 240, 0, 270)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -150)
+    frame.Size = UDim2.new(0, 350, 0, 300)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
     frame.Visible = guiVisible
 
+    -- Заголовок
     local title = Instance.new("TextLabel", frame)
     title.Size = UDim2.new(1, 0, 0, 25)
     title.Position = UDim2.new(0, 0, 0, 0)
     title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    title.Text = "ASTRALCHEAT V1.0 BY @SFXCL"
+    title.Text = "ASTRALCHEAT v1.0"
     title.TextColor3 = Color3.new(1, 1, 1)
     title.TextScaled = true
     title.Font = Enum.Font.SourceSansBold
     title.BorderSizePixel = 0
+
+    -- Кнопка закрытия (крестик)
+    local closeButton = Instance.new("TextButton", frame)
+    closeButton.Size = UDim2.new(0, 25, 0, 25)
+    closeButton.Position = UDim2.new(1, -25, 0, 0)
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+    closeButton.Text = "X"
+    closeButton.TextColor3 = Color3.new(1, 1, 1)
+    closeButton.TextScaled = true
+    closeButton.BorderSizePixel = 0
+    closeButton.ZIndex = 2
+
+    -- Контейнер для подтверждения закрытия
+    local confirmFrame = Instance.new("Frame", gui)
+    confirmFrame.Size = UDim2.new(0, 300, 0, 120)
+    confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
+    confirmFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    confirmFrame.BorderSizePixel = 1
+    confirmFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    confirmFrame.Visible = false
+    confirmFrame.ZIndex = 100
+
+    local confirmText = Instance.new("TextLabel", confirmFrame)
+    confirmText.Size = UDim2.new(0.9, 0, 0.4, 0)
+    confirmText.Position = UDim2.new(0.05, 0, 0.1, 0)
+    confirmText.BackgroundTransparency = 1
+    confirmText.Text = "Вы хотите закрыть меню?"
+    confirmText.TextColor3 = Color3.new(1, 1, 1)
+    confirmText.TextScaled = true
+    confirmText.Font = Enum.Font.SourceSansBold
+    confirmText.ZIndex = 101
+
+    local yesButton = Instance.new("TextButton", confirmFrame)
+    yesButton.Size = UDim2.new(0.4, 0, 0.3, 0)
+    yesButton.Position = UDim2.new(0.05, 0, 0.55, 0)
+    yesButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    yesButton.Text = "Да"
+    yesButton.TextColor3 = Color3.new(1, 1, 1)
+    yesButton.TextScaled = true
+    yesButton.BorderSizePixel = 0
+    yesButton.ZIndex = 101
+
+    local noButton = Instance.new("TextButton", confirmFrame)
+    noButton.Size = UDim2.new(0.4, 0, 0.3, 0)
+    noButton.Position = UDim2.new(0.55, 0, 0.55, 0)
+    noButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+    noButton.Text = "Нет"
+    noButton.TextColor3 = Color3.new(1, 1, 1)
+    noButton.TextScaled = true
+    noButton.BorderSizePixel = 0
+    noButton.ZIndex = 101
+
+    -- Контейнер для вкладок и контента
+    local mainContainer = Instance.new("Frame", frame)
+    mainContainer.Size = UDim2.new(1, 0, 1, -25)
+    mainContainer.Position = UDim2.new(0, 0, 0, 25)
+    mainContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    mainContainer.BorderSizePixel = 0
+
+    -- Панель вкладок (вертикальная)
+    local tabsPanel = Instance.new("Frame", mainContainer)
+    tabsPanel.Size = UDim2.new(0, 80, 1, 0)
+    tabsPanel.Position = UDim2.new(0, 0, 0, 0)
+    tabsPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    tabsPanel.BorderSizePixel = 0
+
+    -- Контейнер для контента
+    local contentContainer = Instance.new("Frame", mainContainer)
+    contentContainer.Size = UDim2.new(1, -80, 1, 0)
+    contentContainer.Position = UDim2.new(0, 80, 0, 0)
+    contentContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    contentContainer.BorderSizePixel = 0
+
+    -- Вкладка Info (первая)
+    local infoTabButton = Instance.new("TextButton", tabsPanel)
+    infoTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    infoTabButton.Position = UDim2.new(0.05, 0, 0.02, 0)
+    infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    infoTabButton.Text = "Info"
+    infoTabButton.TextColor3 = Color3.new(1, 1, 1)
+    infoTabButton.TextScaled = true
+    infoTabButton.BorderSizePixel = 1
+    infoTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+
+    -- Вкладка ESP (вторая)
+    local espTabButton = Instance.new("TextButton", tabsPanel)
+    espTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    espTabButton.Position = UDim2.new(0.05, 0, 0.12, 0)
+    espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    espTabButton.Text = "ESP"
+    espTabButton.TextColor3 = Color3.new(1, 1, 1)
+    espTabButton.TextScaled = true
+    espTabButton.BorderSizePixel = 1
+    espTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+
+    -- Вкладка AimBot (третья)
+    local aimbotTabButton = Instance.new("TextButton", tabsPanel)
+    aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    aimbotTabButton.Position = UDim2.new(0.05, 0, 0.22, 0)
+    aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    aimbotTabButton.Text = "AimBot"
+    aimbotTabButton.TextColor3 = Color3.new(1, 1, 1)
+    aimbotTabButton.TextScaled = true
+    aimbotTabButton.BorderSizePixel = 1
+    aimbotTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+
+    -- Вкладка Camera (четвертая)
+    local cameraTabButton = Instance.new("TextButton", tabsPanel)
+    cameraTabButton.Size = UDim2.new(0.9, 0, 0, 25)
+    cameraTabButton.Position = UDim2.new(0.05, 0, 0.32, 0)
+    cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    cameraTabButton.Text = "Camera"
+    cameraTabButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraTabButton.TextScaled = true
+    cameraTabButton.BorderSizePixel = 1
+    cameraTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
+
+    -- Контейнеры для содержимого вкладок
+    local infoContainer = Instance.new("Frame", contentContainer)
+    infoContainer.Size = UDim2.new(1, 0, 1, 0)
+    infoContainer.Position = UDim2.new(0, 0, 0, 0)
+    infoContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    infoContainer.BorderSizePixel = 0
+    infoContainer.Visible = true
+
+    local espContainer = Instance.new("Frame", contentContainer)
+    espContainer.Size = UDim2.new(1, 0, 1, 0)
+    espContainer.Position = UDim2.new(0, 0, 0, 0)
+    espContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    espContainer.BorderSizePixel = 0
+    espContainer.Visible = false
+
+    local aimbotContainer = Instance.new("Frame", contentContainer)
+    aimbotContainer.Size = UDim2.new(1, 0, 1, 0)
+    aimbotContainer.Position = UDim2.new(0, 0, 0, 0)
+    aimbotContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    aimbotContainer.BorderSizePixel = 0
+    aimbotContainer.Visible = false
+
+    local cameraContainer = Instance.new("Frame", contentContainer)
+    cameraContainer.Size = UDim2.new(1, 0, 1, 0)
+    cameraContainer.Position = UDim2.new(0, 0, 0, 0)
+    cameraContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    cameraContainer.BorderSizePixel = 0
+    cameraContainer.Visible = false
 
     -- Функции для перемещения GUI
     local function startDrag(input)
@@ -221,65 +390,85 @@ local function createGUI()
         end
     end)
 
-    local aimbotOn = Instance.new("TextButton", frame)
-    aimbotOn.Size = UDim2.new(0.5, -5, 0.3, -5)
-    aimbotOn.Position = UDim2.new(0, 5, 0, 30)
-    aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    aimbotOn.Text = "Aimbot ON"
-    aimbotOn.TextColor3 = Color3.new(1, 1, 1)
-    aimbotOn.TextScaled = true
-    aimbotOn.BorderSizePixel = 0
+    -- ========== ВКЛАДКА INFO ==========
+    
+    local infoText = Instance.new("TextLabel", infoContainer)
+    infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
+    infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
+    infoText.BackgroundTransparency = 1
+    infoText.Text = "ASTRALCHEAT v1.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n\nИспользуйте на свой страх и риск!"
+    infoText.TextColor3 = Color3.new(1, 1, 1)
+    infoText.TextScaled = true
+    infoText.TextWrapped = true
+    infoText.Font = Enum.Font.SourceSans
 
-    local aimbotOff = Instance.new("TextButton", frame)
-    aimbotOff.Size = UDim2.new(0.5, -5, 0.3, -5)
-    aimbotOff.Position = UDim2.new(0.5, 5, 0, 30)
-    aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    aimbotOff.Text = "Aimbot OFF ✅"
-    aimbotOff.TextColor3 = Color3.new(1, 1, 1)
-    aimbotOff.TextScaled = true
-    aimbotOff.BorderSizePixel = 0
+    -- ========== ВКЛАДКА ESP ==========
+    
+    -- Кнопка ESP (серая)
+    local espButton = Instance.new("TextButton", espContainer)
+    espButton.Size = UDim2.new(0.9, 0, 0, 35)
+    espButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    espButton.Text = "ESP: OFF"
+    espButton.TextColor3 = Color3.new(1, 1, 1)
+    espButton.TextScaled = true
+    espButton.BorderSizePixel = 0
 
-    local espOn = Instance.new("TextButton", frame)
-    espOn.Size = UDim2.new(0.5, -5, 0.3, -5)
-    espOn.Position = UDim2.new(0, 5, 0.35, 10)
-    espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    espOn.Text = "ESP ON"
-    espOn.TextColor3 = Color3.new(1, 1, 1)
-    espOn.TextScaled = true
-    espOn.BorderSizePixel = 0
+    -- ========== ВКЛАДКА AIMBOT ==========
+    
+    -- Кнопка Aimbot (серая)
+    local aimbotButton = Instance.new("TextButton", aimbotContainer)
+    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
+    aimbotButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    aimbotButton.Text = "Aimbot: OFF"
+    aimbotButton.TextColor3 = Color3.new(1, 1, 1)
+    aimbotButton.TextScaled = true
+    aimbotButton.BorderSizePixel = 0
 
-    local espOff = Instance.new("TextButton", frame)
-    espOff.Size = UDim2.new(0.5, -5, 0.3, -5)
-    espOff.Position = UDim2.new(0.5, 5, 0.35, 10)
-    espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    espOff.Text = "ESP OFF ✅"
-    espOff.TextColor3 = Color3.new(1, 1, 1)
-    espOff.TextScaled = true
-    espOff.BorderSizePixel = 0
+    -- Выпадающий список для выбора цели
+    local targetDropdown = Instance.new("TextButton", aimbotContainer)
+    targetDropdown.Size = UDim2.new(0.9, 0, 0, 35)
+    targetDropdown.Position = UDim2.new(0.05, 0, 0.20, 0)
+    targetDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    targetDropdown.Text = "Target: Head"
+    targetDropdown.TextColor3 = Color3.new(1, 1, 1)
+    targetDropdown.TextScaled = true
+    targetDropdown.BorderSizePixel = 0
 
-    -- Кнопки выбора цели для аимбота
-    local targetHeadButton = Instance.new("TextButton", frame)
-    targetHeadButton.Size = UDim2.new(0.5, -5, 0.3, -5)
-    targetHeadButton.Position = UDim2.new(0, 5, 0.7, 10)
-    targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-    targetHeadButton.Text = "Target: Head ✅"
-    targetHeadButton.TextColor3 = Color3.new(1, 1, 1)
-    targetHeadButton.TextScaled = true
-    targetHeadButton.BorderSizePixel = 0
+    -- Контейнер для выпадающего списка
+    local dropdownContainer = Instance.new("Frame", aimbotContainer)
+    dropdownContainer.Size = UDim2.new(0.9, 0, 0, 70)
+    dropdownContainer.Position = UDim2.new(0.05, 0, 0.20, 35)
+    dropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    dropdownContainer.BorderSizePixel = 1
+    dropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    dropdownContainer.Visible = false
 
-    local targetBodyButton = Instance.new("TextButton", frame)
-    targetBodyButton.Size = UDim2.new(0.5, -5, 0.3, -5)
-    targetBodyButton.Position = UDim2.new(0.5, 5, 0.7, 10)
-    targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-    targetBodyButton.Text = "Target: Body"
-    targetBodyButton.TextColor3 = Color3.new(1, 1, 1)
-    targetBodyButton.TextScaled = true
-    targetBodyButton.BorderSizePixel = 0
+    -- Кнопка выбора Head
+    local headButton = Instance.new("TextButton", dropdownContainer)
+    headButton.Size = UDim2.new(1, 0, 0, 35)
+    headButton.Position = UDim2.new(0, 0, 0, 0)
+    headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    headButton.Text = "Head"
+    headButton.TextColor3 = Color3.new(1, 1, 1)
+    headButton.TextScaled = true
+    headButton.BorderSizePixel = 0
 
-    -- FOV Slider для телефона
-    local fovSliderFrame = Instance.new("Frame", frame)
+    -- Кнопка выбора Body
+    local bodyButton = Instance.new("TextButton", dropdownContainer)
+    bodyButton.Size = UDim2.new(1, 0, 0, 35)
+    bodyButton.Position = UDim2.new(0, 0, 0, 35)
+    bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    bodyButton.Text = "Body"
+    bodyButton.TextColor3 = Color3.new(1, 1, 1)
+    bodyButton.TextScaled = true
+    bodyButton.BorderSizePixel = 0
+
+    -- FOV Slider для аимбота (исходная позиция)
+    local fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.7, 0)
+    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
@@ -307,30 +496,175 @@ local function createGUI()
     sliderFill.BorderSizePixel = 0
 
     local sliderButton = Instance.new("Frame", sliderBackground)
-    sliderButton.Size = UDim2.new(0, 25, 1.5, 0)
-    sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -12, -0.25, 0)
+    sliderButton.Size = UDim2.new(0, 15, 1.5, 0)
+    sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -7, -0.25, 0)
     sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     sliderButton.BorderSizePixel = 1
     sliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
 
-    -- Кнопки + и - для точной настройки
+    -- Кнопки + и - для FOV
     local minusButton = Instance.new("TextButton", fovSliderFrame)
-    minusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
-    minusButton.Position = UDim2.new(0, 0, 0.85, 0)
-    minusButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+    minusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    minusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    minusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     minusButton.Text = "-"
     minusButton.TextColor3 = Color3.new(1, 1, 1)
     minusButton.TextScaled = true
     minusButton.BorderSizePixel = 0
 
     local plusButton = Instance.new("TextButton", fovSliderFrame)
-    plusButton.Size = UDim2.new(0.2, 0, 0.25, 0)
-    plusButton.Position = UDim2.new(0.8, 0, 0.85, 0)
-    plusButton.BackgroundColor3 = Color3.fromRGB(80, 255, 80)
+    plusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    plusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    plusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     plusButton.Text = "+"
     plusButton.TextColor3 = Color3.new(1, 1, 1)
     plusButton.TextScaled = true
     plusButton.BorderSizePixel = 0
+
+    -- Distance Slider для аимбота (исходная позиция)
+    local distanceSliderFrame = Instance.new("Frame", aimbotContainer)
+    distanceSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+    distanceSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    distanceSliderFrame.BorderSizePixel = 0
+
+    local distanceLabel = Instance.new("TextLabel", distanceSliderFrame)
+    distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    distanceLabel.Position = UDim2.new(0, 0, 0, 0)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.Text = "Aimbot Distance: " .. aimbotMaxDistance .. "m"
+    distanceLabel.TextColor3 = Color3.new(1, 1, 1)
+    distanceLabel.TextScaled = true
+    distanceLabel.Font = Enum.Font.SourceSans
+
+    local distanceSliderBackground = Instance.new("TextButton", distanceSliderFrame)
+    distanceSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
+    distanceSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
+    distanceSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    distanceSliderBackground.BorderSizePixel = 0
+    distanceSliderBackground.Text = ""
+    distanceSliderBackground.AutoButtonColor = false
+
+    local distanceSliderFill = Instance.new("Frame", distanceSliderBackground)
+    distanceSliderFill.Size = UDim2.new((aimbotMaxDistance - 10) / 190, 0, 1, 0)
+    distanceSliderFill.Position = UDim2.new(0, 0, 0, 0)
+    distanceSliderFill.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+    distanceSliderFill.BorderSizePixel = 0
+
+    local distanceSliderButton = Instance.new("Frame", distanceSliderBackground)
+    distanceSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
+    distanceSliderButton.Position = UDim2.new((aimbotMaxDistance - 10) / 190, -7, -0.25, 0)
+    distanceSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    distanceSliderButton.BorderSizePixel = 1
+    distanceSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
+
+    -- Кнопки + и - для Distance
+    local distanceMinusButton = Instance.new("TextButton", distanceSliderFrame)
+    distanceMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    distanceMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    distanceMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    distanceMinusButton.Text = "-"
+    distanceMinusButton.TextColor3 = Color3.new(1, 1, 1)
+    distanceMinusButton.TextScaled = true
+    distanceMinusButton.BorderSizePixel = 0
+
+    local distancePlusButton = Instance.new("TextButton", distanceSliderFrame)
+    distancePlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    distancePlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    distancePlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    distancePlusButton.Text = "+"
+    distancePlusButton.TextColor3 = Color3.new(1, 1, 1)
+    distancePlusButton.TextScaled = true
+    distancePlusButton.BorderSizePixel = 0
+
+    -- ========== ВКЛАДКА CAMERA ==========
+    
+    -- Кнопка Infinite Jump (самая первая)
+    local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
+    infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
+    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.05, 0)
+    infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    infiniteJumpButton.Text = "Infinite Jump: OFF"
+    infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
+    infiniteJumpButton.TextScaled = true
+    infiniteJumpButton.BorderSizePixel = 0
+
+    -- Кнопка Camera FOV (после Infinite Jump)
+    local cameraFOVButton = Instance.new("TextButton", cameraContainer)
+    cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
+    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.20, 0)
+    cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    cameraFOVButton.Text = "CamFOV: OFF"
+    cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraFOVButton.TextScaled = true
+    cameraFOVButton.BorderSizePixel = 0
+
+    -- Camera FOV Slider (после кнопки CamFOV)
+    local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
+    cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
+    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+    cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    cameraFOVSliderFrame.BorderSizePixel = 0
+
+    local cameraFOVLabel = Instance.new("TextLabel", cameraFOVSliderFrame)
+    cameraFOVLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    cameraFOVLabel.Position = UDim2.new(0, 0, 0, 0)
+    cameraFOVLabel.BackgroundTransparency = 1
+    cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
+    cameraFOVLabel.TextColor3 = Color3.new(1, 1, 1)
+    cameraFOVLabel.TextScaled = true
+    cameraFOVLabel.Font = Enum.Font.SourceSans
+
+    local cameraSliderBackground = Instance.new("TextButton", cameraFOVSliderFrame)
+    cameraSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
+    cameraSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
+    cameraSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    cameraSliderBackground.BorderSizePixel = 0
+    cameraSliderBackground.Text = ""
+    cameraSliderBackground.AutoButtonColor = false
+
+    local cameraSliderFill = Instance.new("Frame", cameraSliderBackground)
+    cameraSliderFill.Size = UDim2.new((cameraFOV - 30) / 90, 0, 1, 0) -- Изменен диапазон на 30-120
+    cameraSliderFill.Position = UDim2.new(0, 0, 0, 0)
+    cameraSliderFill.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
+    cameraSliderFill.BorderSizePixel = 0
+
+    local cameraSliderButton = Instance.new("Frame", cameraSliderBackground)
+    cameraSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
+    cameraSliderButton.Position = UDim2.new((cameraFOV - 30) / 90, -7, -0.25, 0) -- Изменен диапазон на 30-120
+    cameraSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    cameraSliderButton.BorderSizePixel = 1
+    cameraSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
+
+    -- Кнопки + и - для Camera FOV
+    local cameraMinusButton = Instance.new("TextButton", cameraFOVSliderFrame)
+    cameraMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    cameraMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    cameraMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    cameraMinusButton.Text = "-"
+    cameraMinusButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraMinusButton.TextScaled = true
+    cameraMinusButton.BorderSizePixel = 0
+
+    local cameraPlusButton = Instance.new("TextButton", cameraFOVSliderFrame)
+    cameraPlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
+    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
+    cameraPlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    cameraPlusButton.Text = "+"
+    cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
+    cameraPlusButton.TextScaled = true
+    cameraPlusButton.BorderSizePixel = 0
+
+    -- Кнопка Hide/Show GUI (перемещаемая)
+    local hideButton = Instance.new("TextButton", gui)
+    hideButton.Size = UDim2.new(0, 150, 0, 40)
+    hideButton.Position = UDim2.new(0.5, -75, 1, -50)
+    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    hideButton.Text = "Hide GUI"
+    hideButton.TextColor3 = Color3.new(1, 1, 1)
+    hideButton.TextScaled = true
+    hideButton.BorderSizePixel = 0
+    hideButton.ZIndex = 10
 
     -- Функция обновления FOV
     local function updateFOV(value)
@@ -340,45 +674,140 @@ local function createGUI()
         
         local fillSize = (fovRadius - 50) / 200
         sliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
-        sliderButton.Position = UDim2.new(fillSize, -12, -0.25, 0)
+        sliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
     end
 
-    -- Обработка тача для слайдера
-    local isSliding = false
-
-    local function updateSliderFromTouch(touchPosition)
-        local sliderAbsPos = sliderBackground.AbsolutePosition
-        local sliderAbsSize = sliderBackground.AbsoluteSize
-        local touchX = touchPosition.X
+    -- Функция обновления Camera FOV
+    local function updateCameraFOV(value)
+        cameraFOV = math.floor(math.clamp(value, 30, 120)) -- Максимум 120
+        cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
         
+        local fillSize = (cameraFOV - 30) / 90 -- Изменен диапазон на 30-120
+        cameraSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
+        cameraSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
+        
+        if customCameraFOVEnabled then
+            camera.FieldOfView = cameraFOV
+        end
+    end
+
+    -- Функция обновления дистанции аимбота
+    local function updateAimbotDistance(value)
+        aimbotMaxDistance = math.floor(math.clamp(value, 10, 200))
+        distanceLabel.Text = "Aimbot Distance: " .. aimbotMaxDistance .. "m"
+        
+        local fillSize = (aimbotMaxDistance - 10) / 190
+        distanceSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
+        distanceSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
+    end
+
+    -- Функция для выбора цели через выпадающий список
+    local function selectTarget(target)
+        if target == "Head" then
+            aimbotTarget = "Head"
+            targetDropdown.Text = "Target: Head"
+            headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            bodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        else
+            aimbotTarget = "HumanoidRootPart"
+            targetDropdown.Text = "Target: Body"
+            headButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        end
+        dropdownContainer.Visible = false
+        -- Возвращаем слайдеры в исходное положение при закрытии меню
+        fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+        distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+    end
+
+    -- Функция для открытия/закрытия выпадающего списка
+    local function toggleDropdown()
+        local isOpening = not dropdownContainer.Visible
+        dropdownContainer.Visible = isOpening
+        
+        if isOpening then
+            -- Сдвигаем слайдеры вниз на 5 см при открытии меню
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.60, 0)  -- +0.25 от исходного
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)  -- +0.25 от исходного
+        else
+            -- Возвращаем слайдеры в исходное положение при закрытии меню
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+        end
+    end
+
+    -- Обработка для слайдеров
+    local isFOVSliding = false
+    local isCameraSliding = false
+    local isDistanceSliding = false
+
+    local function updateSliderFromTouch(touchPosition, sliderType)
+        local sliderAbsPos, sliderAbsSize
+        
+        if sliderType == "fov" then
+            sliderAbsPos = sliderBackground.AbsolutePosition
+            sliderAbsSize = sliderBackground.AbsoluteSize
+        elseif sliderType == "camera" then
+            sliderAbsPos = cameraSliderBackground.AbsolutePosition
+            sliderAbsSize = cameraSliderBackground.AbsoluteSize
+        elseif sliderType == "distance" then
+            sliderAbsPos = distanceSliderBackground.AbsolutePosition
+            sliderAbsSize = distanceSliderBackground.AbsoluteSize
+        end
+        
+        local touchX = touchPosition.X
         local relativeX = (touchX - sliderAbsPos.X) / sliderAbsSize.X
         relativeX = math.clamp(relativeX, 0, 1)
         
-        local newFOV = 50 + (relativeX * 200)
-        updateFOV(newFOV)
+        if sliderType == "fov" then
+            local newFOV = 50 + (relativeX * 200)
+            updateFOV(newFOV)
+        elseif sliderType == "camera" then
+            local newCameraFOV = 30 + (relativeX * 90) -- Изменен диапазон на 30-120
+            updateCameraFOV(newCameraFOV)
+        elseif sliderType == "distance" then
+            local newDistance = 10 + (relativeX * 190)
+            updateAimbotDistance(newDistance)
+        end
     end
 
-    -- Обработка начала тача
+    -- Обработка для FOV слайдера
     sliderBackground.MouseButton1Down:Connect(function(x, y)
-        isSliding = true
-        updateSliderFromTouch(Vector2.new(x, y))
+        isFOVSliding = true
+        updateSliderFromTouch(Vector2.new(x, y), "fov")
     end)
 
-    -- Обработка движения тача
+    -- Обработка для Camera FOV слайдера
+    cameraSliderBackground.MouseButton1Down:Connect(function(x, y)
+        isCameraSliding = true
+        updateSliderFromTouch(Vector2.new(x, y), "camera")
+    end)
+
+    -- Обработка для Distance слайдера
+    distanceSliderBackground.MouseButton1Down:Connect(function(x, y)
+        isDistanceSliding = true
+        updateSliderFromTouch(Vector2.new(x, y), "distance")
+    end)
+
     userInputService.InputChanged:Connect(function(input)
-        if isSliding and input.UserInputType == Enum.UserInputType.Touch then
-            updateSliderFromTouch(input.Position)
+        if isFOVSliding and input.UserInputType == Enum.UserInputType.Touch then
+            updateSliderFromTouch(input.Position, "fov")
+        elseif isCameraSliding and input.UserInputType == Enum.UserInputType.Touch then
+            updateSliderFromTouch(input.Position, "camera")
+        elseif isDistanceSliding and input.UserInputType == Enum.UserInputType.Touch then
+            updateSliderFromTouch(input.Position, "distance")
         end
     end)
 
-    -- Обработка окончания тача
     userInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch then
-            isSliding = false
+            isFOVSliding = false
+            isCameraSliding = false
+            isDistanceSliding = false
         end
     end)
 
-    -- Кнопки + и -
+    -- Кнопки + и - для FOV
     minusButton.MouseButton1Click:Connect(function()
         updateFOV(fovRadius - 10)
     end)
@@ -387,97 +816,229 @@ local function createGUI()
         updateFOV(fovRadius + 10)
     end)
 
-    -- Кнопки управления (ВНЕ основного фрейма)
-    local hideButton = Instance.new("TextButton", gui)
-    hideButton.Size = UDim2.new(0, 100, 0, 30)
-    hideButton.Position = UDim2.new(0.5, -50, 0.5, 130)
-    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    hideButton.Text = "Hide GUI"
-    hideButton.TextColor3 = Color3.new(1, 1, 1)
-    hideButton.TextScaled = true
-    hideButton.BorderSizePixel = 0
-
-    local teamCheckButton = Instance.new("TextButton", gui)
-    teamCheckButton.Size = UDim2.new(0, 200, 0, 30)
-    teamCheckButton.Position = UDim2.new(0.5, -100, 0.5, 170)
-    teamCheckButton.BackgroundColor3 = Color3.fromRGB(120, 120, 255)
-    teamCheckButton.Text = "Team Check: OFF"
-    teamCheckButton.TextColor3 = Color3.new(1, 1, 1)
-    teamCheckButton.TextScaled = true
-    teamCheckButton.BorderSizePixel = 0
-
-    -- ОБРАБОТЧИКИ КНОПОК ВЫБОРА ЦЕЛИ
-    targetHeadButton.MouseButton1Click:Connect(function()
-        aimbotTarget = "Head"
-        targetHeadButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-        targetBodyButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        targetHeadButton.Text = "Target: Head ✅"
-        targetBodyButton.Text = "Target: Body"
+    -- Кнопки + и - для Camera FOV
+    cameraMinusButton.MouseButton1Click:Connect(function()
+        updateCameraFOV(cameraFOV - 10)
     end)
 
-    targetBodyButton.MouseButton1Click:Connect(function()
-        aimbotTarget = "HumanoidRootPart"
-        targetHeadButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        targetBodyButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-        targetHeadButton.Text = "Target: Head"
-        targetBodyButton.Text = "Target: Body ✅"
+    cameraPlusButton.MouseButton1Click:Connect(function()
+        updateCameraFOV(cameraFOV + 10)
     end)
 
-    -- ИСПРАВЛЕННЫЕ ОБРАБОТЧИКИ КНОПОК
-    teamCheckButton.MouseButton1Click:Connect(function()
-        teamCheckEnabled = not teamCheckEnabled
-        teamCheckButton.Text = "Team Check: " .. (teamCheckEnabled and "ON ✅" or "OFF")
-        teamCheckButton.BackgroundColor3 = teamCheckEnabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(120, 120, 255)
+    -- Кнопки + и - для Distance
+    distanceMinusButton.MouseButton1Click:Connect(function()
+        updateAimbotDistance(aimbotMaxDistance - 10)
     end)
 
+    distancePlusButton.MouseButton1Click:Connect(function()
+        updateAimbotDistance(aimbotMaxDistance + 10)
+    end)
+
+    -- Обработчики для выпадающего списка выбора цели
+    targetDropdown.MouseButton1Click:Connect(function()
+        toggleDropdown()
+    end)
+
+    headButton.MouseButton1Click:Connect(function()
+        selectTarget("Head")
+    end)
+
+    bodyButton.MouseButton1Click:Connect(function()
+        selectTarget("Body")
+    end)
+
+    -- Обработчики для кнопки закрытия
+    closeButton.MouseButton1Click:Connect(function()
+        confirmFrame.Visible = true
+    end)
+
+    yesButton.MouseButton1Click:Connect(function()
+        gui:Destroy()
+    end)
+
+    noButton.MouseButton1Click:Connect(function()
+        confirmFrame.Visible = false
+    end)
+
+    -- Закрытие выпадающего списка при клике вне его
+    userInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if dropdownContainer.Visible then
+                local mousePos = input.Position
+                local dropdownAbsPos = dropdownContainer.AbsolutePosition
+                local dropdownAbsSize = dropdownContainer.AbsoluteSize
+                local targetDropdownAbsPos = targetDropdown.AbsolutePosition
+                local targetDropdownAbsSize = targetDropdown.AbsoluteSize
+
+                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
+                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
+                   not (mousePos.X >= targetDropdownAbsPos.X and mousePos.X <= targetDropdownAbsPos.X + targetDropdownAbsSize.X and
+                       mousePos.Y >= targetDropdownAbsPos.Y and mousePos.Y <= targetDropdownAbsPos.Y + targetDropdownAbsSize.Y) then
+                    dropdownContainer.Visible = false
+                    -- Возвращаем слайдеры в исходное положение при закрытии меню
+                    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+                    distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+                end
+            end
+        end
+    end)
+
+    -- Функция переключения вкладок
+    local function switchTab(tabName)
+        activeTab = tabName
+        
+        -- Скрыть все контейнеры
+        infoContainer.Visible = false
+        espContainer.Visible = false
+        aimbotContainer.Visible = false
+        cameraContainer.Visible = false
+        
+        -- Сбросить цвета всех вкладок
+        infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        
+        -- Показать выбранный контейнер и выделить вкладку
+        if tabName == "Info" then
+            infoContainer.Visible = true
+            infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        elseif tabName == "ESP" then
+            espContainer.Visible = true
+            espTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        elseif tabName == "AimBot" then
+            aimbotContainer.Visible = true
+            aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        elseif tabName == "Camera" then
+            cameraContainer.Visible = true
+            cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        end
+        
+        -- Скрыть выпадающий список при переключении вкладок и вернуть слайдеры в исходное положение
+        dropdownContainer.Visible = false
+        fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+        distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+    end
+
+    -- ОБРАБОТЧИКИ КНОПОК ВКЛАДОК
+    infoTabButton.MouseButton1Click:Connect(function()
+        switchTab("Info")
+    end)
+
+    espTabButton.MouseButton1Click:Connect(function()
+        switchTab("ESP")
+    end)
+
+    aimbotTabButton.MouseButton1Click:Connect(function()
+        switchTab("AimBot")
+    end)
+
+    cameraTabButton.MouseButton1Click:Connect(function()
+        switchTab("Camera")
+    end)
+
+    -- ОБРАБОТЧИКИ ОСНОВНЫХ КНОПОК
     hideButton.MouseButton1Click:Connect(function()
         guiVisible = not guiVisible
         frame.Visible = guiVisible
         hideButton.Text = guiVisible and "Hide GUI" or "Show GUI"
     end)
 
-    aimbotOn.MouseButton1Click:Connect(function()
-        aimbotEnabled = true
-        aimbotOn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        aimbotOff.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        aimbotOn.Text = "Aimbot ON ✅"
-        aimbotOff.Text = "Aimbot OFF"
+    -- Добавляем функционал перемещения для кнопки Hide/Show GUI
+    local isHideButtonDragging = false
+    local hideButtonDragStart = nil
+    local hideButtonStartPos = nil
+
+    hideButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isHideButtonDragging = true
+            hideButtonDragStart = input.Position
+            hideButtonStartPos = hideButton.Position
+        end
     end)
 
-    aimbotOff.MouseButton1Click:Connect(function()
-        aimbotEnabled = false
-        aimbotOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        aimbotOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        aimbotOn.Text = "Aimbot ON"
-        aimbotOff.Text = "Aimbot OFF ✅"
+    hideButton.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isHideButtonDragging = false
+        end
     end)
 
-    espOn.MouseButton1Click:Connect(function()
-        espEnabled = true
-        espOn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        espOff.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        espOn.Text = "ESP ON ✅"
-        espOff.Text = "ESP OFF"
+    userInputService.InputChanged:Connect(function(input)
+        if isHideButtonDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            local delta = input.Position - hideButtonDragStart
+            hideButton.Position = UDim2.new(
+                hideButtonStartPos.X.Scale, 
+                hideButtonStartPos.X.Offset + delta.X,
+                hideButtonStartPos.Y.Scale, 
+                hideButtonStartPos.Y.Offset + delta.Y
+            )
+        end
     end)
 
-    espOff.MouseButton1Click:Connect(function()
-        espEnabled = false
-        espOn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        espOff.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        espOn.Text = "ESP ON"
-        espOff.Text = "ESP OFF ✅"
-        -- Скрываем все ESP объекты
-        for _, drawings in pairs(espObjects) do
-            if drawings then
-                drawings.box.Visible = false
-                drawings.name.Visible = false
-                drawings.distance.Visible = false
-                drawings.tracer.Visible = false
+    -- Обработчик для кнопки Infinite Jump (первая в списке)
+    infiniteJumpButton.MouseButton1Click:Connect(function()
+        infiniteJumpEnabled = not infiniteJumpEnabled
+        if infiniteJumpEnabled then
+            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            infiniteJumpButton.Text = "Infinite Jump: ON ✅"
+        else
+            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            infiniteJumpButton.Text = "Infinite Jump: OFF"
+        end
+    end)
+
+    -- Обработчик для кнопки Camera FOV (вторая в списке)
+    cameraFOVButton.MouseButton1Click:Connect(function()
+        customCameraFOVEnabled = not customCameraFOVEnabled
+        if customCameraFOVEnabled then
+            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            cameraFOVButton.Text = "CamFOV: ON ✅"
+            camera.FieldOfView = cameraFOV
+        else
+            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            cameraFOVButton.Text = "CamFOV: OFF"
+            camera.FieldOfView = 70
+        end
+    end)
+
+    aimbotButton.MouseButton1Click:Connect(function()
+        aimbotEnabled = not aimbotEnabled
+        if aimbotEnabled then
+            aimbotButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            aimbotButton.Text = "Aimbot: ON ✅"
+        else
+            aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            aimbotButton.Text = "Aimbot: OFF"
+        end
+    end)
+
+    espButton.MouseButton1Click:Connect(function()
+        espEnabled = not espEnabled
+        if espEnabled then
+            espButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            espButton.Text = "ESP: ON ✅"
+        else
+            espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            espButton.Text = "ESP: OFF"
+            for _, drawings in pairs(espObjects) do
+                if drawings then
+                    drawings.box.Visible = false
+                    drawings.name.Visible = false
+                    drawings.distance.Visible = false
+                    drawings.tracer.Visible = false
+                end
             end
         end
     end)
+
+    -- Инициализация вкладок
+    switchTab("Info")
+    
+    -- Инициализация выпадающего списка
+    selectTarget("Head")
 end
 
+-- Основной код
 createGUI()
 showNotification()
 
@@ -494,10 +1055,9 @@ runService.RenderStepped:Connect(function()
     if aimbotEnabled then
         local target = getClosestPlayer()
         if target and target.Character then
-            -- Используем выбранную часть тела для прицеливания
             local targetPart = target.Character:FindFirstChild(aimbotTarget)
             if not targetPart then
-                targetPart = target.Character:FindFirstChild("Head") -- Fallback на голову
+                targetPart = target.Character:FindFirstChild("Head")
             end
             
             if targetPart then
