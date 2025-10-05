@@ -252,7 +252,7 @@ local function CreateButton(name, yPos)
     return Button
 end
 
-local MoneyFarmButton = CreateButton("Money Farm", 40)
+local NOSkaButton = CreateButton("NOska", 40)
 local AutoTreeButton = CreateButton("Auto Tree", 90)
 
 -- Draggable GUI
@@ -296,7 +296,7 @@ UserInputService.InputChanged:Connect(function(input)
 end)
 
 -- Variables
-local MoneyFarmActive = false
+local NOSkaActive = false
 local AutoTreeFarmEnabled = false
 local minDistance = 0
 local VirtualInputManager = game:GetService('VirtualInputManager')
@@ -306,6 +306,32 @@ local function mouse1click()
     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, true, game, false)
     task.wait()
     VirtualInputManager:SendMouseButtonEvent(0, 0, 0, false, game, false)
+end
+
+-- DragItem function for NOska
+local function DragItem(obj)
+    if obj and obj.PrimaryPart then
+        local character = LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            -- Move the object to player's position
+            obj:SetPrimaryPartCFrame(character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0))
+        end
+    end
+end
+
+-- NOska Function (Bring All Scraps)
+local function NOskaFunction()
+    while NOSkaActive do
+        task.spawn(function()
+            for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
+                if (Obj.Name == "Tyre" or Obj.Name == "Sheet Metal" or Obj.Name == "Broken Fan" or Obj.Name == "Bolt" or Obj.Name == "Old Radio" or Obj.Name == "UFO Junk" or Obj.Name == "UFO Scrap" or Obj.Name == "Broken Microwave") and Obj:IsA("Model") and Obj.PrimaryPart then 
+                    DragItem(Obj)
+                    task.wait(0.1) -- Small delay to prevent lag
+                end 
+            end
+        end)
+        task.wait(1) -- Check every second
+    end
 end
 
 -- Auto Tree Farm Function
@@ -379,77 +405,16 @@ AutoTreeButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Money Farm Function
-local function MoneyFarm()
-    while MoneyFarmActive do
-        local character = LocalPlayer.Character
-        local dropsFolder = Workspace:FindFirstChild("Drops")
-        if character and character:FindFirstChild("HumanoidRootPart") and dropsFolder then
-            for _, drop in pairs(dropsFolder:GetChildren()) do
-                if drop.Name == "CashDrop" and MoneyFarmActive then
-                    if drop:IsA("Model") then
-                        if drop.PrimaryPart then
-                            character.HumanoidRootPart.CFrame = drop.PrimaryPart.CFrame + Vector3.new(0, 3, 0)
-                        else
-                            local firstPart = drop:FindFirstChildWhichIsA("BasePart")
-                            if firstPart then
-                                character.HumanoidRootPart.CFrame = firstPart.CFrame + Vector3.new(0, 3, 0)
-                            end
-                        end
-                    elseif drop:IsA("BasePart") then
-                        character.HumanoidRootPart.CFrame = drop.CFrame + Vector3.new(0, 3, 0)
-                    end
-                    task.wait(0.2)
-                end
-            end
-        else
-            warn("Drops folder not found.")
-        end
-        task.wait(0.5)
-    end
-end
-
-MoneyFarmButton.MouseButton1Click:Connect(function()
-    MoneyFarmActive = not MoneyFarmActive
-    MoneyFarmButton.Text = "Money Farm: " .. (MoneyFarmActive and "ON" or "OFF")
-    MoneyFarmButton.BackgroundColor3 = MoneyFarmActive and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
-    if MoneyFarmActive then
-        ShowNotification("Looking for money, please wait, it may take 30 seconds.")
-        task.spawn(MoneyFarm)
-    end
-end)
-
--- Character respawn handling
-LocalPlayer.CharacterAdded:Connect(function(newCharacter)
-    if MoneyFarmActive then
-        task.spawn(function()
-            local hrp = newCharacter:WaitForChild("HumanoidRootPart")
-            while MoneyFarmActive and hrp.Parent do
-                local dropsFolder = Workspace:FindFirstChild("Drops")
-                if dropsFolder then
-                    for _, drop in pairs(dropsFolder:GetChildren()) do
-                        if drop.Name == "CashDrop" and MoneyFarmActive then
-                            if drop:IsA("Model") then
-                                if drop.PrimaryPart then
-                                    hrp.CFrame = drop.PrimaryPart.CFrame + Vector3.new(0, 3, 0)
-                                else
-                                    local firstPart = drop:FindFirstChildWhichIsA("BasePart")
-                                    if firstPart then
-                                        hrp.CFrame = firstPart.CFrame + Vector3.new(0, 3, 0)
-                                    end
-                                end
-                            elseif drop:IsA("BasePart") then
-                                hrp.CFrame = drop.CFrame + Vector3.new(0, 3, 0)
-                            end
-                            task.wait(0.2)
-                        end
-                    end
-                else
-                    warn("Drops folder not found.")
-                end
-                task.wait(0.5)
-            end
-        end)
+-- NOska Button Functionality
+NOSkaButton.MouseButton1Click:Connect(function()
+    NOSkaActive = not NOSkaActive
+    NOSkaButton.Text = "NOska: " .. (NOSkaActive and "ON" or "OFF")
+    NOSkaButton.BackgroundColor3 = NOSkaActive and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(20, 20, 20)
+    if NOSkaActive then
+        ShowNotification("NOska enabled - collecting all scraps.")
+        task.spawn(NOskaFunction)
+    else
+        ShowNotification("NOska disabled.")
     end
 end)
 
@@ -459,9 +424,9 @@ CloseButton.MouseButton1Click:Connect(function()
 end)
 
 MinimizeButton.MouseButton1Click:Connect(function()
-    Minimized = not Minimized
+    local Minimized = not (Frame.Size == UDim2.new(0, 250, 0, 40))
     MinimizeButton.Text = Minimized and "+" or "-"
-    MoneyFarmButton.Visible = not Minimized
+    NOSkaButton.Visible = not Minimized
     AutoTreeButton.Visible = not Minimized
     Frame.Size = Minimized and UDim2.new(0, 250, 0, 40) or UDim2.new(0, 250, 0, 150)
 end)
