@@ -651,21 +651,19 @@ local function updateLanguage()
                 end
             end
         end
-    end
-    
-    -- Update Theme section
-    if themeContainer then
-        local themeTitleLabel = themeContainer:FindFirstChild("ThemeTitle")
+        
+        -- Update Theme section
+        local themeTitleLabel = languageContainer:FindFirstChild("ThemeTitle")
         if themeTitleLabel then
             themeTitleLabel.Text = t.themeTitle
         end
         
-        local currentThemeLabel = themeContainer:FindFirstChild("CurrentTheme")
+        local currentThemeLabel = languageContainer:FindFirstChild("CurrentTheme")
         if currentThemeLabel then
             currentThemeLabel.Text = t.currentTheme
         end
         
-        local themeDropdownButton = themeContainer:FindFirstChild("ThemeDropdown")
+        local themeDropdownButton = languageContainer:FindFirstChild("ThemeDropdown")
         if themeDropdownButton then
             themeDropdownButton.Text = t.themeDropdown
         end
@@ -703,7 +701,7 @@ local function createGUI()
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
     frame.Visible = guiVisible
 
-    -- Заголовок
+    -- Заголовок (для перетаскивания)
     title = Instance.new("TextLabel", frame)
     title.Size = UDim2.new(1, 0, 0, 25)
     title.Position = UDim2.new(0, 0, 0, 0)
@@ -1230,18 +1228,11 @@ local function createGUI()
 
     -- ========== ТЕМЫ В РАЗДЕЛЕ LANGUAGE ==========
     
-    -- Контейнер для тем (добавляем в languageContainer)
-    themeContainer = Instance.new("Frame", languageContainer)
-    themeContainer.Size = UDim2.new(0.9, 0, 0, 150)
-    themeContainer.Position = UDim2.new(0.05, 0, 0.55, 0)
-    themeContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    themeContainer.BorderSizePixel = 0
-
     -- Заголовок для тем
-    themeTitle = Instance.new("TextLabel", themeContainer)
+    themeTitle = Instance.new("TextLabel", languageContainer)
     themeTitle.Name = "ThemeTitle"
-    themeTitle.Size = UDim2.new(1, 0, 0, 30)
-    themeTitle.Position = UDim2.new(0, 0, 0, 0)
+    themeTitle.Size = UDim2.new(0.9, 0, 0, 30)
+    themeTitle.Position = UDim2.new(0.05, 0, 0.55, 0)
     themeTitle.BackgroundTransparency = 1
     themeTitle.Text = "Select Theme:"
     themeTitle.TextColor3 = Color3.new(1, 1, 1)
@@ -1249,10 +1240,10 @@ local function createGUI()
     themeTitle.Font = Enum.Font.SourceSansBold
 
     -- Текущая тема
-    currentThemeLabel = Instance.new("TextLabel", themeContainer)
+    currentThemeLabel = Instance.new("TextLabel", languageContainer)
     currentThemeLabel.Name = "CurrentTheme"
-    currentThemeLabel.Size = UDim2.new(1, 0, 0, 25)
-    currentThemeLabel.Position = UDim2.new(0, 0, 0.2, 0)
+    currentThemeLabel.Size = UDim2.new(0.9, 0, 0, 25)
+    currentThemeLabel.Position = UDim2.new(0.05, 0, 0.65, 0)
     currentThemeLabel.BackgroundTransparency = 1
     currentThemeLabel.Text = "Current: Dark"
     currentThemeLabel.TextColor3 = Color3.new(1, 1, 1)
@@ -1260,10 +1251,10 @@ local function createGUI()
     currentThemeLabel.Font = Enum.Font.SourceSans
 
     -- Выпадающий список для выбора темы
-    themeDropdown = Instance.new("TextButton", themeContainer)
+    themeDropdown = Instance.new("TextButton", languageContainer)
     themeDropdown.Name = "ThemeDropdown"
-    themeDropdown.Size = UDim2.new(1, 0, 0, 35)
-    themeDropdown.Position = UDim2.new(0, 0, 0.4, 0)
+    themeDropdown.Size = UDim2.new(0.9, 0, 0, 35)
+    themeDropdown.Position = UDim2.new(0.05, 0, 0.75, 0)
     themeDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     themeDropdown.Text = "Theme: Dark"
     themeDropdown.TextColor3 = Color3.new(1, 1, 1)
@@ -1271,9 +1262,9 @@ local function createGUI()
     themeDropdown.BorderSizePixel = 0
 
     -- Контейнер для выпадающего списка тем
-    themeDropdownContainer = Instance.new("Frame", themeContainer)
-    themeDropdownContainer.Size = UDim2.new(1, 0, 0, 105)
-    themeDropdownContainer.Position = UDim2.new(0, 0, 0.4, 35)
+    themeDropdownContainer = Instance.new("Frame", languageContainer)
+    themeDropdownContainer.Size = UDim2.new(0.9, 0, 0, 105)
+    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.75, 35)
     themeDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     themeDropdownContainer.BorderSizePixel = 1
     themeDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -1665,6 +1656,13 @@ local function createGUI()
     local function switchTab(tabName)
         activeTab = tabName
         
+        -- Изменяем размер меню в зависимости от вкладки
+        if tabName == "Language" then
+            frame.Size = UDim2.new(0, 350, 0, 400) -- Увеличиваем высоту для Language вкладки
+        else
+            frame.Size = UDim2.new(0, 350, 0, 300) -- Обычный размер для других вкладок
+        end
+        
         -- Скрыть все контейнеры
         infoContainer.Visible = false
         espContainer.Visible = false
@@ -1760,6 +1758,37 @@ local function createGUI()
                 hideButtonStartPos.X.Offset + delta.X,
                 hideButtonStartPos.Y.Scale, 
                 hideButtonStartPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    -- Добавляем функционал перемещения для основного меню
+    local isFrameDragging = false
+    local frameDragStart = nil
+    local frameStartPos = nil
+
+    title.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isFrameDragging = true
+            frameDragStart = input.Position
+            frameStartPos = frame.Position
+        end
+    end)
+
+    title.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isFrameDragging = false
+        end
+    end)
+
+    userInputService.InputChanged:Connect(function(input)
+        if isFrameDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+            local delta = input.Position - frameDragStart
+            frame.Position = UDim2.new(
+                frameStartPos.X.Scale, 
+                frameStartPos.X.Offset + delta.X,
+                frameStartPos.Y.Scale, 
+                frameStartPos.Y.Offset + delta.Y
             )
         end
     end)
