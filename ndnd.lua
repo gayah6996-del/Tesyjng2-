@@ -33,6 +33,43 @@ local activeTab = "Info"
 -- Language System
 local currentLanguage = "English" -- Default language
 
+-- Theme System
+local currentTheme = "Dark" -- Default theme
+
+-- Themes
+local themes = {
+    Dark = {
+        backgroundColor = Color3.fromRGB(30, 30, 30),
+        tabColor = Color3.fromRGB(40, 40, 40),
+        buttonColor = Color3.fromRGB(100, 100, 100),
+        activeButtonColor = Color3.fromRGB(80, 80, 80),
+        textColor = Color3.new(1, 1, 1),
+        borderColor = Color3.fromRGB(100, 100, 100),
+        sliderBackground = Color3.fromRGB(80, 80, 80),
+        titleBackground = Color3.fromRGB(50, 50, 50)
+    },
+    Black = {
+        backgroundColor = Color3.fromRGB(0, 0, 0),
+        tabColor = Color3.fromRGB(20, 20, 20),
+        buttonColor = Color3.fromRGB(50, 50, 50),
+        activeButtonColor = Color3.fromRGB(30, 30, 30),
+        textColor = Color3.new(1, 1, 1),
+        borderColor = Color3.fromRGB(80, 80, 80),
+        sliderBackground = Color3.fromRGB(60, 60, 60),
+        titleBackground = Color3.fromRGB(30, 30, 30)
+    },
+    White = {
+        backgroundColor = Color3.fromRGB(240, 240, 240),
+        tabColor = Color3.fromRGB(220, 220, 220),
+        buttonColor = Color3.fromRGB(180, 180, 180),
+        activeButtonColor = Color3.fromRGB(160, 160, 160),
+        textColor = Color3.new(0, 0, 0),
+        borderColor = Color3.fromRGB(150, 150, 150),
+        sliderBackground = Color3.fromRGB(200, 200, 200),
+        titleBackground = Color3.fromRGB(200, 200, 200)
+    }
+}
+
 -- Translations
 local translations = {
     English = {
@@ -77,7 +114,15 @@ local translations = {
         englishButton = "English🇬🇧",
         russianButton = "Russian🇷🇺",
         chineseButton = "Chinese🇨🇳",
-        currentLanguage = "Current: English"
+        currentLanguage = "Current: English",
+        
+        -- Theme Tab
+        themeTitle = "Select Theme:",
+        themeDropdown = "Theme: Dark",
+        blackTheme = "Black",
+        darkTheme = "Dark", 
+        whiteTheme = "White",
+        currentTheme = "Current: Dark"
     },
     
     Russian = {
@@ -122,7 +167,15 @@ local translations = {
         englishButton = "Английский🇬🇧",
         russianButton = "Русский🇷🇺",
         chineseButton = "Китайский🇨🇳",
-        currentLanguage = "Текущий: Русский"
+        currentLanguage = "Текущий: Русский",
+        
+        -- Theme Tab
+        themeTitle = "Выберите тему:",
+        themeDropdown = "Тема: Темная",
+        blackTheme = "Черная",
+        darkTheme = "Темная",
+        whiteTheme = "Белая",
+        currentTheme = "Текущая: Темная"
     },
     
     Chinese = {
@@ -167,7 +220,15 @@ local translations = {
         englishButton = "英语🇬🇧",
         russianButton = "俄语🇷🇺",
         chineseButton = "中文🇨🇳",
-        currentLanguage = "当前: 中文"
+        currentLanguage = "当前: 中文",
+        
+        -- Theme Tab
+        themeTitle = "选择主题:",
+        themeDropdown = "主题: 深色",
+        blackTheme = "黑色",
+        darkTheme = "深色",
+        whiteTheme = "白色",
+        currentTheme = "当前: 深色"
     }
 }
 
@@ -317,6 +378,136 @@ local function getClosestPlayer()
     return closestPlayer
 end
 
+-- Function to update theme
+local function updateTheme()
+    local theme = themes[currentTheme]
+    
+    if frame then
+        frame.BackgroundColor3 = theme.backgroundColor
+        frame.BorderColor3 = theme.borderColor
+    end
+    
+    if tabsPanel then
+        tabsPanel.BackgroundColor3 = theme.tabColor
+    end
+    
+    if mainContainer then
+        mainContainer.BackgroundColor3 = theme.backgroundColor
+    end
+    
+    if contentContainer then
+        contentContainer.BackgroundColor3 = theme.backgroundColor
+    end
+    
+    -- Update tab containers
+    local containers = {infoContainer, espContainer, aimbotContainer, cameraContainer, languageContainer}
+    for _, container in pairs(containers) do
+        if container then
+            container.BackgroundColor3 = theme.backgroundColor
+        end
+    end
+    
+    -- Update title
+    if title then
+        title.BackgroundColor3 = theme.titleBackground
+        title.TextColor3 = theme.textColor
+    end
+    
+    -- Update close button
+    if closeButton then
+        closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+        closeButton.TextColor3 = theme.textColor
+    end
+    
+    -- Update confirmation frame
+    if confirmFrame then
+        confirmFrame.BackgroundColor3 = theme.backgroundColor
+        confirmFrame.BorderColor3 = theme.borderColor
+    end
+    
+    if confirmText then
+        confirmText.TextColor3 = theme.textColor
+    end
+    
+    -- Update tab buttons
+    local tabButtons = {infoTabButton, espTabButton, aimbotTabButton, cameraTabButton, languageTabButton}
+    for _, button in pairs(tabButtons) do
+        if button then
+            if button.Text == activeTab or button.Text == translations[currentLanguage].infoTab and activeTab == "Info" or
+               button.Text == translations[currentLanguage].espTab and activeTab == "ESP" or
+               button.Text == translations[currentLanguage].aimbotTab and activeTab == "AimBot" or
+               button.Text == translations[currentLanguage].cameraTab and activeTab == "Camera" or
+               button.Text == translations[currentLanguage].languageTab and activeTab == "Language" then
+                button.BackgroundColor3 = theme.activeButtonColor
+            else
+                button.BackgroundColor3 = theme.buttonColor
+            end
+            button.TextColor3 = theme.textColor
+            button.BorderColor3 = theme.borderColor
+        end
+    end
+    
+    -- Update function buttons
+    local functionButtons = {espButton, aimbotButton, targetDropdown, infiniteJumpButton, cameraFOVButton, languageDropdown, themeDropdown}
+    for _, button in pairs(functionButtons) do
+        if button then
+            if string.find(button.Text, "ON") or string.find(button.Text, "ВКЛ") or string.find(button.Text, "开启") then
+                button.BackgroundColor3 = theme.activeButtonColor
+            else
+                button.BackgroundColor3 = theme.buttonColor
+            end
+            button.TextColor3 = theme.textColor
+        end
+    end
+    
+    -- Update dropdown containers
+    local dropdownContainers = {dropdownContainer, languageDropdownContainer, themeDropdownContainer}
+    for _, container in pairs(dropdownContainers) do
+        if container then
+            container.BackgroundColor3 = theme.backgroundColor
+            container.BorderColor3 = theme.borderColor
+        end
+    end
+    
+    -- Update dropdown options
+    local dropdownOptions = {headButton, bodyButton, englishOption, russianOption, chineseOption, blackThemeOption, darkThemeOption, whiteThemeOption}
+    for _, option in pairs(dropdownOptions) do
+        if option then
+            option.BackgroundColor3 = theme.buttonColor
+            option.TextColor3 = theme.textColor
+        end
+    end
+    
+    -- Update sliders
+    local sliderFrames = {fovSliderFrame, distanceSliderFrame, cameraFOVSliderFrame}
+    for _, frame in pairs(sliderFrames) do
+        if frame then
+            frame.BackgroundColor3 = theme.backgroundColor
+        end
+    end
+    
+    local sliderBackgrounds = {sliderBackground, distanceSliderBackground, cameraSliderBackground}
+    for _, bg in pairs(sliderBackgrounds) do
+        if bg then
+            bg.BackgroundColor3 = theme.sliderBackground
+        end
+    end
+    
+    -- Update text labels
+    local textLabels = {fovLabel, distanceLabel, cameraFOVLabel, infoText, languageTitle, currentLanguageLabel, themeTitle, currentThemeLabel}
+    for _, label in pairs(textLabels) do
+        if label then
+            label.TextColor3 = theme.textColor
+        end
+    end
+    
+    -- Update hide button
+    if hideButton then
+        hideButton.BackgroundColor3 = theme.buttonColor
+        hideButton.TextColor3 = theme.textColor
+    end
+end
+
 -- Function to update all GUI texts based on current language
 local function updateLanguage()
     local t = translations[currentLanguage]
@@ -461,6 +652,39 @@ local function updateLanguage()
             end
         end
     end
+    
+    -- Update Theme section
+    if themeContainer then
+        local themeTitleLabel = themeContainer:FindFirstChild("ThemeTitle")
+        if themeTitleLabel then
+            themeTitleLabel.Text = t.themeTitle
+        end
+        
+        local currentThemeLabel = themeContainer:FindFirstChild("CurrentTheme")
+        if currentThemeLabel then
+            currentThemeLabel.Text = t.currentTheme
+        end
+        
+        local themeDropdownButton = themeContainer:FindFirstChild("ThemeDropdown")
+        if themeDropdownButton then
+            themeDropdownButton.Text = t.themeDropdown
+        end
+        
+        -- Update theme dropdown options
+        if themeDropdownContainer then
+            for _, child in pairs(themeDropdownContainer:GetChildren()) do
+                if child:IsA("TextButton") then
+                    if child.Name == "BlackThemeOption" then
+                        child.Text = t.blackTheme
+                    elseif child.Name == "DarkThemeOption" then
+                        child.Text = t.darkTheme
+                    elseif child.Name == "WhiteThemeOption" then
+                        child.Text = t.whiteTheme
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- GUI Creation Function
@@ -480,7 +704,7 @@ local function createGUI()
     frame.Visible = guiVisible
 
     -- Заголовок
-    local title = Instance.new("TextLabel", frame)
+    title = Instance.new("TextLabel", frame)
     title.Size = UDim2.new(1, 0, 0, 25)
     title.Position = UDim2.new(0, 0, 0, 0)
     title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -491,7 +715,7 @@ local function createGUI()
     title.BorderSizePixel = 0
 
     -- Кнопка закрытия (крестик)
-    local closeButton = Instance.new("TextButton", frame)
+    closeButton = Instance.new("TextButton", frame)
     closeButton.Size = UDim2.new(0, 25, 0, 25)
     closeButton.Position = UDim2.new(1, -25, 0, 0)
     closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
@@ -502,7 +726,7 @@ local function createGUI()
     closeButton.ZIndex = 2
 
     -- Контейнер для подтверждения закрытия
-    local confirmFrame = Instance.new("Frame", gui)
+    confirmFrame = Instance.new("Frame", gui)
     confirmFrame.Size = UDim2.new(0, 300, 0, 120)
     confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
     confirmFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
@@ -511,7 +735,7 @@ local function createGUI()
     confirmFrame.Visible = false
     confirmFrame.ZIndex = 100
 
-    local confirmText = Instance.new("TextLabel", confirmFrame)
+    confirmText = Instance.new("TextLabel", confirmFrame)
     confirmText.Size = UDim2.new(0.9, 0, 0.4, 0)
     confirmText.Position = UDim2.new(0.05, 0, 0.1, 0)
     confirmText.BackgroundTransparency = 1
@@ -542,7 +766,7 @@ local function createGUI()
     noButton.ZIndex = 101
 
     -- Контейнер для вкладок и контента
-    local mainContainer = Instance.new("Frame", frame)
+    mainContainer = Instance.new("Frame", frame)
     mainContainer.Size = UDim2.new(1, 0, 1, -25)
     mainContainer.Position = UDim2.new(0, 0, 0, 25)
     mainContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
@@ -556,14 +780,14 @@ local function createGUI()
     tabsPanel.BorderSizePixel = 0
 
     -- Контейнер для контента
-    local contentContainer = Instance.new("Frame", mainContainer)
+    contentContainer = Instance.new("Frame", mainContainer)
     contentContainer.Size = UDim2.new(1, -80, 1, 0)
     contentContainer.Position = UDim2.new(0, 80, 0, 0)
     contentContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     contentContainer.BorderSizePixel = 0
 
     -- Вкладка Info (первая)
-    local infoTabButton = Instance.new("TextButton", tabsPanel)
+    infoTabButton = Instance.new("TextButton", tabsPanel)
     infoTabButton.Name = "InfoTab"
     infoTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     infoTabButton.Position = UDim2.new(0.05, 0, 0.02, 0)
@@ -575,7 +799,7 @@ local function createGUI()
     infoTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
     -- Вкладка ESP (вторая)
-    local espTabButton = Instance.new("TextButton", tabsPanel)
+    espTabButton = Instance.new("TextButton", tabsPanel)
     espTabButton.Name = "ESPTab"
     espTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     espTabButton.Position = UDim2.new(0.05, 0, 0.12, 0)
@@ -587,7 +811,7 @@ local function createGUI()
     espTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
     -- Вкладка AimBot (третья)
-    local aimbotTabButton = Instance.new("TextButton", tabsPanel)
+    aimbotTabButton = Instance.new("TextButton", tabsPanel)
     aimbotTabButton.Name = "AimBotTab"
     aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     aimbotTabButton.Position = UDim2.new(0.05, 0, 0.22, 0)
@@ -599,7 +823,7 @@ local function createGUI()
     aimbotTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
     -- Вкладка Camera (четвертая)
-    local cameraTabButton = Instance.new("TextButton", tabsPanel)
+    cameraTabButton = Instance.new("TextButton", tabsPanel)
     cameraTabButton.Name = "CameraTab"
     cameraTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     cameraTabButton.Position = UDim2.new(0.05, 0, 0.32, 0)
@@ -611,7 +835,7 @@ local function createGUI()
     cameraTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
     -- Вкладка Language (пятая)
-    local languageTabButton = Instance.new("TextButton", tabsPanel)
+    languageTabButton = Instance.new("TextButton", tabsPanel)
     languageTabButton.Name = "LanguageTab"
     languageTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     languageTabButton.Position = UDim2.new(0.05, 0, 0.42, 0)
@@ -660,7 +884,7 @@ local function createGUI()
 
     -- ========== ВКЛАДКА INFO ==========
     
-    local infoText = Instance.new("TextLabel", infoContainer)
+    infoText = Instance.new("TextLabel", infoContainer)
     infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
     infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
     infoText.BackgroundTransparency = 1
@@ -673,7 +897,7 @@ local function createGUI()
     -- ========== ВКЛАДКА ESP ==========
     
     -- Кнопка ESP (серая)
-    local espButton = Instance.new("TextButton", espContainer)
+    espButton = Instance.new("TextButton", espContainer)
     espButton.Size = UDim2.new(0.9, 0, 0, 35)
     espButton.Position = UDim2.new(0.05, 0, 0.05, 0)
     espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
@@ -685,7 +909,7 @@ local function createGUI()
     -- ========== ВКЛАДКА AIMBOT ==========
     
     -- Кнопка Aimbot (серая)
-    local aimbotButton = Instance.new("TextButton", aimbotContainer)
+    aimbotButton = Instance.new("TextButton", aimbotContainer)
     aimbotButton.Name = "AimbotButton"
     aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
     aimbotButton.Position = UDim2.new(0.05, 0, 0.05, 0)
@@ -696,7 +920,7 @@ local function createGUI()
     aimbotButton.BorderSizePixel = 0
 
     -- Выпадающий список для выбора цели
-    local targetDropdown = Instance.new("TextButton", aimbotContainer)
+    targetDropdown = Instance.new("TextButton", aimbotContainer)
     targetDropdown.Name = "TargetDropdown"
     targetDropdown.Size = UDim2.new(0.9, 0, 0, 35)
     targetDropdown.Position = UDim2.new(0.05, 0, 0.20, 0)
@@ -716,7 +940,7 @@ local function createGUI()
     dropdownContainer.Visible = false
 
     -- Кнопка выбора Head
-    local headButton = Instance.new("TextButton", dropdownContainer)
+    headButton = Instance.new("TextButton", dropdownContainer)
     headButton.Size = UDim2.new(1, 0, 0, 35)
     headButton.Position = UDim2.new(0, 0, 0, 0)
     headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -726,7 +950,7 @@ local function createGUI()
     headButton.BorderSizePixel = 0
 
     -- Кнопка выбора Body
-    local bodyButton = Instance.new("TextButton", dropdownContainer)
+    bodyButton = Instance.new("TextButton", dropdownContainer)
     bodyButton.Size = UDim2.new(1, 0, 0, 35)
     bodyButton.Position = UDim2.new(0, 0, 0, 35)
     bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -736,13 +960,13 @@ local function createGUI()
     bodyButton.BorderSizePixel = 0
 
     -- FOV Slider для аимбота (исходная позиция)
-    local fovSliderFrame = Instance.new("Frame", aimbotContainer)
+    fovSliderFrame = Instance.new("Frame", aimbotContainer)
     fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
     fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
     fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     fovSliderFrame.BorderSizePixel = 0
 
-    local fovLabel = Instance.new("TextLabel", fovSliderFrame)
+    fovLabel = Instance.new("TextLabel", fovSliderFrame)
     fovLabel.Size = UDim2.new(1, 0, 0.3, 0)
     fovLabel.Position = UDim2.new(0, 0, 0, 0)
     fovLabel.BackgroundTransparency = 1
@@ -751,7 +975,7 @@ local function createGUI()
     fovLabel.TextScaled = true
     fovLabel.Font = Enum.Font.SourceSans
 
-    local sliderBackground = Instance.new("TextButton", fovSliderFrame)
+    sliderBackground = Instance.new("TextButton", fovSliderFrame)
     sliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
     sliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
     sliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -792,13 +1016,13 @@ local function createGUI()
     plusButton.BorderSizePixel = 0
 
     -- Distance Slider для аимбота (исходная позиция)
-    local distanceSliderFrame = Instance.new("Frame", aimbotContainer)
+    distanceSliderFrame = Instance.new("Frame", aimbotContainer)
     distanceSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
     distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     distanceSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     distanceSliderFrame.BorderSizePixel = 0
 
-    local distanceLabel = Instance.new("TextLabel", distanceSliderFrame)
+    distanceLabel = Instance.new("TextLabel", distanceSliderFrame)
     distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
     distanceLabel.Position = UDim2.new(0, 0, 0, 0)
     distanceLabel.BackgroundTransparency = 1
@@ -807,7 +1031,7 @@ local function createGUI()
     distanceLabel.TextScaled = true
     distanceLabel.Font = Enum.Font.SourceSans
 
-    local distanceSliderBackground = Instance.new("TextButton", distanceSliderFrame)
+    distanceSliderBackground = Instance.new("TextButton", distanceSliderFrame)
     distanceSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
     distanceSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
     distanceSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -850,7 +1074,7 @@ local function createGUI()
     -- ========== ВКЛАДКА CAMERA ==========
     
     -- Кнопка Infinite Jump (самая первая)
-    local infiniteJumpButton = Instance.new("TextButton", cameraContainer)
+    infiniteJumpButton = Instance.new("TextButton", cameraContainer)
     infiniteJumpButton.Name = "InfiniteJumpButton"
     infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
     infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.05, 0)
@@ -861,7 +1085,7 @@ local function createGUI()
     infiniteJumpButton.BorderSizePixel = 0
 
     -- Кнопка Camera FOV (после Infinite Jump)
-    local cameraFOVButton = Instance.new("TextButton", cameraContainer)
+    cameraFOVButton = Instance.new("TextButton", cameraContainer)
     cameraFOVButton.Name = "CameraFOVButton"
     cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
     cameraFOVButton.Position = UDim2.new(0.05, 0, 0.20, 0)
@@ -872,13 +1096,13 @@ local function createGUI()
     cameraFOVButton.BorderSizePixel = 0
 
     -- Camera FOV Slider (после кнопки CamFOV)
-    local cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
+    cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
     cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
     cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
     cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
     cameraFOVSliderFrame.BorderSizePixel = 0
 
-    local cameraFOVLabel = Instance.new("TextLabel", cameraFOVSliderFrame)
+    cameraFOVLabel = Instance.new("TextLabel", cameraFOVSliderFrame)
     cameraFOVLabel.Size = UDim2.new(1, 0, 0.3, 0)
     cameraFOVLabel.Position = UDim2.new(0, 0, 0, 0)
     cameraFOVLabel.BackgroundTransparency = 1
@@ -887,7 +1111,7 @@ local function createGUI()
     cameraFOVLabel.TextScaled = true
     cameraFOVLabel.Font = Enum.Font.SourceSans
 
-    local cameraSliderBackground = Instance.new("TextButton", cameraFOVSliderFrame)
+    cameraSliderBackground = Instance.new("TextButton", cameraFOVSliderFrame)
     cameraSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
     cameraSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
     cameraSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -930,7 +1154,7 @@ local function createGUI()
     -- ========== ВКЛАДКА LANGUAGE ==========
     
     -- Заголовок
-    local languageTitle = Instance.new("TextLabel", languageContainer)
+    languageTitle = Instance.new("TextLabel", languageContainer)
     languageTitle.Name = "LanguageTitle"
     languageTitle.Size = UDim2.new(0.9, 0, 0, 30)
     languageTitle.Position = UDim2.new(0.05, 0, 0.05, 0)
@@ -941,7 +1165,7 @@ local function createGUI()
     languageTitle.Font = Enum.Font.SourceSansBold
 
     -- Текущий язык
-    local currentLanguageLabel = Instance.new("TextLabel", languageContainer)
+    currentLanguageLabel = Instance.new("TextLabel", languageContainer)
     currentLanguageLabel.Name = "CurrentLanguage"
     currentLanguageLabel.Size = UDim2.new(0.9, 0, 0, 25)
     currentLanguageLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
@@ -952,7 +1176,7 @@ local function createGUI()
     currentLanguageLabel.Font = Enum.Font.SourceSans
 
     -- Выпадающий список для выбора языка
-    local languageDropdown = Instance.new("TextButton", languageContainer)
+    languageDropdown = Instance.new("TextButton", languageContainer)
     languageDropdown.Name = "LanguageDropdown"
     languageDropdown.Size = UDim2.new(0.9, 0, 0, 35)
     languageDropdown.Position = UDim2.new(0.05, 0, 0.30, 0)
@@ -972,7 +1196,7 @@ local function createGUI()
     languageDropdownContainer.Visible = false
 
     -- Кнопка выбора English
-    local englishOption = Instance.new("TextButton", languageDropdownContainer)
+    englishOption = Instance.new("TextButton", languageDropdownContainer)
     englishOption.Name = "EnglishOption"
     englishOption.Size = UDim2.new(1, 0, 0, 35)
     englishOption.Position = UDim2.new(0, 0, 0, 0)
@@ -983,7 +1207,7 @@ local function createGUI()
     englishOption.BorderSizePixel = 0
 
     -- Кнопка выбора Russian
-    local russianOption = Instance.new("TextButton", languageDropdownContainer)
+    russianOption = Instance.new("TextButton", languageDropdownContainer)
     russianOption.Name = "RussianOption"
     russianOption.Size = UDim2.new(1, 0, 0, 35)
     russianOption.Position = UDim2.new(0, 0, 0, 35)
@@ -994,7 +1218,7 @@ local function createGUI()
     russianOption.BorderSizePixel = 0
 
     -- Кнопка выбора Chinese
-    local chineseOption = Instance.new("TextButton", languageDropdownContainer)
+    chineseOption = Instance.new("TextButton", languageDropdownContainer)
     chineseOption.Name = "ChineseOption"
     chineseOption.Size = UDim2.new(1, 0, 0, 35)
     chineseOption.Position = UDim2.new(0, 0, 0, 70)
@@ -1003,6 +1227,90 @@ local function createGUI()
     chineseOption.TextColor3 = Color3.new(1, 1, 1)
     chineseOption.TextScaled = true
     chineseOption.BorderSizePixel = 0
+
+    -- ========== ТЕМЫ В РАЗДЕЛЕ LANGUAGE ==========
+    
+    -- Контейнер для тем (добавляем в languageContainer)
+    themeContainer = Instance.new("Frame", languageContainer)
+    themeContainer.Size = UDim2.new(0.9, 0, 0, 150)
+    themeContainer.Position = UDim2.new(0.05, 0, 0.55, 0)
+    themeContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    themeContainer.BorderSizePixel = 0
+
+    -- Заголовок для тем
+    themeTitle = Instance.new("TextLabel", themeContainer)
+    themeTitle.Name = "ThemeTitle"
+    themeTitle.Size = UDim2.new(1, 0, 0, 30)
+    themeTitle.Position = UDim2.new(0, 0, 0, 0)
+    themeTitle.BackgroundTransparency = 1
+    themeTitle.Text = "Select Theme:"
+    themeTitle.TextColor3 = Color3.new(1, 1, 1)
+    themeTitle.TextScaled = true
+    themeTitle.Font = Enum.Font.SourceSansBold
+
+    -- Текущая тема
+    currentThemeLabel = Instance.new("TextLabel", themeContainer)
+    currentThemeLabel.Name = "CurrentTheme"
+    currentThemeLabel.Size = UDim2.new(1, 0, 0, 25)
+    currentThemeLabel.Position = UDim2.new(0, 0, 0.2, 0)
+    currentThemeLabel.BackgroundTransparency = 1
+    currentThemeLabel.Text = "Current: Dark"
+    currentThemeLabel.TextColor3 = Color3.new(1, 1, 1)
+    currentThemeLabel.TextScaled = true
+    currentThemeLabel.Font = Enum.Font.SourceSans
+
+    -- Выпадающий список для выбора темы
+    themeDropdown = Instance.new("TextButton", themeContainer)
+    themeDropdown.Name = "ThemeDropdown"
+    themeDropdown.Size = UDim2.new(1, 0, 0, 35)
+    themeDropdown.Position = UDim2.new(0, 0, 0.4, 0)
+    themeDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    themeDropdown.Text = "Theme: Dark"
+    themeDropdown.TextColor3 = Color3.new(1, 1, 1)
+    themeDropdown.TextScaled = true
+    themeDropdown.BorderSizePixel = 0
+
+    -- Контейнер для выпадающего списка тем
+    themeDropdownContainer = Instance.new("Frame", themeContainer)
+    themeDropdownContainer.Size = UDim2.new(1, 0, 0, 105)
+    themeDropdownContainer.Position = UDim2.new(0, 0, 0.4, 35)
+    themeDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    themeDropdownContainer.BorderSizePixel = 1
+    themeDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
+    themeDropdownContainer.Visible = false
+
+    -- Кнопка выбора Black темы
+    blackThemeOption = Instance.new("TextButton", themeDropdownContainer)
+    blackThemeOption.Name = "BlackThemeOption"
+    blackThemeOption.Size = UDim2.new(1, 0, 0, 35)
+    blackThemeOption.Position = UDim2.new(0, 0, 0, 0)
+    blackThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    blackThemeOption.Text = "Black"
+    blackThemeOption.TextColor3 = Color3.new(1, 1, 1)
+    blackThemeOption.TextScaled = true
+    blackThemeOption.BorderSizePixel = 0
+
+    -- Кнопка выбора Dark темы
+    darkThemeOption = Instance.new("TextButton", themeDropdownContainer)
+    darkThemeOption.Name = "DarkThemeOption"
+    darkThemeOption.Size = UDim2.new(1, 0, 0, 35)
+    darkThemeOption.Position = UDim2.new(0, 0, 0, 35)
+    darkThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    darkThemeOption.Text = "Dark"
+    darkThemeOption.TextColor3 = Color3.new(1, 1, 1)
+    darkThemeOption.TextScaled = true
+    darkThemeOption.BorderSizePixel = 0
+
+    -- Кнопка выбора White темы
+    whiteThemeOption = Instance.new("TextButton", themeDropdownContainer)
+    whiteThemeOption.Name = "WhiteThemeOption"
+    whiteThemeOption.Size = UDim2.new(1, 0, 0, 35)
+    whiteThemeOption.Position = UDim2.new(0, 0, 0, 70)
+    whiteThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    whiteThemeOption.Text = "White"
+    whiteThemeOption.TextColor3 = Color3.new(1, 1, 1)
+    whiteThemeOption.TextScaled = true
+    whiteThemeOption.BorderSizePixel = 0
 
     -- Кнопка Hide/Show GUI (перемещаемая)
     hideButton = Instance.new("TextButton", gui)
@@ -1091,6 +1399,28 @@ local function createGUI()
         languageDropdownContainer.Visible = false
     end
 
+    -- Функция для выбора темы
+    local function selectTheme(theme)
+        currentTheme = theme
+        updateTheme()
+        
+        -- Обновляем цвета кнопок в выпадающем списке
+        blackThemeOption.BackgroundColor3 = themes[currentTheme].buttonColor
+        darkThemeOption.BackgroundColor3 = themes[currentTheme].buttonColor
+        whiteThemeOption.BackgroundColor3 = themes[currentTheme].buttonColor
+        
+        if theme == "Black" then
+            blackThemeOption.BackgroundColor3 = themes[currentTheme].activeButtonColor
+        elseif theme == "Dark" then
+            darkThemeOption.BackgroundColor3 = themes[currentTheme].activeButtonColor
+        elseif theme == "White" then
+            whiteThemeOption.BackgroundColor3 = themes[currentTheme].activeButtonColor
+        end
+        
+        themeDropdownContainer.Visible = false
+        updateLanguage() -- Обновляем тексты для отображения текущей темы
+    end
+
     -- Функция для открытия/закрытия выпадающего списка цели
     local function toggleTargetDropdown()
         local isOpening = not dropdownContainer.Visible
@@ -1110,6 +1440,11 @@ local function createGUI()
     -- Функция для открытия/закрытия выпадающего списка языка
     local function toggleLanguageDropdown()
         languageDropdownContainer.Visible = not languageDropdownContainer.Visible
+    end
+
+    -- Функция для открытия/закрытия выпадающего списка темы
+    local function toggleThemeDropdown()
+        themeDropdownContainer.Visible = not themeDropdownContainer.Visible
     end
 
     -- Обработка для слайдеров
@@ -1240,6 +1575,23 @@ local function createGUI()
         selectLanguage("Chinese")
     end)
 
+    -- Обработчики для выпадающего списка выбора темы
+    themeDropdown.MouseButton1Click:Connect(function()
+        toggleThemeDropdown()
+    end)
+
+    blackThemeOption.MouseButton1Click:Connect(function()
+        selectTheme("Black")
+    end)
+
+    darkThemeOption.MouseButton1Click:Connect(function()
+        selectTheme("Dark")
+    end)
+
+    whiteThemeOption.MouseButton1Click:Connect(function()
+        selectTheme("White")
+    end)
+
     -- Обработчики для кнопки закрытия
     closeButton.MouseButton1Click:Connect(function()
         confirmFrame.Visible = true
@@ -1290,6 +1642,22 @@ local function createGUI()
                     languageDropdownContainer.Visible = false
                 end
             end
+            
+            -- Закрытие выпадающего списка темы
+            if themeDropdownContainer.Visible then
+                local mousePos = input.Position
+                local dropdownAbsPos = themeDropdownContainer.AbsolutePosition
+                local dropdownAbsSize = themeDropdownContainer.AbsoluteSize
+                local themeDropdownAbsPos = themeDropdown.AbsolutePosition
+                local themeDropdownAbsSize = themeDropdown.AbsoluteSize
+
+                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
+                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
+                   not (mousePos.X >= themeDropdownAbsPos.X and mousePos.X <= themeDropdownAbsPos.X + themeDropdownAbsSize.X and
+                       mousePos.Y >= themeDropdownAbsPos.Y and mousePos.Y <= themeDropdownAbsPos.Y + themeDropdownAbsSize.Y) then
+                    themeDropdownContainer.Visible = false
+                end
+            end
         end
     end)
 
@@ -1305,33 +1673,34 @@ local function createGUI()
         languageContainer.Visible = false
         
         -- Сбросить цвета всех вкладок
-        infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        languageTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        infoTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
+        espTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
+        aimbotTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
+        cameraTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
+        languageTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
         
         -- Показать выбранный контейнер и выделить вкладку
         if tabName == "Info" then
             infoContainer.Visible = true
-            infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            infoTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
         elseif tabName == "ESP" then
             espContainer.Visible = true
-            espTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            espTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
         elseif tabName == "AimBot" then
             aimbotContainer.Visible = true
-            aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            aimbotTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
         elseif tabName == "Camera" then
             cameraContainer.Visible = true
-            cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            cameraTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
         elseif tabName == "Language" then
             languageContainer.Visible = true
-            languageTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            languageTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
         end
         
         -- Скрыть выпадающие списки при переключении вкладок и вернуть слайдеры в исходное положение
         dropdownContainer.Visible = false
         languageDropdownContainer.Visible = false
+        themeDropdownContainer.Visible = false
         fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
         distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
     end
@@ -1399,10 +1768,10 @@ local function createGUI()
     infiniteJumpButton.MouseButton1Click:Connect(function()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
-            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            infiniteJumpButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
             infiniteJumpButton.Text = translations[currentLanguage].infiniteJumpOn
         else
-            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            infiniteJumpButton.BackgroundColor3 = themes[currentTheme].buttonColor
             infiniteJumpButton.Text = translations[currentLanguage].infiniteJumpButton
         end
     end)
@@ -1411,11 +1780,11 @@ local function createGUI()
     cameraFOVButton.MouseButton1Click:Connect(function()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
-            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            cameraFOVButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
             cameraFOVButton.Text = translations[currentLanguage].cameraFOVOn
             camera.FieldOfView = cameraFOV
         else
-            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            cameraFOVButton.BackgroundColor3 = themes[currentTheme].buttonColor
             cameraFOVButton.Text = translations[currentLanguage].cameraFOVButton
             camera.FieldOfView = 70
         end
@@ -1424,10 +1793,10 @@ local function createGUI()
     aimbotButton.MouseButton1Click:Connect(function()
         aimbotEnabled = not aimbotEnabled
         if aimbotEnabled then
-            aimbotButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            aimbotButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
             aimbotButton.Text = translations[currentLanguage].aimbotOn
         else
-            aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            aimbotButton.BackgroundColor3 = themes[currentTheme].buttonColor
             aimbotButton.Text = translations[currentLanguage].aimbotButton
         end
     end)
@@ -1435,10 +1804,10 @@ local function createGUI()
     espButton.MouseButton1Click:Connect(function()
         espEnabled = not espEnabled
         if espEnabled then
-            espButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            espButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
             espButton.Text = translations[currentLanguage].espOn
         else
-            espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            espButton.BackgroundColor3 = themes[currentTheme].buttonColor
             espButton.Text = translations[currentLanguage].espButton
             for _, drawings in pairs(espObjects) do
                 if drawings then
@@ -1457,9 +1826,11 @@ local function createGUI()
     -- Инициализация выпадающих списков
     selectTarget("Head")
     selectLanguage("English")
+    selectTheme("Dark")
     
-    -- Инициализация языка
+    -- Инициализация языка и темы
     updateLanguage()
+    updateTheme()
 end
 
 -- Основной код
