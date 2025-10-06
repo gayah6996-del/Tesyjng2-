@@ -1396,16 +1396,16 @@ local function createGUI()
         updateTheme()
         
         -- Обновляем цвета кнопок в выпадающем списке
-        blackThemeOption.BackgroundColor3 = themes[currentTheme].buttonColor
-        darkThemeOption.BackgroundColor3 = themes[currentTheme].buttonColor
-        whiteThemeOption.BackgroundColor3 = themes[currentTheme].buttonColor
+        blackThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        darkThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        whiteThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         
         if theme == "Black" then
-            blackThemeOption.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            blackThemeOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         elseif theme == "Dark" then
-            darkThemeOption.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            darkThemeOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         elseif theme == "White" then
-            whiteThemeOption.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            whiteThemeOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         end
         
         themeDropdownContainer.Visible = false
@@ -1656,13 +1656,6 @@ local function createGUI()
     local function switchTab(tabName)
         activeTab = tabName
         
-        -- Изменяем размер меню в зависимости от вкладки
-        if tabName == "Language" then
-            frame.Size = UDim2.new(0, 350, 0, 400) -- Увеличиваем высоту для Language вкладки
-        else
-            frame.Size = UDim2.new(0, 350, 0, 300) -- Обычный размер для других вкладок
-        end
-        
         -- Скрыть все контейнеры
         infoContainer.Visible = false
         espContainer.Visible = false
@@ -1671,28 +1664,28 @@ local function createGUI()
         languageContainer.Visible = false
         
         -- Сбросить цвета всех вкладок
-        infoTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
-        espTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
-        aimbotTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
-        cameraTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
-        languageTabButton.BackgroundColor3 = themes[currentTheme].buttonColor
+        infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+        languageTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
         
         -- Показать выбранный контейнер и выделить вкладку
         if tabName == "Info" then
             infoContainer.Visible = true
-            infoTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         elseif tabName == "ESP" then
             espContainer.Visible = true
-            espTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            espTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         elseif tabName == "AimBot" then
             aimbotContainer.Visible = true
-            aimbotTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         elseif tabName == "Camera" then
             cameraContainer.Visible = true
-            cameraTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         elseif tabName == "Language" then
             languageContainer.Visible = true
-            languageTabButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            languageTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         
         -- Скрыть выпадающие списки при переключении вкладок и вернуть слайдеры в исходное положение
@@ -1797,10 +1790,10 @@ local function createGUI()
     infiniteJumpButton.MouseButton1Click:Connect(function()
         infiniteJumpEnabled = not infiniteJumpEnabled
         if infiniteJumpEnabled then
-            infiniteJumpButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
             infiniteJumpButton.Text = translations[currentLanguage].infiniteJumpOn
         else
-            infiniteJumpButton.BackgroundColor3 = themes[currentTheme].buttonColor
+            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             infiniteJumpButton.Text = translations[currentLanguage].infiniteJumpButton
         end
     end)
@@ -1809,11 +1802,11 @@ local function createGUI()
     cameraFOVButton.MouseButton1Click:Connect(function()
         customCameraFOVEnabled = not customCameraFOVEnabled
         if customCameraFOVEnabled then
-            cameraFOVButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
             cameraFOVButton.Text = translations[currentLanguage].cameraFOVOn
             camera.FieldOfView = cameraFOV
         else
-            cameraFOVButton.BackgroundColor3 = themes[currentTheme].buttonColor
+            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             cameraFOVButton.Text = translations[currentLanguage].cameraFOVButton
             camera.FieldOfView = 70
         end
@@ -1822,10 +1815,10 @@ local function createGUI()
     aimbotButton.MouseButton1Click:Connect(function()
         aimbotEnabled = not aimbotEnabled
         if aimbotEnabled then
-            aimbotButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            aimbotButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
             aimbotButton.Text = translations[currentLanguage].aimbotOn
         else
-            aimbotButton.BackgroundColor3 = themes[currentTheme].buttonColor
+            aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             aimbotButton.Text = translations[currentLanguage].aimbotButton
         end
     end)
@@ -1833,10 +1826,10 @@ local function createGUI()
     espButton.MouseButton1Click:Connect(function()
         espEnabled = not espEnabled
         if espEnabled then
-            espButton.BackgroundColor3 = themes[currentTheme].activeButtonColor
+            espButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
             espButton.Text = translations[currentLanguage].espOn
         else
-            espButton.BackgroundColor3 = themes[currentTheme].buttonColor
+            espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
             espButton.Text = translations[currentLanguage].espButton
             for _, drawings in pairs(espObjects) do
                 if drawings then
