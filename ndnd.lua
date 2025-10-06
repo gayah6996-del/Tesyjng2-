@@ -23,22 +23,6 @@ local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 10)
 ToggleCorner.Parent = ToggleButton
 
--- Индикатор бандажей (в правом верхнем углу)
-local BandageLabel = Instance.new("TextLabel")
-BandageLabel.Size = UDim2.new(0, 120, 0, 30)
-BandageLabel.Position = UDim2.new(1, -130, 0, 10)
-BandageLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-BandageLabel.BackgroundTransparency = 0.5
-BandageLabel.Text = "Bandage: Loading..."
-BandageLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-BandageLabel.TextSize = 14
-BandageLabel.Font = Enum.Font.GothamBold
-BandageLabel.Parent = ScreenGui
-
-local BandageCorner = Instance.new("UICorner")
-BandageCorner.CornerRadius = UDim.new(0, 6)
-BandageCorner.Parent = BandageLabel
-
 -- Основное окно меню
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 320, 0, 400)
@@ -88,7 +72,7 @@ TabsFrame.BorderSizePixel = 0
 TabsFrame.Parent = MainFrame
 
 local InfoTabButton = Instance.new("TextButton")
-InfoTabButton.Size = UDim2.new(0.5, 0, 1, 0)
+InfoTabButton.Size = UDim2.new(0.33, 0, 1, 0)
 InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
 InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 InfoTabButton.Text = "Info"
@@ -98,14 +82,24 @@ InfoTabButton.Font = Enum.Font.GothamBold
 InfoTabButton.Parent = TabsFrame
 
 local GameTabButton = Instance.new("TextButton")
-GameTabButton.Size = UDim2.new(0.5, 0, 1, 0)
-GameTabButton.Position = UDim2.new(0.5, 0, 0, 0)
+GameTabButton.Size = UDim2.new(0.33, 0, 1, 0)
+GameTabButton.Position = UDim2.new(0.33, 0, 0, 0)
 GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 GameTabButton.Text = "Game"
 GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
 GameTabButton.TextSize = 14
 GameTabButton.Font = Enum.Font.GothamBold
 GameTabButton.Parent = TabsFrame
+
+local KeksTabButton = Instance.new("TextButton")
+KeksTabButton.Size = UDim2.new(0.34, 0, 1, 0)
+KeksTabButton.Position = UDim2.new(0.66, 0, 0, 0)
+KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+KeksTabButton.Text = "Keks"
+KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+KeksTabButton.TextSize = 14
+KeksTabButton.Font = Enum.Font.GothamBold
+KeksTabButton.Parent = TabsFrame
 
 -- Content frames
 local ContentFrame = Instance.new("Frame")
@@ -139,6 +133,19 @@ GameTab.Parent = ContentFrame
 local GameListLayout = Instance.new("UIListLayout")
 GameListLayout.Padding = UDim.new(0, 8)
 GameListLayout.Parent = GameTab
+
+-- Keks Tab Content
+local KeksTab = Instance.new("ScrollingFrame")
+KeksTab.Size = UDim2.new(1, 0, 1, 0)
+KeksTab.BackgroundTransparency = 1
+KeksTab.BorderSizePixel = 0
+KeksTab.ScrollBarThickness = 6
+KeksTab.Visible = false
+KeksTab.Parent = ContentFrame
+
+local KeksListLayout = Instance.new("UIListLayout")
+KeksListLayout.Padding = UDim.new(0, 8)
+KeksListLayout.Parent = KeksTab
 
 -- Переменные для функций
 local ActiveKillAura = false
@@ -338,27 +345,22 @@ local function CreateLabel(parent, text)
 end
 
 local function CreateButton(parent, text, callback)
-    local buttonFrame = Instance.new("Frame")
-    buttonFrame.Size = UDim2.new(1, 0, 0, 30)
-    buttonFrame.BackgroundTransparency = 1
-    buttonFrame.Parent = parent
-    
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 1, 0)
+    button.Size = UDim2.new(1, 0, 0, 35)
     button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 12
+    button.TextSize = 14
     button.Font = Enum.Font.Gotham
-    button.Parent = buttonFrame
+    button.Parent = parent
     
     local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 4)
+    buttonCorner.CornerRadius = UDim.new(0, 6)
     buttonCorner.Parent = button
     
     button.MouseButton1Click:Connect(callback)
     
-    return buttonFrame
+    return button
 end
 
 -- Создание элементов Info tab
@@ -390,40 +392,39 @@ local autoChopToggle = CreateToggle(autoChopContent, "Auto Chop Tree", function(
     ActiveAutoChopTree = value
 end)
 
--- Добавляем кнопки чекпоинтов
-local teleportSection, teleportContent = CreateSection(GameTab, "📍 Checkpoints")
-CreateButton(teleportContent, "Teleport to Campfire", function()
-    local character = game.Players.LocalPlayer.Character
-    if character then
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            local campfire = workspace.Map.Campground.MainFire
-            if campfire and campfire.PrimaryPart then
-                hrp.CFrame = campfire.PrimaryPart.CFrame + Vector3.new(0, 10, 0)
-            end
-        end
-    end
-end)
-
+-- Создание элементов Keks tab
+local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
 CreateButton(teleportContent, "Teleport to Base", function()
-    local character = game.Players.LocalPlayer.Character
-    if character then
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            -- Базовая точка спавна или другая важная локация
-            hrp.CFrame = CFrame.new(0, 50, 0)
-        end
+    -- Телепорт на базу (координаты нужно уточнить)
+    local character = Player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        -- Замените эти координаты на реальные координаты базы
+        character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
+        print("Teleported to base!")
     end
 end)
 
-CreateButton(teleportContent, "Teleport to Forest", function()
-    local character = game.Players.LocalPlayer.Character
-    if character then
-        local hrp = character:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            -- Пример координат для леса
-            hrp.CFrame = CFrame.new(100, 20, 100)
+local itemSection, itemContent = CreateSection(KeksTab, "🎒 Items")
+CreateButton(itemContent, "Find Bandages", function()
+    -- Поиск бандажей
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    
+    local bandages = {}
+    
+    -- Ищем бандажи в рабочем пространстве
+    for _, item in pairs(workspace:GetDescendants()) do
+        if item.Name == "Bandage" and item:IsA("Part") then
+            table.insert(bandages, item)
         end
+    end
+    
+    if #bandages > 0 then
+        -- Телепортируемся к первому найденному бандажу
+        character.HumanoidRootPart.CFrame = bandages[1].CFrame + Vector3.new(0, 3, 0)
+        print("Found " .. #bandages .. " bandages! Teleported to the first one.")
+    else
+        print("No bandages found in the map.")
     end
 end)
 
@@ -487,33 +488,9 @@ task.spawn(function()
     end
 end)
 
--- Функция для подсчета бандажей
-local function countBandages()
-    local count = 0
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name == "Bandage" and item:IsA("Model") then
-            count = count + 1
-        end
-    end
-    return count
-end
-
--- Обновление индикатора бандажей
-task.spawn(function()
-    while true do
-        local bandageCount = countBandages()
-        if bandageCount == 0 then
-            BandageLabel.Text = "Bandage: None"
-        else
-            BandageLabel.Text = "Bandage: " .. bandageCount
-        end
-        wait(1)
-    end
-end)
-
 -- Обновление размеров секций после добавления контента
 game:GetService("RunService").Heartbeat:Connect(function()
-    for _, tab in pairs({InfoTab, GameTab}) do
+    for _, tab in pairs({InfoTab, GameTab, KeksTab}) do
         for _, section in pairs(tab:GetChildren()) do
             if section:IsA("Frame") and section:FindFirstChildWhichIsA("Frame") then
                 local content = section:FindFirstChildWhichIsA("Frame")
@@ -529,20 +506,30 @@ end)
 
 -- Функционал переключения вкладок
 local function switchToTab(tabName)
+    InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    
+    InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    
+    InfoTab.Visible = false
+    GameTab.Visible = false
+    KeksTab.Visible = false
+    
     if tabName == "Info" then
         InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
         InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
         InfoTab.Visible = true
-        GameTab.Visible = false
-    else
+    elseif tabName == "Game" then
         GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
         GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
         GameTab.Visible = true
-        InfoTab.Visible = false
+    elseif tabName == "Keks" then
+        KeksTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        KeksTab.Visible = true
     end
 end
 
@@ -552,6 +539,10 @@ end)
 
 GameTabButton.MouseButton1Click:Connect(function()
     switchToTab("Game")
+end)
+
+KeksTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Keks")
 end)
 
 -- Система перемещения меню для мобильных устройств
@@ -620,4 +611,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile Game menu with bandage indicator and checkpoints loaded!")
+print("Mobile Game menu with 3 tabs loaded! Tap the button to open/close. Drag the title to move.")
