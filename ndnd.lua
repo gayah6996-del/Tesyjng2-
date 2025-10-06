@@ -1,2007 +1,943 @@
--- Services
-local player = game.Players.LocalPlayer
-local camera = workspace.CurrentCamera
-local players = game:GetService("Players")
-local runService = game:GetService("RunService")
-local userInputService = game:GetService("UserInputService")
+-- 99 Nights In The Forest - Custom UI Script
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
 
--- Aimbot & ESP Variables
-local aimbotEnabled = false
-local espEnabled = false
-local teamCheckEnabled = false
-local fovRadius = 100
-local aimbotMaxDistance = 100
-local guiName = "ASTRALCHEAT"
-local guiVisible = true
-local espObjects = {}
-local aimbotTarget = "Head"
+-- Состояния функций
+local ActiveEspItems, ActiveDistanceEsp, ActiveEspEnemy, ActiveEspChildren, ActiveEspPeltTrader = false, false, false, false, false
+local ActivateFly, AlrActivatedFlyPC, ActiveNoCooldownPrompt, ActiveNoFog = false, false, false, false
+local ActiveAutoChopTree, ActiveKillAura, ActivateInfiniteJump, ActiveNoclip = false, false, false, false
+local DistanceForKillAura = 25
+local DistanceForAutoChopTree = 25
+local ValueSpeed = 16
+local iyflyspeed = 1
+local OldSpeed = 16
 
--- Переменные для камеры
-local customCameraFOVEnabled = false
-local cameraFOV = 70
+-- Основные переменные для UI
+local MainGUI
+local TabButtons = {}
+local CurrentTab = "Info"
 
--- Переменные для Infinite Jump
-local infiniteJumpEnabled = false
-
--- Переменные для перемещения GUI
-local frame = nil
-local isDragging = false
-local dragStart = nil
-local frameStart = nil
-local activeTab = "Info"
-
--- Language System
-local currentLanguage = "English" -- Default language
-
--- Theme System
-local currentTheme = "Dark" -- Default theme
-
--- Themes
-local themes = {
-    Dark = {
-        backgroundColor = Color3.fromRGB(30, 30, 30),
-        tabColor = Color3.fromRGB(40, 40, 40),
-        buttonColor = Color3.fromRGB(100, 100, 100),
-        activeButtonColor = Color3.fromRGB(80, 80, 80),
-        textColor = Color3.new(1, 1, 1),
-        borderColor = Color3.fromRGB(100, 100, 100),
-        sliderBackground = Color3.fromRGB(80, 80, 80),
-        titleBackground = Color3.fromRGB(50, 50, 50)
-    },
-    Black = {
-        backgroundColor = Color3.fromRGB(0, 0, 0),
-        tabColor = Color3.fromRGB(20, 20, 20),
-        buttonColor = Color3.fromRGB(50, 50, 50),
-        activeButtonColor = Color3.fromRGB(30, 30, 30),
-        textColor = Color3.new(1, 1, 1),
-        borderColor = Color3.fromRGB(80, 80, 80),
-        sliderBackground = Color3.fromRGB(60, 60, 60),
-        titleBackground = Color3.fromRGB(30, 30, 30)
-    },
-    White = {
-        backgroundColor = Color3.fromRGB(240, 240, 240),
-        tabColor = Color3.fromRGB(220, 220, 220),
-        buttonColor = Color3.fromRGB(180, 180, 180),
-        activeButtonColor = Color3.fromRGB(160, 160, 160),
-        textColor = Color3.new(0, 0, 0),
-        borderColor = Color3.fromRGB(150, 150, 150),
-        sliderBackground = Color3.fromRGB(200, 200, 200),
-        titleBackground = Color3.fromRGB(200, 200, 200)
-    }
-}
-
--- Translations with icons
-local translations = {
-    English = {
-        title = "ASTRALCHEAT v2.0",
-        infoTab = "🏠 Info",
-        espTab = "👁 ESP",
-        aimbotTab = "⚔ AimBot",
-        cameraTab = "📷 Memory",
-        languageTab = "🌐 Language",
-        close = "Close Menu?",
-        yes = "Yes",
-        no = "No",
-        hideGUI = "Hide GUI",
-        showGUI = "Show GUI",
-        
-        -- Info Tab
-        infoText = "ASTRALCHEAT v2.0\n\nDeveloper: @SFXCL\n\nFeatures:\n• Aimbot with settings\n• ESP with boxes\n• FOV customization\n• Custom Camera FOV\n• Aimbot distance limit\n• Infinite Jump\nLanguage:English\nUse at your own risk!",
-        
-        -- ESP Tab
-        espButton = "ESP: OFF",
-        espOn = "ESP: ON v",
-        
-        -- Aimbot Tab
-        aimbotButton = "Aimbot: OFF",
-        aimbotOn = "Aimbot: ON v",
-        targetDropdown = "Target: Head",
-        fovLabel = "FOV Radius: ",
-        distanceLabel = "Aimbot Distance: ",
-        targetHead = "Head",
-        targetBody = "Body",
-        
-        -- Camera Tab
-        infiniteJumpButton = "Infinite Jump: OFF",
-        infiniteJumpOn = "Infinite Jump: ON v",
-        cameraFOVButton = "CamFOV: OFF",
-        cameraFOVOn = "CamFOV: ON v",
-        cameraFOVLabel = "Camera FOV: ",
-        
-        -- Language Tab
-        languageTitle = "Select Language:",
-        languageDropdown = "Language: English",
-        englishButton = "English🇬🇧",
-        russianButton = "Russian🇷🇺",
-        chineseButton = "Chinese🇨🇳",
-        currentLanguage = "Current: English",
-        
-        -- Theme Tab
-        themeTitle = "Select Theme:",
-        themeDropdown = "Theme: Dark",
-        blackTheme = "Black",
-        darkTheme = "Dark", 
-        whiteTheme = "White",
-        currentTheme = "Current: Dark"
-    },
-    
-    Russian = {
-        title = "ASTRALCHEAT v2.0",
-        infoTab = "🏠 Инфо",
-        espTab = "👁 ESP",
-        aimbotTab = "⚔ АимБот",
-        cameraTab = "📷 Мемори",
-        languageTab = "🌐 Язык",
-        close = "Закрыть меню?",
-        yes = "Да",
-        no = "Нет",
-        hideGUI = "Скрыть GUI",
-        showGUI = "Показать GUI",
-        
-        -- Info Tab
-        infoText = "ASTRALCHEAT v2.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\nЯзык:Русский\nИспользуйте на свой страх и риск!",
-        
-        -- ESP Tab
-        espButton = "ESP: ВЫКЛ",
-        espOn = "ESP: ВКЛ v",
-        
-        -- Aimbot Tab
-        aimbotButton = "АимБот: ВЫКЛ",
-        aimbotOn = "АимБот: ВКЛ v",
-        targetDropdown = "Цель: Голова",
-        fovLabel = "Радиус Круга: ",
-        distanceLabel = "Дистанция аимбота: ",
-        targetHead = "Голова",
-        targetBody = "Тело",
-        
-        -- Camera Tab
-        infiniteJumpButton = "Беск. Прыжок: ВЫКЛ",
-        infiniteJumpOn = "Беск. Прыжок: ВКЛ v",
-        cameraFOVButton = "Обзор Камеры: ВЫКЛ",
-        cameraFOVOn = "Обзор Камеры: ВКЛ v",
-        cameraFOVLabel = "ОбзорКамеры: ",
-        
-        -- Language Tab
-        languageTitle = "Выберите язык:",
-        languageDropdown = "Язык: Русский",
-        englishButton = "Английский🇬🇧",
-        russianButton = "Русский🇷🇺",
-        chineseButton = "Китайский🇨🇳",
-        currentLanguage = "Текущий: Русский",
-        
-        -- Theme Tab
-        themeTitle = "Выберите тему:",
-        themeDropdown = "Тема: Темная",
-        blackTheme = "Черная",
-        darkTheme = "Темная",
-        whiteTheme = "Белая",
-        currentTheme = "Текущая: Темная"
-    },
-    
-    Chinese = {
-        title = "ASTRALCHEAT v2.0",
-        infoTab = "🏠 信息",
-        espTab = "👁 ESP",
-        aimbotTab = "⚔ 瞄准辅助",
-        cameraTab = "📷 相机",
-        languageTab = "🌐 语言",
-        close = "关闭菜单?",
-        yes = "是",
-        no = "否",
-        hideGUI = "隐藏界面",
-        showGUI = "显示界面",
-        
-        -- Info Tab
-        infoText = "ASTRALCHEAT v2.0\n\n开发者: @SFXCL\n\n功能:\n• 可配置的瞄准辅助\n• 方框ESP\n• FOV自定义\n• 自定义相机FOV\n• 瞄准辅助距离限制\n• 无限跳跃\n语言:中文\n使用风险自负!",
-        
-        -- ESP Tab
-        espButton = "ESP: 关闭",
-        espOn = "ESP: 开启 v",
-        
-        -- Aimbot Tab
-        aimbotButton = "瞄准辅助: 关闭",
-        aimbotOn = "瞄准辅助: 开启 v",
-        targetDropdown = "目标: 头部",
-        fovLabel = "FOV半径: ",
-        distanceLabel = "瞄准距离: ",
-        targetHead = "头部",
-        targetBody = "身体",
-        
-        -- Camera Tab
-        infiniteJumpButton = "无限跳跃: 关闭",
-        infiniteJumpOn = "无限跳跃: 开启 v",
-        cameraFOVButton = "相机FOV: 关闭",
-        cameraFOVOn = "相机FOV: 开启 v",
-        cameraFOVLabel = "相机FOV: ",
-        
-        -- Language Tab
-        languageTitle = "选择语言:",
-        languageDropdown = "语言: 中文",
-        englishButton = "英语🇬🇧",
-        russianButton = "俄语🇷🇺",
-        chineseButton = "中文🇨🇳",
-        currentLanguage = "当前: 中文",
-        
-        -- Theme Tab
-        themeTitle = "选择主题:",
-        themeDropdown = "主题: 深色",
-        blackTheme = "黑色",
-        darkTheme = "深色",
-        whiteTheme = "白色",
-        currentTheme = "当前: 深色"
-    }
-}
-
--- FOV Circle
-local circle = Drawing.new("Circle")
-circle.Color = Color3.fromRGB(255, 255, 255)
-circle.Thickness = 1
-circle.Filled = false
-circle.Radius = fovRadius
-circle.Visible = true
-circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
-
--- Infinite Jump Functionality
-userInputService.JumpRequest:connect(function()
-    if infiniteJumpEnabled then
-        game:GetService"Players".LocalPlayer.Character:FindFirstChildOfClass'Humanoid':ChangeState("Jumping")
-    end
-end)
-
--- Show Notification
-local function showNotification()
-    local notification = Instance.new("ScreenGui")
-    notification.Name = "NotificationGUI"
-    notification.ResetOnSpawn = false
-    notification.Parent = player:WaitForChild("PlayerGui")
-
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://9125402735"
-    sound.Volume = 1
-    sound.Parent = notification
-    sound:Play()
-
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Parent = notification
-    textLabel.Size = UDim2.new(0, 250, 0, 50)
-    textLabel.Position = UDim2.new(1, -260, 1, -60)
-    textLabel.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-    textLabel.BorderSizePixel = 0
-    textLabel.Text = "ASTRALCHEAT успешно запущен!"
-    textLabel.TextColor3 = Color3.new(1, 1, 1)
-    textLabel.TextScaled = true
-    textLabel.Font = Enum.Font.SourceSansBold
-
-    task.delay(3, function()
-        for i = 1, 10 do
-            textLabel.TextTransparency = i * 0.1
-            textLabel.BackgroundTransparency = i * 0.1
-            task.wait(0.05)
+-- Функция перетаскивания предметов
+local function DragItem(Item)
+    task.spawn(function()
+        for _, tool in pairs(LocalPlayer.Inventory:GetChildren()) do
+            if tool:IsA("Model") and tool:GetAttribute("NumberItems") and tool:GetAttribute("Capacity") and tool:GetAttribute("NumberItems") < tool:GetAttribute("Capacity") then
+                task.spawn(function()
+                    local args = {tool, Item}
+                    game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("RequestBagStoreItem"):InvokeServer(unpack(args))
+                    wait(0.1)
+                end)
+            end
+            wait(0.25)
         end
-        notification:Destroy()
     end)
 end
 
--- Create ESP for a player
-local function createESPForPlayer(p)
-    local nameTag = Drawing.new("Text")
-    nameTag.Size = 14
-    nameTag.Color = Color3.fromRGB(255, 0, 0)
-    nameTag.Center = true
-    nameTag.Outline = true
-
-    local distanceTag = Drawing.new("Text")
-    distanceTag.Size = 13
-    distanceTag.Color = Color3.fromRGB(255, 0, 0)
-    distanceTag.Center = true
-    distanceTag.Outline = true
-
-    local box = Drawing.new("Square")
-    box.Thickness = 1
-    box.Color = Color3.fromRGB(255, 0, 0)
-    box.Filled = false
-
-    local tracer = Drawing.new("Line")
-    tracer.Thickness = 1
-    tracer.Color = Color3.fromRGB(255, 0, 0)
-
-    espObjects[p] = {
-        name = nameTag,
-        distance = distanceTag,
-        box = box,
-        tracer = tracer
+-- Функция получения информации о сервере
+local function getServerInfo()
+    local playerCount = #Players:GetPlayers()
+    local maxPlayers = Players.MaxPlayers
+    local isStudio = RunService:IsStudio()
+    
+    return {
+        PlaceId = game.PlaceId,
+        JobId = game.JobId,
+        IsStudio = isStudio,
+        CurrentPlayers = playerCount,
+        MaxPlayers = maxPlayers
     }
 end
 
--- Remove ESP
-local function removeESPForPlayer(p)
-    if espObjects[p] then
-        for _, drawing in pairs(espObjects[p]) do
-            drawing:Remove()
+-- Система полета (сохранена из оригинального скрипта)
+local IYMouse = LocalPlayer:GetMouse()
+local FLYING = false
+local QEfly = true
+local vehicleflyspeed = 1
+local flyKeyDown, flyKeyUp
+
+local function sFLY(vfly)
+    repeat wait() until LocalPlayer and LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart") and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    repeat wait() until IYMouse
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+
+    local T = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local SPEED = 0
+
+    local function FLY()
+        FLYING = true
+        local BG = Instance.new('BodyGyro')
+        local BV = Instance.new('BodyVelocity')
+        BG.P = 9e4
+        BG.Parent = T
+        BV.Parent = T
+        BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        BG.CFrame = T.CFrame
+        BV.Velocity = Vector3.new(0, 0, 0)
+        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        task.spawn(function()
+            repeat wait()
+                if not vfly and LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                    LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+                end
+                if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+                    SPEED = 50
+                elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+                    SPEED = 0
+                end
+                if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                    lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
+                elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                else
+                    BV.Velocity = Vector3.new(0, 0, 0)
+                end
+                BG.CFrame = workspace.CurrentCamera.CoordinateFrame
+            until not FLYING
+            CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            SPEED = 0
+            BG:Destroy()
+            BV:Destroy()
+            if LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+            end
+        end)
+    end
+    
+    flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
+        if KEY:lower() == 'w' then CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 's' then CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'a' then CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'd' then CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif QEfly and KEY:lower() == 'e' then CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+        elseif QEfly and KEY:lower() == 'q' then CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
         end
-        espObjects[p] = nil
+        pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+    end)
+    
+    flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
+        if KEY:lower() == 'w' then CONTROL.F = 0
+        elseif KEY:lower() == 's' then CONTROL.B = 0
+        elseif KEY:lower() == 'a' then CONTROL.L = 0
+        elseif KEY:lower() == 'd' then CONTROL.R = 0
+        elseif KEY:lower() == 'e' then CONTROL.Q = 0
+        elseif KEY:lower() == 'q' then CONTROL.E = 0
+        end
+    end)
+    FLY()
+end
+
+local function NOFLY()
+    FLYING = false
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+    if LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+        LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+    end
+    pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
+end
+
+-- ESP система
+local function CreateEsp(Char, Color, Text, Parent, number)
+    if not Char then return end
+    if Char:FindFirstChild("ESP") and Char:FindFirstChildOfClass("Highlight") then return end
+    
+    local highlight = Char:FindFirstChildOfClass("Highlight") or Instance.new("Highlight")
+    highlight.Name = "ESP_Highlight"
+    highlight.Adornee = Char
+    highlight.FillColor = Color
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Enabled = true
+    highlight.Parent = Char
+
+    local billboard = Char:FindFirstChild("ESP") or Instance.new("BillboardGui")
+    billboard.Name = "ESP"
+    billboard.Size = UDim2.new(0, 50, 0, 25)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0, number, 0)
+    billboard.Adornee = Parent
+    billboard.Enabled = true
+    billboard.Parent = Parent
+
+    local label = billboard:FindFirstChildOfClass("TextLabel") or Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = Text
+    label.TextColor3 = Color
+    label.TextScaled = true
+    label.Parent = billboard
+
+    task.spawn(function()
+        local Camera = workspace.CurrentCamera
+        while highlight and billboard and Parent and Parent.Parent do
+            local cameraPosition = Camera and Camera.CFrame.Position
+            if cameraPosition and Parent and Parent:IsA("BasePart") then
+                local distance = (cameraPosition - Parent.Position).Magnitude
+                task.spawn(function()
+                    if ActiveDistanceEsp then
+                        label.Text = Text.." ("..math.floor(distance + 0.5).." m)"
+                    else
+                        label.Text = Text
+                    end
+                end)
+            end
+            wait(0.1)
+        end
+    end)
+end
+
+local function KeepEsp(Char, Parent)
+    if Char and Char:FindFirstChildOfClass("Highlight") and Parent:FindFirstChildOfClass("BillboardGui") then
+        Char:FindFirstChildOfClass("Highlight"):Destroy()
+        Parent:FindFirstChildOfClass("BillboardGui"):Destroy()
     end
 end
 
-players.PlayerRemoving:Connect(removeESPForPlayer)
-
--- Visibility Check
-local function isVisible(part)
-    if not part then return false end
-    local origin = camera.CFrame.Position
-    local direction = (part.Position - origin)
-    local rayParams = RaycastParams.new()
-    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
-    rayParams.FilterDescendantsInstances = { player.Character or workspace }
-    local result = workspace:Raycast(origin, direction, rayParams)
-    if result then
-        return part:IsDescendantOf(result.Instance.Parent) or result.Instance:IsDescendantOf(part.Parent)
+-- Функция для копирования в буфер обмена
+local function copyToClipboard(text)
+    if setclipboard then
+        setclipboard(text)
     else
-        return true
+        warn("setclipboard is not supported in this environment.")
     end
 end
 
--- Closest Player Function (with team check and distance check)
-local function getClosestPlayer()
-    local closestPlayer = nil
-    local shortestDistance = fovRadius
+-- Создание основного GUI
+local function CreateMainGUI()
+    -- Создаем основной ScreenGui
+    MainGUI = Instance.new("ScreenGui")
+    MainGUI.Name = "Custom99NightsGUI"
+    MainGUI.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    MainGUI.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-    for _, p in pairs(players:GetPlayers()) do
-        if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
-            if teamCheckEnabled and p.Team == player.Team then
-                continue
-            end
-            
-            local targetPart = p.Character:FindFirstChild(aimbotTarget)
-            if not targetPart then
-                targetPart = p.Character.Head
-            end
-            
-            if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-                local distanceToPlayer = (player.Character.HumanoidRootPart.Position - targetPart.Position).Magnitude
-                if distanceToPlayer > aimbotMaxDistance then
-                    continue
+    -- Основное окно
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Size = UDim2.new(0, 500, 0, 400)
+    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.ClipsDescendants = true
+    MainFrame.Parent = MainGUI
+
+    -- Заголовок окна
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Name = "TitleBar"
+    TitleBar.Size = UDim2.new(1, 0, 0, 30)
+    TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Parent = MainFrame
+
+    local TitleLabel = Instance.new("TextLabel")
+    TitleLabel.Name = "TitleLabel"
+    TitleLabel.Size = UDim2.new(1, -60, 1, 0)
+    TitleLabel.Position = UDim2.new(0, 10, 0, 0)
+    TitleLabel.BackgroundTransparency = 1
+    TitleLabel.Text = "99 Nights In The Forest - Custom UI"
+    TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TitleLabel.Font = Enum.Font.GothamBold
+    TitleLabel.TextSize = 14
+    TitleLabel.Parent = TitleBar
+
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Name = "CloseButton"
+    CloseButton.Size = UDim2.new(0, 30, 0, 30)
+    CloseButton.Position = UDim2.new(1, -30, 0, 0)
+    CloseButton.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+    CloseButton.BorderSizePixel = 0
+    CloseButton.Text = "X"
+    CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseButton.Font = Enum.Font.GothamBold
+    CloseButton.TextSize = 14
+    CloseButton.Parent = TitleBar
+
+    CloseButton.MouseButton1Click:Connect(function()
+        MainGUI:Destroy()
+    end)
+
+    -- Панель вкладок
+    local TabContainer = Instance.new("Frame")
+    TabContainer.Name = "TabContainer"
+    TabContainer.Size = UDim2.new(0, 120, 1, -30)
+    TabContainer.Position = UDim2.new(0, 0, 0, 30)
+    TabContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    TabContainer.BorderSizePixel = 0
+    TabContainer.Parent = MainFrame
+
+    -- Контейнер содержимого
+    local ContentContainer = Instance.new("Frame")
+    ContentContainer.Name = "ContentContainer"
+    ContentContainer.Size = UDim2.new(1, -120, 1, -30)
+    ContentContainer.Position = UDim2.new(0, 120, 0, 30)
+    ContentContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    ContentContainer.BorderSizePixel = 0
+    ContentContainer.Parent = MainFrame
+
+    -- Создаем вкладки
+    local Tabs = {"Info", "Player", "Esp", "Game", "Bring Item", "Discord", "Settings"}
+    
+    for i, tabName in ipairs(Tabs) do
+        -- Кнопка вкладки
+        local TabButton = Instance.new("TextButton")
+        TabButton.Name = tabName .. "TabButton"
+        TabButton.Size = UDim2.new(1, 0, 0, 40)
+        TabButton.Position = UDim2.new(0, 0, 0, (i-1) * 40)
+        TabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TabButton.BorderSizePixel = 0
+        TabButton.Text = tabName
+        TabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+        TabButton.Font = Enum.Font.Gotham
+        TabButton.TextSize = 12
+        TabButton.Parent = TabContainer
+        
+        -- Контент вкладки
+        local TabContent = Instance.new("ScrollingFrame")
+        TabContent.Name = tabName .. "Content"
+        TabContent.Size = UDim2.new(1, 0, 1, 0)
+        TabContent.Position = UDim2.new(0, 0, 0, 0)
+        TabContent.BackgroundTransparency = 1
+        TabContent.BorderSizePixel = 0
+        TabContent.ScrollBarThickness = 6
+        TabContent.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+        TabContent.Visible = false
+        TabContent.Parent = ContentContainer
+        
+        TabButtons[tabName] = {Button = TabButton, Content = TabContent}
+        
+        TabButton.MouseButton1Click:Connect(function()
+            CurrentTab = tabName
+            for name, tab in pairs(TabButtons) do
+                if name == tabName then
+                    tab.Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+                    tab.Content.Visible = true
+                else
+                    tab.Button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+                    tab.Content.Visible = false
                 end
             end
-            
-            local screenPos, onScreen = camera:WorldToViewportPoint(targetPart.Position)
-            if onScreen then
-                local distanceFromCenter = (Vector2.new(screenPos.X, screenPos.Y) - Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)).Magnitude
-                if distanceFromCenter < shortestDistance and isVisible(targetPart) then
-                    shortestDistance = distanceFromCenter
-                    closestPlayer = p
-                end
-            end
-        end
+        end)
     end
 
-    return closestPlayer
+    -- Активируем первую вкладку
+    TabButtons["Info"].Button.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    TabButtons["Info"].Content.Visible = true
+
+    -- Делаем окно перетаскиваемым
+    local dragging = false
+    local dragInput, dragStart, startPos
+
+    TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = MainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+
+    TitleBar.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            MainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    return MainFrame
 end
 
--- Function to update theme
-local function updateTheme()
-    local theme = themes[currentTheme]
+-- Функция для создания элементов UI
+local function CreateButton(parent, text, callback)
+    local Button = Instance.new("TextButton")
+    Button.Name = text .. "Button"
+    Button.Size = UDim2.new(0.9, 0, 0, 35)
+    Button.Position = UDim2.new(0.05, 0, 0, #parent:GetChildren() * 40)
+    Button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    Button.BorderSizePixel = 0
+    Button.Text = text
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Font = Enum.Font.Gotham
+    Button.TextSize = 12
+    Button.Parent = parent
     
-    if frame then
-        frame.BackgroundColor3 = theme.backgroundColor
-        frame.BorderColor3 = theme.borderColor
-    end
+    Button.MouseButton1Click:Connect(callback)
     
-    if tabsPanel then
-        tabsPanel.BackgroundColor3 = theme.tabColor
-    end
-    
-    if mainContainer then
-        mainContainer.BackgroundColor3 = theme.backgroundColor
-    end
-    
-    if contentContainer then
-        contentContainer.BackgroundColor3 = theme.backgroundColor
-    end
-    
-    -- Update tab containers
-    local containers = {infoContainer, espContainer, aimbotContainer, cameraContainer, languageContainer}
-    for _, container in pairs(containers) do
-        if container then
-            container.BackgroundColor3 = theme.backgroundColor
-        end
-    end
-    
-    -- Update title
-    if title then
-        title.BackgroundColor3 = theme.titleBackground
-        title.TextColor3 = theme.textColor
-    end
-    
-    -- Update close button
-    if closeButton then
-        closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-        closeButton.TextColor3 = theme.textColor
-    end
-    
-    -- Update confirmation frame
-    if confirmFrame then
-        confirmFrame.BackgroundColor3 = theme.backgroundColor
-        confirmFrame.BorderColor3 = theme.borderColor
-    end
-    
-    if confirmText then
-        confirmText.TextColor3 = theme.textColor
-    end
-    
-    -- Update tab buttons
-    local tabButtons = {infoTabButton, espTabButton, aimbotTabButton, cameraTabButton, languageTabButton}
-    for _, button in pairs(tabButtons) do
-        if button then
-            if button.Text == activeTab or button.Text == translations[currentLanguage].infoTab and activeTab == "Info" or
-               button.Text == translations[currentLanguage].espTab and activeTab == "ESP" or
-               button.Text == translations[currentLanguage].aimbotTab and activeTab == "AimBot" or
-               button.Text == translations[currentLanguage].cameraTab and activeTab == "Camera" or
-               button.Text == translations[currentLanguage].languageTab and activeTab == "Language" then
-                button.BackgroundColor3 = theme.activeButtonColor
-            else
-                button.BackgroundColor3 = theme.buttonColor
-            end
-            button.TextColor3 = theme.textColor
-            button.BorderColor3 = theme.borderColor
-        end
-    end
-    
-    -- Update function buttons
-    local functionButtons = {espButton, aimbotButton, targetDropdown, infiniteJumpButton, cameraFOVButton, languageDropdown, themeDropdown}
-    for _, button in pairs(functionButtons) do
-        if button then
-            if string.find(button.Text, "ON") or string.find(button.Text, "ВКЛ") or string.find(button.Text, "开启") then
-                button.BackgroundColor3 = theme.activeButtonColor
-            else
-                button.BackgroundColor3 = theme.buttonColor
-            end
-            button.TextColor3 = theme.textColor
-        end
-    end
-    
-    -- Update dropdown containers
-    local dropdownContainers = {dropdownContainer, languageDropdownContainer, themeDropdownContainer}
-    for _, container in pairs(dropdownContainers) do
-        if container then
-            container.BackgroundColor3 = theme.backgroundColor
-            container.BorderColor3 = theme.borderColor
-        end
-    end
-    
-    -- Update dropdown options
-    local dropdownOptions = {headButton, bodyButton, englishOption, russianOption, chineseOption, blackThemeOption, darkThemeOption, whiteThemeOption}
-    for _, option in pairs(dropdownOptions) do
-        if option then
-            option.BackgroundColor3 = theme.buttonColor
-            option.TextColor3 = theme.textColor
-        end
-    end
-    
-    -- Update sliders
-    local sliderFrames = {fovSliderFrame, distanceSliderFrame, cameraFOVSliderFrame}
-    for _, frame in pairs(sliderFrames) do
-        if frame then
-            frame.BackgroundColor3 = theme.backgroundColor
-        end
-    end
-    
-    local sliderBackgrounds = {sliderBackground, distanceSliderBackground, cameraSliderBackground}
-    for _, bg in pairs(sliderBackgrounds) do
-        if bg then
-            bg.BackgroundColor3 = theme.sliderBackground
-        end
-    end
-    
-    -- Update text labels
-    local textLabels = {fovLabel, distanceLabel, cameraFOVLabel, infoText, languageTitle, currentLanguageLabel, themeTitle, currentThemeLabel}
-    for _, label in pairs(textLabels) do
-        if label then
-            label.TextColor3 = theme.textColor
-        end
-    end
-    
-    -- Update hide button
-    if hideButton then
-        hideButton.BackgroundColor3 = theme.buttonColor
-        hideButton.TextColor3 = theme.textColor
-    end
+    return Button
 end
 
--- Function to update all GUI texts based on current language
-local function updateLanguage()
-    local t = translations[currentLanguage]
+local function CreateToggle(parent, text, callback)
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Name = text .. "Toggle"
+    ToggleFrame.Size = UDim2.new(0.9, 0, 0, 30)
+    ToggleFrame.Position = UDim2.new(0.05, 0, 0, #parent:GetChildren() * 35)
+    ToggleFrame.BackgroundTransparency = 1
+    ToggleFrame.Parent = parent
     
-    -- Update main title
-    if frame then
-        frame:FindFirstChildOfClass("TextLabel").Text = t.title
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Name = "ToggleButton"
+    ToggleButton.Size = UDim2.new(0, 20, 0, 20)
+    ToggleButton.Position = UDim2.new(0, 0, 0.5, -10)
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    ToggleButton.BorderSizePixel = 0
+    ToggleButton.Text = ""
+    ToggleButton.Parent = ToggleFrame
+    
+    local ToggleLabel = Instance.new("TextLabel")
+    ToggleLabel.Name = "ToggleLabel"
+    ToggleLabel.Size = UDim2.new(1, -25, 1, 0)
+    ToggleLabel.Position = UDim2.new(0, 25, 0, 0)
+    ToggleLabel.BackgroundTransparency = 1
+    ToggleLabel.Text = text
+    ToggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ToggleLabel.Font = Enum.Font.Gotham
+    ToggleLabel.TextSize = 12
+    ToggleLabel.Parent = ToggleFrame
+    
+    local isToggled = false
+    
+    local function updateToggle()
+        if isToggled then
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        else
+            ToggleButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        end
+        callback(isToggled)
     end
     
-    -- Update tab buttons
-    if tabsPanel then
-        for _, child in pairs(tabsPanel:GetChildren()) do
-            if child:IsA("TextButton") then
-                if child.Name == "InfoTab" then
-                    child.Text = t.infoTab
-                elseif child.Name == "ESPTab" then
-                    child.Text = t.espTab
-                elseif child.Name == "AimBotTab" then
-                    child.Text = t.aimbotTab
-                elseif child.Name == "CameraTab" then
-                    child.Text = t.cameraTab
-                elseif child.Name == "LanguageTab" then
-                    child.Text = t.languageTab
-                end
-            end
-        end
-    end
+    ToggleButton.MouseButton1Click:Connect(function()
+        isToggled = not isToggled
+        updateToggle()
+    end)
     
-    -- Update close confirmation
-    if confirmFrame then
-        confirmFrame:FindFirstChildOfClass("TextLabel").Text = t.close
-        for _, child in pairs(confirmFrame:GetChildren()) do
-            if child:IsA("TextButton") then
-                if child.Text == "Yes" or child.Text == "Да" or child.Text == "是" then
-                    child.Text = t.yes
-                elseif child.Text == "No" or child.Text == "Нет" or child.Text == "否" then
-                    child.Text = t.no
-                end
-            end
-        end
-    end
-    
-    -- Update hide button
-    if hideButton then
-        hideButton.Text = guiVisible and t.hideGUI or t.showGUI
-    end
-    
-    -- Update Info tab
-    if infoContainer then
-        local infoTextLabel = infoContainer:FindFirstChildOfClass("TextLabel")
-        if infoTextLabel then
-            infoTextLabel.Text = t.infoText
-        end
-    end
-    
-    -- Update ESP tab
-    if espContainer then
-        local espButton = espContainer:FindFirstChildOfClass("TextButton")
-        if espButton then
-            espButton.Text = espEnabled and t.espOn or t.espButton
-        end
-    end
-    
-    -- Update Aimbot tab
-    if aimbotContainer then
-        for _, child in pairs(aimbotContainer:GetChildren()) do
-            if child:IsA("TextButton") then
-                if child.Name == "AimbotButton" then
-                    child.Text = aimbotEnabled and t.aimbotOn or t.aimbotButton
-                elseif child.Name == "TargetDropdown" then
-                    child.Text = aimbotTarget == "Head" and t.targetDropdown:gsub("Head", t.targetHead) or t.targetDropdown:gsub("Head", t.targetBody)
-                end
-            elseif child:IsA("TextLabel") then
-                if child.Text:find("FOV Radius") or child.Text:find("Радиус Круга") or child.Text:find("FOV半径") then
-                    child.Text = t.fovLabel .. fovRadius
-                elseif child.Text:find("Aimbot Distance") or child.Text:find("Дистанция аимбота") or child.Text:find("瞄准距离") then
-                    child.Text = t.distanceLabel .. aimbotMaxDistance .. "m"
-                end
-            end
-        end
-        
-        -- Update dropdown options
-        if dropdownContainer then
-            for _, child in pairs(dropdownContainer:GetChildren()) do
-                if child:IsA("TextButton") then
-                    if child.Text == "Head" or child.Text == "Голова" or child.Text == "头部" then
-                        child.Text = t.targetHead
-                    elseif child.Text == "Body" or child.Text == "Тело" or child.Text == "身体" then
-                        child.Text = t.targetBody
-                    end
-                end
-            end
-        end
-    end
-    
-    -- Update Camera tab
-    if cameraContainer then
-        for _, child in pairs(cameraContainer:GetChildren()) do
-            if child:IsA("TextButton") then
-                if child.Name == "InfiniteJumpButton" then
-                    child.Text = infiniteJumpEnabled and t.infiniteJumpOn or t.infiniteJumpButton
-                elseif child.Name == "CameraFOVButton" then
-                    child.Text = customCameraFOVEnabled and t.cameraFOVOn or t.cameraFOVButton
-                end
-            elseif child:IsA("TextLabel") then
-                if child.Text:find("Camera FOV") or child.Text:find("FOV Камеры") or child.Text:find("相机FOV") then
-                    child.Text = t.cameraFOVLabel .. cameraFOV
-                end
-            end
-        end
-    end
-    
-    -- Update Language tab
-    if languageContainer then
-        local titleLabel = languageContainer:FindFirstChild("LanguageTitle")
-        if titleLabel then
-            titleLabel.Text = t.languageTitle
-        end
-        
-        local currentLabel = languageContainer:FindFirstChild("CurrentLanguage")
-        if currentLabel then
-            currentLabel.Text = t.currentLanguage
-        end
-        
-        local dropdownButton = languageContainer:FindFirstChild("LanguageDropdown")
-        if dropdownButton then
-            dropdownButton.Text = t.languageDropdown
-        end
-        
-        -- Update dropdown options
-        if languageDropdownContainer then
-            for _, child in pairs(languageDropdownContainer:GetChildren()) do
-                if child:IsA("TextButton") then
-                    if child.Name == "EnglishOption" then
-                        child.Text = t.englishButton
-                    elseif child.Name == "RussianOption" then
-                        child.Text = t.russianButton
-                    elseif child.Name == "ChineseOption" then
-                        child.Text = t.chineseButton
-                    end
-                end
-            end
-        end
-        
-        -- Update Theme section
-        local themeTitleLabel = languageContainer:FindFirstChild("ThemeTitle")
-        if themeTitleLabel then
-            themeTitleLabel.Text = t.themeTitle
-        end
-        
-        local currentThemeLabel = languageContainer:FindFirstChild("CurrentTheme")
-        if currentThemeLabel then
-            currentThemeLabel.Text = t.currentTheme
-        end
-        
-        local themeDropdownButton = languageContainer:FindFirstChild("ThemeDropdown")
-        if themeDropdownButton then
-            themeDropdownButton.Text = t.themeDropdown
-        end
-        
-        -- Update theme dropdown options
-        if themeDropdownContainer then
-            for _, child in pairs(themeDropdownContainer:GetChildren()) do
-                if child:IsA("TextButton") then
-                    if child.Name == "BlackThemeOption" then
-                        child.Text = t.blackTheme
-                    elseif child.Name == "DarkThemeOption" then
-                        child.Text = t.darkTheme
-                    elseif child.Name == "WhiteThemeOption" then
-                        child.Text = t.whiteTheme
-                    end
-                end
-            end
-        end
-    end
+    return {Frame = ToggleFrame, SetValue = function(value) isToggled = value updateToggle() end}
 end
 
--- GUI Creation Function
-local function createGUI()
-    local gui = Instance.new("ScreenGui")
-    gui.Name = guiName
-    gui.ResetOnSpawn = false
-    gui.Parent = player:WaitForChild("PlayerGui")
-
-    -- Основной контейнер
-    frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -150)
-    frame.Size = UDim2.new(0, 360, 0, 310)
-    frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    frame.BorderSizePixel = 1
-    frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    frame.Visible = guiVisible
-
-    -- Заголовок (для перетаскивания)
-    title = Instance.new("TextLabel", frame)
-    title.Size = UDim2.new(1, 0, 0, 25)
-    title.Position = UDim2.new(0, 0, 0, 0)
-    title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    title.Text = "ASTRALCHEAT v2.0"
-    title.TextColor3 = Color3.new(1, 1, 1)
-    title.TextScaled = true
-    title.Font = Enum.Font.SourceSansBold
-    title.BorderSizePixel = 0
-
-    -- Кнопка закрытия (крестик)
-    closeButton = Instance.new("TextButton", frame)
-    closeButton.Size = UDim2.new(0, 25, 0, 25)
-    closeButton.Position = UDim2.new(1, -25, 0, 0)
-    closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-    closeButton.Text = "X"
-    closeButton.TextColor3 = Color3.new(1, 1, 1)
-    closeButton.TextScaled = true
-    closeButton.BorderSizePixel = 0
-    closeButton.ZIndex = 2
-
-    -- Контейнер для подтверждения закрытия
-    confirmFrame = Instance.new("Frame", gui)
-    confirmFrame.Size = UDim2.new(0, 300, 0, 120)
-    confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
-    confirmFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    confirmFrame.BorderSizePixel = 1
-    confirmFrame.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    confirmFrame.Visible = false
-    confirmFrame.ZIndex = 100
-
-    confirmText = Instance.new("TextLabel", confirmFrame)
-    confirmText.Size = UDim2.new(0.9, 0, 0.4, 0)
-    confirmText.Position = UDim2.new(0.05, 0, 0.1, 0)
-    confirmText.BackgroundTransparency = 1
-    confirmText.Text = "Вы хотите закрыть меню?"
-    confirmText.TextColor3 = Color3.new(1, 1, 1)
-    confirmText.TextScaled = true
-    confirmText.Font = Enum.Font.SourceSansBold
-    confirmText.ZIndex = 101
-
-    local yesButton = Instance.new("TextButton", confirmFrame)
-    yesButton.Size = UDim2.new(0.4, 0, 0.3, 0)
-    yesButton.Position = UDim2.new(0.05, 0, 0.55, 0)
-    yesButton.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-    yesButton.Text = "Да"
-    yesButton.TextColor3 = Color3.new(1, 1, 1)
-    yesButton.TextScaled = true
-    yesButton.BorderSizePixel = 0
-    yesButton.ZIndex = 101
-
-    local noButton = Instance.new("TextButton", confirmFrame)
-    noButton.Size = UDim2.new(0.4, 0, 0.3, 0)
-    noButton.Position = UDim2.new(0.55, 0, 0.55, 0)
-    noButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-    noButton.Text = "Нет"
-    noButton.TextColor3 = Color3.new(1, 1, 1)
-    noButton.TextScaled = true
-    noButton.BorderSizePixel = 0
-    noButton.ZIndex = 101
-
-    -- Контейнер для вкладок и контента
-    mainContainer = Instance.new("Frame", frame)
-    mainContainer.Size = UDim2.new(1, 0, 1, -25)
-    mainContainer.Position = UDim2.new(0, 0, 0, 25)
-    mainContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    mainContainer.BorderSizePixel = 0
-
-    -- Панель вкладок (вертикальная)
-    tabsPanel = Instance.new("Frame", mainContainer)
-    tabsPanel.Size = UDim2.new(0, 80, 1, 0)
-    tabsPanel.Position = UDim2.new(0, 0, 0, 0)
-    tabsPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    tabsPanel.BorderSizePixel = 0
-
-    -- Контейнер для контента
-    contentContainer = Instance.new("Frame", mainContainer)
-    contentContainer.Size = UDim2.new(1, -80, 1, 0)
-    contentContainer.Position = UDim2.new(0, 80, 0, 0)
-    contentContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    contentContainer.BorderSizePixel = 0
-
-    -- Вкладка Info (первая) с иконкой домика
-    infoTabButton = Instance.new("TextButton", tabsPanel)
-    infoTabButton.Name = "InfoTab"
-    infoTabButton.Size = UDim2.new(0.9, 0, 0, 25)
-    infoTabButton.Position = UDim2.new(0.05, 0, 0.02, 0)
-    infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    infoTabButton.Text = "🏠 Info"
-    infoTabButton.TextColor3 = Color3.new(1, 1, 1)
-    infoTabButton.TextScaled = true
-    infoTabButton.BorderSizePixel = 1
-    infoTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
-
-    -- Вкладка ESP (вторая) с иконкой глаза
-    espTabButton = Instance.new("TextButton", tabsPanel)
-    espTabButton.Name = "ESPTab"
-    espTabButton.Size = UDim2.new(0.9, 0, 0, 25)
-    espTabButton.Position = UDim2.new(0.05, 0, 0.12, 0)
-    espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    espTabButton.Text = "👁 ESP"
-    espTabButton.TextColor3 = Color3.new(1, 1, 1)
-    espTabButton.TextScaled = true
-    espTabButton.BorderSizePixel = 1
-    espTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
-
-    -- Вкладка AimBot (третья) с иконкой меча
-    aimbotTabButton = Instance.new("TextButton", tabsPanel)
-    aimbotTabButton.Name = "AimBotTab"
-    aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 25)
-    aimbotTabButton.Position = UDim2.new(0.05, 0, 0.22, 0)
-    aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    aimbotTabButton.Text = "⚔ AimBot"
-    aimbotTabButton.TextColor3 = Color3.new(1, 1, 1)
-    aimbotTabButton.TextScaled = true
-    aimbotTabButton.BorderSizePixel = 1
-    aimbotTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
-
-    -- Вкладка Camera (четвертая) с иконкой камеры
-    cameraTabButton = Instance.new("TextButton", tabsPanel)
-    cameraTabButton.Name = "CameraTab"
-    cameraTabButton.Size = UDim2.new(0.9, 0, 0, 25)
-    cameraTabButton.Position = UDim2.new(0.05, 0, 0.32, 0)
-    cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    cameraTabButton.Text = "📷 Memory"
-    cameraTabButton.TextColor3 = Color3.new(1, 1, 1)
-    cameraTabButton.TextScaled = true
-    cameraTabButton.BorderSizePixel = 1
-    cameraTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
-
-    -- Вкладка Language (пятая) с иконкой глобуса
-    languageTabButton = Instance.new("TextButton", tabsPanel)
-    languageTabButton.Name = "LanguageTab"
-    languageTabButton.Size = UDim2.new(0.9, 0, 0, 25)
-    languageTabButton.Position = UDim2.new(0.05, 0, 0.42, 0)
-    languageTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    languageTabButton.Text = "🌐 Language"
-    languageTabButton.TextColor3 = Color3.new(1, 1, 1)
-    languageTabButton.TextScaled = true
-    languageTabButton.BorderSizePixel = 1
-    languageTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
-
-    -- Контейнеры для содержимого вкладок
-    infoContainer = Instance.new("Frame", contentContainer)
-    infoContainer.Size = UDim2.new(1, 0, 1, 0)
-    infoContainer.Position = UDim2.new(0, 0, 0, 0)
-    infoContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    infoContainer.BorderSizePixel = 0
-    infoContainer.Visible = true
-
-    espContainer = Instance.new("Frame", contentContainer)
-    espContainer.Size = UDim2.new(1, 0, 1, 0)
-    espContainer.Position = UDim2.new(0, 0, 0, 0)
-    espContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    espContainer.BorderSizePixel = 0
-    espContainer.Visible = false
-
-    aimbotContainer = Instance.new("Frame", contentContainer)
-    aimbotContainer.Size = UDim2.new(1, 0, 1, 0)
-    aimbotContainer.Position = UDim2.new(0, 0, 0, 0)
-    aimbotContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    aimbotContainer.BorderSizePixel = 0
-    aimbotContainer.Visible = false
-
-    cameraContainer = Instance.new("Frame", contentContainer)
-    cameraContainer.Size = UDim2.new(1, 0, 1, 0)
-    cameraContainer.Position = UDim2.new(0, 0, 0, 0)
-    cameraContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    cameraContainer.BorderSizePixel = 0
-    cameraContainer.Visible = false
-
-    languageContainer = Instance.new("Frame", contentContainer)
-    languageContainer.Size = UDim2.new(1, 0, 1, 0)
-    languageContainer.Position = UDim2.new(0, 0, 0, 0)
-    languageContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    languageContainer.BorderSizePixel = 0
-    languageContainer.Visible = false
-
-    -- ========== ВКЛАДКА INFO ==========
+local function CreateSlider(parent, text, min, max, defaultValue, callback)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Name = text .. "Slider"
+    SliderFrame.Size = UDim2.new(0.9, 0, 0, 50)
+    SliderFrame.Position = UDim2.new(0.05, 0, 0, #parent:GetChildren() * 55)
+    SliderFrame.BackgroundTransparency = 1
+    SliderFrame.Parent = parent
     
-    infoText = Instance.new("TextLabel", infoContainer)
-    infoText.Size = UDim2.new(0.9, 0, 0.8, 0)
-    infoText.Position = UDim2.new(0.05, 0, 0.05, 0)
-    infoText.BackgroundTransparency = 1
-    infoText.Text = "ASTRALCHEAT v2.0\n\nРазработчик: @SFXCL\n\nФункции:\n• Aimbot с настройкой\n• ESP с боксами\n• Настройка FOV\n• Кастомный FOV камеры\n• Ограничение дистанции аимбота\n• Infinite Jump\n\nИспользуйте на свой страх и риск!"
-    infoText.TextColor3 = Color3.new(1, 1, 1)
-    infoText.TextScaled = true
-    infoText.TextWrapped = true
-    infoText.Font = Enum.Font.SourceSans
-
-    -- ========== ВКЛАДКА ESP ==========
+    local SliderLabel = Instance.new("TextLabel")
+    SliderLabel.Name = "SliderLabel"
+    SliderLabel.Size = UDim2.new(1, 0, 0, 20)
+    SliderLabel.Position = UDim2.new(0, 0, 0, 0)
+    SliderLabel.BackgroundTransparency = 1
+    SliderLabel.Text = text .. ": " .. defaultValue
+    SliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SliderLabel.Font = Enum.Font.Gotham
+    SliderLabel.TextSize = 12
+    SliderLabel.Parent = SliderFrame
     
-    -- Кнопка ESP (серая)
-    espButton = Instance.new("TextButton", espContainer)
-    espButton.Size = UDim2.new(0.9, 0, 0, 35)
-    espButton.Position = UDim2.new(0.05, 0, 0.05, 0)
-    espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    espButton.Text = "ESP: OFF"
-    espButton.TextColor3 = Color3.new(1, 1, 1)
-    espButton.TextScaled = true
-    espButton.BorderSizePixel = 0
-
-    -- ========== ВКЛАДКА AIMBOT ==========
+    local SliderTrack = Instance.new("Frame")
+    SliderTrack.Name = "SliderTrack"
+    SliderTrack.Size = UDim2.new(1, 0, 0, 5)
+    SliderTrack.Position = UDim2.new(0, 0, 0, 25)
+    SliderTrack.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    SliderTrack.BorderSizePixel = 0
+    SliderTrack.Parent = SliderFrame
     
-    -- Кнопка Aimbot (серая)
-    aimbotButton = Instance.new("TextButton", aimbotContainer)
-    aimbotButton.Name = "AimbotButton"
-    aimbotButton.Size = UDim2.new(0.9, 0, 0, 35)
-    aimbotButton.Position = UDim2.new(0.05, 0, 0.05, 0)
-    aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    aimbotButton.Text = "Aimbot: OFF"
-    aimbotButton.TextColor3 = Color3.new(1, 1, 1)
-    aimbotButton.TextScaled = true
-    aimbotButton.BorderSizePixel = 0
-
-    -- Выпадающий список для выбора цели
-    targetDropdown = Instance.new("TextButton", aimbotContainer)
-    targetDropdown.Name = "TargetDropdown"
-    targetDropdown.Size = UDim2.new(0.9, 0, 0, 35)
-    targetDropdown.Position = UDim2.new(0.05, 0, 0.20, 0)
-    targetDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    targetDropdown.Text = "Target: Head"
-    targetDropdown.TextColor3 = Color3.new(1, 1, 1)
-    targetDropdown.TextScaled = true
-    targetDropdown.BorderSizePixel = 0
-
-    -- Контейнер для выпадающего списка
-    dropdownContainer = Instance.new("Frame", aimbotContainer)
-    dropdownContainer.Size = UDim2.new(0.9, 0, 0, 70)
-    dropdownContainer.Position = UDim2.new(0.05, 0, 0.20, 35)
-    dropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    dropdownContainer.BorderSizePixel = 1
-    dropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    dropdownContainer.Visible = false
-
-    -- Кнопка выбора Head
-    headButton = Instance.new("TextButton", dropdownContainer)
-    headButton.Size = UDim2.new(1, 0, 0, 35)
-    headButton.Position = UDim2.new(0, 0, 0, 0)
-    headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    headButton.Text = "Head"
-    headButton.TextColor3 = Color3.new(1, 1, 1)
-    headButton.TextScaled = true
-    headButton.BorderSizePixel = 0
-
-    -- Кнопка выбора Body
-    bodyButton = Instance.new("TextButton", dropdownContainer)
-    bodyButton.Size = UDim2.new(1, 0, 0, 35)
-    bodyButton.Position = UDim2.new(0, 0, 0, 35)
-    bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    bodyButton.Text = "Body"
-    bodyButton.TextColor3 = Color3.new(1, 1, 1)
-    bodyButton.TextScaled = true
-    bodyButton.BorderSizePixel = 0
-
-    -- FOV Slider для аимбота (исходная позиция)
-    fovSliderFrame = Instance.new("Frame", aimbotContainer)
-    fovSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-    fovSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    fovSliderFrame.BorderSizePixel = 0
-
-    fovLabel = Instance.new("TextLabel", fovSliderFrame)
-    fovLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    fovLabel.Position = UDim2.new(0, 0, 0, 0)
-    fovLabel.BackgroundTransparency = 1
-    fovLabel.Text = "FOV Radius: " .. fovRadius
-    fovLabel.TextColor3 = Color3.new(1, 1, 1)
-    fovLabel.TextScaled = true
-    fovLabel.Font = Enum.Font.SourceSans
-
-    sliderBackground = Instance.new("TextButton", fovSliderFrame)
-    sliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
-    sliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
-    sliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    sliderBackground.BorderSizePixel = 0
-    sliderBackground.Text = ""
-    sliderBackground.AutoButtonColor = false
-
-    local sliderFill = Instance.new("Frame", sliderBackground)
-    sliderFill.Size = UDim2.new((fovRadius - 50) / 200, 0, 1, 0)
-    sliderFill.Position = UDim2.new(0, 0, 0, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-    sliderFill.BorderSizePixel = 0
-
-    local sliderButton = Instance.new("Frame", sliderBackground)
-    sliderButton.Size = UDim2.new(0, 15, 1.5, 0)
-    sliderButton.Position = UDim2.new((fovRadius - 50) / 200, -7, -0.25, 0)
-    sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    sliderButton.BorderSizePixel = 1
-    sliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
-
-    -- Кнопки + и - для FOV
-    local minusButton = Instance.new("TextButton", fovSliderFrame)
-    minusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    minusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
-    minusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    minusButton.Text = "-"
-    minusButton.TextColor3 = Color3.new(1, 1, 1)
-    minusButton.TextScaled = true
-    minusButton.BorderSizePixel = 0
-
-    local plusButton = Instance.new("TextButton", fovSliderFrame)
-    plusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    plusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
-    plusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    plusButton.Text = "+"
-    plusButton.TextColor3 = Color3.new(1, 1, 1)
-    plusButton.TextScaled = true
-    plusButton.BorderSizePixel = 0
-
-    -- Distance Slider для аимбота (исходная позиция)
-    distanceSliderFrame = Instance.new("Frame", aimbotContainer)
-    distanceSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-    distanceSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    distanceSliderFrame.BorderSizePixel = 0
-
-    distanceLabel = Instance.new("TextLabel", distanceSliderFrame)
-    distanceLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    distanceLabel.Position = UDim2.new(0, 0, 0, 0)
-    distanceLabel.BackgroundTransparency = 1
-    distanceLabel.Text = "Aimbot Distance: " .. aimbotMaxDistance .. "m"
-    distanceLabel.TextColor3 = Color3.new(1, 1, 1)
-    distanceLabel.TextScaled = true
-    distanceLabel.Font = Enum.Font.SourceSans
-
-    distanceSliderBackground = Instance.new("TextButton", distanceSliderFrame)
-    distanceSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
-    distanceSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
-    distanceSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    distanceSliderBackground.BorderSizePixel = 0
-    distanceSliderBackground.Text = ""
-    distanceSliderBackground.AutoButtonColor = false
-
-    local distanceSliderFill = Instance.new("Frame", distanceSliderBackground)
-    distanceSliderFill.Size = UDim2.new((aimbotMaxDistance - 10) / 190, 0, 1, 0)
-    distanceSliderFill.Position = UDim2.new(0, 0, 0, 0)
-    distanceSliderFill.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
-    distanceSliderFill.BorderSizePixel = 0
-
-    local distanceSliderButton = Instance.new("Frame", distanceSliderBackground)
-    distanceSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
-    distanceSliderButton.Position = UDim2.new((aimbotMaxDistance - 10) / 190, -7, -0.25, 0)
-    distanceSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    distanceSliderButton.BorderSizePixel = 1
-    distanceSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
-
-    -- Кнопки + и - для Distance
-    local distanceMinusButton = Instance.new("TextButton", distanceSliderFrame)
-    distanceMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    distanceMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
-    distanceMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    distanceMinusButton.Text = "-"
-    distanceMinusButton.TextColor3 = Color3.new(1, 1, 1)
-    distanceMinusButton.TextScaled = true
-    distanceMinusButton.BorderSizePixel = 0
-
-    local distancePlusButton = Instance.new("TextButton", distanceSliderFrame)
-    distancePlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    distancePlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
-    distancePlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    distancePlusButton.Text = "+"
-    distancePlusButton.TextColor3 = Color3.new(1, 1, 1)
-    distancePlusButton.TextScaled = true
-    distancePlusButton.BorderSizePixel = 0
-
-    -- ========== ВКЛАДКА CAMERA ==========
+    local SliderThumb = Instance.new("TextButton")
+    SliderThumb.Name = "SliderThumb"
+    SliderThumb.Size = UDim2.new(0, 15, 0, 15)
+    SliderThumb.Position = UDim2.new((defaultValue - min) / (max - min), -7, 0, 20)
+    SliderThumb.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    SliderThumb.BorderSizePixel = 0
+    SliderThumb.Text = ""
+    SliderThumb.Parent = SliderFrame
     
-    -- Кнопка Infinite Jump (самая первая)
-    infiniteJumpButton = Instance.new("TextButton", cameraContainer)
-    infiniteJumpButton.Name = "InfiniteJumpButton"
-    infiniteJumpButton.Size = UDim2.new(0.9, 0, 0, 35)
-    infiniteJumpButton.Position = UDim2.new(0.05, 0, 0.05, 0)
-    infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    infiniteJumpButton.Text = "Infinite Jump: OFF"
-    infiniteJumpButton.TextColor3 = Color3.new(1, 1, 1)
-    infiniteJumpButton.TextScaled = true
-    infiniteJumpButton.BorderSizePixel = 0
-
-    -- Кнопка Camera FOV (после Infinite Jump)
-    cameraFOVButton = Instance.new("TextButton", cameraContainer)
-    cameraFOVButton.Name = "CameraFOVButton"
-    cameraFOVButton.Size = UDim2.new(0.9, 0, 0, 35)
-    cameraFOVButton.Position = UDim2.new(0.05, 0, 0.20, 0)
-    cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    cameraFOVButton.Text = "CamFOV: OFF"
-    cameraFOVButton.TextColor3 = Color3.new(1, 1, 1)
-    cameraFOVButton.TextScaled = true
-    cameraFOVButton.BorderSizePixel = 0
-
-    -- Camera FOV Slider (после кнопки CamFOV)
-    cameraFOVSliderFrame = Instance.new("Frame", cameraContainer)
-    cameraFOVSliderFrame.Size = UDim2.new(0.9, 0, 0, 60)
-    cameraFOVSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-    cameraFOVSliderFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    cameraFOVSliderFrame.BorderSizePixel = 0
-
-    cameraFOVLabel = Instance.new("TextLabel", cameraFOVSliderFrame)
-    cameraFOVLabel.Size = UDim2.new(1, 0, 0.3, 0)
-    cameraFOVLabel.Position = UDim2.new(0, 0, 0, 0)
-    cameraFOVLabel.BackgroundTransparency = 1
-    cameraFOVLabel.Text = "Camera FOV: " .. cameraFOV
-    cameraFOVLabel.TextColor3 = Color3.new(1, 1, 1)
-    cameraFOVLabel.TextScaled = true
-    cameraFOVLabel.Font = Enum.Font.SourceSans
-
-    cameraSliderBackground = Instance.new("TextButton", cameraFOVSliderFrame)
-    cameraSliderBackground.Size = UDim2.new(1, 0, 0.4, 0)
-    cameraSliderBackground.Position = UDim2.new(0, 0, 0.4, 0)
-    cameraSliderBackground.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    cameraSliderBackground.BorderSizePixel = 0
-    cameraSliderBackground.Text = ""
-    cameraSliderBackground.AutoButtonColor = false
-
-    local cameraSliderFill = Instance.new("Frame", cameraSliderBackground)
-    cameraSliderFill.Size = UDim2.new((cameraFOV - 30) / 90, 0, 1, 0) -- Изменен диапазон на 30-120
-    cameraSliderFill.Position = UDim2.new(0, 0, 0, 0)
-    cameraSliderFill.BackgroundColor3 = Color3.fromRGB(170, 0, 255)
-    cameraSliderFill.BorderSizePixel = 0
-
-    local cameraSliderButton = Instance.new("Frame", cameraSliderBackground)
-    cameraSliderButton.Size = UDim2.new(0, 15, 1.5, 0)
-    cameraSliderButton.Position = UDim2.new((cameraFOV - 30) / 90, -7, -0.25, 0) -- Изменен диапазон на 30-120
-    cameraSliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    cameraSliderButton.BorderSizePixel = 1
-    cameraSliderButton.BorderColor3 = Color3.fromRGB(200, 200, 200)
-
-    -- Кнопки + и - для Camera FOV
-    local cameraMinusButton = Instance.new("TextButton", cameraFOVSliderFrame)
-    cameraMinusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    cameraMinusButton.Position = UDim2.new(0, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
-    cameraMinusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    cameraMinusButton.Text = "-"
-    cameraMinusButton.TextColor3 = Color3.new(1, 1, 1)
-    cameraMinusButton.TextScaled = true
-    cameraMinusButton.BorderSizePixel = 0
-
-    local cameraPlusButton = Instance.new("TextButton", cameraFOVSliderFrame)
-    cameraPlusButton.Size = UDim2.new(0.2, 0, 0.3, 0)
-    cameraPlusButton.Position = UDim2.new(0.8, 0, 0.8, 10) -- Сдвинуты на 10 пикселей вниз
-    cameraPlusButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    cameraPlusButton.Text = "+"
-    cameraPlusButton.TextColor3 = Color3.new(1, 1, 1)
-    cameraPlusButton.TextScaled = true
-    cameraPlusButton.BorderSizePixel = 0
-
-    -- ========== ВКЛАДКА LANGUAGE ==========
+    local isDragging = false
     
-    -- Заголовок
-    languageTitle = Instance.new("TextLabel", languageContainer)
-    languageTitle.Name = "LanguageTitle"
-    languageTitle.Size = UDim2.new(0.9, 0, 0, 30)
-    languageTitle.Position = UDim2.new(0.05, 0, 0.05, 0)
-    languageTitle.BackgroundTransparency = 1
-    languageTitle.Text = "Select Language:"
-    languageTitle.TextColor3 = Color3.new(1, 1, 1)
-    languageTitle.TextScaled = true
-    languageTitle.Font = Enum.Font.SourceSansBold
-
-    -- Текущий язык
-    currentLanguageLabel = Instance.new("TextLabel", languageContainer)
-    currentLanguageLabel.Name = "CurrentLanguage"
-    currentLanguageLabel.Size = UDim2.new(0.9, 0, 0, 25)
-    currentLanguageLabel.Position = UDim2.new(0.05, 0, 0.15, 0)
-    currentLanguageLabel.BackgroundTransparency = 1
-    currentLanguageLabel.Text = "Current: English"
-    currentLanguageLabel.TextColor3 = Color3.new(1, 1, 1)
-    currentLanguageLabel.TextScaled = true
-    currentLanguageLabel.Font = Enum.Font.SourceSans
-
-    -- Выпадающий список для выбора языка
-    languageDropdown = Instance.new("TextButton", languageContainer)
-    languageDropdown.Name = "LanguageDropdown"
-    languageDropdown.Size = UDim2.new(0.9, 0, 0, 35)
-    languageDropdown.Position = UDim2.new(0.05, 0, 0.30, 0)
-    languageDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    languageDropdown.Text = "Language: English"
-    languageDropdown.TextColor3 = Color3.new(1, 1, 1)
-    languageDropdown.TextScaled = true
-    languageDropdown.BorderSizePixel = 0
-
-    -- Контейнер для выпадающего списка языков
-    languageDropdownContainer = Instance.new("Frame", languageContainer)
-    languageDropdownContainer.Size = UDim2.new(0.9, 0, 0, 105)
-    languageDropdownContainer.Position = UDim2.new(0.05, 0, 0.30, 35)
-    languageDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    languageDropdownContainer.BorderSizePixel = 1
-    languageDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    languageDropdownContainer.Visible = false
-
-    -- Кнопка выбора English
-    englishOption = Instance.new("TextButton", languageDropdownContainer)
-    englishOption.Name = "EnglishOption"
-    englishOption.Size = UDim2.new(1, 0, 0, 35)
-    englishOption.Position = UDim2.new(0, 0, 0, 0)
-    englishOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    englishOption.Text = "English🇬🇧"
-    englishOption.TextColor3 = Color3.new(1, 1, 1)
-    englishOption.TextScaled = true
-    englishOption.BorderSizePixel = 0
-
-    -- Кнопка выбора Russian
-    russianOption = Instance.new("TextButton", languageDropdownContainer)
-    russianOption.Name = "RussianOption"
-    russianOption.Size = UDim2.new(1, 0, 0, 35)
-    russianOption.Position = UDim2.new(0, 0, 0, 35)
-    russianOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    russianOption.Text = "Russian🇷🇺"
-    russianOption.TextColor3 = Color3.new(1, 1, 1)
-    russianOption.TextScaled = true
-    russianOption.BorderSizePixel = 0
-
-    -- Кнопка выбора Chinese
-    chineseOption = Instance.new("TextButton", languageDropdownContainer)
-    chineseOption.Name = "ChineseOption"
-    chineseOption.Size = UDim2.new(1, 0, 0, 35)
-    chineseOption.Position = UDim2.new(0, 0, 0, 70)
-    chineseOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    chineseOption.Text = "Chinese🇨🇳"
-    chineseOption.TextColor3 = Color3.new(1, 1, 1)
-    chineseOption.TextScaled = true
-    chineseOption.BorderSizePixel = 0
-
-    -- ========== ТЕМЫ В РАЗДЕЛЕ LANGUAGE ==========
+    local function updateSlider(value)
+        local normalized = math.clamp((value - min) / (max - min), 0, 1)
+        SliderThumb.Position = UDim2.new(normalized, -7, 0, 20)
+        SliderLabel.Text = text .. ": " .. value
+        callback(value)
+    end
     
-    -- Заголовок для тем
-    themeTitle = Instance.new("TextLabel", languageContainer)
-    themeTitle.Name = "ThemeTitle"
-    themeTitle.Size = UDim2.new(0.9, 0, 0, 30)
-    themeTitle.Position = UDim2.new(0.05, 0, 0.45, 0)
-    themeTitle.BackgroundTransparency = 1
-    themeTitle.Text = "Select Theme:"
-    themeTitle.TextColor3 = Color3.new(1, 1, 1)
-    themeTitle.TextScaled = true
-    themeTitle.Font = Enum.Font.SourceSansBold
-
-    -- Текущая тема
-    currentThemeLabel = Instance.new("TextLabel", languageContainer)
-    currentThemeLabel.Name = "CurrentTheme"
-    currentThemeLabel.Size = UDim2.new(0.9, 0, 0, 25)
-    currentThemeLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
-    currentThemeLabel.BackgroundTransparency = 1
-    currentThemeLabel.Text = "Current: Dark"
-    currentThemeLabel.TextColor3 = Color3.new(1, 1, 1)
-    currentThemeLabel.TextScaled = true
-    currentThemeLabel.Font = Enum.Font.SourceSans
-
-    -- Выпадающий список для выбора темы
-    themeDropdown = Instance.new("TextButton", languageContainer)
-    themeDropdown.Name = "ThemeDropdown"
-    themeDropdown.Size = UDim2.new(0.9, 0, 0, 35)
-    themeDropdown.Position = UDim2.new(0.05, 0, 0.65, 0)
-    themeDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    themeDropdown.Text = "Theme: Dark"
-    themeDropdown.TextColor3 = Color3.new(1, 1, 1)
-    themeDropdown.TextScaled = true
-    themeDropdown.BorderSizePixel = 0
-
-    -- Контейнер для выпадающего списка тем
-    themeDropdownContainer = Instance.new("Frame", languageContainer)
-    themeDropdownContainer.Size = UDim2.new(0.9, 0, 0, 105)
-    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.66, 35)
-    themeDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    themeDropdownContainer.BorderSizePixel = 1
-    themeDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    themeDropdownContainer.Visible = false
-
-    -- Кнопка выбора Black темы
-    blackThemeOption = Instance.new("TextButton", themeDropdownContainer)
-    blackThemeOption.Name = "BlackThemeOption"
-    blackThemeOption.Size = UDim2.new(1, 0, 0, 35)
-    blackThemeOption.Position = UDim2.new(0, 0, 0, 0)
-    blackThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    blackThemeOption.Text = "Black"
-    blackThemeOption.TextColor3 = Color3.new(1, 1, 1)
-    blackThemeOption.TextScaled = true
-    blackThemeOption.BorderSizePixel = 0
-
-    -- Кнопка выбора Dark темы
-    darkThemeOption = Instance.new("TextButton", themeDropdownContainer)
-    darkThemeOption.Name = "DarkThemeOption"
-    darkThemeOption.Size = UDim2.new(1, 0, 0, 35)
-    darkThemeOption.Position = UDim2.new(0, 0, 0, 35)
-    darkThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    darkThemeOption.Text = "Dark"
-    darkThemeOption.TextColor3 = Color3.new(1, 1, 1)
-    darkThemeOption.TextScaled = true
-    darkThemeOption.BorderSizePixel = 0
-
-    -- Кнопка выбора White темы
-    whiteThemeOption = Instance.new("TextButton", themeDropdownContainer)
-    whiteThemeOption.Name = "WhiteThemeOption"
-    whiteThemeOption.Size = UDim2.new(1, 0, 0, 35)
-    whiteThemeOption.Position = UDim2.new(0, 0, 0, 70)
-    whiteThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    whiteThemeOption.Text = "White"
-    whiteThemeOption.TextColor3 = Color3.new(1, 1, 1)
-    whiteThemeOption.TextScaled = true
-    whiteThemeOption.BorderSizePixel = 0
-
-    -- Кнопка Hide/Show GUI (перемещаемая)
-    hideButton = Instance.new("TextButton", gui)
-    hideButton.Size = UDim2.new(0, 150, 0, 40)
-    hideButton.Position = UDim2.new(0.5, -75, 1, -50)
-    hideButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    hideButton.Text = "Hide GUI"
-    hideButton.TextColor3 = Color3.new(1, 1, 1)
-    hideButton.TextScaled = true
-    hideButton.BorderSizePixel = 0
-    hideButton.ZIndex = 10
-
-    -- Функция для скрытия/показа секции тем при открытии/закрытии выпадающего списка языка
-    local function toggleThemeSectionVisibility(visible)
-        themeTitle.Visible = visible
-        currentThemeLabel.Visible = visible
-        themeDropdown.Visible = visible
-        -- themeDropdownContainer не управляем здесь, т.к. он управляется отдельно
-    end
-
-    -- Функция для сдвига секции тем при открытии/закрытии выпадающего списка языка
-    local function shiftThemeSection(shiftDown)
-        if shiftDown then
-            -- Сдвигаем секцию тем вниз при открытии выпадающего списка языка
-            themeTitle.Position = UDim2.new(0.05, 0, 0.65, 0)  -- +0.20
-            currentThemeLabel.Position = UDim2.new(0.05, 0, 0.75, 0)  -- +0.20
-            themeDropdown.Position = UDim2.new(0.05, 0, 0.85, 0)  -- +0.20
-            themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.85, 35)  -- +0.20
-            -- Скрываем секцию тем
-            toggleThemeSectionVisibility(false)
-        else
-            -- Возвращаем секцию тем на место при закрытии выпадающего списка языка
-            themeTitle.Position = UDim2.new(0.05, 0, 0.45, 0)
-            currentThemeLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
-            themeDropdown.Position = UDim2.new(0.05, 0, 0.65, 0)
-            themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.65, 35)
-            -- Показываем секцию тем
-            toggleThemeSectionVisibility(true)
-        end
-    end
-
-    -- Функция обновления FOV
-    local function updateFOV(value)
-        fovRadius = math.floor(math.clamp(value, 50, 250))
-        circle.Radius = fovRadius
-        fovLabel.Text = translations[currentLanguage].fovLabel .. fovRadius
-        
-        local fillSize = (fovRadius - 50) / 200
-        sliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
-        sliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
-    end
-
-    -- Функция обновления Camera FOV
-    local function updateCameraFOV(value)
-        cameraFOV = math.floor(math.clamp(value, 30, 120)) -- Максимум 120
-        cameraFOVLabel.Text = translations[currentLanguage].cameraFOVLabel .. cameraFOV
-        
-        local fillSize = (cameraFOV - 30) / 90 -- Изменен диапазон на 30-120
-        cameraSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
-        cameraSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
-        
-        if customCameraFOVEnabled then
-            camera.FieldOfView = cameraFOV
-        end
-    end
-
-    -- Функция обновления дистанции аимбота
-    local function updateAimbotDistance(value)
-        aimbotMaxDistance = math.floor(math.clamp(value, 10, 200))
-        distanceLabel.Text = translations[currentLanguage].distanceLabel .. aimbotMaxDistance .. "m"
-        
-        local fillSize = (aimbotMaxDistance - 10) / 190
-        distanceSliderFill.Size = UDim2.new(fillSize, 0, 1, 0)
-        distanceSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
-    end
-
-    -- Функция для выбора цели через выпадающего списка
-    local function selectTarget(target)
-        local t = translations[currentLanguage]
-        if target == "Head" then
-            aimbotTarget = "Head"
-            targetDropdown.Text = t.targetDropdown:gsub("Head", t.targetHead)
-            headButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            bodyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        else
-            aimbotTarget = "HumanoidRootPart"
-            targetDropdown.Text = t.targetDropdown:gsub("Body", t.targetBody)
-            headButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            bodyButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        end
-        dropdownContainer.Visible = false
-        -- Возвращаем слайдеры в исходное положение при закрытии меню
-        fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-        distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-    end
-
-    -- Функция для выбора языка
-    local function selectLanguage(lang)
-        currentLanguage = lang
-        updateLanguage()
-        
-        -- Обновляем цвета кнопок в выпадающем списке
-        englishOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        russianOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        chineseOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        
-        if lang == "English" then
-            englishOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        elseif lang == "Russian" then
-            russianOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        elseif lang == "Chinese" then
-            chineseOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        end
-        
-        languageDropdownContainer.Visible = false
-        -- Возвращаем секцию тем на место при выборе языка
-        shiftThemeSection(false)
-    end
-
-    -- Функция для выбора темы
-    local function selectTheme(theme)
-        currentTheme = theme
-        updateTheme()
-        
-        -- Обновляем цвета кнопок в выпадающем списке
-        blackThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        darkThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        whiteThemeOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        
-        if theme == "Black" then
-            blackThemeOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        elseif theme == "Dark" then
-            darkThemeOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        elseif theme == "White" then
-            whiteThemeOption.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        end
-        
-        themeDropdownContainer.Visible = false
-        updateLanguage() -- Обновляем тексты для отображения текущей темы
-    end
-
-    -- Функция для открытия/закрытия выпадающего списка цели
-    local function toggleTargetDropdown()
-        local isOpening = not dropdownContainer.Visible
-        dropdownContainer.Visible = isOpening
-        
-        if isOpening then
-            -- Сдвигаем слайдеры вниз при открытии меню
-            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.60, 0)  -- +0.25 от исходного
-            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)  -- +0.25 от исходного
-        else
-            -- Возвращаем слайдеры в исходное положение при закрытии меню
-            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-        end
-    end
-
-    -- Функция для открытия/закрытия выпадающего списка языка
-    local function toggleLanguageDropdown()
-        local isOpening = not languageDropdownContainer.Visible
-        languageDropdownContainer.Visible = isOpening
-        
-        if isOpening then
-            -- Сдвигаем секцию тем вниз и скрываем при открытии выпадающего списка языка
-            shiftThemeSection(true)
-            -- Закрываем другие выпадающие списки
-            dropdownContainer.Visible = false
-            themeDropdownContainer.Visible = false
-            -- Возвращаем слайдеры в исходное положение
-            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-        else
-            -- Возвращаем секцию тем на место и показываем при закрытии выпадающего списка языка
-            shiftThemeSection(false)
-        end
-    end
-
-    -- Функция для открытия/закрытия выпадающего списка темы
-    local function toggleThemeDropdown()
-        local isOpening = not themeDropdownContainer.Visible
-        themeDropdownContainer.Visible = isOpening
-        
-        if isOpening then
-            -- Закрываем другие выпадающие списки
-            dropdownContainer.Visible = false
-            languageDropdownContainer.Visible = false
-            -- Возвращаем слайдеры в исходное положение
-            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-            -- Возвращаем секцию тем на место (на случай, если был открыт язык)
-            shiftThemeSection(false)
-        end
-    end
-
-    -- Обработка для слайдеров
-    local isFOVSliding = false
-    local isCameraSliding = false
-    local isDistanceSliding = false
-
-    local function updateSliderFromTouch(touchPosition, sliderType)
-        local sliderAbsPos, sliderAbsSize
-        
-        if sliderType == "fov" then
-            sliderAbsPos = sliderBackground.AbsolutePosition
-            sliderAbsSize = sliderBackground.AbsoluteSize
-        elseif sliderType == "camera" then
-            sliderAbsPos = cameraSliderBackground.AbsolutePosition
-            sliderAbsSize = cameraSliderBackground.AbsoluteSize
-        elseif sliderType == "distance" then
-            sliderAbsPos = distanceSliderBackground.AbsolutePosition
-            sliderAbsSize = distanceSliderBackground.AbsoluteSize
-        end
-        
-        local touchX = touchPosition.X
-        local relativeX = (touchX - sliderAbsPos.X) / sliderAbsSize.X
-        relativeX = math.clamp(relativeX, 0, 1)
-        
-        if sliderType == "fov" then
-            local newFOV = 50 + (relativeX * 200)
-            updateFOV(newFOV)
-        elseif sliderType == "camera" then
-            local newCameraFOV = 30 + (relativeX * 90) -- Изменен диапазон на 30-120
-            updateCameraFOV(newCameraFOV)
-        elseif sliderType == "distance" then
-            local newDistance = 10 + (relativeX * 190)
-            updateAimbotDistance(newDistance)
-        end
-    end
-
-    -- Обработка для FOV слайдера
-    sliderBackground.MouseButton1Down:Connect(function(x, y)
-        isFOVSliding = true
-        updateSliderFromTouch(Vector2.new(x, y), "fov")
+    SliderThumb.MouseButton1Down:Connect(function()
+        isDragging = true
     end)
-
-    -- Обработка для Camera FOV слайдера
-    cameraSliderBackground.MouseButton1Down:Connect(function(x, y)
-        isCameraSliding = true
-        updateSliderFromTouch(Vector2.new(x, y), "camera")
-    end)
-
-    -- Обработка для Distance слайдера
-    distanceSliderBackground.MouseButton1Down:Connect(function(x, y)
-        isDistanceSliding = true
-        updateSliderFromTouch(Vector2.new(x, y), "distance")
-    end)
-
-    userInputService.InputChanged:Connect(function(input)
-        if isFOVSliding and input.UserInputType == Enum.UserInputType.Touch then
-            updateSliderFromTouch(input.Position, "fov")
-        elseif isCameraSliding and input.UserInputType == Enum.UserInputType.Touch then
-            updateSliderFromTouch(input.Position, "camera")
-        elseif isDistanceSliding and input.UserInputType == Enum.UserInputType.Touch then
-            updateSliderFromTouch(input.Position, "distance")
-        end
-    end)
-
-    userInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            isFOVSliding = false
-            isCameraSliding = false
-            isDistanceSliding = false
-        end
-    end)
-
-    -- Кнопки + и - для FOV
-    minusButton.MouseButton1Click:Connect(function()
-        updateFOV(fovRadius - 10)
-    end)
-
-    plusButton.MouseButton1Click:Connect(function()
-        updateFOV(fovRadius + 10)
-    end)
-
-    -- Кнопки + и - для Camera FOV
-    cameraMinusButton.MouseButton1Click:Connect(function()
-        updateCameraFOV(cameraFOV - 10)
-    end)
-
-    cameraPlusButton.MouseButton1Click:Connect(function()
-        updateCameraFOV(cameraFOV + 10)
-    end)
-
-    -- Кнопки + и - для Distance
-    distanceMinusButton.MouseButton1Click:Connect(function()
-        updateAimbotDistance(aimbotMaxDistance - 10)
-    end)
-
-    distancePlusButton.MouseButton1Click:Connect(function()
-        updateAimbotDistance(aimbotMaxDistance + 10)
-    end)
-
-    -- Обработчики для выпадающего списка выбора цели
-    targetDropdown.MouseButton1Click:Connect(function()
-        toggleTargetDropdown()
-    end)
-
-    headButton.MouseButton1Click:Connect(function()
-        selectTarget("Head")
-    end)
-
-    bodyButton.MouseButton1Click:Connect(function()
-        selectTarget("Body")
-    end)
-
-    -- Обработчики для выпадающего списка выбора языка
-    languageDropdown.MouseButton1Click:Connect(function()
-        toggleLanguageDropdown()
-    end)
-
-    englishOption.MouseButton1Click:Connect(function()
-        selectLanguage("English")
-    end)
-
-    russianOption.MouseButton1Click:Connect(function()
-        selectLanguage("Russian")
-    end)
-
-    chineseOption.MouseButton1Click:Connect(function()
-        selectLanguage("Chinese")
-    end)
-
-    -- Обработчики для выпадающего списка выбора темы
-    themeDropdown.MouseButton1Click:Connect(function()
-        toggleThemeDropdown()
-    end)
-
-    blackThemeOption.MouseButton1Click:Connect(function()
-        selectTheme("Black")
-    end)
-
-    darkThemeOption.MouseButton1Click:Connect(function()
-        selectTheme("Dark")
-    end)
-
-    whiteThemeOption.MouseButton1Click:Connect(function()
-        selectTheme("White")
-    end)
-
-    -- Обработчики для кнопки закрытия
-    closeButton.MouseButton1Click:Connect(function()
-        confirmFrame.Visible = true
-    end)
-
-    yesButton.MouseButton1Click:Connect(function()
-        gui:Destroy()
-    end)
-
-    noButton.MouseButton1Click:Connect(function()
-        confirmFrame.Visible = false
-    end)
-
-    -- Закрытие выпадающих списков при клике вне их
-    userInputService.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            -- Закрытие выпадающего списка цели
-            if dropdownContainer.Visible then
-                local mousePos = input.Position
-                local dropdownAbsPos = dropdownContainer.AbsolutePosition
-                local dropdownAbsSize = dropdownContainer.AbsoluteSize
-                local targetDropdownAbsPos = targetDropdown.AbsolutePosition
-                local targetDropdownAbsSize = targetDropdown.AbsoluteSize
-
-                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
-                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
-                   not (mousePos.X >= targetDropdownAbsPos.X and mousePos.X <= targetDropdownAbsPos.X + targetDropdownAbsSize.X and
-                       mousePos.Y >= targetDropdownAbsPos.Y and mousePos.Y <= targetDropdownAbsPos.Y + targetDropdownAbsSize.Y) then
-                    dropdownContainer.Visible = false
-                    -- Возвращаем слайдеры в исходное положение при закрытии меню
-                    fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-                    distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-                end
-            end
-            
-            -- Закрытие выпадающего списка языка
-            if languageDropdownContainer.Visible then
-                local mousePos = input.Position
-                local dropdownAbsPos = languageDropdownContainer.AbsolutePosition
-                local dropdownAbsSize = languageDropdownContainer.AbsoluteSize
-                local languageDropdownAbsPos = languageDropdown.AbsolutePosition
-                local languageDropdownAbsSize = languageDropdown.AbsoluteSize
-
-                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
-                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
-                   not (mousePos.X >= languageDropdownAbsPos.X and mousePos.X <= languageDropdownAbsPos.X + languageDropdownAbsSize.X and
-                       mousePos.Y >= languageDropdownAbsPos.Y and mousePos.Y <= languageDropdownAbsPos.Y + languageDropdownAbsSize.Y) then
-                    languageDropdownContainer.Visible = false
-                    -- Возвращаем секцию тем на место при закрытии выпадающего списка языка
-                    shiftThemeSection(false)
-                end
-            end
-            
-            -- Закрытие выпадающего списка темы
-            if themeDropdownContainer.Visible then
-                local mousePos = input.Position
-                local dropdownAbsPos = themeDropdownContainer.AbsolutePosition
-                local dropdownAbsSize = themeDropdownContainer.AbsoluteSize
-                local themeDropdownAbsPos = themeDropdown.AbsolutePosition
-                local themeDropdownAbsSize = themeDropdown.AbsoluteSize
-
-                if not (mousePos.X >= dropdownAbsPos.X and mousePos.X <= dropdownAbsPos.X + dropdownAbsSize.X and
-                       mousePos.Y >= dropdownAbsPos.Y and mousePos.Y <= dropdownAbsPos.Y + dropdownAbsSize.Y) and
-                   not (mousePos.X >= themeDropdownAbsPos.X and mousePos.X <= themeDropdownAbsPos.X + themeDropdownAbsSize.X and
-                       mousePos.Y >= themeDropdownAbsPos.Y and mousePos.Y <= themeDropdownAbsPos.Y + themeDropdownAbsSize.Y) then
-                    themeDropdownContainer.Visible = false
-                end
-            end
-        end
-    end)
-
-    -- Функция переключения вкладок
-    local function switchTab(tabName)
-        activeTab = tabName
-        
-        -- Скрыть все контейнеры
-        infoContainer.Visible = false
-        espContainer.Visible = false
-        aimbotContainer.Visible = false
-        cameraContainer.Visible = false
-        languageContainer.Visible = false
-        
-        -- Сбросить цвета всех вкладок
-        infoTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        languageTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-        
-        -- Показать выбранный контейнер и выделить вкладку
-        if tabName == "Info" then
-            infoContainer.Visible = true
-            infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        elseif tabName == "ESP" then
-            espContainer.Visible = true
-            espTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        elseif tabName == "AimBot" then
-            aimbotContainer.Visible = true
-            aimbotTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        elseif tabName == "Camera" then
-            cameraContainer.Visible = true
-            cameraTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        elseif tabName == "Language" then
-            languageContainer.Visible = true
-            languageTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-        end
-        
-        -- Скрыть выпадающие списки при переключении вкладок и вернуть все на места
-        dropdownContainer.Visible = false
-        languageDropdownContainer.Visible = false
-        themeDropdownContainer.Visible = false
-        fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
-        distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-        -- Возвращаем секцию тем на место и показываем
-        shiftThemeSection(false)
-    end
-
-    -- ОБРАБОТЧИКИ КНОПОК ВКЛАДОК
-    infoTabButton.MouseButton1Click:Connect(function()
-        switchTab("Info")
-    end)
-
-    espTabButton.MouseButton1Click:Connect(function()
-        switchTab("ESP")
-    end)
-
-    aimbotTabButton.MouseButton1Click:Connect(function()
-        switchTab("AimBot")
-    end)
-
-    cameraTabButton.MouseButton1Click:Connect(function()
-        switchTab("Camera")
-    end)
-
-    languageTabButton.MouseButton1Click:Connect(function()
-        switchTab("Language")
-    end)
-
-    -- ОБРАБОТЧИКИ ОСНОВНЫХ КНОПОК
-    hideButton.MouseButton1Click:Connect(function()
-        guiVisible = not guiVisible
-        frame.Visible = guiVisible
-        hideButton.Text = guiVisible and translations[currentLanguage].hideGUI or translations[currentLanguage].showGUI
-    end)
-
-    -- Добавляем функционал перемещения для кнопки Hide/Show GUI
-    local isHideButtonDragging = false
-    local hideButtonDragStart = nil
-    local hideButtonStartPos = nil
-
-    hideButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isHideButtonDragging = true
-            hideButtonDragStart = input.Position
-            hideButtonStartPos = hideButton.Position
-        end
-    end)
-
-    hideButton.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isHideButtonDragging = false
-        end
-    end)
-
-    userInputService.InputChanged:Connect(function(input)
-        if isHideButtonDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-            local delta = input.Position - hideButtonDragStart
-            hideButton.Position = UDim2.new(
-                hideButtonStartPos.X.Scale, 
-                hideButtonStartPos.X.Offset + delta.X,
-                hideButtonStartPos.Y.Scale, 
-                hideButtonStartPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    -- Добавляем функционал перемещения для основного меню
-    local isFrameDragging = false
-    local frameDragStart = nil
-    local frameStartPos = nil
-
-    title.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isFrameDragging = true
-            frameDragStart = input.Position
-            frameStartPos = frame.Position
-        end
-    end)
-
-    title.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isFrameDragging = false
-        end
-    end)
-
-    userInputService.InputChanged:Connect(function(input)
-        if isFrameDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-            local delta = input.Position - frameDragStart
-            frame.Position = UDim2.new(
-                frameStartPos.X.Scale, 
-                frameStartPos.X.Offset + delta.X,
-                frameStartPos.Y.Scale, 
-                frameStartPos.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    -- Обработчик для кнопки Infinite Jump (первая в списке)
-    infiniteJumpButton.MouseButton1Click:Connect(function()
-        infiniteJumpEnabled = not infiniteJumpEnabled
-        if infiniteJumpEnabled then
-            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            infiniteJumpButton.Text = translations[currentLanguage].infiniteJumpOn
-        else
-            infiniteJumpButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            infiniteJumpButton.Text = translations[currentLanguage].infiniteJumpButton
-        end
-    end)
-
-    -- Обработчик для кнопки Camera FOV (вторая в списке)
-    cameraFOVButton.MouseButton1Click:Connect(function()
-        customCameraFOVEnabled = not customCameraFOVEnabled
-        if customCameraFOVEnabled then
-            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            cameraFOVButton.Text = translations[currentLanguage].cameraFOVOn
-            camera.FieldOfView = cameraFOV
-        else
-            cameraFOVButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            cameraFOVButton.Text = translations[currentLanguage].cameraFOVButton
-            camera.FieldOfView = 70
-        end
-    end)
-
-    aimbotButton.MouseButton1Click:Connect(function()
-        aimbotEnabled = not aimbotEnabled
-        if aimbotEnabled then
-            aimbotButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            aimbotButton.Text = translations[currentLanguage].aimbotOn
-        else
-            aimbotButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            aimbotButton.Text = translations[currentLanguage].aimbotButton
-        end
-    end)
-
-    espButton.MouseButton1Click:Connect(function()
-        espEnabled = not espEnabled
-        if espEnabled then
-            espButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-            espButton.Text = translations[currentLanguage].espOn
-        else
-            espButton.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            espButton.Text = translations[currentLanguage].espButton
-            for _, drawings in pairs(espObjects) do
-                if drawings then
-                    drawings.box.Visible = false
-                    drawings.name.Visible = false
-                    drawings.distance.Visible = false
-                    drawings.tracer.Visible = false
-                end
-            end
-        end
-    end)
-
-    -- Инициализация вкладок
-    switchTab("Info")
     
-    -- Инициализация выпадающих списков
-    selectTarget("Head")
-    selectLanguage("English")
-    selectTheme("Dark")
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+        end
+    end)
     
-    -- Инициализация языка и темы
-    updateLanguage()
-    updateTheme()
+    SliderTrack.MouseButton1Down:Connect(function(x, y)
+        local relativeX = x - SliderTrack.AbsolutePosition.X
+        local normalized = math.clamp(relativeX / SliderTrack.AbsoluteSize.X, 0, 1)
+        local value = min + normalized * (max - min)
+        updateSlider(math.floor(value))
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local relativeX = input.Position.X - SliderTrack.AbsolutePosition.X
+            local normalized = math.clamp(relativeX / SliderTrack.AbsoluteSize.X, 0, 1)
+            local value = min + normalized * (max - min)
+            updateSlider(math.floor(value))
+        end
+    end)
+    
+    updateSlider(defaultValue)
+    
+    return {Frame = SliderFrame, SetValue = updateSlider}
 end
 
--- Основной код
-createGUI()
-showNotification()
+local function CreateLabel(parent, text)
+    local Label = Instance.new("TextLabel")
+    Label.Name = text .. "Label"
+    Label.Size = UDim2.new(0.9, 0, 0, 30)
+    Label.Position = UDim2.new(0.05, 0, 0, #parent:GetChildren() * 35)
+    Label.BackgroundTransparency = 1
+    Label.Text = text
+    Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Label.TextXAlignment = Enum.TextXAlignment.Left
+    Label.Font = Enum.Font.Gotham
+    Label.TextSize = 12
+    Label.Parent = parent
+    
+    return Label
+end
 
-player.CharacterAdded:Connect(function()
-    task.wait(1)
-    if not player:WaitForChild("PlayerGui"):FindFirstChild(guiName) then
-        createGUI()
+local function CreateInput(parent, text, placeholder, callback)
+    local InputFrame = Instance.new("Frame")
+    InputFrame.Name = text .. "Input"
+    InputFrame.Size = UDim2.new(0.9, 0, 0, 40)
+    InputFrame.Position = UDim2.new(0.05, 0, 0, #parent:GetChildren() * 45)
+    InputFrame.BackgroundTransparency = 1
+    InputFrame.Parent = parent
+    
+    local InputBox = Instance.new("TextBox")
+    InputBox.Name = "InputBox"
+    InputBox.Size = UDim2.new(1, 0, 0, 30)
+    InputBox.Position = UDim2.new(0, 0, 0, 10)
+    InputBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    InputBox.BorderSizePixel = 0
+    InputBox.PlaceholderText = placeholder
+    InputBox.Text = ""
+    InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InputBox.Font = Enum.Font.Gotham
+    InputBox.TextSize = 12
+    InputBox.Parent = InputFrame
+    
+    InputBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            callback(InputBox.Text)
+        end
+    end)
+    
+    return InputFrame
+end
+
+-- Создаем UI и наполняем вкладки
+local MainFrame = CreateMainGUI()
+
+-- Вкладка Info
+local InfoContent = TabButtons["Info"].Content
+InfoContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local InfoLabel = CreateLabel(InfoContent, "Server Information:")
+InfoLabel.TextSize = 14
+InfoLabel.Font = Enum.Font.GothamBold
+
+local ServerInfoLabel = CreateLabel(InfoContent, "Loading server info...")
+
+-- Обновление информации о сервере
+task.spawn(function()
+    while MainGUI and MainGUI.Parent do
+        wait(1)
+        local info = getServerInfo()
+        ServerInfoLabel.Text = string.format(
+            "PlaceId: %s\nJobId: %s\nIsStudio: %s\nPlayers: %d/%d",
+            info.PlaceId, info.JobId, tostring(info.IsStudio), info.CurrentPlayers, info.MaxPlayers
+        )
     end
 end)
 
-runService.RenderStepped:Connect(function()
-    circle.Position = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+-- Вкладка Player
+local PlayerContent = TabButtons["Player"].Content
+PlayerContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
-    if aimbotEnabled then
-        local target = getClosestPlayer()
-        if target and target.Character then
-            local targetPart = target.Character:FindFirstChild(aimbotTarget)
-            if not targetPart then
-                targetPart = target.Character:FindFirstChild("Head")
+local NoclipToggle = CreateToggle(PlayerContent, "Noclip", function(value)
+    ActiveNoclip = value
+    task.spawn(function()
+        while ActiveNoclip do
+            if LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
             end
-            
-            if targetPart then
-                local targetPos = targetPart.Position
-                camera.CFrame = CFrame.new(camera.CFrame.Position, targetPos)
+            wait(0.1)
+        end
+        if LocalPlayer.Character then
+            for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if part:IsA("BasePart") and not part.CanCollide then
+                    part.CanCollide = true
+                end
             end
         end
+    end)
+end)
+
+local InfiniteJumpToggle = CreateToggle(PlayerContent, "Infinite Jump", function(value)
+    ActivateInfiniteJump = value
+    while ActivateInfiniteJump do
+        local m = LocalPlayer:GetMouse()
+        m.KeyDown:Connect(function(k)
+            if ActivateInfiniteJump and k:byte() == 32 then
+                local humanoid = LocalPlayer.Character:FindFirstChildOfClass('Humanoid')
+                humanoid:ChangeState('Jumping')
+                wait()
+                humanoid:ChangeState('Seated')
+            end
+        end)
+        wait(0.1)
     end
+end)
 
-    for _, p in pairs(players:GetPlayers()) do
-        if p ~= player then
-            if not espObjects[p] then
-                createESPForPlayer(p)
-            end
+local SpeedSlider = CreateSlider(PlayerContent, "Walk Speed", 0, 500, 16, function(value)
+    ValueSpeed = value
+end)
 
-            local drawings = espObjects[p]
-            local char = p.Character
-            if espEnabled and char and char:FindFirstChild("Head") and char:FindFirstChild("HumanoidRootPart") then
-                if teamCheckEnabled and p.Team == player.Team then
-                    if drawings then
-                        drawings.box.Visible = false
-                        drawings.name.Visible = false
-                        drawings.distance.Visible = false
-                        drawings.tracer.Visible = false
-                    end
-                    continue
-                end
+local SpeedToggle = CreateToggle(PlayerContent, "Modify Walk Speed", function(value)
+    if value then
+        OldSpeed = LocalPlayer.Character.Humanoid.WalkSpeed
+        LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+    else
+        LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
+    end
+end)
 
-                local head = char.Head
-                local hrp = char.HumanoidRootPart
-                local headPos2D, onScreen1 = camera:WorldToViewportPoint(head.Position)
-                local rootPos2D, onScreen2 = camera:WorldToViewportPoint(hrp.Position)
+local FlySpeedSlider = CreateSlider(PlayerContent, "Fly Speed", 1, 10, 1, function(value)
+    iyflyspeed = value
+end)
 
-                if onScreen1 and onScreen2 and drawings then
-                    local height = (headPos2D - rootPos2D).Magnitude * 2
-                    local width = height / 2
+local FlyToggle = CreateToggle(PlayerContent, "Fly", function(value)
+    ActivateFly = value
+    if not FLYING and ActivateFly then
+        if not AlrActivatedFlyPC then 
+            AlrActivatedFlyPC = true
+            -- Можно добавить уведомление здесь
+        end
+        NOFLY()
+        wait()
+        sFLY()
+    elseif FLYING and not ActivateFly then
+        NOFLY()
+    end
+end)
 
-                    drawings.box.Size = Vector2.new(width, height)
-                    drawings.box.Position = Vector2.new(rootPos2D.X - width/2, rootPos2D.Y - height/2)
-                    drawings.box.Visible = true
-
-                    drawings.name.Text = p.Name
-                    drawings.name.Position = Vector2.new(headPos2D.X, headPos2D.Y - 20)
-                    drawings.name.Visible = true
-
-                    local distance = math.floor((player.Character.HumanoidRootPart.Position - hrp.Position).Magnitude)
-                    drawings.distance.Text = tostring(distance) .. "m"
-                    drawings.distance.Position = Vector2.new(rootPos2D.X, rootPos2D.Y + height/2 + 5)
-                    drawings.distance.Visible = true
-
-                    drawings.tracer.From = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y)
-                    drawings.tracer.To = Vector2.new(rootPos2D.X, rootPos2D.Y)
-                    drawings.tracer.Visible = true
-                elseif drawings then
-                    drawings.box.Visible = false
-                    drawings.name.Visible = false
-                    drawings.distance.Visible = false
-                    drawings.tracer.Visible = false
-                end
-            elseif drawings then
-                drawings.box.Visible = false
-                drawings.name.Visible = false
-                drawings.distance.Visible = false
-                drawings.tracer.Visible = false
-            end
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.F then
+        if not FLYING and ActivateFly then
+            NOFLY()
+            wait()
+            sFLY()
+        elseif FLYING and ActivateFly then
+            NOFLY()
         end
     end
 end)
+
+local NoCooldownToggle = CreateToggle(PlayerContent, "Instant Prompt", function(value)
+    ActiveNoCooldownPrompt = value
+    if ActiveNoCooldownPrompt then
+        for _, asset in pairs(workspace:GetDescendants()) do  
+            if asset:IsA("ProximityPrompt") and asset.HoldDuration ~= 0 then 
+                asset:SetAttribute("HoldDurationOld", asset.HoldDuration)
+                asset.HoldDuration = 0
+            end 
+        end  
+    else 
+        for _, asset in pairs(workspace:GetDescendants()) do  
+            if asset:IsA("ProximityPrompt") and asset:GetAttribute("HoldDurationOld") and asset:GetAttribute("HoldDurationOld") ~= 0 then 
+                asset.HoldDuration = asset:GetAttribute("HoldDurationOld")
+            end 
+        end  
+    end
+end)
+
+local NoFogToggle = CreateToggle(PlayerContent, "No Fog", function(value)
+    ActiveNoFog = value
+    task.spawn(function()
+        while ActiveNoFog do
+            for _, part in pairs(workspace.Map.Boundaries:GetChildren()) do 
+                if part:IsA("Part") then
+                    part:Destroy()
+                end
+            end  
+            wait(0.1)
+        end
+    end)
+end)
+
+local TeleportCampfire = CreateButton(PlayerContent, "Teleport to Campfire", function()
+    LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = workspace.Map.Campground.MainFire.PrimaryPart.CFrame + Vector3.new(0,10,0)
+end)
+
+-- Вкладка ESP
+local EspContent = TabButtons["Esp"].Content
+EspContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local ItemsEspToggle = CreateToggle(EspContent, "Items ESP", function(value)
+    ActiveEspItems = value
+    task.spawn(function()
+        while ActiveEspItems do
+            for _, obj in pairs(workspace.Items:GetChildren()) do 
+                if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                    CreateEsp(obj, Color3.fromRGB(255,255,0), obj.Name, obj.PrimaryPart, 3) 
+                    wait(0.15)
+                end 
+            end
+            wait(0.1)
+        end
+        for _, obj in pairs(workspace.Items:GetChildren()) do 
+            if obj:IsA("Model") and obj.PrimaryPart and obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                KeepEsp(obj, obj.PrimaryPart)
+            end 
+        end
+    end)
+end)
+
+local EnemyEspToggle = CreateToggle(EspContent, "Enemy ESP", function(value)
+    ActiveEspEnemy = value
+    task.spawn(function()
+        while ActiveEspEnemy do
+            for _, obj in pairs(workspace.Characters:GetChildren()) do 
+                if obj:IsA("Model") and obj.PrimaryPart and (obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and obj.Name ~= "Pelt Trader") and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                    CreateEsp(obj, Color3.fromRGB(255,0,0), obj.Name, obj.PrimaryPart, 3) 
+                    wait(0.15)
+                end 
+            end
+            wait(0.1)
+        end
+        for _, obj in pairs(workspace.Characters:GetChildren()) do 
+            if obj:IsA("Model") and obj.PrimaryPart and (obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and obj.Name ~= "Pelt Trader") and obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                KeepEsp(obj, obj.PrimaryPart)
+            end 
+        end
+    end)
+end)
+
+local ChildrenEspToggle = CreateToggle(EspContent, "Children ESP", function(value)
+    ActiveEspChildren = value
+    task.spawn(function()
+        while ActiveEspChildren do
+            for _, obj in pairs(workspace.Characters:GetChildren()) do 
+                if obj:IsA("Model") and obj.PrimaryPart and (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or obj.Name == "Lost Child3" or obj.Name == "Lost Child4") and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                    CreateEsp(obj, Color3.fromRGB(0,255,0), obj.Name, obj.PrimaryPart, 3) 
+                end 
+            end
+            wait(0.1)
+        end
+        for _, obj in pairs(workspace.Characters:GetChildren()) do 
+            if obj:IsA("Model") and obj.PrimaryPart and (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or obj.Name == "Lost Child3" or obj.Name == "Lost Child4") and obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                KeepEsp(obj, obj.PrimaryPart)
+            end 
+        end
+    end)
+end)
+
+local PeltTraderEspToggle = CreateToggle(EspContent, "Pelt Trader ESP", function(value)
+    ActiveEspPeltTrader = value
+    task.spawn(function()
+        while ActiveEspPeltTrader do
+            for _, obj in pairs(workspace.Characters:GetChildren()) do 
+                if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                    CreateEsp(obj, Color3.fromRGB(0,255,255), obj.Name, obj.PrimaryPart, 3) 
+                end 
+            end
+            wait(0.1)
+        end
+        for _, obj in pairs(workspace.Characters:GetChildren()) do 
+            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" and obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                KeepEsp(obj, obj.PrimaryPart)
+            end 
+        end
+    end)
+end)
+
+-- Вкладка Game
+local GameContent = TabButtons["Game"].Content
+GameContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+CreateLabel(GameContent, "Note: For Auto Chop Tree and Kill Aura, equip any axe")
+
+local KillAuraDistance = CreateSlider(GameContent, "Kill Aura Distance", 25, 10000, 25, function(value)
+    DistanceForKillAura = value
+end)
+
+local KillAuraToggle = CreateToggle(GameContent, "Kill Aura", function(value)
+    ActiveKillAura = value
+    task.spawn(function()
+        while ActiveKillAura do
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart")
+            local weapon = (LocalPlayer.Inventory:FindFirstChild("Old Axe") or LocalPlayer.Inventory:FindFirstChild("Good Axe") or LocalPlayer.Inventory:FindFirstChild("Strong Axe") or LocalPlayer.Inventory:FindFirstChild("Chainsaw"))
+
+            for _, enemy in pairs(workspace.Characters:GetChildren()) do
+                if enemy:IsA("Model") and enemy.PrimaryPart then
+                    local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                    if distance <= DistanceForKillAura then
+                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                    end
+                end
+            end
+            wait(0.01)
+        end
+    end)
+end)
+
+local ChopDistance = CreateSlider(GameContent, "Auto Chop Distance", 0, 1000, 25, function(value)
+    DistanceForAutoChopTree = value
+end)
+
+local AutoChopToggle = CreateToggle(GameContent, "Auto Chop Tree", function(value)
+    ActiveAutoChopTree = value
+    task.spawn(function()
+        while ActiveAutoChopTree do
+            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart")
+            local weapon = (LocalPlayer.Inventory:FindFirstChild("Old Axe") or LocalPlayer.Inventory:FindFirstChild("Good Axe") or LocalPlayer.Inventory:FindFirstChild("Strong Axe") or LocalPlayer.Inventory:FindFirstChild("Chainsaw"))
+
+            for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                    if distance <= DistanceForAutoChopTree then
+                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                    end
+                end
+            end
+            
+            for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                    if distance <= DistanceForAutoChopTree then
+                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                    end
+                end
+            end
+            wait(0.01)
+        end
+    end)
+end)
+
+-- Вкладка Bring Item
+local BringContent = TabButtons["Bring Item"].Content
+BringContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local function CreateBringButton(text, filter)
+    return CreateButton(BringContent, text, function()
+        for _, obj in pairs(workspace.Items:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart then
+                if type(filter) == "function" then
+                    if filter(obj.Name) then
+                        DragItem(obj)
+                    end
+                elseif obj.Name == filter then
+                    DragItem(obj)
+                end
+            end
+        end
+    end)
+end
+
+CreateBringButton("Bring All Items", function(name) return true end)
+CreateBringButton("Bring All Logs", "Log")
+CreateBringButton("Bring All Coal", "Coal")
+CreateBringButton("Bring All Fuel Canister", "Fuel Canister")
+CreateBringButton("Bring All Carrot", "Carrot")
+CreateBringButton("Bring All Fuel", function(name) 
+    return name == "Log" or name == "Fuel Canister" or name == "Coal" or name == "Oil Barrel" 
+end)
+CreateBringButton("Bring All Scraps", function(name)
+    return name == "Tyre" or name == "Sheet Metal" or name == "Broken Fan" or name == "Bolt" or 
+           name == "Old Radio" or name == "UFO Junk" or name == "UFO Scrap" or name == "Broken Microwave"
+end)
+CreateBringButton("Bring All Ammo", function(name)
+    return name == "Rifle Ammo" or name == "Revolver Ammo"
+end)
+CreateBringButton("Bring All Children", function()
+    for _, obj in pairs(workspace.Characters:GetChildren()) do
+        if (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or obj.Name == "Lost Child3" or obj.Name == "Lost Child4") and obj:IsA("Model") and obj.PrimaryPart then
+            DragItem(obj)
+        end
+    end
+end)
+CreateBringButton("Bring All Foods", function(name)
+    return name == "Cake" or name == "Carrot" or name == "Morsel" or name == "Meat? Sandwich"
+end)
+CreateBringButton("Bring All Bandage", "Bandage")
+CreateBringButton("Bring All Medkit", "MedKit")
+CreateBringButton("Bring All Old Radio", "Old Radio")
+CreateBringButton("Bring All Tyre", "Tyre")
+CreateBringButton("Bring All Broken Fan", "Broken Fan")
+CreateBringButton("Bring All Bolt", "Bolt")
+CreateBringButton("Bring All Sheet Metal", "Sheet Metal")
+CreateBringButton("Bring All Seed Box", "Seed Box")
+CreateBringButton("Bring All Chair", "Chair")
+
+-- Кастомный поиск предметов
+local customItemInput = CreateInput(BringContent, "Custom Item", "Enter item name", function(text)
+    for _, obj in pairs(workspace.Items:GetChildren()) do
+        if obj:IsA("Model") and obj.PrimaryPart and obj.Name == text then
+            DragItem(obj)
+        end
+    end
+end)
+
+-- Вкладка Discord
+local DiscordContent = TabButtons["Discord"].Content
+DiscordContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+CreateButton(DiscordContent, "Copy Discord Link", function()
+    copyToClipboard("https://discord.gg/E2TqYRsRP4")
+end)
+
+-- Вкладка Settings
+local SettingsContent = TabButtons["Settings"].Content
+SettingsContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local DistanceEspToggle = CreateToggle(SettingsContent, "Show Distance on ESP", function(value)
+    ActiveDistanceEsp = value
+end)
+
+CreateButton(SettingsContent, "Unload Cheat", function()
+    MainGUI:Destroy()
+end)
+
+-- Уведомление о загрузке
+task.spawn(function()
+    wait(1)
+    -- Можно добавить систему уведомлений здесь
+end)
+
+print("99 Nights In The Forest - Custom UI loaded successfully!")
