@@ -72,7 +72,7 @@ TabsFrame.BorderSizePixel = 0
 TabsFrame.Parent = MainFrame
 
 local InfoTabButton = Instance.new("TextButton")
-InfoTabButton.Size = UDim2.new(0.25, 0, 1, 0)
+InfoTabButton.Size = UDim2.new(0.33, 0, 1, 0)
 InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
 InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 InfoTabButton.Text = "Info"
@@ -82,8 +82,8 @@ InfoTabButton.Font = Enum.Font.GothamBold
 InfoTabButton.Parent = TabsFrame
 
 local GameTabButton = Instance.new("TextButton")
-GameTabButton.Size = UDim2.new(0.25, 0, 1, 0)
-GameTabButton.Position = UDim2.new(0.25, 0, 0, 0)
+GameTabButton.Size = UDim2.new(0.33, 0, 1, 0)
+GameTabButton.Position = UDim2.new(0.33, 0, 0, 0)
 GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 GameTabButton.Text = "Game"
 GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -91,25 +91,15 @@ GameTabButton.TextSize = 12
 GameTabButton.Font = Enum.Font.GothamBold
 GameTabButton.Parent = TabsFrame
 
-local ItemsTabButton = Instance.new("TextButton")
-ItemsTabButton.Size = UDim2.new(0.25, 0, 1, 0)
-ItemsTabButton.Position = UDim2.new(0.5, 0, 0, 0)
-ItemsTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-ItemsTabButton.Text = "Items"
-ItemsTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-ItemsTabButton.TextSize = 12
-ItemsTabButton.Font = Enum.Font.GothamBold
-ItemsTabButton.Parent = TabsFrame
-
-local TeleportTabButton = Instance.new("TextButton")
-TeleportTabButton.Size = UDim2.new(0.25, 0, 1, 0)
-TeleportTabButton.Position = UDim2.new(0.75, 0, 0, 0)
-TeleportTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-TeleportTabButton.Text = "TP"
-TeleportTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-TeleportTabButton.TextSize = 12
-TeleportTabButton.Font = Enum.Font.GothamBold
-TeleportTabButton.Parent = TabsFrame
+local KeksTabButton = Instance.new("TextButton")
+KeksTabButton.Size = UDim2.new(0.34, 0, 1, 0)
+KeksTabButton.Position = UDim2.new(0.66, 0, 0, 0)
+KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+KeksTabButton.Text = "Keks"
+KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+KeksTabButton.TextSize = 12
+KeksTabButton.Font = Enum.Font.GothamBold
+KeksTabButton.Parent = TabsFrame
 
 -- Content frames
 local ContentFrame = Instance.new("Frame")
@@ -144,37 +134,25 @@ local GameListLayout = Instance.new("UIListLayout")
 GameListLayout.Padding = UDim.new(0, 8)
 GameListLayout.Parent = GameTab
 
--- Items Tab Content
-local ItemsTab = Instance.new("ScrollingFrame")
-ItemsTab.Size = UDim2.new(1, 0, 1, 0)
-ItemsTab.BackgroundTransparency = 1
-ItemsTab.BorderSizePixel = 0
-ItemsTab.ScrollBarThickness = 6
-ItemsTab.Visible = false
-ItemsTab.Parent = ContentFrame
+-- Keks Tab Content
+local KeksTab = Instance.new("ScrollingFrame")
+KeksTab.Size = UDim2.new(1, 0, 1, 0)
+KeksTab.BackgroundTransparency = 1
+KeksTab.BorderSizePixel = 0
+KeksTab.ScrollBarThickness = 6
+KeksTab.Visible = false
+KeksTab.Parent = ContentFrame
 
-local ItemsListLayout = Instance.new("UIListLayout")
-ItemsListLayout.Padding = UDim.new(0, 8)
-ItemsListLayout.Parent = ItemsTab
-
--- Teleport Tab Content
-local TeleportTab = Instance.new("ScrollingFrame")
-TeleportTab.Size = UDim2.new(1, 0, 1, 0)
-TeleportTab.BackgroundTransparency = 1
-TeleportTab.BorderSizePixel = 0
-TeleportTab.ScrollBarThickness = 6
-TeleportTab.Visible = false
-TeleportTab.Parent = ContentFrame
-
-local TeleportListLayout = Instance.new("UIListLayout")
-TeleportListLayout.Padding = UDim.new(0, 8)
-TeleportListLayout.Parent = TeleportTab
+local KeksListLayout = Instance.new("UIListLayout")
+KeksListLayout.Padding = UDim.new(0, 8)
+KeksListLayout.Parent = KeksTab
 
 -- Переменные для функций
 local ActiveKillAura = false
 local ActiveAutoChopTree = false
 local DistanceForKillAura = 25
 local DistanceForAutoChopTree = 25
+local CheckpointPosition = nil
 
 -- Функция DragItem из оригинального скрипта
 local function DragItem(Item)
@@ -434,176 +412,70 @@ local autoChopToggle = CreateToggle(autoChopContent, "Auto Chop Tree", function(
     ActiveAutoChopTree = value
 end)
 
--- Создание элементов Items tab
-local itemsSection, itemsContent = CreateSection(ItemsTab, "🎒 Item Teleporter")
-CreateLabel(itemsContent, "Select items to teleport to your inventory")
+-- Создание элементов Keks tab (Система чекпоинтов и телепортации предметов)
+local keksSection, keksContent = CreateSection(KeksTab, "📍 Checkpoint System")
+CreateLabel(keksContent, "Set a checkpoint and teleport back to it anytime")
 
--- Создание мини-меню для выбора предметов
-local selectedItems = {}
+-- Переменная для хранения позиции чекпоинта
+local checkpointSet = false
 
-local function CreateItemToggle(parent, itemName)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, 0, 0, 25)
-    toggleFrame.BackgroundTransparency = 1
-    toggleFrame.Parent = parent
-    
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Size = UDim2.new(1, 0, 1, 0)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    toggleButton.Text = ""
-    toggleButton.Parent = toggleFrame
-    
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 4)
-    toggleCorner.Parent = toggleButton
-    
-    local toggleText = Instance.new("TextLabel")
-    toggleText.Size = UDim2.new(0.8, 0, 1, 0)
-    toggleText.Position = UDim2.new(0, 8, 0, 0)
-    toggleText.BackgroundTransparency = 1
-    toggleText.Text = itemName
-    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleText.TextSize = 12
-    toggleText.TextXAlignment = Enum.TextXAlignment.Left
-    toggleText.Font = Enum.Font.Gotham
-    toggleText.Parent = toggleButton
-    
-    local toggleStatus = Instance.new("Frame")
-    toggleStatus.Size = UDim2.new(0, 15, 0, 15)
-    toggleStatus.Position = UDim2.new(1, -20, 0.5, -7.5)
-    toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    toggleStatus.Parent = toggleButton
-    
-    local toggleStatusCorner = Instance.new("UICorner")
-    toggleStatusCorner.CornerRadius = UDim.new(0, 7)
-    toggleStatusCorner.Parent = toggleStatus
-    
-    local isToggled = false
-    
-    local function updateToggle()
-        if isToggled then
-            toggleStatus.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-            selectedItems[itemName] = true
-        else
-            toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-            selectedItems[itemName] = nil
-        end
-    end
-    
-    toggleButton.MouseButton1Click:Connect(function()
-        isToggled = not isToggled
-        updateToggle()
-    end)
-    
-    updateToggle()
-end
-
--- Список предметов для телепортации
-local itemsList = {
-    "Tyre", 
-    "Sheet Metal", 
-    "Broken Fan", 
-    "Bolt", 
-    "Old Radio", 
-    "UFO Junk", 
-    "UFO Scrap", 
-    "Broken Microwave"
-}
-
--- Создание тогглов для каждого предмета
-for _, itemName in ipairs(itemsList) do
-    CreateItemToggle(itemsContent, itemName)
-end
-
--- Кнопка телепортации выбранных предметов
-CreateButton(itemsContent, "🚀 Teleport Selected Items", function()
-    for _, Obj in pairs(game.workspace.Items:GetChildren()) do
-        if Obj:isA("Model") and Obj.PrimaryPart and selectedItems[Obj.Name] then
-            DragItem(Obj)
-            wait(0.05)
-        end
+-- Функция установки чекпоинта
+CreateButton(keksContent, "💾 Set Checkpoint", function()
+    local character = game.Players.LocalPlayer.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        CheckpointPosition = character.HumanoidRootPart.Position
+        checkpointSet = true
+        print("Checkpoint set at position: " .. tostring(CheckpointPosition))
+    else
+        print("Failed to set checkpoint: Character not found")
     end
 end)
 
--- Кнопка телепортации всех скрапов
-CreateButton(itemsContent, "🔄 Teleport All Scraps", function()
-    for _, Obj in pairs(game.workspace.Items:GetChildren()) do
-        if (Obj.Name == "Tyre" or Obj.Name == "Sheet Metal" or Obj.Name == "Broken Fan" or Obj.Name == "Bolt" or Obj.Name == "Old Radio" or Obj.Name == "UFO Junk" or Obj.Name == "UFO Scrap" or Obj.Name == "Broken Microwave") and Obj:isA("Model") and Obj.PrimaryPart then 
-            DragItem(Obj)
-            wait(0.05)
-        end
-    end
-end)
-
--- Создание элементов Teleport tab
-local teleportSection, teleportContent = CreateSection(TeleportTab, "🧲 Teleport to Objects")
-CreateLabel(teleportContent, "Teleport to different locations and objects in the game")
-
--- Список целей для телепортации
-local teleportTargets = {
-    "Campfire",
-    "Workshop", 
-    "Cave",
-    "Lake",
-    "Radio Tower",
-    "Abandoned House",
-    "Pelt Trader",
-    "Lost Child",
-    "Lost Child2", 
-    "Lost Child3",
-    "Lost Child4"
-}
-
--- Настройки телепортации
-local ignoreDistanceFrom = Vector3.new(0, 0, 0)
-local minDistance = 10
-
--- Функция телепортации
-local function TeleportToObject(itemName)
-    local closest, shortest = nil, math.huge
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj.Name == itemName and obj:IsA("Model") then
-            local cf = nil
-            if pcall(function() cf = obj:GetPivot() end) then
-                -- success
-            else
-                local part = obj:FindFirstChildWhichIsA("BasePart")
-                if part then cf = part.CFrame end
-            end
-            if cf then
-                local dist = (cf.Position - ignoreDistanceFrom).Magnitude
-                if dist >= minDistance and dist < shortest then
-                    closest = obj
-                    shortest = dist
-                end
-            end
-        end
-    end
-    if closest then
-        local cf = nil
-        if pcall(function() cf = closest:GetPivot() end) then
-            -- success
+-- Функция телепортации к чекпоинту
+CreateButton(keksContent, "🚀 Teleport to Checkpoint", function()
+    if checkpointSet and CheckpointPosition then
+        local character = game.Players.LocalPlayer.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            character.HumanoidRootPart.CFrame = CFrame.new(CheckpointPosition)
+            print("Teleported to checkpoint")
         else
-            local part = closest:FindFirstChildWhichIsA("BasePart")
-            if part then cf = part.CFrame end
-        end
-        if cf then
-            game.Players.LocalPlayer.Character:PivotTo(cf + Vector3.new(0, 5, 0))
-            print("Teleported to " .. itemName)
-        else
-            print("Teleport Failed: Could not find a valid position to teleport.")
+            print("Failed to teleport: Character not found")
         end
     else
-        print("Item Not Found: " .. itemName .. " not found or too close to origin.")
+        print("No checkpoint set! Please set a checkpoint first.")
     end
-end
+end)
 
--- Создание кнопок телепортации для каждой цели
-for _, itemName in ipairs(teleportTargets) do
-    CreateButton(teleportContent, "📍 " .. itemName, function()
-        TeleportToObject(itemName)
+-- Индикатор статуса чекпоинта
+local checkpointStatusLabel = CreateLabel(keksContent, "Status: No checkpoint set")
+
+-- Обновление статуса чекпоинта
+game:GetService("RunService").Heartbeat:Connect(function()
+    if checkpointSet and CheckpointPosition then
+        checkpointStatusLabel.Text = "Status: Checkpoint set at " .. 
+            math.floor(CheckpointPosition.X) .. ", " .. 
+            math.floor(CheckpointPosition.Y) .. ", " .. 
+            math.floor(CheckpointPosition.Z)
+    else
+        checkpointStatusLabel.Text = "Status: No checkpoint set"
+    end
+end)
+
+-- Раздел для телепортации предметов
+local itemsSection, itemsContent = CreateSection(KeksTab, "🎒 Bring Items to Player")
+CreateLabel(itemsContent, "Teleport all scrap items to your inventory")
+
+-- Функция Bring All Scraps
+CreateButton(itemsContent, "🔄 Bring All Scraps", function()
+    task.spawn(function()
+        for _, Obj in pairs(game.workspace.Items:GetChildren()) do
+            if (Obj.Name == "Tyre" or Obj.Name == "Sheet Metal" or Obj.Name == "Broken Fan" or Obj.Name == "Bolt" or Obj.Name == "Old Radio" or Obj.Name == "UFO Junk" or Obj.Name == "UFO Scrap" or Obj.Name == "Broken Microwave") and Obj:isA("Model") and Obj.PrimaryPart then 
+                DragItem(Obj)
+                wait(0.05)
+            end 
+        end
     end)
-end
+end)
 
 -- Функции из оригинального скрипта
 -- Kill Aura функция
@@ -667,7 +539,7 @@ end)
 
 -- Обновление размеров секций после добавления контента
 game:GetService("RunService").Heartbeat:Connect(function()
-    for _, tab in pairs({InfoTab, GameTab, ItemsTab, TeleportTab}) do
+    for _, tab in pairs({InfoTab, GameTab, KeksTab}) do
         for _, section in pairs(tab:GetChildren()) do
             if section:IsA("Frame") and section:FindFirstChildWhichIsA("Frame") then
                 local content = section:FindFirstChildWhichIsA("Frame")
@@ -685,18 +557,15 @@ end)
 local function switchToTab(tabName)
     InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    ItemsTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    TeleportTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     
     InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
     GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    ItemsTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    TeleportTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
     
     InfoTab.Visible = false
     GameTab.Visible = false
-    ItemsTab.Visible = false
-    TeleportTab.Visible = false
+    KeksTab.Visible = false
     
     if tabName == "Info" then
         InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -706,14 +575,10 @@ local function switchToTab(tabName)
         GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         GameTab.Visible = true
-    elseif tabName == "Items" then
-        ItemsTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        ItemsTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        ItemsTab.Visible = true
-    elseif tabName == "Teleport" then
-        TeleportTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        TeleportTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        TeleportTab.Visible = true
+    elseif tabName == "Keks" then
+        KeksTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        KeksTab.Visible = true
     end
 end
 
@@ -725,12 +590,8 @@ GameTabButton.MouseButton1Click:Connect(function()
     switchToTab("Game")
 end)
 
-ItemsTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Items")
-end)
-
-TeleportTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Teleport")
+KeksTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Keks")
 end)
 
 -- Система перемещения меню для мобильных устройств
@@ -799,4 +660,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile Game menu with Teleport tab loaded! Tap the button to open/close. Drag the title to move.")
+print("Mobile Game menu with Keks checkpoint system and Bring All Scraps loaded!")
