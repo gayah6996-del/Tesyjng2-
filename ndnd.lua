@@ -1,4 +1,4 @@
--- 99 Nights In The Forest - Custom UI Script
+-- 99 Nights In The Forest - Fixed Custom UI Script
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -51,7 +51,7 @@ local function getServerInfo()
     }
 end
 
--- Система полета (сохранена из оригинального скрипта)
+-- Система полета
 local IYMouse = LocalPlayer:GetMouse()
 local FLYING = false
 local QEfly = true
@@ -143,7 +143,7 @@ local function NOFLY()
 end
 
 -- ESP система
-local function CreateEsp(Char, Color, Text, Parent, number)
+local function CreateEsp(Char, Color, Text, Parent)
     if not Char then return end
     if Char:FindFirstChild("ESP") and Char:FindFirstChildOfClass("Highlight") then return end
     
@@ -162,7 +162,7 @@ local function CreateEsp(Char, Color, Text, Parent, number)
     billboard.Name = "ESP"
     billboard.Size = UDim2.new(0, 50, 0, 25)
     billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, number, 0)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
     billboard.Adornee = Parent
     billboard.Enabled = true
     billboard.Parent = Parent
@@ -309,6 +309,7 @@ local function CreateMainGUI()
         TabContent.ScrollBarThickness = 6
         TabContent.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
         TabContent.Visible = false
+        TabContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
         TabContent.Parent = ContentContainer
         
         TabButtons[tabName] = {Button = TabButton, Content = TabContent}
@@ -559,8 +560,6 @@ local MainFrame = CreateMainGUI()
 
 -- Вкладка Info
 local InfoContent = TabButtons["Info"].Content
-InfoContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
-
 local InfoLabel = CreateLabel(InfoContent, "Server Information:")
 InfoLabel.TextSize = 14
 InfoLabel.Font = Enum.Font.GothamBold
@@ -581,60 +580,85 @@ end)
 
 -- Вкладка Player
 local PlayerContent = TabButtons["Player"].Content
-PlayerContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
+-- Noclip
+local noclipLoop
 local NoclipToggle = CreateToggle(PlayerContent, "Noclip", function(value)
     ActiveNoclip = value
-    task.spawn(function()
-        while ActiveNoclip do
+    if noclipLoop then
+        noclipLoop:Disconnect()
+        noclipLoop = nil
+    end
+    
+    if value then
+        noclipLoop = RunService.Stepped:Connect(function()
             if LocalPlayer.Character then
                 for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") and part.CanCollide then
+                    if part:IsA("BasePart") then
                         part.CanCollide = false
                     end
                 end
             end
-            wait(0.1)
-        end
+        end)
+    else
         if LocalPlayer.Character then
             for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                if part:IsA("BasePart") and not part.CanCollide then
+                if part:IsA("BasePart") then
                     part.CanCollide = true
                 end
             end
         end
-    end)
-end)
-
-local InfiniteJumpToggle = CreateToggle(PlayerContent, "Infinite Jump", function(value)
-    ActivateInfiniteJump = value
-    while ActivateInfiniteJump do
-        local m = LocalPlayer:GetMouse()
-        m.KeyDown:Connect(function(k)
-            if ActivateInfiniteJump and k:byte() == 32 then
-                local humanoid = LocalPlayer.Character:FindFirstChildOfClass('Humanoid')
-                humanoid:ChangeState('Jumping')
-                wait()
-                humanoid:ChangeState('Seated')
-            end
-        end)
-        wait(0.1)
     end
 end)
 
+-- Infinite Jump
+local infiniteJumpConnection
+local InfiniteJumpToggle = CreateToggle(PlayerContent, "Infinite Jump", function(value)
+    ActivateInfiniteJump = value
+    if infiniteJumpConnection then
+        infiniteJumpConnection:Disconnect()
+        infiniteJumpConnection = nil
+    end
+    
+    if value then
+        infiniteJumpConnection = UserInputService.JumpRequest:Connect(function()
+            if ActivateInfiniteJump then
+                LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+            end
+        end)
+    end
+end)
+
+-- Speed
+local speedLoop
 local SpeedSlider = CreateSlider(PlayerContent, "Walk Speed", 0, 500, 16, function(value)
     ValueSpeed = value
+    if speedLoop then
+        LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+    end
 end)
 
 local SpeedToggle = CreateToggle(PlayerContent, "Modify Walk Speed", function(value)
     if value then
         OldSpeed = LocalPlayer.Character.Humanoid.WalkSpeed
         LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+        speedLoop = RunService.Heartbeat:Connect(function()
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+            end
+        end)
     else
-        LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
+        if speedLoop then
+            speedLoop:Disconnect()
+            speedLoop = nil
+        end
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
+        end
     end
 end)
 
+-- Fly
 local FlySpeedSlider = CreateSlider(PlayerContent, "Fly Speed", 1, 10, 1, function(value)
     iyflyspeed = value
 end)
@@ -644,7 +668,6 @@ local FlyToggle = CreateToggle(PlayerContent, "Fly", function(value)
     if not FLYING and ActivateFly then
         if not AlrActivatedFlyPC then 
             AlrActivatedFlyPC = true
-            -- Можно добавить уведомление здесь
         end
         NOFLY()
         wait()
@@ -656,17 +679,18 @@ end)
 
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
-    if input.KeyCode == Enum.KeyCode.F then
-        if not FLYING and ActivateFly then
+    if input.KeyCode == Enum.KeyCode.F and ActivateFly then
+        if not FLYING then
             NOFLY()
             wait()
             sFLY()
-        elseif FLYING and ActivateFly then
+        else
             NOFLY()
         end
     end
 end)
 
+-- Instant Prompt
 local NoCooldownToggle = CreateToggle(PlayerContent, "Instant Prompt", function(value)
     ActiveNoCooldownPrompt = value
     if ActiveNoCooldownPrompt then
@@ -678,181 +702,239 @@ local NoCooldownToggle = CreateToggle(PlayerContent, "Instant Prompt", function(
         end  
     else 
         for _, asset in pairs(workspace:GetDescendants()) do  
-            if asset:IsA("ProximityPrompt") and asset:GetAttribute("HoldDurationOld") and asset:GetAttribute("HoldDurationOld") ~= 0 then 
+            if asset:IsA("ProximityPrompt") and asset:GetAttribute("HoldDurationOld") then 
                 asset.HoldDuration = asset:GetAttribute("HoldDurationOld")
             end 
         end  
     end
 end)
 
+-- No Fog
 local NoFogToggle = CreateToggle(PlayerContent, "No Fog", function(value)
     ActiveNoFog = value
-    task.spawn(function()
-        while ActiveNoFog do
-            for _, part in pairs(workspace.Map.Boundaries:GetChildren()) do 
-                if part:IsA("Part") then
-                    part:Destroy()
-                end
-            end  
-            wait(0.1)
+    if ActiveNoFog then
+        for _, part in pairs(workspace.Map.Boundaries:GetChildren()) do 
+            if part:IsA("Part") then
+                part:Destroy()
+            end
         end
-    end)
+    end
 end)
 
+-- Teleport to Campfire
 local TeleportCampfire = CreateButton(PlayerContent, "Teleport to Campfire", function()
-    LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = workspace.Map.Campground.MainFire.PrimaryPart.CFrame + Vector3.new(0,10,0)
+    if workspace.Map.Campground.MainFire and workspace.Map.Campground.MainFire.PrimaryPart then
+        LocalPlayer.Character:WaitForChild("HumanoidRootPart").CFrame = workspace.Map.Campground.MainFire.PrimaryPart.CFrame + Vector3.new(0,10,0)
+    end
 end)
 
 -- Вкладка ESP
 local EspContent = TabButtons["Esp"].Content
-EspContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
+-- Items ESP
+local itemsEspLoop
 local ItemsEspToggle = CreateToggle(EspContent, "Items ESP", function(value)
     ActiveEspItems = value
-    task.spawn(function()
-        while ActiveEspItems do
+    if itemsEspLoop then
+        itemsEspLoop:Disconnect()
+        itemsEspLoop = nil
+    end
+    
+    if value then
+        itemsEspLoop = RunService.Heartbeat:Connect(function()
             for _, obj in pairs(workspace.Items:GetChildren()) do 
                 if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                    CreateEsp(obj, Color3.fromRGB(255,255,0), obj.Name, obj.PrimaryPart, 3) 
-                    wait(0.15)
+                    CreateEsp(obj, Color3.fromRGB(255,255,0), obj.Name, obj.PrimaryPart) 
                 end 
             end
-            wait(0.1)
-        end
+        end)
+    else
         for _, obj in pairs(workspace.Items:GetChildren()) do 
             if obj:IsA("Model") and obj.PrimaryPart and obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
                 KeepEsp(obj, obj.PrimaryPart)
             end 
         end
-    end)
+    end
 end)
 
+-- Enemy ESP
+local enemyEspLoop
 local EnemyEspToggle = CreateToggle(EspContent, "Enemy ESP", function(value)
     ActiveEspEnemy = value
-    task.spawn(function()
-        while ActiveEspEnemy do
+    if enemyEspLoop then
+        enemyEspLoop:Disconnect()
+        enemyEspLoop = nil
+    end
+    
+    if value then
+        enemyEspLoop = RunService.Heartbeat:Connect(function()
             for _, obj in pairs(workspace.Characters:GetChildren()) do 
-                if obj:IsA("Model") and obj.PrimaryPart and (obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and obj.Name ~= "Pelt Trader") and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                    CreateEsp(obj, Color3.fromRGB(255,0,0), obj.Name, obj.PrimaryPart, 3) 
-                    wait(0.15)
+                if obj:IsA("Model") and obj.PrimaryPart and 
+                   (obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and obj.Name ~= "Pelt Trader") and 
+                   not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                    CreateEsp(obj, Color3.fromRGB(255,0,0), obj.Name, obj.PrimaryPart) 
                 end 
             end
-            wait(0.1)
-        end
+        end)
+    else
         for _, obj in pairs(workspace.Characters:GetChildren()) do 
-            if obj:IsA("Model") and obj.PrimaryPart and (obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and obj.Name ~= "Pelt Trader") and obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+            if obj:IsA("Model") and obj.PrimaryPart and 
+               (obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and obj.Name ~= "Pelt Trader") and 
+               obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
                 KeepEsp(obj, obj.PrimaryPart)
             end 
         end
-    end)
+    end
 end)
 
+-- Children ESP
+local childrenEspLoop
 local ChildrenEspToggle = CreateToggle(EspContent, "Children ESP", function(value)
     ActiveEspChildren = value
-    task.spawn(function()
-        while ActiveEspChildren do
+    if childrenEspLoop then
+        childrenEspLoop:Disconnect()
+        childrenEspLoop = nil
+    end
+    
+    if value then
+        childrenEspLoop = RunService.Heartbeat:Connect(function()
             for _, obj in pairs(workspace.Characters:GetChildren()) do 
-                if obj:IsA("Model") and obj.PrimaryPart and (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or obj.Name == "Lost Child3" or obj.Name == "Lost Child4") and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                    CreateEsp(obj, Color3.fromRGB(0,255,0), obj.Name, obj.PrimaryPart, 3) 
+                if obj:IsA("Model") and obj.PrimaryPart and 
+                   (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or obj.Name == "Lost Child3" or obj.Name == "Lost Child4") and 
+                   not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                    CreateEsp(obj, Color3.fromRGB(0,255,0), obj.Name, obj.PrimaryPart) 
                 end 
             end
-            wait(0.1)
-        end
+        end)
+    else
         for _, obj in pairs(workspace.Characters:GetChildren()) do 
-            if obj:IsA("Model") and obj.PrimaryPart and (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or obj.Name == "Lost Child3" or obj.Name == "Lost Child4") and obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+            if obj:IsA("Model") and obj.PrimaryPart and 
+               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or obj.Name == "Lost Child3" or obj.Name == "Lost Child4") and 
+               obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
                 KeepEsp(obj, obj.PrimaryPart)
             end 
         end
-    end)
+    end
 end)
 
+-- Pelt Trader ESP
+local peltEspLoop
 local PeltTraderEspToggle = CreateToggle(EspContent, "Pelt Trader ESP", function(value)
     ActiveEspPeltTrader = value
-    task.spawn(function()
-        while ActiveEspPeltTrader do
+    if peltEspLoop then
+        peltEspLoop:Disconnect()
+        peltEspLoop = nil
+    end
+    
+    if value then
+        peltEspLoop = RunService.Heartbeat:Connect(function()
             for _, obj in pairs(workspace.Characters:GetChildren()) do 
-                if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
-                    CreateEsp(obj, Color3.fromRGB(0,255,255), obj.Name, obj.PrimaryPart, 3) 
+                if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" and 
+                   not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                    CreateEsp(obj, Color3.fromRGB(0,255,255), obj.Name, obj.PrimaryPart) 
                 end 
             end
-            wait(0.1)
-        end
+        end)
+    else
         for _, obj in pairs(workspace.Characters:GetChildren()) do 
-            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" and obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" and 
+               obj:FindFirstChildOfClass("Highlight") and obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
                 KeepEsp(obj, obj.PrimaryPart)
             end 
         end
-    end)
+    end
 end)
 
 -- Вкладка Game
 local GameContent = TabButtons["Game"].Content
-GameContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
 CreateLabel(GameContent, "Note: For Auto Chop Tree and Kill Aura, equip any axe")
 
+-- Kill Aura
+local killAuraLoop
 local KillAuraDistance = CreateSlider(GameContent, "Kill Aura Distance", 25, 10000, 25, function(value)
     DistanceForKillAura = value
 end)
 
 local KillAuraToggle = CreateToggle(GameContent, "Kill Aura", function(value)
     ActiveKillAura = value
-    task.spawn(function()
-        while ActiveKillAura do
-            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local weapon = (LocalPlayer.Inventory:FindFirstChild("Old Axe") or LocalPlayer.Inventory:FindFirstChild("Good Axe") or LocalPlayer.Inventory:FindFirstChild("Strong Axe") or LocalPlayer.Inventory:FindFirstChild("Chainsaw"))
+    if killAuraLoop then
+        killAuraLoop:Disconnect()
+        killAuraLoop = nil
+    end
+    
+    if value then
+        killAuraLoop = RunService.Heartbeat:Connect(function()
+            local character = LocalPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local hrp = character.HumanoidRootPart
+                local weapon = (LocalPlayer.Inventory:FindFirstChild("Old Axe") or 
+                               LocalPlayer.Inventory:FindFirstChild("Good Axe") or 
+                               LocalPlayer.Inventory:FindFirstChild("Strong Axe") or 
+                               LocalPlayer.Inventory:FindFirstChild("Chainsaw"))
 
-            for _, enemy in pairs(workspace.Characters:GetChildren()) do
-                if enemy:IsA("Model") and enemy.PrimaryPart then
-                    local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForKillAura then
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                for _, enemy in pairs(workspace.Characters:GetChildren()) do
+                    if enemy:IsA("Model") and enemy.PrimaryPart then
+                        local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                        if distance <= DistanceForKillAura and weapon then
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                        end
                     end
                 end
             end
-            wait(0.01)
-        end
-    end)
+        end)
+    end
 end)
 
+-- Auto Chop Tree
+local chopTreeLoop
 local ChopDistance = CreateSlider(GameContent, "Auto Chop Distance", 0, 1000, 25, function(value)
     DistanceForAutoChopTree = value
 end)
 
 local AutoChopToggle = CreateToggle(GameContent, "Auto Chop Tree", function(value)
     ActiveAutoChopTree = value
-    task.spawn(function()
-        while ActiveAutoChopTree do
-            local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local weapon = (LocalPlayer.Inventory:FindFirstChild("Old Axe") or LocalPlayer.Inventory:FindFirstChild("Good Axe") or LocalPlayer.Inventory:FindFirstChild("Strong Axe") or LocalPlayer.Inventory:FindFirstChild("Chainsaw"))
+    if chopTreeLoop then
+        chopTreeLoop:Disconnect()
+        chopTreeLoop = nil
+    end
+    
+    if value then
+        chopTreeLoop = RunService.Heartbeat:Connect(function()
+            local character = LocalPlayer.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local hrp = character.HumanoidRootPart
+                local weapon = (LocalPlayer.Inventory:FindFirstChild("Old Axe") or 
+                               LocalPlayer.Inventory:FindFirstChild("Good Axe") or 
+                               LocalPlayer.Inventory:FindFirstChild("Strong Axe") or 
+                               LocalPlayer.Inventory:FindFirstChild("Chainsaw"))
 
-            for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForAutoChopTree then
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                -- Check Foliage
+                for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                    if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                        local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                        if distance <= DistanceForAutoChopTree and weapon then
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                        end
+                    end
+                end
+                
+                -- Check Landmarks
+                for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                    if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                        local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                        if distance <= DistanceForAutoChopTree and weapon then
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                        end
                     end
                 end
             end
-            
-            for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
-                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForAutoChopTree then
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                    end
-                end
-            end
-            wait(0.01)
-        end
-    end)
+        end)
+    end
 end)
 
 -- Вкладка Bring Item
 local BringContent = TabButtons["Bring Item"].Content
-BringContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
 local function CreateBringButton(text, filter)
     return CreateButton(BringContent, text, function()
@@ -916,7 +998,6 @@ end)
 
 -- Вкладка Discord
 local DiscordContent = TabButtons["Discord"].Content
-DiscordContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
 CreateButton(DiscordContent, "Copy Discord Link", function()
     copyToClipboard("https://discord.gg/E2TqYRsRP4")
@@ -924,7 +1005,6 @@ end)
 
 -- Вкладка Settings
 local SettingsContent = TabButtons["Settings"].Content
-SettingsContent.AutomaticCanvasSize = Enum.AutomaticSize.Y
 
 local DistanceEspToggle = CreateToggle(SettingsContent, "Show Distance on ESP", function(value)
     ActiveDistanceEsp = value
@@ -934,10 +1014,4 @@ CreateButton(SettingsContent, "Unload Cheat", function()
     MainGUI:Destroy()
 end)
 
--- Уведомление о загрузке
-task.spawn(function()
-    wait(1)
-    -- Можно добавить систему уведомлений здесь
-end)
-
-print("99 Nights In The Forest - Custom UI loaded successfully!")
+print("99 Nights In The Forest - Fixed Custom UI loaded successfully!")
