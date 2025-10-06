@@ -1232,7 +1232,7 @@ local function createGUI()
     themeTitle = Instance.new("TextLabel", languageContainer)
     themeTitle.Name = "ThemeTitle"
     themeTitle.Size = UDim2.new(0.9, 0, 0, 30)
-    themeTitle.Position = UDim2.new(0.05, 0, 0.55, 0)
+    themeTitle.Position = UDim2.new(0.05, 0, 0.45, 0)
     themeTitle.BackgroundTransparency = 1
     themeTitle.Text = "Select Theme:"
     themeTitle.TextColor3 = Color3.new(1, 1, 1)
@@ -1254,7 +1254,7 @@ local function createGUI()
     themeDropdown = Instance.new("TextButton", languageContainer)
     themeDropdown.Name = "ThemeDropdown"
     themeDropdown.Size = UDim2.new(0.9, 0, 0, 35)
-    themeDropdown.Position = UDim2.new(0.05, 0, 0.75, 0)
+    themeDropdown.Position = UDim2.new(0.05, 0, 0.60, 0)
     themeDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     themeDropdown.Text = "Theme: Dark"
     themeDropdown.TextColor3 = Color3.new(1, 1, 1)
