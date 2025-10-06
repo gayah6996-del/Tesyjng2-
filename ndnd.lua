@@ -1243,7 +1243,7 @@ local function createGUI()
     currentThemeLabel = Instance.new("TextLabel", languageContainer)
     currentThemeLabel.Name = "CurrentTheme"
     currentThemeLabel.Size = UDim2.new(0.9, 0, 0, 25)
-    currentThemeLabel.Position = UDim2.new(0.05, 0, 0.65, 0)
+    currentThemeLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
     currentThemeLabel.BackgroundTransparency = 1
     currentThemeLabel.Text = "Current: Dark"
     currentThemeLabel.TextColor3 = Color3.new(1, 1, 1)
@@ -1254,7 +1254,7 @@ local function createGUI()
     themeDropdown = Instance.new("TextButton", languageContainer)
     themeDropdown.Name = "ThemeDropdown"
     themeDropdown.Size = UDim2.new(0.9, 0, 0, 35)
-    themeDropdown.Position = UDim2.new(0.05, 0, 0.60, 0)
+    themeDropdown.Position = UDim2.new(0.05, 0, 0.65, 0)
     themeDropdown.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     themeDropdown.Text = "Theme: Dark"
     themeDropdown.TextColor3 = Color3.new(1, 1, 1)
@@ -1264,7 +1264,7 @@ local function createGUI()
     -- Контейнер для выпадающего списка тем
     themeDropdownContainer = Instance.new("Frame", languageContainer)
     themeDropdownContainer.Size = UDim2.new(0.9, 0, 0, 105)
-    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.67, 35)
+    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.65, 35)
     themeDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     themeDropdownContainer.BorderSizePixel = 1
     themeDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -1313,6 +1313,23 @@ local function createGUI()
     hideButton.TextScaled = true
     hideButton.BorderSizePixel = 0
     hideButton.ZIndex = 10
+
+    -- Функция для сдвига секции тем при открытии/закрытии выпадающего списка языка
+    local function shiftThemeSection(shiftDown)
+        if shiftDown then
+            -- Сдвигаем секцию тем вниз при открытии выпадающего списка языка
+            themeTitle.Position = UDim2.new(0.05, 0, 0.65, 0)  -- +0.20
+            currentThemeLabel.Position = UDim2.new(0.05, 0, 0.75, 0)  -- +0.20
+            themeDropdown.Position = UDim2.new(0.05, 0, 0.85, 0)  -- +0.20
+            themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.85, 35)  -- +0.20
+        else
+            -- Возвращаем секцию тем на место при закрытии выпадающего списка языка
+            themeTitle.Position = UDim2.new(0.05, 0, 0.45, 0)
+            currentThemeLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
+            themeDropdown.Position = UDim2.new(0.05, 0, 0.65, 0)
+            themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.65, 35)
+        end
+    end
 
     -- Функция обновления FOV
     local function updateFOV(value)
@@ -1388,6 +1405,8 @@ local function createGUI()
         end
         
         languageDropdownContainer.Visible = false
+        -- Возвращаем секцию тем на место при выборе языка
+        shiftThemeSection(false)
     end
 
     -- Функция для выбора темы
@@ -1418,7 +1437,7 @@ local function createGUI()
         dropdownContainer.Visible = isOpening
         
         if isOpening then
-            -- Сдвигаем слайдеры вниз на 5 см при открытии меню
+            -- Сдвигаем слайдеры вниз при открытии меню
             fovSliderFrame.Position = UDim2.new(0.05, 0, 0.60, 0)  -- +0.25 от исходного
             distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.75, 0)  -- +0.25 от исходного
         else
@@ -1430,12 +1449,39 @@ local function createGUI()
 
     -- Функция для открытия/закрытия выпадающего списка языка
     local function toggleLanguageDropdown()
-        languageDropdownContainer.Visible = not languageDropdownContainer.Visible
+        local isOpening = not languageDropdownContainer.Visible
+        languageDropdownContainer.Visible = isOpening
+        
+        if isOpening then
+            -- Сдвигаем секцию тем вниз при открытии выпадающего списка языка
+            shiftThemeSection(true)
+            -- Закрываем другие выпадающие списки
+            dropdownContainer.Visible = false
+            themeDropdownContainer.Visible = false
+            -- Возвращаем слайдеры в исходное положение
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+        else
+            -- Возвращаем секцию тем на место при закрытии выпадающего списка языка
+            shiftThemeSection(false)
+        end
     end
 
     -- Функция для открытия/закрытия выпадающего списка темы
     local function toggleThemeDropdown()
-        themeDropdownContainer.Visible = not themeDropdownContainer.Visible
+        local isOpening = not themeDropdownContainer.Visible
+        themeDropdownContainer.Visible = isOpening
+        
+        if isOpening then
+            -- Закрываем другие выпадающие списки
+            dropdownContainer.Visible = false
+            languageDropdownContainer.Visible = false
+            -- Возвращаем слайдеры в исходное положение
+            fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
+            distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+            -- Возвращаем секцию тем на место (на случай, если был открыт язык)
+            shiftThemeSection(false)
+        end
     end
 
     -- Обработка для слайдеров
@@ -1631,6 +1677,8 @@ local function createGUI()
                    not (mousePos.X >= languageDropdownAbsPos.X and mousePos.X <= languageDropdownAbsPos.X + languageDropdownAbsSize.X and
                        mousePos.Y >= languageDropdownAbsPos.Y and mousePos.Y <= languageDropdownAbsPos.Y + languageDropdownAbsSize.Y) then
                     languageDropdownContainer.Visible = false
+                    -- Возвращаем секцию тем на место при закрытии выпадающего списка языка
+                    shiftThemeSection(false)
                 end
             end
             
@@ -1688,12 +1736,14 @@ local function createGUI()
             languageTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
         end
         
-        -- Скрыть выпадающие списки при переключении вкладок и вернуть слайдеры в исходное положение
+        -- Скрыть выпадающие списки при переключении вкладок и вернуть все на места
         dropdownContainer.Visible = false
         languageDropdownContainer.Visible = false
         themeDropdownContainer.Visible = false
         fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
         distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
+        -- Возвращаем секцию тем на место
+        shiftThemeSection(false)
     end
 
     -- ОБРАБОТЧИКИ КНОПОК ВКЛАДОК
