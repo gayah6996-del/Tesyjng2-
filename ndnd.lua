@@ -695,7 +695,7 @@ local function createGUI()
     -- Основной контейнер
     frame = Instance.new("Frame", gui)
     frame.Position = UDim2.new(0.5, -175, 0.5, -150)
-    frame.Size = UDim2.new(0, 350, 0, 300)
+    frame.Size = UDim2.new(0, 360, 0, 310)
     frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     frame.BorderSizePixel = 1
     frame.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -1264,7 +1264,7 @@ local function createGUI()
     -- Контейнер для выпадающего списка тем
     themeDropdownContainer = Instance.new("Frame", languageContainer)
     themeDropdownContainer.Size = UDim2.new(0.9, 0, 0, 105)
-    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.65, 35)
+    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.66, 35)
     themeDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     themeDropdownContainer.BorderSizePixel = 1
     themeDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
