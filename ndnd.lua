@@ -23,7 +23,7 @@ local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 10)
 ToggleCorner.Parent = ToggleButton
 
--- Основное окно меню (уменьшенный размер)
+-- Основное окно меню
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 320, 0, 400)
 MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
@@ -63,12 +63,53 @@ local UICorner2 = Instance.new("UICorner")
 UICorner2.CornerRadius = UDim.new(0, 6)
 UICorner2.Parent = CloseButton
 
+-- Кнопки вкладок
+local TabsFrame = Instance.new("Frame")
+TabsFrame.Size = UDim2.new(1, 0, 0, 30)
+TabsFrame.Position = UDim2.new(0, 0, 0, 35)
+TabsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+TabsFrame.BorderSizePixel = 0
+TabsFrame.Parent = MainFrame
+
+local InfoTabButton = Instance.new("TextButton")
+InfoTabButton.Size = UDim2.new(0.5, 0, 1, 0)
+InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
+InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+InfoTabButton.Text = "Info"
+InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+InfoTabButton.TextSize = 14
+InfoTabButton.Font = Enum.Font.GothamBold
+InfoTabButton.Parent = TabsFrame
+
+local GameTabButton = Instance.new("TextButton")
+GameTabButton.Size = UDim2.new(0.5, 0, 1, 0)
+GameTabButton.Position = UDim2.new(0.5, 0, 0, 0)
+GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+GameTabButton.Text = "Game"
+GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+GameTabButton.TextSize = 14
+GameTabButton.Font = Enum.Font.GothamBold
+GameTabButton.Parent = TabsFrame
+
 -- Content frames
 local ContentFrame = Instance.new("Frame")
-ContentFrame.Size = UDim2.new(1, -10, 1, -45)
-ContentFrame.Position = UDim2.new(0, 5, 0, 40)
+ContentFrame.Size = UDim2.new(1, -10, 1, -75)
+ContentFrame.Position = UDim2.new(0, 5, 0, 70)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.Parent = MainFrame
+
+-- Info Tab Content
+local InfoTab = Instance.new("ScrollingFrame")
+InfoTab.Size = UDim2.new(1, 0, 1, 0)
+InfoTab.BackgroundTransparency = 1
+InfoTab.BorderSizePixel = 0
+InfoTab.ScrollBarThickness = 6
+InfoTab.Visible = true
+InfoTab.Parent = ContentFrame
+
+local InfoListLayout = Instance.new("UIListLayout")
+InfoListLayout.Padding = UDim.new(0, 8)
+InfoListLayout.Parent = InfoTab
 
 -- Game Tab Content
 local GameTab = Instance.new("ScrollingFrame")
@@ -76,12 +117,12 @@ GameTab.Size = UDim2.new(1, 0, 1, 0)
 GameTab.BackgroundTransparency = 1
 GameTab.BorderSizePixel = 0
 GameTab.ScrollBarThickness = 6
-GameTab.Visible = true
+GameTab.Visible = false
 GameTab.Parent = ContentFrame
 
-local UIListLayout = Instance.new("UIListLayout")
-UIListLayout.Padding = UDim.new(0, 8)
-UIListLayout.Parent = GameTab
+local GameListLayout = Instance.new("UIListLayout")
+GameListLayout.Padding = UDim.new(0, 8)
+GameListLayout.Parent = GameTab
 
 -- Переменные для функций
 local ActiveKillAura = false
@@ -268,22 +309,30 @@ end
 
 local function CreateLabel(parent, text)
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 30)
+    label.Size = UDim2.new(1, 0, 0, 0)
     label.BackgroundTransparency = 1
     label.Text = text
     label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 11
+    label.TextSize = 12
     label.TextWrapped = true
     label.Font = Enum.Font.Gotham
     label.Parent = parent
+    label.AutomaticSize = Enum.AutomaticSize.Y
     return label
 end
 
--- Создание элементов Game tab
-local noteSection, noteContent = CreateSection(GameTab, "Note")
-CreateLabel(noteContent, "Equip any axe for Auto Chop Tree and Kill Aura to work!")
+-- Создание элементов Info tab
+local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
+CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
 
-local killAuraSection, killAuraContent = CreateSection(GameTab, "Kill Aura")
+local controlsSection, controlsContent = CreateSection(InfoTab, "🎮 Controls")
+CreateLabel(controlsContent, "- Tap 📱 button to show/hide menu\n- Drag title bar to move menu\n- Toggle switches to enable features\n- Adjust sliders for distance settings")
+
+local noteSection, noteContent = CreateSection(InfoTab, "💡 Important Note")
+CreateLabel(noteContent, "For Auto Chop Tree and Kill Aura to work, you MUST equip any axe (Old Axe, Good Axe, Strong Axe, or Chainsaw)!")
+
+-- Создание элементов Game tab
+local killAuraSection, killAuraContent = CreateSection(GameTab, "⚔️ Kill Aura")
 CreateSlider(killAuraContent, "Distance", 25, 10000, 25, function(value)
     DistanceForKillAura = value
 end)
@@ -292,7 +341,7 @@ local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value
     ActiveKillAura = value
 end)
 
-local autoChopSection, autoChopContent = CreateSection(GameTab, "Auto Chop Tree")
+local autoChopSection, autoChopContent = CreateSection(GameTab, "🪓 Auto Chop Tree")
 CreateSlider(autoChopContent, "Distance", 0, 1000, 25, function(value)
     DistanceForAutoChopTree = value
 end)
@@ -363,16 +412,45 @@ end)
 
 -- Обновление размеров секций после добавления контента
 game:GetService("RunService").Heartbeat:Connect(function()
-    for _, section in pairs(GameTab:GetChildren()) do
-        if section:IsA("Frame") and section:FindFirstChildWhichIsA("Frame") then
-            local content = section:FindFirstChildWhichIsA("Frame")
-            if content and content:FindFirstChildOfClass("UIListLayout") then
-                section.Size = UDim2.new(1, 0, 0, 25 + content.UIListLayout.AbsoluteContentSize.Y)
+    for _, tab in pairs({InfoTab, GameTab}) do
+        for _, section in pairs(tab:GetChildren()) do
+            if section:IsA("Frame") and section:FindFirstChildWhichIsA("Frame") then
+                local content = section:FindFirstChildWhichIsA("Frame")
+                if content and content:FindFirstChildOfClass("UIListLayout") then
+                    section.Size = UDim2.new(1, 0, 0, 25 + content.UIListLayout.AbsoluteContentSize.Y)
+                end
             end
         end
+        
+        tab.CanvasSize = UDim2.new(0, 0, 0, tab.UIListLayout.AbsoluteContentSize.Y + 10)
     end
-    
-    GameTab.CanvasSize = UDim2.new(0, 0, 0, GameTab.UIListLayout.AbsoluteContentSize.Y + 10)
+end)
+
+-- Функционал переключения вкладок
+local function switchToTab(tabName)
+    if tabName == "Info" then
+        InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+        InfoTab.Visible = true
+        GameTab.Visible = false
+    else
+        GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+        GameTab.Visible = true
+        InfoTab.Visible = false
+    end
+end
+
+InfoTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Info")
+end)
+
+GameTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Game")
 end)
 
 -- Система перемещения меню для мобильных устройств
@@ -438,4 +516,7 @@ ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
 end)
 
-print("Compact Mobile Game menu loaded! Tap the button to open/close. Drag the title to move.")
+-- По умолчанию открываем вкладку Info
+switchToTab("Info")
+
+print("Mobile Game menu with tabs loaded! Tap the button to open/close. Drag the title to move.")
