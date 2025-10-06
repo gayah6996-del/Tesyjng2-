@@ -1314,6 +1314,14 @@ local function createGUI()
     hideButton.BorderSizePixel = 0
     hideButton.ZIndex = 10
 
+    -- Функция для скрытия/показа секции тем при открытии/закрытии выпадающего списка языка
+    local function toggleThemeSectionVisibility(visible)
+        themeTitle.Visible = visible
+        currentThemeLabel.Visible = visible
+        themeDropdown.Visible = visible
+        -- themeDropdownContainer не управляем здесь, т.к. он управляется отдельно
+    end
+
     -- Функция для сдвига секции тем при открытии/закрытии выпадающего списка языка
     local function shiftThemeSection(shiftDown)
         if shiftDown then
@@ -1322,12 +1330,16 @@ local function createGUI()
             currentThemeLabel.Position = UDim2.new(0.05, 0, 0.75, 0)  -- +0.20
             themeDropdown.Position = UDim2.new(0.05, 0, 0.85, 0)  -- +0.20
             themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.85, 35)  -- +0.20
+            -- Скрываем секцию тем
+            toggleThemeSectionVisibility(false)
         else
             -- Возвращаем секцию тем на место при закрытии выпадающего списка языка
             themeTitle.Position = UDim2.new(0.05, 0, 0.45, 0)
             currentThemeLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
             themeDropdown.Position = UDim2.new(0.05, 0, 0.65, 0)
             themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.65, 35)
+            -- Показываем секцию тем
+            toggleThemeSectionVisibility(true)
         end
     end
 
@@ -1366,7 +1378,7 @@ local function createGUI()
         distanceSliderButton.Position = UDim2.new(fillSize, -7, -0.25, 0)
     end
 
-    -- Функция для выбора цели через выпадающий список
+    -- Функция для выбора цели через выпадающего списка
     local function selectTarget(target)
         local t = translations[currentLanguage]
         if target == "Head" then
@@ -1453,7 +1465,7 @@ local function createGUI()
         languageDropdownContainer.Visible = isOpening
         
         if isOpening then
-            -- Сдвигаем секцию тем вниз при открытии выпадающего списка языка
+            -- Сдвигаем секцию тем вниз и скрываем при открытии выпадающего списка языка
             shiftThemeSection(true)
             -- Закрываем другие выпадающие списки
             dropdownContainer.Visible = false
@@ -1462,7 +1474,7 @@ local function createGUI()
             fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
             distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
         else
-            -- Возвращаем секцию тем на место при закрытии выпадающего списка языка
+            -- Возвращаем секцию тем на место и показываем при закрытии выпадающего списка языка
             shiftThemeSection(false)
         end
     end
@@ -1742,7 +1754,7 @@ local function createGUI()
         themeDropdownContainer.Visible = false
         fovSliderFrame.Position = UDim2.new(0.05, 0, 0.35, 0)
         distanceSliderFrame.Position = UDim2.new(0.05, 0, 0.50, 0)
-        -- Возвращаем секцию тем на место
+        -- Возвращаем секцию тем на место и показываем
         shiftThemeSection(false)
     end
 
