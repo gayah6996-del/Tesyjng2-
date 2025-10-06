@@ -1264,7 +1264,7 @@ local function createGUI()
     -- Контейнер для выпадающего списка тем
     themeDropdownContainer = Instance.new("Frame", languageContainer)
     themeDropdownContainer.Size = UDim2.new(0.9, 0, 0, 105)
-    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.75, 35)
+    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.70, 35)
     themeDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     themeDropdownContainer.BorderSizePixel = 1
     themeDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
