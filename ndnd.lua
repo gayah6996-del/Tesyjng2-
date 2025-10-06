@@ -72,34 +72,44 @@ TabsFrame.BorderSizePixel = 0
 TabsFrame.Parent = MainFrame
 
 local InfoTabButton = Instance.new("TextButton")
-InfoTabButton.Size = UDim2.new(0.33, 0, 1, 0)
+InfoTabButton.Size = UDim2.new(0.25, 0, 1, 0)
 InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
 InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 InfoTabButton.Text = "Info"
 InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-InfoTabButton.TextSize = 14
+InfoTabButton.TextSize = 12
 InfoTabButton.Font = Enum.Font.GothamBold
 InfoTabButton.Parent = TabsFrame
 
 local GameTabButton = Instance.new("TextButton")
-GameTabButton.Size = UDim2.new(0.33, 0, 1, 0)
-GameTabButton.Position = UDim2.new(0.33, 0, 0, 0)
+GameTabButton.Size = UDim2.new(0.25, 0, 1, 0)
+GameTabButton.Position = UDim2.new(0.25, 0, 0, 0)
 GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 GameTabButton.Text = "Game"
 GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-GameTabButton.TextSize = 14
+GameTabButton.TextSize = 12
 GameTabButton.Font = Enum.Font.GothamBold
 GameTabButton.Parent = TabsFrame
 
 local ItemsTabButton = Instance.new("TextButton")
-ItemsTabButton.Size = UDim2.new(0.34, 0, 1, 0)
-ItemsTabButton.Position = UDim2.new(0.66, 0, 0, 0)
+ItemsTabButton.Size = UDim2.new(0.25, 0, 1, 0)
+ItemsTabButton.Position = UDim2.new(0.5, 0, 0, 0)
 ItemsTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 ItemsTabButton.Text = "Items"
 ItemsTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-ItemsTabButton.TextSize = 14
+ItemsTabButton.TextSize = 12
 ItemsTabButton.Font = Enum.Font.GothamBold
 ItemsTabButton.Parent = TabsFrame
+
+local TeleportTabButton = Instance.new("TextButton")
+TeleportTabButton.Size = UDim2.new(0.25, 0, 1, 0)
+TeleportTabButton.Position = UDim2.new(0.75, 0, 0, 0)
+TeleportTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+TeleportTabButton.Text = "TP"
+TeleportTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+TeleportTabButton.TextSize = 12
+TeleportTabButton.Font = Enum.Font.GothamBold
+TeleportTabButton.Parent = TabsFrame
 
 -- Content frames
 local ContentFrame = Instance.new("Frame")
@@ -146,6 +156,19 @@ ItemsTab.Parent = ContentFrame
 local ItemsListLayout = Instance.new("UIListLayout")
 ItemsListLayout.Padding = UDim.new(0, 8)
 ItemsListLayout.Parent = ItemsTab
+
+-- Teleport Tab Content
+local TeleportTab = Instance.new("ScrollingFrame")
+TeleportTab.Size = UDim2.new(1, 0, 1, 0)
+TeleportTab.BackgroundTransparency = 1
+TeleportTab.BorderSizePixel = 0
+TeleportTab.ScrollBarThickness = 6
+TeleportTab.Visible = false
+TeleportTab.Parent = ContentFrame
+
+local TeleportListLayout = Instance.new("UIListLayout")
+TeleportListLayout.Padding = UDim.new(0, 8)
+TeleportListLayout.Parent = TeleportTab
 
 -- Переменные для функций
 local ActiveKillAura = false
@@ -512,6 +535,76 @@ CreateButton(itemsContent, "🔄 Teleport All Scraps", function()
     end
 end)
 
+-- Создание элементов Teleport tab
+local teleportSection, teleportContent = CreateSection(TeleportTab, "🧲 Teleport to Objects")
+CreateLabel(teleportContent, "Teleport to different locations and objects in the game")
+
+-- Список целей для телепортации
+local teleportTargets = {
+    "Campfire",
+    "Workshop", 
+    "Cave",
+    "Lake",
+    "Radio Tower",
+    "Abandoned House",
+    "Pelt Trader",
+    "Lost Child",
+    "Lost Child2", 
+    "Lost Child3",
+    "Lost Child4"
+}
+
+-- Настройки телепортации
+local ignoreDistanceFrom = Vector3.new(0, 0, 0)
+local minDistance = 10
+
+-- Функция телепортации
+local function TeleportToObject(itemName)
+    local closest, shortest = nil, math.huge
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name == itemName and obj:IsA("Model") then
+            local cf = nil
+            if pcall(function() cf = obj:GetPivot() end) then
+                -- success
+            else
+                local part = obj:FindFirstChildWhichIsA("BasePart")
+                if part then cf = part.CFrame end
+            end
+            if cf then
+                local dist = (cf.Position - ignoreDistanceFrom).Magnitude
+                if dist >= minDistance and dist < shortest then
+                    closest = obj
+                    shortest = dist
+                end
+            end
+        end
+    end
+    if closest then
+        local cf = nil
+        if pcall(function() cf = closest:GetPivot() end) then
+            -- success
+        else
+            local part = closest:FindFirstChildWhichIsA("BasePart")
+            if part then cf = part.CFrame end
+        end
+        if cf then
+            game.Players.LocalPlayer.Character:PivotTo(cf + Vector3.new(0, 5, 0))
+            print("Teleported to " .. itemName)
+        else
+            print("Teleport Failed: Could not find a valid position to teleport.")
+        end
+    else
+        print("Item Not Found: " .. itemName .. " not found or too close to origin.")
+    end
+end
+
+-- Создание кнопок телепортации для каждой цели
+for _, itemName in ipairs(teleportTargets) do
+    CreateButton(teleportContent, "📍 " .. itemName, function()
+        TeleportToObject(itemName)
+    end)
+end
+
 -- Функции из оригинального скрипта
 -- Kill Aura функция
 task.spawn(function()
@@ -574,7 +667,7 @@ end)
 
 -- Обновление размеров секций после добавления контента
 game:GetService("RunService").Heartbeat:Connect(function()
-    for _, tab in pairs({InfoTab, GameTab, ItemsTab}) do
+    for _, tab in pairs({InfoTab, GameTab, ItemsTab, TeleportTab}) do
         for _, section in pairs(tab:GetChildren()) do
             if section:IsA("Frame") and section:FindFirstChildWhichIsA("Frame") then
                 local content = section:FindFirstChildWhichIsA("Frame")
@@ -593,14 +686,17 @@ local function switchToTab(tabName)
     InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     ItemsTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    TeleportTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     
     InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
     GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
     ItemsTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    TeleportTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
     
     InfoTab.Visible = false
     GameTab.Visible = false
     ItemsTab.Visible = false
+    TeleportTab.Visible = false
     
     if tabName == "Info" then
         InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
@@ -614,6 +710,10 @@ local function switchToTab(tabName)
         ItemsTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         ItemsTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         ItemsTab.Visible = true
+    elseif tabName == "Teleport" then
+        TeleportTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        TeleportTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TeleportTab.Visible = true
     end
 end
 
@@ -627,6 +727,10 @@ end)
 
 ItemsTabButton.MouseButton1Click:Connect(function()
     switchToTab("Items")
+end)
+
+TeleportTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Teleport")
 end)
 
 -- Система перемещения меню для мобильных устройств
@@ -695,4 +799,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile Game menu with Items tab loaded! Tap the button to open/close. Drag the title to move.")
+print("Mobile Game menu with Teleport tab loaded! Tap the button to open/close. Drag the title to move.")
