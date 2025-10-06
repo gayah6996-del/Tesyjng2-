@@ -152,7 +152,6 @@ local ActiveKillAura = false
 local ActiveAutoChopTree = false
 local DistanceForKillAura = 25
 local DistanceForAutoChopTree = 25
-local CheckpointPosition = nil
 
 -- Функция DragItem из оригинального скрипта
 local function DragItem(Item)
@@ -366,7 +365,7 @@ end
 
 local function CreateButton(parent, text, callback)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 35)
+    button.Size = UDim2.new(1, 0, 0, 40)
     button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -412,67 +411,14 @@ local autoChopToggle = CreateToggle(autoChopContent, "Auto Chop Tree", function(
     ActiveAutoChopTree = value
 end)
 
--- Создание элементов Keks tab (Система чекпоинтов и телепортации предметов)
-local keksSection, keksContent = CreateSection(KeksTab, "📍 Checkpoint System")
-CreateLabel(keksContent, "Set a checkpoint and teleport back to it anytime")
-
--- Переменная для хранения позиции чекпоинта
-local checkpointSet = false
-
--- Функция установки чекпоинта
-CreateButton(keksContent, "💾 Set Checkpoint", function()
-    local character = game.Players.LocalPlayer.Character
-    if character and character:FindFirstChild("HumanoidRootPart") then
-        CheckpointPosition = character.HumanoidRootPart.Position
-        checkpointSet = true
-        print("Checkpoint set at position: " .. tostring(CheckpointPosition))
-    else
-        print("Failed to set checkpoint: Character not found")
-    end
-end)
-
--- Функция телепортации к чекпоинту
-CreateButton(keksContent, "🚀 Teleport to Checkpoint", function()
-    if checkpointSet and CheckpointPosition then
-        local character = game.Players.LocalPlayer.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            character.HumanoidRootPart.CFrame = CFrame.new(CheckpointPosition)
-            print("Teleported to checkpoint")
-        else
-            print("Failed to teleport: Character not found")
-        end
-    else
-        print("No checkpoint set! Please set a checkpoint first.")
-    end
-end)
-
--- Индикатор статуса чекпоинта
-local checkpointStatusLabel = CreateLabel(keksContent, "Status: No checkpoint set")
-
--- Обновление статуса чекпоинта
-game:GetService("RunService").Heartbeat:Connect(function()
-    if checkpointSet and CheckpointPosition then
-        checkpointStatusLabel.Text = "Status: Checkpoint set at " .. 
-            math.floor(CheckpointPosition.X) .. ", " .. 
-            math.floor(CheckpointPosition.Y) .. ", " .. 
-            math.floor(CheckpointPosition.Z)
-    else
-        checkpointStatusLabel.Text = "Status: No checkpoint set"
-    end
-end)
-
--- Раздел для телепортации предметов
-local itemsSection, itemsContent = CreateSection(KeksTab, "🎒 Bring Items to Player")
-CreateLabel(itemsContent, "Teleport all scrap items to your inventory")
-
--- Функция Bring All Scraps
-CreateButton(itemsContent, "🔄 Bring All Scraps", function()
+-- Создание элементов Keks tab
+local bandageSection, bandageContent = CreateSection(KeksTab, "🩹 Bandage Collector")
+CreateButton(bandageContent, "Collect All Bandages", function()
     task.spawn(function()
         for _, Obj in pairs(game.workspace.Items:GetChildren()) do
-            if (Obj.Name == "Tyre" or Obj.Name == "Sheet Metal" or Obj.Name == "Broken Fan" or Obj.Name == "Bolt" or Obj.Name == "Old Radio" or Obj.Name == "UFO Junk" or Obj.Name == "UFO Scrap" or Obj.Name == "Broken Microwave") and Obj:isA("Model") and Obj.PrimaryPart then 
+            if Obj.Name == "Bandage" and Obj:isA("Model") and Obj.PrimaryPart then 
                 DragItem(Obj)
-                wait(0.05)
-            end 
+            end
         end
     end)
 end)
@@ -555,10 +501,10 @@ end)
 
 -- Функционал переключения вкладок
 local function switchToTab(tabName)
+    -- Сброс всех вкладок
     InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    
     InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
     GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
     KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -567,6 +513,7 @@ local function switchToTab(tabName)
     GameTab.Visible = false
     KeksTab.Visible = false
     
+    -- Активация выбранной вкладки
     if tabName == "Info" then
         InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -660,4 +607,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile Game menu with Keks checkpoint system and Bring All Scraps loaded!")
+print("Mobile Game menu with Keks tab loaded! Tap the button to open/close. Drag the title to move.")
