@@ -70,15 +70,15 @@ local themes = {
     }
 }
 
--- Translations
+-- Translations with icons
 local translations = {
     English = {
         title = "ASTRALCHEAT v2.0",
-        infoTab = "Info",
-        espTab = "ESP",
-        aimbotTab = "AimBot",
-        cameraTab = "Memory",
-        languageTab = "Language",
+        infoTab = "🏠 Info",
+        espTab = "👁 ESP",
+        aimbotTab = "⚔ AimBot",
+        cameraTab = "📷 Memory",
+        languageTab = "🌐 Language",
         close = "Close Menu?",
         yes = "Yes",
         no = "No",
@@ -127,11 +127,11 @@ local translations = {
     
     Russian = {
         title = "ASTRALCHEAT v2.0",
-        infoTab = "Инфо",
-        espTab = "ESP",
-        aimbotTab = "АимБот",
-        cameraTab = "Мемори",
-        languageTab = "Язык",
+        infoTab = "🏠 Инфо",
+        espTab = "👁 ESP",
+        aimbotTab = "⚔ АимБот",
+        cameraTab = "📷 Мемори",
+        languageTab = "🌐 Язык",
         close = "Закрыть меню?",
         yes = "Да",
         no = "Нет",
@@ -180,11 +180,11 @@ local translations = {
     
     Chinese = {
         title = "ASTRALCHEAT v2.0",
-        infoTab = "信息",
-        espTab = "ESP",
-        aimbotTab = "瞄准辅助",
-        cameraTab = "相机",
-        languageTab = "语言",
+        infoTab = "🏠 信息",
+        espTab = "👁 ESP",
+        aimbotTab = "⚔ 瞄准辅助",
+        cameraTab = "📷 相机",
+        languageTab = "🌐 语言",
         close = "关闭菜单?",
         yes = "是",
         no = "否",
@@ -784,61 +784,61 @@ local function createGUI()
     contentContainer.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     contentContainer.BorderSizePixel = 0
 
-    -- Вкладка Info (первая)
+    -- Вкладка Info (первая) с иконкой домика
     infoTabButton = Instance.new("TextButton", tabsPanel)
     infoTabButton.Name = "InfoTab"
     infoTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     infoTabButton.Position = UDim2.new(0.05, 0, 0.02, 0)
     infoTabButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    infoTabButton.Text = "Info"
+    infoTabButton.Text = "🏠 Info"
     infoTabButton.TextColor3 = Color3.new(1, 1, 1)
     infoTabButton.TextScaled = true
     infoTabButton.BorderSizePixel = 1
     infoTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
-    -- Вкладка ESP (вторая)
+    -- Вкладка ESP (вторая) с иконкой глаза
     espTabButton = Instance.new("TextButton", tabsPanel)
     espTabButton.Name = "ESPTab"
     espTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     espTabButton.Position = UDim2.new(0.05, 0, 0.12, 0)
     espTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    espTabButton.Text = "ESP"
+    espTabButton.Text = "👁 ESP"
     espTabButton.TextColor3 = Color3.new(1, 1, 1)
     espTabButton.TextScaled = true
     espTabButton.BorderSizePixel = 1
     espTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
-    -- Вкладка AimBot (третья)
+    -- Вкладка AimBot (третья) с иконкой меча
     aimbotTabButton = Instance.new("TextButton", tabsPanel)
     aimbotTabButton.Name = "AimBotTab"
     aimbotTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     aimbotTabButton.Position = UDim2.new(0.05, 0, 0.22, 0)
     aimbotTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    aimbotTabButton.Text = "AimBot"
+    aimbotTabButton.Text = "⚔ AimBot"
     aimbotTabButton.TextColor3 = Color3.new(1, 1, 1)
     aimbotTabButton.TextScaled = true
     aimbotTabButton.BorderSizePixel = 1
     aimbotTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
-    -- Вкладка Camera (четвертая)
+    -- Вкладка Camera (четвертая) с иконкой камеры
     cameraTabButton = Instance.new("TextButton", tabsPanel)
     cameraTabButton.Name = "CameraTab"
     cameraTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     cameraTabButton.Position = UDim2.new(0.05, 0, 0.32, 0)
     cameraTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    cameraTabButton.Text = "Camera"
+    cameraTabButton.Text = "📷 Memory"
     cameraTabButton.TextColor3 = Color3.new(1, 1, 1)
     cameraTabButton.TextScaled = true
     cameraTabButton.BorderSizePixel = 1
     cameraTabButton.BorderColor3 = Color3.fromRGB(150, 150, 150)
 
-    -- Вкладка Language (пятая)
+    -- Вкладка Language (пятая) с иконкой глобуса
     languageTabButton = Instance.new("TextButton", tabsPanel)
     languageTabButton.Name = "LanguageTab"
     languageTabButton.Size = UDim2.new(0.9, 0, 0, 25)
     languageTabButton.Position = UDim2.new(0.05, 0, 0.42, 0)
     languageTabButton.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
-    languageTabButton.Text = "Language"
+    languageTabButton.Text = "🌐 Language"
     languageTabButton.TextColor3 = Color3.new(1, 1, 1)
     languageTabButton.TextScaled = true
     languageTabButton.BorderSizePixel = 1
@@ -1199,7 +1199,7 @@ local function createGUI()
     englishOption.Size = UDim2.new(1, 0, 0, 35)
     englishOption.Position = UDim2.new(0, 0, 0, 0)
     englishOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    englishOption.Text = "English"
+    englishOption.Text = "English🇬🇧"
     englishOption.TextColor3 = Color3.new(1, 1, 1)
     englishOption.TextScaled = true
     englishOption.BorderSizePixel = 0
@@ -1210,7 +1210,7 @@ local function createGUI()
     russianOption.Size = UDim2.new(1, 0, 0, 35)
     russianOption.Position = UDim2.new(0, 0, 0, 35)
     russianOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    russianOption.Text = "Russian"
+    russianOption.Text = "Russian🇷🇺"
     russianOption.TextColor3 = Color3.new(1, 1, 1)
     russianOption.TextScaled = true
     russianOption.BorderSizePixel = 0
@@ -1221,7 +1221,7 @@ local function createGUI()
     chineseOption.Size = UDim2.new(1, 0, 0, 35)
     chineseOption.Position = UDim2.new(0, 0, 0, 70)
     chineseOption.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    chineseOption.Text = "Chinese"
+    chineseOption.Text = "Chinese🇨🇳"
     chineseOption.TextColor3 = Color3.new(1, 1, 1)
     chineseOption.TextScaled = true
     chineseOption.BorderSizePixel = 0
@@ -1264,7 +1264,7 @@ local function createGUI()
     -- Контейнер для выпадающего списка тем
     themeDropdownContainer = Instance.new("Frame", languageContainer)
     themeDropdownContainer.Size = UDim2.new(0.9, 0, 0, 105)
-    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.70, 35)
+    themeDropdownContainer.Position = UDim2.new(0.05, 0, 0.67, 35)
     themeDropdownContainer.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     themeDropdownContainer.BorderSizePixel = 1
     themeDropdownContainer.BorderColor3 = Color3.fromRGB(100, 100, 100)
