@@ -72,7 +72,7 @@ TabsFrame.BorderSizePixel = 0
 TabsFrame.Parent = MainFrame
 
 local InfoTabButton = Instance.new("TextButton")
-InfoTabButton.Size = UDim2.new(0.5, 0, 1, 0)
+InfoTabButton.Size = UDim2.new(0.33, 0, 1, 0)
 InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
 InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 InfoTabButton.Text = "Info"
@@ -82,14 +82,24 @@ InfoTabButton.Font = Enum.Font.GothamBold
 InfoTabButton.Parent = TabsFrame
 
 local GameTabButton = Instance.new("TextButton")
-GameTabButton.Size = UDim2.new(0.5, 0, 1, 0)
-GameTabButton.Position = UDim2.new(0.5, 0, 0, 0)
+GameTabButton.Size = UDim2.new(0.33, 0, 1, 0)
+GameTabButton.Position = UDim2.new(0.33, 0, 0, 0)
 GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 GameTabButton.Text = "Game"
 GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
 GameTabButton.TextSize = 14
 GameTabButton.Font = Enum.Font.GothamBold
 GameTabButton.Parent = TabsFrame
+
+local ItemsTabButton = Instance.new("TextButton")
+ItemsTabButton.Size = UDim2.new(0.34, 0, 1, 0)
+ItemsTabButton.Position = UDim2.new(0.66, 0, 0, 0)
+ItemsTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+ItemsTabButton.Text = "Items"
+ItemsTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+ItemsTabButton.TextSize = 14
+ItemsTabButton.Font = Enum.Font.GothamBold
+ItemsTabButton.Parent = TabsFrame
 
 -- Content frames
 local ContentFrame = Instance.new("Frame")
@@ -124,11 +134,43 @@ local GameListLayout = Instance.new("UIListLayout")
 GameListLayout.Padding = UDim.new(0, 8)
 GameListLayout.Parent = GameTab
 
+-- Items Tab Content
+local ItemsTab = Instance.new("ScrollingFrame")
+ItemsTab.Size = UDim2.new(1, 0, 1, 0)
+ItemsTab.BackgroundTransparency = 1
+ItemsTab.BorderSizePixel = 0
+ItemsTab.ScrollBarThickness = 6
+ItemsTab.Visible = false
+ItemsTab.Parent = ContentFrame
+
+local ItemsListLayout = Instance.new("UIListLayout")
+ItemsListLayout.Padding = UDim.new(0, 8)
+ItemsListLayout.Parent = ItemsTab
+
 -- Переменные для функций
 local ActiveKillAura = false
 local ActiveAutoChopTree = false
 local DistanceForKillAura = 25
 local DistanceForAutoChopTree = 25
+
+-- Функция DragItem из оригинального скрипта
+local function DragItem(Item)
+    task.spawn(function()
+        for _, tool in pairs(game:GetService("Players").LocalPlayer.Inventory:GetChildren()) do
+            if tool:isA("Model") and tool:GetAttribute("NumberItems") and tool:GetAttribute("Capacity") and tool:GetAttribute("NumberItems") < tool:GetAttribute("Capacity") then
+                task.spawn(function()
+                    local args = {
+                        tool,
+                        Item
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("RemoteEvents"):WaitForChild("RequestBagStoreItem"):InvokeServer(unpack(args))
+                    wait(0.1)
+                end)
+            end
+            wait(0.25)
+        end
+    end)
+end
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
@@ -321,6 +363,25 @@ local function CreateLabel(parent, text)
     return label
 end
 
+local function CreateButton(parent, text, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0, 35)
+    button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 14
+    button.Font = Enum.Font.Gotham
+    button.Parent = parent
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.Parent = button
+    
+    button.MouseButton1Click:Connect(callback)
+    
+    return button
+end
+
 -- Создание элементов Info tab
 local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
 CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
@@ -348,6 +409,107 @@ end)
 
 local autoChopToggle = CreateToggle(autoChopContent, "Auto Chop Tree", function(value)
     ActiveAutoChopTree = value
+end)
+
+-- Создание элементов Items tab
+local itemsSection, itemsContent = CreateSection(ItemsTab, "🎒 Item Teleporter")
+CreateLabel(itemsContent, "Select items to teleport to your inventory")
+
+-- Создание мини-меню для выбора предметов
+local selectedItems = {}
+
+local function CreateItemToggle(parent, itemName)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(1, 0, 0, 25)
+    toggleFrame.BackgroundTransparency = 1
+    toggleFrame.Parent = parent
+    
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(1, 0, 1, 0)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    toggleButton.Text = ""
+    toggleButton.Parent = toggleFrame
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 4)
+    toggleCorner.Parent = toggleButton
+    
+    local toggleText = Instance.new("TextLabel")
+    toggleText.Size = UDim2.new(0.8, 0, 1, 0)
+    toggleText.Position = UDim2.new(0, 8, 0, 0)
+    toggleText.BackgroundTransparency = 1
+    toggleText.Text = itemName
+    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleText.TextSize = 12
+    toggleText.TextXAlignment = Enum.TextXAlignment.Left
+    toggleText.Font = Enum.Font.Gotham
+    toggleText.Parent = toggleButton
+    
+    local toggleStatus = Instance.new("Frame")
+    toggleStatus.Size = UDim2.new(0, 15, 0, 15)
+    toggleStatus.Position = UDim2.new(1, -20, 0.5, -7.5)
+    toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    toggleStatus.Parent = toggleButton
+    
+    local toggleStatusCorner = Instance.new("UICorner")
+    toggleStatusCorner.CornerRadius = UDim.new(0, 7)
+    toggleStatusCorner.Parent = toggleStatus
+    
+    local isToggled = false
+    
+    local function updateToggle()
+        if isToggled then
+            toggleStatus.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+            selectedItems[itemName] = true
+        else
+            toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+            selectedItems[itemName] = nil
+        end
+    end
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        isToggled = not isToggled
+        updateToggle()
+    end)
+    
+    updateToggle()
+end
+
+-- Список предметов для телепортации
+local itemsList = {
+    "Tyre", 
+    "Sheet Metal", 
+    "Broken Fan", 
+    "Bolt", 
+    "Old Radio", 
+    "UFO Junk", 
+    "UFO Scrap", 
+    "Broken Microwave"
+}
+
+-- Создание тогглов для каждого предмета
+for _, itemName in ipairs(itemsList) do
+    CreateItemToggle(itemsContent, itemName)
+end
+
+-- Кнопка телепортации выбранных предметов
+CreateButton(itemsContent, "🚀 Teleport Selected Items", function()
+    for _, Obj in pairs(game.workspace.Items:GetChildren()) do
+        if Obj:isA("Model") and Obj.PrimaryPart and selectedItems[Obj.Name] then
+            DragItem(Obj)
+            wait(0.05)
+        end
+    end
+end)
+
+-- Кнопка телепортации всех скрапов
+CreateButton(itemsContent, "🔄 Teleport All Scraps", function()
+    for _, Obj in pairs(game.workspace.Items:GetChildren()) do
+        if (Obj.Name == "Tyre" or Obj.Name == "Sheet Metal" or Obj.Name == "Broken Fan" or Obj.Name == "Bolt" or Obj.Name == "Old Radio" or Obj.Name == "UFO Junk" or Obj.Name == "UFO Scrap" or Obj.Name == "Broken Microwave") and Obj:isA("Model") and Obj.PrimaryPart then 
+            DragItem(Obj)
+            wait(0.05)
+        end
+    end
 end)
 
 -- Функции из оригинального скрипта
@@ -412,7 +574,7 @@ end)
 
 -- Обновление размеров секций после добавления контента
 game:GetService("RunService").Heartbeat:Connect(function()
-    for _, tab in pairs({InfoTab, GameTab}) do
+    for _, tab in pairs({InfoTab, GameTab, ItemsTab}) do
         for _, section in pairs(tab:GetChildren()) do
             if section:IsA("Frame") and section:FindFirstChildWhichIsA("Frame") then
                 local content = section:FindFirstChildWhichIsA("Frame")
@@ -428,20 +590,30 @@ end)
 
 -- Функционал переключения вкладок
 local function switchToTab(tabName)
+    InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    ItemsTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    
+    InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    ItemsTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    
+    InfoTab.Visible = false
+    GameTab.Visible = false
+    ItemsTab.Visible = false
+    
     if tabName == "Info" then
         InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
         InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
         InfoTab.Visible = true
-        GameTab.Visible = false
-    else
+    elseif tabName == "Game" then
         GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
         GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
         GameTab.Visible = true
-        InfoTab.Visible = false
+    elseif tabName == "Items" then
+        ItemsTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        ItemsTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        ItemsTab.Visible = true
     end
 end
 
@@ -451,6 +623,10 @@ end)
 
 GameTabButton.MouseButton1Click:Connect(function()
     switchToTab("Game")
+end)
+
+ItemsTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Items")
 end)
 
 -- Система перемещения меню для мобильных устройств
@@ -519,4 +695,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile Game menu with tabs loaded! Tap the button to open/close. Drag the title to move.")
+print("Mobile Game menu with Items tab loaded! Tap the button to open/close. Drag the title to move.")
