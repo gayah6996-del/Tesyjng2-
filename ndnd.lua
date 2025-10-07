@@ -10,12 +10,12 @@ ScreenGui.Parent = PlayerGui
 
 -- Создаем систему уведомлений
 local NotificationFrame = Instance.new("Frame")
-NotificationFrame.Size = UDim2.new(0, 200, 0, 50)
-NotificationFrame.Position = UDim2.new(1, -210, 1, -60)
+NotificationFrame.Size = UDim2.new(0, 250, 0, 60)
+NotificationFrame.Position = UDim2.new(1, -260, 1, -70)
 NotificationFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 NotificationFrame.BorderSizePixel = 0
 NotificationFrame.Visible = false
-NotificationFrame.ZIndex = 20
+NotificationFrame.ZIndex = 100
 NotificationFrame.Parent = ScreenGui
 
 local NotificationCorner = Instance.new("UICorner")
@@ -23,27 +23,34 @@ NotificationCorner.CornerRadius = UDim.new(0, 8)
 NotificationCorner.Parent = NotificationFrame
 
 local NotificationLabel = Instance.new("TextLabel")
-NotificationLabel.Size = UDim2.new(1, -10, 1, -10)
-NotificationLabel.Position = UDim2.new(0, 5, 0, 5)
+NotificationLabel.Size = UDim2.new(1, -20, 1, -20)
+NotificationLabel.Position = UDim2.new(0, 10, 0, 10)
 NotificationLabel.BackgroundTransparency = 1
 NotificationLabel.Text = "Bandage None"
 NotificationLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-NotificationLabel.TextSize = 14
+NotificationLabel.TextSize = 16
 NotificationLabel.Font = Enum.Font.GothamBold
+NotificationLabel.TextWrapped = true
 NotificationLabel.Parent = NotificationFrame
 
+-- Улучшенная функция уведомлений
 local function ShowNotification(message, duration)
     duration = duration or 3
+    
+    -- Обновляем текст
     NotificationLabel.Text = message
+    
+    -- Показываем уведомление
     NotificationFrame.Visible = true
     
-    -- Анимация появления
-    NotificationFrame.Position = UDim2.new(1, -210, 1, -60)
-    
-    wait(duration)
-    
-    -- Анимация исчезновения
-    NotificationFrame.Visible = false
+    -- Используем spawn чтобы не блокировать основной поток
+    spawn(function()
+        -- Ждем указанное время
+        wait(duration)
+        
+        -- Скрываем уведомление
+        NotificationFrame.Visible = false
+    end)
 end
 
 -- Кнопка показа меню (всегда видна)
@@ -52,8 +59,8 @@ ToggleButton.Size = UDim2.new(0, 60, 0, 60)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "≡" -- Изменен текст на иконку меню
-ToggleButton.TextSize = 30 -- Увеличен размер текста для иконки
+ToggleButton.Text = "≡"
+ToggleButton.TextSize = 30
 ToggleButton.ZIndex = 10
 ToggleButton.Parent = ScreenGui
 
@@ -446,7 +453,10 @@ local itemSection, itemContent = CreateSection(KeksTab, "🎒 Items")
 CreateButton(itemContent, "Find Bandages", function()
     -- Поиск бандажей
     local character = Player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
+    if not character or not character:FindFirstChild("HumanoidRootPart") then 
+        ShowNotification("Character not found!", 3)
+        return 
+    end
     
     local bandages = {}
     
@@ -460,11 +470,61 @@ CreateButton(itemContent, "Find Bandages", function()
     if #bandages > 0 then
         -- Телепортируемся к первому найденному бандажу
         character.HumanoidRootPart.CFrame = bandages[1].CFrame + Vector3.new(0, 3, 0)
+        ShowNotification("Found " .. #bandages .. " bandages!", 3)
         print("Found " .. #bandages .. " bandages! Teleported to the first one.")
     else
         -- Показываем уведомление "Bandage None"
         ShowNotification("Bandage None", 3)
         print("No bandages found in the map.")
+    end
+end)
+
+-- Добавляем кнопку All Scrap
+CreateButton(itemContent, "All Scrap", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then 
+        ShowNotification("Character not found!", 3)
+        return 
+    end
+    
+    local scrapNames = {
+        ["tyre"] = true, 
+        ["sheet metal"] = true, 
+        ["broken fan"] = true, 
+        ["bolt"] = true, 
+        ["old radio"] = true, 
+        ["ufo junk"] = true, 
+        ["ufo scrap"] = true, 
+        ["broken microwave"] = true,
+    }
+    
+    local foundCount = 0
+    
+    -- Проверяем, существует ли папка Items
+    if workspace:FindFirstChild("Items") then
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item:IsA("Model") then
+                local itemName = item.Name:lower()
+                for scrapName, _ in pairs(scrapNames) do
+                    if itemName:find(scrapName) then
+                        local main = item:FindFirstChildWhichIsA("BasePart")
+                        if main then
+                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                            foundCount = foundCount + 1
+                        end
+                        break
+                    end
+                end
+            end
+        end
+    end
+    
+    if foundCount > 0 then
+        ShowNotification("Brought " .. foundCount .. " scrap items!", 3)
+        print("Brought " .. foundCount .. " scrap items to player!")
+    else
+        ShowNotification("No scrap found!", 3)
+        print("No scrap items found in workspace.Items")
     end
 end)
 
