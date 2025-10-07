@@ -1,3 +1,5 @@
+[file name]: ndnd.lua
+[file content begin]
 repeat task.wait() until game:IsLoaded()
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -12,6 +14,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local VirtualInput = game:GetService("VirtualInputManager")
 local CoreGui = game:GetService("CoreGui")
+
+-- Добавляем переменные для Auto Tree Farm
+local ActiveAutoChopTree = false
+local DistanceForAutoChopTree = 20
 
 local function CreateEsp(Char, Color, Text, Parent, numberOffset)
     if not Char or not Parent then return end
@@ -184,89 +190,22 @@ Tabs.Main:Button({Title="Auto Cook Meat", Callback=function()
     end
 end})
 
-local autoTreeFarmActive = false
-local autoTreeFarmThread
-
+-- Заменяем старый Auto Tree Farm на новый с дистанцией
 Tabs.Main:Toggle({
-    Title = "Auto Tree Farm (ONLY Old Axe)",
+    Title = "Auto Tree Farm",
     Default = false,
     Callback = function(state)
-        autoTreeFarmActive = state
-        if state then
-            autoTreeFarmThread = task.spawn(function()
-                local ReplicatedStorage = game:GetService("ReplicatedStorage")
-                local ToolDamageObject = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("ToolDamageObject")
-                local Players = game:GetService("Players")
-                local LocalPlayer = Players.LocalPlayer
-                local Backpack = LocalPlayer:WaitForChild("Backpack")
+        ActiveAutoChopTree = state
+    end
+})
 
-                local function getAllTrees()
-                    local map = workspace:FindFirstChild("Map")
-                    if not map then return {} end
-                    local landmarks = map:FindFirstChild("Landmarks") or map:FindFirstChild("Foliage")
-                    if not landmarks then return {} end
-                    local trees = {}
-                    for _, tree in ipairs(landmarks:GetChildren()) do
-                        if tree.Name == "Small Tree" and tree:IsA("Model") and tree.Parent then
-                            local trunk = tree:FindFirstChild("Trunk") or tree.PrimaryPart
-                            if trunk then
-                                table.insert(trees, {tree = tree, trunk = trunk})
-                            end
-                        end
-                    end
-                    return trees
-                end
-
-                local function getAxe()
-                    local inv = LocalPlayer:FindFirstChild("Inventory")
-                    if not inv then return nil end
-                    return inv:FindFirstChild("Old Axe") or inv:FindFirstChildWhichIsA("Tool")
-                end
-
-                while autoTreeFarmActive do
-                    local trees = getAllTrees()
-                    for _, t in ipairs(trees) do
-                        if not autoTreeFarmActive then break end
-                        if t.tree and t.tree.Parent then
-                            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-                            local hrp = char:FindFirstChild("HumanoidRootPart")
-                            if hrp and t.trunk then
-                                local treeCFrame = t.trunk.CFrame
-                                local rightVector = treeCFrame.RightVector
-                                local targetPosition = treeCFrame.Position + rightVector * 3
-                                hrp.CFrame = CFrame.new(targetPosition)
-                                task.wait(0.25)
-                                local axe = getAxe()
-                                if axe then
-                                    if axe.Parent == Backpack then
-                                        axe.Parent = char
-                                        task.wait(0.15)
-                                    end
-                                    while t.tree.Parent and autoTreeFarmActive do
-                                        pcall(function() axe:Activate() end)
-                                        local args = {
-                                            t.tree,
-                                            axe,
-                                            "1_8264699301",
-                                            t.trunk.CFrame
-                                        }
-                                        pcall(function() ToolDamageObject:InvokeServer(unpack(args)) end)
-                                        task.wait(1)
-                                    end
-                                end
-                            end
-                        end
-                        task.wait(0.5)
-                    end
-                    task.wait(1)
-                end
-            end)
-        else
-            if autoTreeFarmThread then
-                task.cancel(autoTreeFarmThread)
-                autoTreeFarmThread = nil
-            end
-        end
+Tabs.Main:Slider({
+    Title = "Tree Farm Distance",
+    Min = 5,
+    Max = 100,
+    Default = 20,
+    Callback = function(val)
+        DistanceForAutoChopTree = val
     end
 })
 
@@ -1050,3 +989,39 @@ Tabs.Misc:Button({
         print("fps boost just loaded")
     end
 })
+
+-- Новый код для Auto Tree Farm
+task.spawn(function()
+    while true do
+        if ActiveAutoChopTree then 
+            local player = game.Players.LocalPlayer
+            local character = player.Character or player.CharacterAdded:Wait()
+            local hrp = character:WaitForChild("HumanoidRootPart")
+            local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+            
+            for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2")  and tree.PrimaryPart then
+                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                    if distance <= DistanceForAutoChopTree then
+                        task.spawn(function()		
+                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                        end)		
+                    end
+                end
+            end 
+            
+            for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2")  and tree.PrimaryPart then
+                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                    if distance <= DistanceForAutoChopTree then
+                        task.spawn(function()	
+                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                        end)			
+                    end
+                end
+            end
+        end
+        wait(0.01)
+    end
+end)
+[file content end]
