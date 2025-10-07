@@ -447,6 +447,7 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     dropdownList.BorderSizePixel = 0
     dropdownList.ScrollBarThickness = 6
+    dropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
     dropdownList.Visible = false
     dropdownList.Parent = dropdownFrame
     
@@ -460,7 +461,7 @@ local function CreateDropdown(parent, options, defaultOption, callback)
         isOpen = not isOpen
         if isOpen then
             dropdownList.Visible = true
-            dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 35, 105))
+            dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 35, 140))
         else
             dropdownList.Visible = false
             dropdownList.Size = UDim2.new(1, 0, 0, 0)
