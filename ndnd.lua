@@ -421,7 +421,7 @@ local function CreateButton(parent, text, callback)
     return button
 end
 
--- Функция для создания выпадающего списка
+-- Функция для создания выпадающего списка с анимацией
 local function CreateDropdown(parent, options, defaultOption, callback)
     local dropdownFrame = Instance.new("Frame")
     dropdownFrame.Size = UDim2.new(1, 0, 0, 35)
@@ -457,14 +457,41 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     local isOpen = false
     local selectedOption = defaultOption or options[1]
     
+    -- Функция для сдвига контента
+    local function shiftContent(shiftAmount)
+        local currentTab = nil
+        if InfoTab.Visible then
+            currentTab = InfoTab
+        elseif GameTab.Visible then
+            currentTab = GameTab
+        elseif KeksTab.Visible then
+            currentTab = KeksTab
+        end
+        
+        if currentTab then
+            for _, child in ipairs(currentTab:GetChildren()) do
+                if child:IsA("Frame") and child ~= dropdownFrame.Parent.Parent then
+                    -- Сдвигаем все элементы ниже текущего выпадающего списка
+                    if child.LayoutOrder > dropdownFrame.Parent.Parent.LayoutOrder then
+                        child.Position = child.Position + UDim2.new(0, 0, 0, shiftAmount)
+                    end
+                end
+            end
+        end
+    end
+    
     local function toggleDropdown()
         isOpen = not isOpen
         if isOpen then
             dropdownList.Visible = true
             dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 35, 140))
+            -- Сдвигаем контент вниз на 15 пикселей
+            shiftContent(15)
         else
             dropdownList.Visible = false
             dropdownList.Size = UDim2.new(1, 0, 0, 0)
+            -- Возвращаем контент на место
+            shiftContent(-15)
         end
     end
     
@@ -819,4 +846,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile ASTRALCHEAT with Bring Items menu loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
+print("Mobile ASTRALCHEAT with animated dropdowns loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
