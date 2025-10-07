@@ -3,6 +3,7 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GameMenu"
@@ -139,22 +140,31 @@ KeksTabButton.TextSize = 14
 KeksTabButton.Font = Enum.Font.GothamBold
 KeksTabButton.Parent = TabsFrame
 
--- Content frames с прокруткой
-local ContentFrame = Instance.new("ScrollingFrame")
-ContentFrame.Size = UDim2.new(1, -10, 1, -75)
-ContentFrame.Position = UDim2.new(0, 5, 0, 70)
+-- Основной контейнер с прокруткой
+local ScrollContainer = Instance.new("ScrollingFrame")
+ScrollContainer.Size = UDim2.new(1, -10, 1, -75)
+ScrollContainer.Position = UDim2.new(0, 5, 0, 70)
+ScrollContainer.BackgroundTransparency = 1
+ScrollContainer.BorderSizePixel = 0
+ScrollContainer.ScrollBarThickness = 8
+ScrollContainer.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+ScrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+ScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ScrollContainer.Parent = MainFrame
+
+-- Content frames
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Size = UDim2.new(1, 0, 0, 0)
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.BorderSizePixel = 0
-ContentFrame.ScrollBarThickness = 8
-ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
-ContentFrame.Parent = MainFrame
+ContentFrame.AutomaticSize = Enum.AutomaticSize.Y
+ContentFrame.Parent = ScrollContainer
 
 -- Info Tab Content
 local InfoTab = Instance.new("Frame")
-InfoTab.Size = UDim2.new(1, 0, 1, 0)
+InfoTab.Size = UDim2.new(1, 0, 0, 0)
 InfoTab.BackgroundTransparency = 1
 InfoTab.BorderSizePixel = 0
+InfoTab.AutomaticSize = Enum.AutomaticSize.Y
 InfoTab.Visible = true
 InfoTab.Parent = ContentFrame
 
@@ -164,9 +174,10 @@ InfoListLayout.Parent = InfoTab
 
 -- Game Tab Content
 local GameTab = Instance.new("Frame")
-GameTab.Size = UDim2.new(1, 0, 1, 0)
+GameTab.Size = UDim2.new(1, 0, 0, 0)
 GameTab.BackgroundTransparency = 1
 GameTab.BorderSizePixel = 0
+GameTab.AutomaticSize = Enum.AutomaticSize.Y
 GameTab.Visible = false
 GameTab.Parent = ContentFrame
 
@@ -176,9 +187,10 @@ GameListLayout.Parent = GameTab
 
 -- Keks Tab Content
 local KeksTab = Instance.new("Frame")
-KeksTab.Size = UDim2.new(1, 0, 1, 0)
+KeksTab.Size = UDim2.new(1, 0, 0, 0)
 KeksTab.BackgroundTransparency = 1
 KeksTab.BorderSizePixel = 0
+KeksTab.AutomaticSize = Enum.AutomaticSize.Y
 KeksTab.Visible = false
 KeksTab.Parent = ContentFrame
 
@@ -600,28 +612,32 @@ CreateButton(scrapContent, "Tp Scraps", function()
     ShowNotification("Teleported: " .. selectedScrap, 2)
 end)
 
--- Автоматическое обновление размеров контента для прокрутки
-local function updateContentSize()
-    local currentTab = nil
-    if InfoTab.Visible then
-        currentTab = InfoTab
-    elseif GameTab.Visible then
-        currentTab = GameTab
-    elseif KeksTab.Visible then
-        currentTab = KeksTab
-    end
-    
-    if currentTab then
-        local layout = currentTab:FindFirstChildOfClass("UIListLayout")
-        if layout then
-            ContentFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
-        end
-    end
-end
+-- Добавляем больше контента в Keks для демонстрации прокрутки
+local moreSection1, moreContent1 = CreateSection(KeksTab, "🔮 More Features 1")
+CreateButton(moreContent1, "Feature 1", function()
+    ShowNotification("Feature 1 activated!", 2)
+end)
 
--- Обновление размеров при изменении контента
-game:GetService("RunService").Heartbeat:Connect(function()
-    updateContentSize()
+CreateButton(moreContent1, "Feature 2", function()
+    ShowNotification("Feature 2 activated!", 2)
+end)
+
+local moreSection2, moreContent2 = CreateSection(KeksTab, "🔮 More Features 2")
+CreateButton(moreContent2, "Feature 3", function()
+    ShowNotification("Feature 3 activated!", 2)
+end)
+
+CreateButton(moreContent2, "Feature 4", function()
+    ShowNotification("Feature 4 activated!", 2)
+end)
+
+local moreSection3, moreContent3 = CreateSection(KeksTab, "🔮 More Features 3")
+CreateButton(moreContent3, "Feature 5", function()
+    ShowNotification("Feature 5 activated!", 2)
+end)
+
+CreateButton(moreContent3, "Feature 6", function()
+    ShowNotification("Feature 6 activated!", 2)
 end)
 
 -- Функции из оригинального скрипта
@@ -712,8 +728,8 @@ local function switchToTab(tabName)
         KeksTab.Visible = true
     end
     
-    -- Обновить размер контента после переключения вкладки
-    updateContentSize()
+    -- Сбрасываем прокрутку при переключении вкладок
+    ScrollContainer.CanvasPosition = Vector2.new(0, 0)
 end
 
 InfoTabButton.MouseButton1Click:Connect(function()
@@ -790,11 +806,12 @@ end)
 ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
     if MainFrame.Visible then
-        updateContentSize()
+        -- Сбрасываем прокрутку при открытии меню
+        ScrollContainer.CanvasPosition = Vector2.new(0, 0)
     end
 end)
 
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile ASTRALCHEAT with 3 tabs and notifications loaded! Tap the button to open/close. Drag the title to move.")
+print("Mobile ASTRALCHEAT with scrolling loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
