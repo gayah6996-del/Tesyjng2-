@@ -421,7 +421,7 @@ local function CreateButton(parent, text, callback)
     return button
 end
 
--- Функция для создания выпадающего списка с анимацией
+-- Функция для создания выпадающего списка
 local function CreateDropdown(parent, options, defaultOption, callback)
     local dropdownFrame = Instance.new("Frame")
     dropdownFrame.Size = UDim2.new(1, 0, 0, 35)
@@ -449,7 +449,8 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     dropdownList.ScrollBarThickness = 6
     dropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
     dropdownList.Visible = false
-    dropdownList.Parent = dropdownFrame
+    dropdownList.ZIndex = 5
+    dropdownList.Parent = ScreenGui  -- Делаем дочерним элементом ScreenGui чтобы был поверх всего
     
     local listLayout = Instance.new("UIListLayout")
     listLayout.Parent = dropdownList
@@ -457,45 +458,34 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     local isOpen = false
     local selectedOption = defaultOption or options[1]
     
-    -- Функция для сдвига контента
-    local function shiftContent(shiftAmount)
-        local currentTab = nil
-        if InfoTab.Visible then
-            currentTab = InfoTab
-        elseif GameTab.Visible then
-            currentTab = GameTab
-        elseif KeksTab.Visible then
-            currentTab = KeksTab
-        end
-        
-        if currentTab then
-            for _, child in ipairs(currentTab:GetChildren()) do
-                if child:IsA("Frame") and child ~= dropdownFrame.Parent.Parent then
-                    -- Сдвигаем все элементы ниже текущего выпадающего списка
-                    if child.LayoutOrder > dropdownFrame.Parent.Parent.LayoutOrder then
-                        child.Position = child.Position + UDim2.new(0, 0, 0, shiftAmount)
-                    end
-                end
-            end
+    local function updateDropdownPosition()
+        if dropdownButton:IsDescendantOf(game) then
+            local buttonAbsolutePos = dropdownButton.AbsolutePosition
+            local buttonAbsoluteSize = dropdownButton.AbsoluteSize
+            
+            dropdownList.Position = UDim2.new(0, buttonAbsolutePos.X, 0, buttonAbsolutePos.Y + buttonAbsoluteSize.Y + 5)
+            dropdownList.Size = UDim2.new(0, buttonAbsoluteSize.X, 0, math.min(#options * 35, 140))
         end
     end
     
     local function toggleDropdown()
         isOpen = not isOpen
         if isOpen then
+            updateDropdownPosition()
             dropdownList.Visible = true
-            dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 35, 140))
-            -- Сдвигаем контент вниз на 15 пикселей
-            shiftContent(15)
         else
             dropdownList.Visible = false
-            dropdownList.Size = UDim2.new(1, 0, 0, 0)
-            -- Возвращаем контент на место
-            shiftContent(-15)
         end
     end
     
     dropdownButton.MouseButton1Click:Connect(toggleDropdown)
+    
+    -- Обновляем позицию при изменении размера экрана
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if isOpen then
+            updateDropdownPosition()
+        end
+    end)
     
     for _, option in ipairs(options) do
         local optionButton = Instance.new("TextButton")
@@ -505,6 +495,7 @@ local function CreateDropdown(parent, options, defaultOption, callback)
         optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         optionButton.TextSize = 14
         optionButton.Font = Enum.Font.Gotham
+        optionButton.ZIndex = 6
         optionButton.Parent = dropdownList
         
         local optionCorner = Instance.new("UICorner")
@@ -520,6 +511,25 @@ local function CreateDropdown(parent, options, defaultOption, callback)
             end
         end)
     end
+    
+    -- Закрывать выпадающий список при клике вне его
+    local function onInputBegan(input)
+        if input.UserInputType == Enum.UserInputType.Touch and isOpen then
+            local touchPos = input.Position
+            local listAbsolutePos = dropdownList.AbsolutePosition
+            local listAbsoluteSize = dropdownList.AbsoluteSize
+            
+            -- Проверяем, был ли клик вне выпадающего списка и кнопки
+            if not (touchPos.X >= listAbsolutePos.X and touchPos.X <= listAbsolutePos.X + listAbsoluteSize.X and
+                   touchPos.Y >= listAbsolutePos.Y and touchPos.Y <= listAbsolutePos.Y + listAbsoluteSize.Y) and
+               not (touchPos.X >= dropdownButton.AbsolutePosition.X and touchPos.X <= dropdownButton.AbsolutePosition.X + dropdownButton.AbsoluteSize.X and
+                   touchPos.Y >= dropdownButton.AbsolutePosition.Y and touchPos.Y <= dropdownButton.AbsolutePosition.Y + dropdownButton.AbsoluteSize.Y) then
+                toggleDropdown()
+            end
+        end
+    end
+    
+    UserInputService.InputBegan:Connect(onInputBegan)
     
     return {
         GetValue = function()
@@ -846,4 +856,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile ASTRALCHEAT with animated dropdowns loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
+print("Mobile ASTRALCHEAT with improved dropdowns loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
