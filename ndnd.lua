@@ -1,5 +1,3 @@
-[file name]: ndnd.lua
-[file content begin]
 repeat task.wait() until game:IsLoaded()
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -104,10 +102,10 @@ WindUI:Popup({
     Title = "Добро пожаловать в AngelCheat",
     Icon = "star",
     IconThemed = true,
-    Content = "ASTRALCHEAT VERSION:BETA",
+    Content = "AstralCheat. Версия:Бета",
     Buttons = {
         { Title = "Закрыть", Variant = "Secondary", Callback = function() end },
-        { Title = "Проложить", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+        { Title = "Продолжить", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
     }
 })
 repeat task.wait() until Confirmed
@@ -117,7 +115,7 @@ local Window = WindUI:CreateWindow({
     Title = "ASTRALCHEAT | V1 | 99 Nights In The Forest | Beta",
     IconThemed = true,
     Icon = "star",
-    Author = "hi join the com",
+    Author = "SFXCL",
     Size = UDim2.fromOffset(720, 500),
     Transparent = true,
     Theme = "Dark",
@@ -136,63 +134,12 @@ local Tabs = {
     Main = Window:Tab({ Title = "Main", Icon = "star" }),
     Teleport = Window:Tab({ Title = "Teleport", Icon = "rocket" }),
     Player = Window:Tab({ Title = "Player", Icon = "user" }),
-    Esp = Window:Tab({ Title = "Esp", Icon = "eye" }),
+  --  Esp = Window:Tab({ Title = "Esp", Icon = "eye" }),
     Bring = Window:Tab({ Title = "Bring Items", Icon = "package" }),
     Hitbox = Window:Tab({ Title = "Hitbox", Icon = "target" }),
     Misc = Window:Tab({ Title = "Misc", Icon = "file-cog" }),
 }
 
--- Мини-меню для выбора предметов
-local selectedItems = {
-    Tyre = false,
-    ["Sheet Metal"] = false,
-    ["Broken Fan"] = false,
-    Bolt = false,
-    ["Old Radio"] = false,
-    ["UFO Junk"] = false,
-    ["UFO Scrap"] = false,
-    ["Broken Microwave"] = false
-}
-
--- Создаем мини-меню в Bring разделе
-Tabs.Bring:Section({Title = "Item Selection Menu"})
-
-for itemName, _ in pairs(selectedItems) do
-    Tabs.Bring:Toggle({
-        Title = "Select " .. itemName,
-        Default = false,
-        Callback = function(state)
-            selectedItems[itemName] = state
-        end
-    })
-end
-
-Tabs.Bring:Button({
-    Title = "TP Selected Items",
-    Callback = function()
-        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-        if not root then return end
-        
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item:IsA("Model") then
-                local itemName = item.Name
-                for selectedName, isSelected in pairs(selectedItems) do
-                    if isSelected and string.lower(itemName) == string.lower(selectedName) then
-                        local main = item:FindFirstChildWhichIsA("BasePart")
-                        if main then
-                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-                        end
-                        break
-                    end
-                end
-            end
-        end
-    end
-})
-
-Tabs.Bring:Section({Title = "Individual Item Buttons"})
-
--- Остальные кнопки Bring (существующие)
 local infHungerActive = false
 local infHungerThread
 
@@ -1103,4 +1050,3 @@ Tabs.Misc:Button({
         print("fps boost just loaded")
     end
 })
-[file content end]
