@@ -457,6 +457,29 @@ CreateButton(itemContent, "Bring Logs", function()
     end
 end)
 
+-- Добавлена кнопка Bring All Scraps
+CreateButton(itemContent, "Bring All Scraps", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local scrapNames = {
+        ["tyre"] = true, ["sheet metal"] = true, ["broken fan"] = true, ["bolt"] = true, ["old radio"] = true, ["ufo junk"] = true, ["ufo scrap"] = true, ["broken microwave"] = true,
+    }
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemName = item.Name:lower()
+            for scrapName, _ in pairs(scrapNames) do
+                if itemName:find(scrapName) then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    end
+                    break
+                end
+            end
+        end
+    end
+end)
+
 -- Функции из оригинального скрипта
 -- Kill Aura функция
 task.spawn(function()
