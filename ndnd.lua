@@ -443,28 +443,17 @@ CreateButton(teleportContent, "Teleport to Base", function()
 end)
 
 local itemSection, itemContent = CreateSection(KeksTab, "🎒 Items")
-CreateButton(itemContent, "Find Bandages", function()
-    -- Поиск бандажей
-    local character = Player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-    
-    local bandages = {}
-    
-    -- Ищем бандажи в рабочем пространстве
-    for _, item in pairs(workspace:GetDescendants()) do
-        if item.Name == "Bandage" and item:IsA("Part") then
-            table.insert(bandages, item)
+CreateButton(itemContent, "Bring Logs", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if root then
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("log") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                end
+            end
         end
-    end
-    
-    if #bandages > 0 then
-        -- Телепортируемся к первому найденному бандажу
-        character.HumanoidRootPart.CFrame = bandages[1].CFrame + Vector3.new(0, 3, 0)
-        print("Found " .. #bandages .. " bandages! Teleported to the first one.")
-    else
-        -- Показываем уведомление "Bandage None"
-        ShowNotification("Bandage None", 3)
-        print("No bandages found in the map.")
     end
 end)
 
