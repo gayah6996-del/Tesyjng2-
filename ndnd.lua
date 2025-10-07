@@ -1,3 +1,5 @@
+[file name]: ndnd.lua
+[file content begin]
 repeat task.wait() until game:IsLoaded()
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -140,6 +142,57 @@ local Tabs = {
     Misc = Window:Tab({ Title = "Misc", Icon = "file-cog" }),
 }
 
+-- Мини-меню для выбора предметов
+local selectedItems = {
+    Tyre = false,
+    ["Sheet Metal"] = false,
+    ["Broken Fan"] = false,
+    Bolt = false,
+    ["Old Radio"] = false,
+    ["UFO Junk"] = false,
+    ["UFO Scrap"] = false,
+    ["Broken Microwave"] = false
+}
+
+-- Создаем мини-меню в Bring разделе
+Tabs.Bring:Section({Title = "Item Selection Menu"})
+
+for itemName, _ in pairs(selectedItems) do
+    Tabs.Bring:Toggle({
+        Title = "Select " .. itemName,
+        Default = false,
+        Callback = function(state)
+            selectedItems[itemName] = state
+        end
+    })
+end
+
+Tabs.Bring:Button({
+    Title = "TP Selected Items",
+    Callback = function()
+        local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+        if not root then return end
+        
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item:IsA("Model") then
+                local itemName = item.Name
+                for selectedName, isSelected in pairs(selectedItems) do
+                    if isSelected and string.lower(itemName) == string.lower(selectedName) then
+                        local main = item:FindFirstChildWhichIsA("BasePart")
+                        if main then
+                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        end
+                        break
+                    end
+                end
+            end
+        end
+    end
+})
+
+Tabs.Bring:Section({Title = "Individual Item Buttons"})
+
+-- Остальные кнопки Bring (существующие)
 local infHungerActive = false
 local infHungerThread
 
@@ -780,9 +833,6 @@ Tabs.Bring:Button({Title="Bring Morsel", Callback=function() bringItemsByName("M
 Tabs.Bring:Button({Title="Bring Tyre", Callback=function() bringItemsByName("Tyre") end})
 Tabs.Bring:Button({Title="Bring Broken Fan", Callback=function() bringItemsByName("Broken Fan") end})
 Tabs.Bring:Button({Title="Bring Sheet Metal", Callback=function() bringItemsByName("Sheet Metal") end})
-Tabs.Bring:Button({Title="Bring Strong Axe", Callback=function() bringItemsByName("Strong Axe") end})
-Tabs.Bring:Button({Title="Bring Good Axe", Callback=function() bringItemsByName("Good Axe") end})
-Tabs.Bring:Button({Title="Bring Old Axe", Callback=function() bringItemsByName("Old Axe") end})
 Tabs.Bring:Button({Title="Bring Rifle Ammo", Callback=function() bringItemsByName("Rifle Ammo") end})
 Tabs.Bring:Button({Title="Bring Revolver Ammo", Callback=function() bringItemsByName("Revolver Ammo") end})
 
@@ -1053,3 +1103,4 @@ Tabs.Misc:Button({
         print("fps boost just loaded")
     end
 })
+[file content end]
