@@ -401,6 +401,89 @@ local function CreateButton(parent, text, callback)
     return button
 end
 
+-- Функция для создания выпадающего списка
+local function CreateDropdown(parent, options, defaultOption, callback)
+    local dropdownFrame = Instance.new("Frame")
+    dropdownFrame.Size = UDim2.new(1, 0, 0, 35)
+    dropdownFrame.BackgroundTransparency = 1
+    dropdownFrame.Parent = parent
+    
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
+    dropdownButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    dropdownButton.Text = defaultOption or options[1]
+    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownButton.TextSize = 14
+    dropdownButton.Font = Enum.Font.Gotham
+    dropdownButton.Parent = dropdownFrame
+    
+    local dropdownCorner = Instance.new("UICorner")
+    dropdownCorner.CornerRadius = UDim.new(0, 6)
+    dropdownCorner.Parent = dropdownButton
+    
+    local dropdownList = Instance.new("ScrollingFrame")
+    dropdownList.Size = UDim2.new(1, 0, 0, 0)
+    dropdownList.Position = UDim2.new(0, 0, 1, 5)
+    dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    dropdownList.BorderSizePixel = 0
+    dropdownList.ScrollBarThickness = 6
+    dropdownList.Visible = false
+    dropdownList.Parent = dropdownFrame
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = dropdownList
+    
+    local isOpen = false
+    local selectedOption = defaultOption or options[1]
+    
+    local function toggleDropdown()
+        isOpen = not isOpen
+        if isOpen then
+            dropdownList.Visible = true
+            dropdownList.Size = UDim2.new(1, 0, 0, math.min(#options * 35, 105))
+        else
+            dropdownList.Visible = false
+            dropdownList.Size = UDim2.new(1, 0, 0, 0)
+        end
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(toggleDropdown)
+    
+    for _, option in ipairs(options) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Size = UDim2.new(1, 0, 0, 35)
+        optionButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+        optionButton.Text = option
+        optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        optionButton.TextSize = 14
+        optionButton.Font = Enum.Font.Gotham
+        optionButton.Parent = dropdownList
+        
+        local optionCorner = Instance.new("UICorner")
+        optionCorner.CornerRadius = UDim.new(0, 6)
+        optionCorner.Parent = optionButton
+        
+        optionButton.MouseButton1Click:Connect(function()
+            selectedOption = option
+            dropdownButton.Text = option
+            toggleDropdown()
+            if callback then
+                callback(option)
+            end
+        end)
+    end
+    
+    return {
+        GetValue = function()
+            return selectedOption
+        end,
+        SetValue = function(value)
+            selectedOption = value
+            dropdownButton.Text = value
+        end
+    }
+end
+
 -- Создание элементов Info tab
 local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
 CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
@@ -433,10 +516,8 @@ end)
 -- Создание элементов Keks tab
 local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
 CreateButton(teleportContent, "Teleport to Base", function()
-    -- Телепорт на базу (координаты нужно уточнить)
     local character = Player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
-        -- Замените эти координаты на реальные координаты базы
         character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
         print("Teleported to base!")
     end
@@ -457,27 +538,58 @@ CreateButton(itemContent, "Bring Logs", function()
     end
 end)
 
--- Добавлена кнопка Bring All Scraps
-CreateButton(itemContent, "Bring All Scraps", function()
+-- Мини-меню для выбора скрапов
+local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
+
+-- Создаем выпадающий список для выбора скрапов
+local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
+local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
+
+-- Кнопка для телепортации выбранного скрапа
+CreateButton(scrapContent, "Tp Scraps", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
+    
+    local selectedScrap = scrapDropdown.GetValue()
     local scrapNames = {
-        ["tyre"] = true, ["sheet metal"] = true, ["broken fan"] = true, ["bolt"] = true, ["old radio"] = true, ["ufo junk"] = true, ["ufo scrap"] = true, ["broken microwave"] = true,
+        ["tyre"] = true, 
+        ["sheet metal"] = true, 
+        ["broken fan"] = true, 
+        ["bolt"] = true, 
+        ["old radio"] = true, 
+        ["ufo junk"] = true, 
+        ["ufo scrap"] = true, 
+        ["broken microwave"] = true,
     }
+    
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item:IsA("Model") then
             local itemName = item.Name:lower()
-            for scrapName, _ in pairs(scrapNames) do
-                if itemName:find(scrapName) then
+            
+            if selectedScrap == "All" then
+                -- Телепортировать все скрапы
+                for scrapName, _ in pairs(scrapNames) do
+                    if itemName:find(scrapName) then
+                        local main = item:FindFirstChildWhichIsA("BasePart")
+                        if main then
+                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        end
+                        break
+                    end
+                end
+            else
+                -- Телепортировать только выбранный скрап
+                if itemName:find(selectedScrap) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
                         main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                     end
-                    break
                 end
             end
         end
     end
+    
+    ShowNotification("Teleported: " .. selectedScrap, 2)
 end)
 
 -- Функции из оригинального скрипта
