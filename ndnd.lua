@@ -8,13 +8,51 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GameMenu"
 ScreenGui.Parent = PlayerGui
 
+-- Создаем систему уведомлений
+local NotificationFrame = Instance.new("Frame")
+NotificationFrame.Size = UDim2.new(0, 200, 0, 50)
+NotificationFrame.Position = UDim2.new(1, -210, 1, -60)
+NotificationFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+NotificationFrame.BorderSizePixel = 0
+NotificationFrame.Visible = false
+NotificationFrame.ZIndex = 20
+NotificationFrame.Parent = ScreenGui
+
+local NotificationCorner = Instance.new("UICorner")
+NotificationCorner.CornerRadius = UDim.new(0, 8)
+NotificationCorner.Parent = NotificationFrame
+
+local NotificationLabel = Instance.new("TextLabel")
+NotificationLabel.Size = UDim2.new(1, -10, 1, -10)
+NotificationLabel.Position = UDim2.new(0, 5, 0, 5)
+NotificationLabel.BackgroundTransparency = 1
+NotificationLabel.Text = "Bandage None"
+NotificationLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+NotificationLabel.TextSize = 14
+NotificationLabel.Font = Enum.Font.GothamBold
+NotificationLabel.Parent = NotificationFrame
+
+local function ShowNotification(message, duration)
+    duration = duration or 3
+    NotificationLabel.Text = message
+    NotificationFrame.Visible = true
+    
+    -- Анимация появления
+    NotificationFrame.Position = UDim2.new(1, -210, 1, -60)
+    
+    wait(duration)
+    
+    -- Анимация исчезновения
+    NotificationFrame.Visible = false
+end
+
 -- Кнопка показа меню (всегда видна)
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 60, 0, 60)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "📱"
+ToggleButton.Text = "ASTRAL"
 ToggleButton.TextSize = 20
 ToggleButton.ZIndex = 10
 ToggleButton.Parent = ScreenGui
@@ -42,7 +80,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 35)
 Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Title.Text = "Game Menu"
+Title.Text = "ASTRALCHEAT"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
@@ -368,10 +406,10 @@ local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information
 CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
 
 local controlsSection, controlsContent = CreateSection(InfoTab, "🎮 Controls")
-CreateLabel(controlsContent, "- Tap 📱 button to show/hide menu\n- Drag title bar to move menu\n- Toggle switches to enable features\n- Adjust sliders for distance settings")
+CreateLabel(controlsContent, "- Tap ASTRAL button to show/hide menu\n- Drag title bar to move menu\n- Toggle switches to enable features\n- Adjust sliders for distance settings")
 
 local noteSection, noteContent = CreateSection(InfoTab, "💡 Important Note")
-CreateLabel(noteContent, "For Auto Chop Tree and Kill Aura to work, you MUST equip any axe (Old Axe, Good Axe, Strong Axe, or Chainsaw)!")
+CreateLabel(noteContent, "For Auto Tree and Kill Aura to work, you MUST equip any axe (Old Axe, Good Axe, Strong Axe, or Chainsaw)!")
 
 -- Создание элементов Game tab
 local killAuraSection, killAuraContent = CreateSection(GameTab, "⚔️ Kill Aura")
@@ -383,12 +421,12 @@ local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value
     ActiveKillAura = value
 end)
 
-local autoChopSection, autoChopContent = CreateSection(GameTab, "🪓 Auto Chop Tree")
+local autoChopSection, autoChopContent = CreateSection(GameTab, "🪓 Auto Tree")
 CreateSlider(autoChopContent, "Distance", 0, 1000, 25, function(value)
     DistanceForAutoChopTree = value
 end)
 
-local autoChopToggle = CreateToggle(autoChopContent, "Auto Chop Tree", function(value)
+local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value)
     ActiveAutoChopTree = value
 end)
 
@@ -424,6 +462,8 @@ CreateButton(itemContent, "Find Bandages", function()
         character.HumanoidRootPart.CFrame = bandages[1].CFrame + Vector3.new(0, 3, 0)
         print("Found " .. #bandages .. " bandages! Teleported to the first one.")
     else
+        -- Показываем уведомление "Bandage None"
+        ShowNotification("Bandage None", 3)
         print("No bandages found in the map.")
     end
 end)
@@ -611,4 +651,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile Game menu with 3 tabs loaded! Tap the button to open/close. Drag the title to move.")
+print("Mobile ASTRALCHEAT with 3 tabs and notifications loaded! Tap the button to open/close. Drag the title to move.")
