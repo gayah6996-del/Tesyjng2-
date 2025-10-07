@@ -1,712 +1,1076 @@
--- Создание основного GUI
+repeat task.wait() until game:IsLoaded()
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local VirtualInput = game:GetService("VirtualInputManager")
+local CoreGui = game:GetService("CoreGui")
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "GameMenu"
-ScreenGui.Parent = PlayerGui
+local function CreateEsp(Char, Color, Text, Parent, numberOffset)
+    if not Char or not Parent then return end
+    KeepEsp(Char, Parent)
 
--- Создаем улучшенную систему уведомлений
-local NotificationFrame = Instance.new("Frame")
-NotificationFrame.Size = UDim2.new(0, 250, 0, 60)
-NotificationFrame.Position = UDim2.new(1, -260, 1, -70)
-NotificationFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-NotificationFrame.BorderSizePixel = 0
-NotificationFrame.Visible = false
-NotificationFrame.ZIndex = 100
-NotificationFrame.Parent = ScreenGui
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESP_Highlight"
+    highlight.Adornee = Char
+    highlight.FillColor = Color
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Enabled = true
+    highlight.Parent = Char
 
-local NotificationCorner = Instance.new("UICorner")
-NotificationCorner.CornerRadius = UDim.new(0, 8)
-NotificationCorner.Parent = NotificationFrame
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP"
+    billboard.Size = UDim2.new(0, 50, 0, 25)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0, numberOffset or 3, 0)
+    billboard.Adornee = Parent
+    billboard.Enabled = true
+    billboard.Parent = Parent
 
-local NotificationLabel = Instance.new("TextLabel")
-NotificationLabel.Size = UDim2.new(1, -20, 1, -20)
-NotificationLabel.Position = UDim2.new(0, 10, 0, 10)
-NotificationLabel.BackgroundTransparency = 1
-NotificationLabel.Text = "Bandage None"
-NotificationLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-NotificationLabel.TextSize = 16
-NotificationLabel.Font = Enum.Font.GothamBold
-NotificationLabel.TextWrapped = true
-NotificationLabel.Parent = NotificationFrame
-
--- Улучшенная функция уведомлений
-local function ShowNotification(message, duration)
-    duration = duration or 3
-    
-    -- Обновляем текст
-    NotificationLabel.Text = message
-    
-    -- Показываем уведомление
-    NotificationFrame.Visible = true
-    
-    -- Используем spawn чтобы не блокировать основной поток
-    spawn(function()
-        -- Ждем указанное время
-        wait(duration)
-        
-        -- Скрываем уведомление
-        NotificationFrame.Visible = false
-    end)
-end
-
--- Кнопка показа меню (всегда видна)
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 60, 0, 60)
-ToggleButton.Position = UDim2.new(0, 10, 0, 10)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "≡"
-ToggleButton.TextSize = 30
-ToggleButton.ZIndex = 10
-ToggleButton.Parent = ScreenGui
-
-local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0, 10)
-ToggleCorner.Parent = ToggleButton
-
--- Основное окно меню
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 320, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Visible = false
-MainFrame.Parent = ScreenGui
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
-UICorner.Parent = MainFrame
-
--- Заголовок для перемещения
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 35)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Title.Text = "ASTRALCHEAT"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16
-Title.Font = Enum.Font.GothamBold
-Title.Parent = MainFrame
-
--- Кнопка закрытия в заголовке
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -35, 0, 2)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-CloseButton.Text = "✕"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 16
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Parent = Title
-
-local UICorner2 = Instance.new("UICorner")
-UICorner2.CornerRadius = UDim.new(0, 6)
-UICorner2.Parent = CloseButton
-
--- Кнопки вкладок
-local TabsFrame = Instance.new("Frame")
-TabsFrame.Size = UDim2.new(1, 0, 0, 30)
-TabsFrame.Position = UDim2.new(0, 0, 0, 35)
-TabsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-TabsFrame.BorderSizePixel = 0
-TabsFrame.Parent = MainFrame
-
-local InfoTabButton = Instance.new("TextButton")
-InfoTabButton.Size = UDim2.new(0.33, 0, 1, 0)
-InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
-InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-InfoTabButton.Text = "Info"
-InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-InfoTabButton.TextSize = 14
-InfoTabButton.Font = Enum.Font.GothamBold
-InfoTabButton.Parent = TabsFrame
-
-local GameTabButton = Instance.new("TextButton")
-GameTabButton.Size = UDim2.new(0.33, 0, 1, 0)
-GameTabButton.Position = UDim2.new(0.33, 0, 0, 0)
-GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-GameTabButton.Text = "Game"
-GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-GameTabButton.TextSize = 14
-GameTabButton.Font = Enum.Font.GothamBold
-GameTabButton.Parent = TabsFrame
-
-local KeksTabButton = Instance.new("TextButton")
-KeksTabButton.Size = UDim2.new(0.34, 0, 1, 0)
-KeksTabButton.Position = UDim2.new(0.66, 0, 0, 0)
-KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-KeksTabButton.Text = "Keks"
-KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-KeksTabButton.TextSize = 14
-KeksTabButton.Font = Enum.Font.GothamBold
-KeksTabButton.Parent = TabsFrame
-
--- Content frames
-local ContentFrame = Instance.new("Frame")
-ContentFrame.Size = UDim2.new(1, -10, 1, -75)
-ContentFrame.Position = UDim2.new(0, 5, 0, 70)
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.Parent = MainFrame
-
--- Info Tab Content
-local InfoTab = Instance.new("ScrollingFrame")
-InfoTab.Size = UDim2.new(1, 0, 1, 0)
-InfoTab.BackgroundTransparency = 1
-InfoTab.BorderSizePixel = 0
-InfoTab.ScrollBarThickness = 6
-InfoTab.Visible = true
-InfoTab.Parent = ContentFrame
-
-local InfoListLayout = Instance.new("UIListLayout")
-InfoListLayout.Padding = UDim.new(0, 8)
-InfoListLayout.Parent = InfoTab
-
--- Game Tab Content
-local GameTab = Instance.new("ScrollingFrame")
-GameTab.Size = UDim2.new(1, 0, 1, 0)
-GameTab.BackgroundTransparency = 1
-GameTab.BorderSizePixel = 0
-GameTab.ScrollBarThickness = 6
-GameTab.Visible = false
-GameTab.Parent = ContentFrame
-
-local GameListLayout = Instance.new("UIListLayout")
-GameListLayout.Padding = UDim.new(0, 8)
-GameListLayout.Parent = GameTab
-
--- Keks Tab Content
-local KeksTab = Instance.new("ScrollingFrame")
-KeksTab.Size = UDim2.new(1, 0, 1, 0)
-KeksTab.BackgroundTransparency = 1
-KeksTab.BorderSizePixel = 0
-KeksTab.ScrollBarThickness = 6
-KeksTab.Visible = false
-KeksTab.Parent = ContentFrame
-
-local KeksListLayout = Instance.new("UIListLayout")
-KeksListLayout.Padding = UDim.new(0, 8)
-KeksListLayout.Parent = KeksTab
-
--- Переменные для функций
-local ActiveKillAura = false
-local ActiveAutoChopTree = false
-local DistanceForKillAura = 25
-local DistanceForAutoChopTree = 25
-
--- Функция создания элементов UI
-local function CreateSection(parent, title)
-    local section = Instance.new("Frame")
-    section.Size = UDim2.new(1, 0, 0, 0)
-    section.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    section.BorderSizePixel = 0
-    section.Parent = parent
-    
-    local sectionCorner = Instance.new("UICorner")
-    sectionCorner.CornerRadius = UDim.new(0, 6)
-    sectionCorner.Parent = section
-    
-    local sectionTitle = Instance.new("TextLabel")
-    sectionTitle.Size = UDim2.new(1, -10, 0, 25)
-    sectionTitle.Position = UDim2.new(0, 5, 0, 0)
-    sectionTitle.BackgroundTransparency = 1
-    sectionTitle.Text = title
-    sectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sectionTitle.TextSize = 14
-    sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
-    sectionTitle.Font = Enum.Font.GothamBold
-    sectionTitle.Parent = section
-    
-    local content = Instance.new("Frame")
-    content.Size = UDim2.new(1, -10, 0, 0)
-    content.Position = UDim2.new(0, 5, 0, 25)
-    content.BackgroundTransparency = 1
-    content.Parent = section
-    
-    local contentLayout = Instance.new("UIListLayout")
-    contentLayout.Padding = UDim.new(0, 5)
-    contentLayout.Parent = content
-    
-    return section, content
-end
-
-local function CreateToggle(parent, text, callback)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, 0, 0, 30)
-    toggleFrame.BackgroundTransparency = 1
-    toggleFrame.Parent = parent
-    
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Size = UDim2.new(1, 0, 1, 0)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    toggleButton.Text = ""
-    toggleButton.Parent = toggleFrame
-    
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 4)
-    toggleCorner.Parent = toggleButton
-    
-    local toggleText = Instance.new("TextLabel")
-    toggleText.Size = UDim2.new(0.7, 0, 1, 0)
-    toggleText.Position = UDim2.new(0, 8, 0, 0)
-    toggleText.BackgroundTransparency = 1
-    toggleText.Text = text
-    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleText.TextSize = 12
-    toggleText.TextXAlignment = Enum.TextXAlignment.Left
-    toggleText.Font = Enum.Font.Gotham
-    toggleText.Parent = toggleButton
-    
-    local toggleStatus = Instance.new("Frame")
-    toggleStatus.Size = UDim2.new(0, 20, 0, 20)
-    toggleStatus.Position = UDim2.new(1, -25, 0.5, -10)
-    toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    toggleStatus.Parent = toggleButton
-    
-    local toggleStatusCorner = Instance.new("UICorner")
-    toggleStatusCorner.CornerRadius = UDim.new(0, 10)
-    toggleStatusCorner.Parent = toggleStatus
-    
-    local isToggled = false
-    
-    local function updateToggle()
-        if isToggled then
-            toggleStatus.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-        else
-            toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        end
-    end
-    
-    toggleButton.MouseButton1Click:Connect(function()
-        isToggled = not isToggled
-        updateToggle()
-        callback(isToggled)
-    end)
-    
-    updateToggle()
-    
-    return {
-        Set = function(value)
-            isToggled = value
-            updateToggle()
-            callback(value)
-        end
-    }
-end
-
-local function CreateSlider(parent, text, min, max, defaultValue, callback)
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, 0, 0, 50)
-    sliderFrame.BackgroundTransparency = 1
-    sliderFrame.Parent = parent
-    
-    local sliderText = Instance.new("TextLabel")
-    sliderText.Size = UDim2.new(1, 0, 0, 20)
-    sliderText.BackgroundTransparency = 1
-    sliderText.Text = text .. ": " .. defaultValue
-    sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sliderText.TextSize = 12
-    sliderText.TextXAlignment = Enum.TextXAlignment.Left
-    sliderText.Font = Enum.Font.Gotham
-    sliderText.Parent = sliderFrame
-    
-    local sliderBar = Instance.new("Frame")
-    sliderBar.Size = UDim2.new(1, 0, 0, 15)
-    sliderBar.Position = UDim2.new(0, 0, 0, 20)
-    sliderBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-    sliderBar.Parent = sliderFrame
-    
-    local sliderBarCorner = Instance.new("UICorner")
-    sliderBarCorner.CornerRadius = UDim.new(0, 7)
-    sliderBarCorner.Parent = sliderBar
-    
-    local sliderFill = Instance.new("Frame")
-    sliderFill.Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-    sliderFill.Parent = sliderBar
-    
-    local sliderFillCorner = Instance.new("UICorner")
-    sliderFillCorner.CornerRadius = UDim.new(0, 7)
-    sliderFillCorner.Parent = sliderFill
-    
-    local sliderButton = Instance.new("TextButton")
-    sliderButton.Size = UDim2.new(1, 0, 1, 0)
-    sliderButton.BackgroundTransparency = 1
-    sliderButton.Text = ""
-    sliderButton.Parent = sliderBar
-    
-    local isDragging = false
-    
-    local function updateSlider(value)
-        local normalized = math.clamp((value - min) / (max - min), 0, 1)
-        sliderFill.Size = UDim2.new(normalized, 0, 1, 0)
-        sliderText.Text = text .. ": " .. math.floor(value * 10) / 10
-        callback(value)
-    end
-    
-    -- Обработка для мобильного устройства
-    sliderButton.MouseButton1Down:Connect(function()
-        isDragging = true
-    end)
-    
-    sliderButton.MouseButton1Up:Connect(function()
-        isDragging = false
-    end)
-    
-    sliderButton.MouseLeave:Connect(function()
-        isDragging = false
-    end)
-    
-    local function onTouchInput(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.Touch then
-            local relativeX = input.Position.X - sliderBar.AbsolutePosition.X
-            local normalized = math.clamp(relativeX / sliderBar.AbsoluteSize.X, 0, 1)
-            local value = min + normalized * (max - min)
-            updateSlider(value)
-        end
-    end
-    
-    UserInputService.InputChanged:Connect(onTouchInput)
-    
-    updateSlider(defaultValue)
-end
-
-local function CreateLabel(parent, text)
     local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 0)
+    label.Size = UDim2.new(1, 0, 1, 0)
     label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 12
-    label.TextWrapped = true
-    label.Font = Enum.Font.Gotham
-    label.Parent = parent
-    label.AutomaticSize = Enum.AutomaticSize.Y
-    return label
+    label.Text = Text
+    label.TextColor3 = Color
+    label.TextScaled = true
+    label.Parent = billboard
+
+    task.spawn(function()
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local Workspace = game:GetService("Workspace")
+
+        local LocalPlayer = Players.LocalPlayer
+        local Camera = Workspace.CurrentCamera
+
+        while highlight and billboard and Parent and Parent.Parent do
+            local cameraPosition = Camera and Camera.CFrame.Position
+            if cameraPosition and Parent and Parent:IsA("BasePart") then
+                local distance = (cameraPosition - Parent.Position).Magnitude
+                if ActiveDistanceEsp then
+                    label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " stud)"
+                else
+                    label.Text = Text
+                end
+            end
+            RunService.Heartbeat:Wait()
+        end
+    end)
 end
 
-local function CreateButton(parent, text, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 35)
-    button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    button.Text = text
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
-    button.Font = Enum.Font.Gotham
-    button.Parent = parent
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 6)
-    buttonCorner.Parent = button
-    
-    button.MouseButton1Click:Connect(callback)
-    
-    return button
-end
-
--- Создание элементов Info tab
-local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
-CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
-
-local controlsSection, controlsContent = CreateSection(InfoTab, "🎮 Controls")
-CreateLabel(controlsContent, "- Tap ≡ button to show/hide menu\n- Drag title bar to move menu\n- Toggle switches to enable features\n- Adjust sliders for distance settings")
-
-local noteSection, noteContent = CreateSection(InfoTab, "💡 Important Note")
-CreateLabel(noteContent, "For Auto Tree and Kill Aura to work, you MUST equip any axe (Old Axe, Good Axe, Strong Axe, or Chainsaw)!")
-
--- Создание элементов Game tab
-local killAuraSection, killAuraContent = CreateSection(GameTab, "⚔️ Kill Aura")
-CreateSlider(killAuraContent, "Distance", 25, 10000, 25, function(value)
-    DistanceForKillAura = value
-end)
-
-local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value)
-    ActiveKillAura = value
-end)
-
-local autoChopSection, autoChopContent = CreateSection(GameTab, "🪓 Auto Tree")
-CreateSlider(autoChopContent, "Distance", 0, 1000, 25, function(value)
-    DistanceForAutoChopTree = value
-end)
-
-local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value)
-    ActiveAutoChopTree = value
-end)
-
--- Создание элементов Keks tab
-local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
-CreateButton(teleportContent, "Teleport to Base", function()
-    -- Телепорт на базу (координаты нужно уточнить)
-    local character = Player.Character
-    if character and character:FindFirstChild("HumanoidRootPart") then
-        -- Замените эти координаты на реальные координаты базы
-        character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
-        ShowNotification("Teleported to base!", 3)
-    end
-end)
-
-local itemSection, itemContent = CreateSection(KeksTab, "🎒 Items")
-CreateButton(itemContent, "Find Bandages", function()
-    -- Поиск бандажей
-    local character = Player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then 
-        ShowNotification("Character not found!", 3)
-        return 
-    end
-    
-    local bandages = {}
-    
-    -- Ищем бандажи в рабочем пространстве
-    for _, item in pairs(workspace:GetDescendants()) do
-        if item.Name == "Bandage" and item:IsA("Part") then
-            table.insert(bandages, item)
+local function KeepEsp(Char, Parent)
+    if Char then
+        local highlight = Char:FindFirstChildOfClass("Highlight")
+        if highlight then
+            highlight:Destroy()
         end
     end
-    
-    if #bandages > 0 then
-        -- Телепортируемся к первому найденному бандажу
-        character.HumanoidRootPart.CFrame = bandages[1].CFrame + Vector3.new(0, 3, 0)
-        ShowNotification("Found " .. #bandages .. " bandages!", 3)
-        print("Found " .. #bandages .. " bandages! Teleported to the first one.")
-    else
-        -- Показываем уведомление "Bandage None"
-        ShowNotification("Bandage None", 3)
-        print("No bandages found in the map.")
+    if Parent then
+        local billboard = Parent:FindFirstChildOfClass("BillboardGui")
+        if billboard then
+            billboard:Destroy()
+        end
     end
-end)
+end
 
--- НОВАЯ КНОПКА: All fuel
-CreateButton(itemContent, "All fuel", function()
-    -- Притягивание всех канистр с топливом
-    local character = Player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then 
-        ShowNotification("Character not found!", 3)
-        return 
+local function bringItemsByName(name)
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    for _, item in ipairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find(name:lower()) then
+            local part = item:FindFirstChildWhichIsA("BasePart") or (item:IsA("BasePart") and item)
+            if part then
+                part.CFrame = root.CFrame + Vector3.new(0, 3, 0) + root.CFrame.LookVector * 5
+            end
+        end
     end
-    
-    local root = character.HumanoidRootPart
-    local fuelCanisters = {}
-    
-    -- Ищем канистры с топливом в рабочем пространстве
-    for _, item in pairs(workspace:GetDescendants()) do
-        if item:IsA("Model") and item.Name:lower():find("fuel canister") then
+end
+
+local Confirmed = false
+WindUI:Popup({
+    Title = "ASTRALCHEAT Loaded | 99 Nights in the Forest",
+    Icon = "star",
+    IconThemed = true,
+    Content = "ASTRALCHEAT VERSION:BETA",
+    Buttons = {
+        { Title = "Cancel", Variant = "Secondary", Callback = function() end },
+        { Title = "Continue", Icon = "arrow-right", Callback = function() Confirmed = true end, Variant = "Primary" }
+    }
+})
+repeat task.wait() until Confirmed
+
+local Window = WindUI:CreateWindow({
+    Folder = "ASTRALCHEAT config | nigga | V1",
+    Title = "ASTRALCHEAT | V1 | 99 Nights In The Forest | Beta",
+    IconThemed = true,
+    Icon = "star",
+    Author = "hi join the com",
+    Size = UDim2.fromOffset(720, 500),
+    Transparent = true,
+    Theme = "Dark",
+})
+
+Window:EditOpenButton({
+    Title = "ASTRALCHEAT| 99 Nights In The Forest",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 6),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromRGB(30, 30, 30), Color3.fromRGB(255, 255, 255)),
+    Draggable = true,
+})
+
+local Tabs = {
+    Main = Window:Tab({ Title = "Main", Icon = "star" }),
+    Teleport = Window:Tab({ Title = "Teleport", Icon = "rocket" }),
+    Player = Window:Tab({ Title = "Player", Icon = "user" }),
+    Esp = Window:Tab({ Title = "Esp", Icon = "eye" }),
+    Bring = Window:Tab({ Title = "Bring Items", Icon = "package" }),
+    Hitbox = Window:Tab({ Title = "Hitbox", Icon = "target" }),
+    Misc = Window:Tab({ Title = "Misc", Icon = "file-cog" }),
+}
+
+local infHungerActive = false
+local infHungerThread
+
+Tabs.Main:Toggle({
+    Title = "Inf Hunger (GOOD)",
+    Default = false,
+    Callback = function(state)
+        infHungerActive = state
+        if state then
+            infHungerThread = task.spawn(function()
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local RequestConsumeItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestConsumeItem")
+                while infHungerActive do
+                    local args = {
+                        Instance.new("Model", nil)
+                    }
+                    RequestConsumeItem:InvokeServer(unpack(args))
+                    task.wait(1)
+                end
+            end)
+        else
+            if infHungerThread then
+                task.cancel(infHungerThread)
+                infHungerThread = nil
+            end
+        end
+    end
+})
+
+Tabs.Main:Button({Title="Auto Cook Meat", Callback=function()
+    local campfirePos = Vector3.new(1.87, 4.33, -3.67)
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") or item:IsA("BasePart") then
+            local name = item.Name:lower()
+            if name:find("meat") then
+                local part = item:FindFirstChildWhichIsA("BasePart") or item
+                if part then
+                    part.CFrame = CFrame.new(campfirePos + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2)))
+                end
+            end
+        end
+    end
+end})
+
+local autoTreeFarmActive = false
+local autoTreeFarmThread
+
+Tabs.Main:Toggle({
+    Title = "Auto Tree Farm (ONLY Old Axe)",
+    Default = false,
+    Callback = function(state)
+        autoTreeFarmActive = state
+        if state then
+            autoTreeFarmThread = task.spawn(function()
+                local ReplicatedStorage = game:GetService("ReplicatedStorage")
+                local ToolDamageObject = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("ToolDamageObject")
+                local Players = game:GetService("Players")
+                local LocalPlayer = Players.LocalPlayer
+                local Backpack = LocalPlayer:WaitForChild("Backpack")
+
+                local function getAllTrees()
+                    local map = workspace:FindFirstChild("Map")
+                    if not map then return {} end
+                    local landmarks = map:FindFirstChild("Landmarks") or map:FindFirstChild("Foliage")
+                    if not landmarks then return {} end
+                    local trees = {}
+                    for _, tree in ipairs(landmarks:GetChildren()) do
+                        if tree.Name == "Small Tree" and tree:IsA("Model") and tree.Parent then
+                            local trunk = tree:FindFirstChild("Trunk") or tree.PrimaryPart
+                            if trunk then
+                                table.insert(trees, {tree = tree, trunk = trunk})
+                            end
+                        end
+                    end
+                    return trees
+                end
+
+                local function getAxe()
+                    local inv = LocalPlayer:FindFirstChild("Inventory")
+                    if not inv then return nil end
+                    return inv:FindFirstChild("Old Axe") or inv:FindFirstChildWhichIsA("Tool")
+                end
+
+                while autoTreeFarmActive do
+                    local trees = getAllTrees()
+                    for _, t in ipairs(trees) do
+                        if not autoTreeFarmActive then break end
+                        if t.tree and t.tree.Parent then
+                            local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                            local hrp = char:FindFirstChild("HumanoidRootPart")
+                            if hrp and t.trunk then
+                                local treeCFrame = t.trunk.CFrame
+                                local rightVector = treeCFrame.RightVector
+                                local targetPosition = treeCFrame.Position + rightVector * 3
+                                hrp.CFrame = CFrame.new(targetPosition)
+                                task.wait(0.25)
+                                local axe = getAxe()
+                                if axe then
+                                    if axe.Parent == Backpack then
+                                        axe.Parent = char
+                                        task.wait(0.15)
+                                    end
+                                    while t.tree.Parent and autoTreeFarmActive do
+                                        pcall(function() axe:Activate() end)
+                                        local args = {
+                                            t.tree,
+                                            axe,
+                                            "1_8264699301",
+                                            t.trunk.CFrame
+                                        }
+                                        pcall(function() ToolDamageObject:InvokeServer(unpack(args)) end)
+                                        task.wait(1)
+                                    end
+                                end
+                            end
+                        end
+                        task.wait(0.5)
+                    end
+                    task.wait(1)
+                end
+            end)
+        else
+            if autoTreeFarmThread then
+                task.cancel(autoTreeFarmThread)
+                autoTreeFarmThread = nil
+            end
+        end
+    end
+})
+
+local autoBreakActive = false
+local autoBreakSpeed = 1
+local autoBreakThread
+
+Tabs.Main:Slider({
+    Title = "Hit Speed",
+    Min = 0.1,
+    Max = 2,
+    Default = 1,
+    Callback = function(val)
+        autoBreakSpeed = val
+    end
+})
+
+Tabs.Main:Toggle({
+    Title = "Auto Break (Hit)",
+    Default = false,
+    Callback = function(state)
+        autoBreakActive = state
+        if state then
+            autoBreakThread = task.spawn(function()
+                local player = game.Players.LocalPlayer
+                local camera = workspace.CurrentCamera
+                while autoBreakActive do
+                    local function getWeapon()
+                        local inv = player:FindFirstChild("Inventory")
+                        return inv and (inv:FindFirstChild("Spear")
+                            or inv:FindFirstChild("Strong Axe")
+                            or inv:FindFirstChild("Good Axe")
+                            or inv:FindFirstChild("Old Axe"))
+                    end
+                    local weapon = getWeapon()
+                    if weapon then
+                        local ray = workspace:Raycast(camera.CFrame.Position, camera.CFrame.LookVector * 15)
+                        if ray and ray.Instance and ray.Instance.Name == "Trunk" then
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(
+                                ray.Instance.Parent, weapon, "4_7591937906", CFrame.new(ray.Position)
+                            )
+                        end
+                    end
+                    task.wait(autoBreakSpeed)
+                end
+            end)
+        else
+            if autoBreakThread then
+                task.cancel(autoBreakThread)
+                autoBreakThread = nil
+            end
+        end
+    end
+})
+
+local ActiveEspPlayer = false
+local ActiveEspItems = false
+local ActiveEspEnemy = false
+local ActiveEspChildren = false
+local ActiveEspPeltTrader = false
+local ActiveDistanceEsp = false
+
+Tabs.Esp:Toggle({
+    Title = "Player Esp",
+    Default = false,
+    Callback = function(state)
+        ActiveEspPlayer = state
+        task.spawn(function()
+            while ActiveEspPlayer do
+                for _, player in pairs(game.Players:GetPlayers()) do
+                    if player ~= LocalPlayer and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                        local char = player.Character
+                        if not char:FindFirstChildOfClass("Highlight") and not char.HumanoidRootPart:FindFirstChildOfClass("BillboardGui") then
+                            CreateEsp(char, Color3.fromRGB(0, 255, 0), player.Name, char.HumanoidRootPart, 2)
+                        end
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, player in pairs(game.Players:GetPlayers()) do
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local char = player.Character
+                    KeepEsp(char, char.HumanoidRootPart)
+                end
+            end
+        end)
+    end
+})
+
+Tabs.Esp:Toggle({
+    Title = "Item Esp",
+    Default = false,
+    Callback = function(state)
+        ActiveEspItems = state
+        task.spawn(function()
+            while ActiveEspItems do
+                for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
+                    if Obj:IsA("Model") and Obj.PrimaryPart and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                        CreateEsp(Obj, Color3.fromRGB(255, 255, 0), Obj.Name, Obj.PrimaryPart, 2)
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, Obj in pairs(game.Workspace.Items:GetChildren()) do
+                KeepEsp(Obj, Obj.PrimaryPart)
+            end
+        end)
+    end
+})
+
+Tabs.Esp:Toggle({
+    Title = "Enemy Esp",
+    Default = false,
+    Callback = function(state)
+        ActiveEspEnemy = state
+        task.spawn(function()
+            while ActiveEspEnemy do
+                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                    if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name ~= "Lost Child" and Obj.Name ~= "Lost Child2" and Obj.Name ~= "Lost Child3" and Obj.Name ~= "Lost Child4" and Obj.Name ~= "Pelt Trader") and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                        CreateEsp(Obj, Color3.fromRGB(255, 0, 0), Obj.Name, Obj.PrimaryPart, 2)
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                KeepEsp(Obj, Obj.PrimaryPart)
+            end
+        end)
+    end
+})
+
+local espTypes = {
+    ["Fuel All"] = {
+        color = Color3.fromRGB(255, 140, 0),
+        items = { "Log", "Fuel Canister", "Coal", "Oil Barrel" }
+    },
+    ["Scraps All"] = {
+        color = Color3.fromRGB(169, 169, 169),
+        items = { "Sheet Metal", "Broken Fan", "UFO Junk", "Bolt", "Old Radio", "UFO Scrap", "Broken Microwave" }
+    },
+    ["Ammo All"] = {
+        color = Color3.fromRGB(0, 255, 0),
+        items = { "Rifle Ammo", "Revolver Ammo" }
+    },
+    ["Guns All"] = {
+        color = Color3.fromRGB(255, 0, 0),
+        items = { "Rifle", "Revolver" }
+    },
+    ["Food All"] = {
+        color = Color3.fromRGB(255, 255, 0),
+        items = { "Meat? Sandwich", "Cake", "Carrot", "Morsel" }
+    },
+    ["body All"] = {
+        color = Color3.fromRGB(255, 255, 255),
+        items = { "Leather Body", "Iron Body" }
+    },
+    ["Bandage"] = {
+        color = Color3.fromRGB(255, 192, 203),
+        items = { "Bandage" }
+    },
+    ["Medkit"] = {
+        color = Color3.fromRGB(255, 0, 255),
+        items = { "MedKit" }
+    },
+    ["Coin"] = {
+        color = Color3.fromRGB(255, 215, 0),
+        items = { "Coin Stack" }
+    },
+    ["Radio"] = {
+        color = Color3.fromRGB(135, 206, 235),
+        items = { "Old Radio" }
+    },
+    ["tyre"] = {
+        color = Color3.fromRGB(105, 105, 105),
+        items = { "Tyre" }
+    },
+    ["broken fan"] = {
+        color = Color3.fromRGB(112, 128, 144),
+        items = { "Broken Fan" }
+    },
+    ["broken microwave"] = {
+        color = Color3.fromRGB(47, 79, 79),
+        items = { "Broken Microwave" }
+    },
+    ["bolt"] = {
+        color = Color3.fromRGB(0, 191, 255),
+        items = { "Bolt" }
+    },
+    ["Sheet Metal"] = {
+        color = Color3.fromRGB(192, 192, 192),
+        items = { "Sheet Metal" }
+    },
+    ["SeedBox"] = {
+        color = Color3.fromRGB(124, 252, 0),
+        items = { "Seed Box" }
+    },
+    ["Chair"] = {
+        color = Color3.fromRGB(210, 180, 140),
+        items = { "Chair" }
+    },
+}
+
+for category, data in pairs(espTypes) do
+    Tabs.Esp:Toggle({
+        Title = "(" .. category .. ") Esp",
+        Default = false,
+        Callback = function(state)
+            local active = state
+            task.spawn(function()
+                while active do
+                    for _, obj in pairs(game.Workspace.Items:GetChildren()) do
+                        if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") and not obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                            for _, itemName in pairs(data.items) do
+                                if string.lower(obj.Name) == string.lower(itemName) then
+                                    CreateEsp(obj, data.color, obj.Name, obj.PrimaryPart, 2)
+                                    break
+                                end
+                            end
+                        end
+                    end
+                    task.wait(0.25)
+                end
+                for _, obj in pairs(game.Workspace.Items:GetChildren()) do
+                    for _, itemName in pairs(data.items) do
+                        if string.lower(obj.Name) == string.lower(itemName) then
+                            KeepEsp(obj, obj.PrimaryPart)
+                            break
+                        end
+                    end
+                end
+            end)
+        end
+    })
+end
+
+Tabs.Esp:Toggle({
+    Title = "Children Esp",
+    Default = false,
+    Callback = function(state)
+        ActiveEspChildren = state
+        task.spawn(function()
+            while ActiveEspChildren do
+                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                    if Obj:IsA("Model") and Obj.PrimaryPart and (Obj.Name == "Lost Child" or Obj.Name == "Lost Child2" or Obj.Name == "Lost Child3" or Obj.Name == "Lost Child4") and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                        CreateEsp(Obj, Color3.fromRGB(0, 255, 0), Obj.Name, Obj.PrimaryPart, 2)
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                KeepEsp(Obj, Obj.PrimaryPart)
+            end
+        end)
+    end
+})
+
+Tabs.Esp:Toggle({
+    Title = "Pelt Trader Esp",
+    Default = false,
+    Callback = function(state)
+        ActiveEspPeltTrader = state
+        task.spawn(function()
+            while ActiveEspPeltTrader do
+                for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                    if Obj:IsA("Model") and Obj.PrimaryPart and Obj.Name == "Pelt Trader" and not Obj:FindFirstChildOfClass("Highlight") and not Obj.PrimaryPart:FindFirstChildOfClass("BillboardGui") then
+                        CreateEsp(Obj, Color3.fromRGB(0, 255, 255), Obj.Name, Obj.PrimaryPart, 2)
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, Obj in pairs(game.Workspace.Characters:GetChildren()) do
+                KeepEsp(Obj, Obj.PrimaryPart)
+            end
+        end)
+    end
+})
+
+Tabs.Teleport:Button({
+    Title="Teleport to Camp",
+    Callback=function()
+        local char = LocalPlayer.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = CFrame.new(
+                13.287363052368164, 3.999999761581421, 0.36212217807769775,
+                0.6022269129753113, -2.275036159460342e-08, 0.7983249425888062,
+                6.430457055728311e-09, 1, 2.364672191390582e-08,
+                -0.7983249425888062, -9.1070981866892e-09, 0.6022269129753113
+            )
+        end
+    end
+})
+
+Tabs.Teleport:Button({
+    Title="TP to NPC Trader",
+    Callback=function()
+        local pos = Vector3.new(-37.08, 3.98, -16.33)
+        local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+        hrp.CFrame = CFrame.new(pos)
+    end
+})
+
+Tabs.Teleport:Button({
+    Title = "Tp to Random Tree",
+    Callback = function()
+        local Players = game:GetService("Players")
+        local player = Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local map = workspace:FindFirstChild("Map")
+        if not map then return end
+
+        local foliage = map:FindFirstChild("Foliage") or map:FindFirstChild("Landmarks")
+        if not foliage then return end
+
+        local trees = {}
+        for _, obj in ipairs(foliage:GetChildren()) do
+            if obj.Name == "Small Tree" and obj:IsA("Model") then
+                local trunk = obj:FindFirstChild("Trunk") or obj.PrimaryPart
+                if trunk then
+                    table.insert(trees, trunk)
+                end
+            end
+        end
+
+        if #trees > 0 then
+            local trunk = trees[math.random(1, #trees)]
+            local treeCFrame = trunk.CFrame
+            local rightVector = treeCFrame.RightVector
+            local targetPosition = treeCFrame.Position + rightVector * 3
+            hrp.CFrame = CFrame.new(targetPosition)
+        end
+    end
+})
+
+local lostChildNames = {
+    "Lost Child",
+    "Lost Child2",
+    "Lost Child3",
+    "Lost Child4"
+}
+
+for i, name in ipairs(lostChildNames) do
+    Tabs.Teleport:Button({
+        Title = "TP to Lost Child " .. i,
+        Callback = function()
+            local workspaceCharacters = game.Workspace.Characters
+            local targetLostChild = workspaceCharacters:FindFirstChild(name)
+
+            if targetLostChild and targetLostChild:IsA("Model") and targetLostChild.PrimaryPart then
+                local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                hrp.CFrame = targetLostChild.PrimaryPart.CFrame
+            else
+                warn(name .. " not found in Characters or has no PrimaryPart")
+            end
+        end
+    })
+end
+
+Tabs.Bring:Button({Title="Bring Everything",Callback=function()
+    for _, item in ipairs(workspace.Items:GetChildren()) do
+        local part = item:FindFirstChildWhichIsA("BasePart") or item:IsA("BasePart") and item
+        if part then
+            part.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + Vector3.new(math.random(-44,44), 0, math.random(-44,44))
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Lost Child 1", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child") and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
             if main then
-                table.insert(fuelCanisters, {model = item, main = main})
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
             end
         end
     end
-    
-    -- Также проверяем папку Items, если она существует
-    if workspace:FindFirstChild("Items") then
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item:IsA("Model") and item.Name:lower():find("fuel canister") then
-                local main = item:FindFirstChildWhichIsA("BasePart")
-                if main then
-                    table.insert(fuelCanisters, {model = item, main = main})
+end})
+
+Tabs.Bring:Button({Title="Bring Lost Child 2", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child2") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Lost Child 3", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child3") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Lost Child 4", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child4") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Logs", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find("log") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Fuel Canister", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find("fuel canister") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Oil Barrel", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find("oil barrel") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({ Title = "Bring All Scrap", Callback = function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local scrapNames = {
+        ["tyre"] = true, ["sheet metal"] = true, ["broken fan"] = true, ["bolt"] = true, ["old radio"] = true, ["ufo junk"] = true, ["ufo scrap"] = true, ["broken microwave"] = true,
+    }
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemName = item.Name:lower()
+            for scrapName, _ in pairs(scrapNames) do
+                if itemName:find(scrapName) then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    end
+                    break
                 end
             end
         end
     end
-    
-    if #fuelCanisters > 0 then
-        -- Перемещаем все канистры к игроку
-        for _, fuel in pairs(fuelCanisters) do
-            fuel.main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-        end
-        ShowNotification("Brought " .. #fuelCanisters .. " fuel canisters!", 3)
-        print("Brought " .. #fuelCanisters .. " fuel canisters to your location.")
-    else
-        ShowNotification("No fuel canisters found!", 3)
-        print("No fuel canisters found in the map.")
-    end
-end)
+end})
 
--- Функции из оригинального скрипта
--- Kill Aura функция
+Tabs.Bring:Button({Title="Bring Coal", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item.Name:lower():find("coal") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Raw + Cooked Meat", Callback=function()
+    local root = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        local name = item.Name:lower()
+        if (name:find("meat") or name:find("cooked")) and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+end})
+
+Tabs.Bring:Button({Title="Bring Flashlight", Callback=function() bringItemsByName("Flashlight") end})
+Tabs.Bring:Button({Title="Bring Nails", Callback=function() bringItemsByName("Nails") end})
+Tabs.Bring:Button({Title="Bring Fan", Callback=function() bringItemsByName("Fan") end})
+Tabs.Bring:Button({Title="Bring Rope", Callback=function() bringItemsByName("Rope") end})
+Tabs.Bring:Button({Title="Bring Scrap", Callback=function() bringItemsByName("Scrap") end})
+Tabs.Bring:Button({Title="Bring Wood", Callback=function() bringItemsByName("Wood") end})
+Tabs.Bring:Button({Title="Bring Cloth", Callback=function() bringItemsByName("Cloth") end})
+Tabs.Bring:Button({Title="Bring Rock", Callback=function() bringItemsByName("Rock") end})
+Tabs.Bring:Button({Title="Bring Stone Pickaxe", Callback=function() bringItemsByName("Stone Pickaxe") end})
+Tabs.Bring:Button({Title="Bring Knife", Callback=function() bringItemsByName("Knife") end})
+Tabs.Bring:Button({Title="Bring Spear", Callback=function() bringItemsByName("Spear") end})
+Tabs.Bring:Button({Title="Bring Leather Body", Callback=function() bringItemsByName("Leather Body") end})
+Tabs.Bring:Button({Title="Bring Iron Body", Callback=function() bringItemsByName("Iron Body") end})
+Tabs.Bring:Button({Title="Bring Revolver", Callback=function() bringItemsByName("Revolver") end})
+Tabs.Bring:Button({Title="Bring Rifle", Callback=function() bringItemsByName("Rifle") end})
+Tabs.Bring:Button({Title="Bring Bandage", Callback=function() bringItemsByName("Bandage") end})
+Tabs.Bring:Button({Title="Bring MedKit", Callback=function() bringItemsByName("MedKit") end})
+Tabs.Bring:Button({Title="Bring Old Radio", Callback=function() bringItemsByName("Old Radio") end})
+Tabs.Bring:Button({Title="Bring Coin Stack", Callback=function() bringItemsByName("Coin Stack") end})
+Tabs.Bring:Button({Title="Bring UFO Junk", Callback=function() bringItemsByName("UFO Junk") end})
+Tabs.Bring:Button({Title="Bring UFO Scrap", Callback=function() bringItemsByName("UFO Scrap") end})
+Tabs.Bring:Button({Title="Bring Broken Microwave", Callback=function() bringItemsByName("Broken Microwave") end})
+Tabs.Bring:Button({Title="Bring Bolt", Callback=function() bringItemsByName("Bolt") end})
+Tabs.Bring:Button({Title="Bring Chair", Callback=function() bringItemsByName("Chair") end})
+Tabs.Bring:Button({Title="Bring Seed Box", Callback=function() bringItemsByName("Seed Box") end})
+Tabs.Bring:Button({Title="Bring Meat? Sandwich", Callback=function() bringItemsByName("Meat? Sandwich") end})
+Tabs.Bring:Button({Title="Bring Cake", Callback=function() bringItemsByName("Cake") end})
+Tabs.Bring:Button({Title="Bring Carrot", Callback=function() bringItemsByName("Carrot") end})
+Tabs.Bring:Button({Title="Bring Morsel", Callback=function() bringItemsByName("Morsel") end})
+Tabs.Bring:Button({Title="Bring Tyre", Callback=function() bringItemsByName("Tyre") end})
+Tabs.Bring:Button({Title="Bring Broken Fan", Callback=function() bringItemsByName("Broken Fan") end})
+Tabs.Bring:Button({Title="Bring Sheet Metal", Callback=function() bringItemsByName("Sheet Metal") end})
+Tabs.Bring:Button({Title="Bring Strong Axe", Callback=function() bringItemsByName("Strong Axe") end})
+Tabs.Bring:Button({Title="Bring Good Axe", Callback=function() bringItemsByName("Good Axe") end})
+Tabs.Bring:Button({Title="Bring Old Axe", Callback=function() bringItemsByName("Old Axe") end})
+Tabs.Bring:Button({Title="Bring Rifle Ammo", Callback=function() bringItemsByName("Rifle Ammo") end})
+Tabs.Bring:Button({Title="Bring Revolver Ammo", Callback=function() bringItemsByName("Revolver Ammo") end})
+
+local hitboxSettings = {
+    Wolf = false,
+    Bunny = false,
+    Cultist = false,
+    All = false,
+    Show = false,
+    Size = 10
+}
+
+local function updateHitboxForModel(model)
+    local root = model:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    local name = model.Name:lower()
+
+    if hitboxSettings.All then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.5 or 1
+        root.Color = Color3.fromRGB(255, 255, 255)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+        return
+    end
+
+    local shouldResize =
+        (hitboxSettings.Wolf and (name:find("wolf") or name:find("alpha"))) or
+        (hitboxSettings.Bunny and name:find("bunny")) or
+        (hitboxSettings.Cultist and (name:find("cultist") or name:find("cross")))
+
+    if shouldResize then
+        root.Size = Vector3.new(hitboxSettings.Size, hitboxSettings.Size, hitboxSettings.Size)
+        root.Transparency = hitboxSettings.Show and 0.5 or 1
+        root.Color = Color3.fromRGB(255, 255, 255)
+        root.Material = Enum.Material.Neon
+        root.CanCollide = false
+    end
+end
+
 task.spawn(function()
     while true do
-        if ActiveKillAura then 
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+        for _, model in ipairs(workspace:GetDescendants()) do
+            if model:IsA("Model") and model:FindFirstChild("HumanoidRootPart") then
+                updateHitboxForModel(model)
+            end
+        end
+        task.wait(2)
+    end
+end)
 
-            for _, bunny in pairs(workspace.Characters:GetChildren()) do
-                if bunny:IsA("Model") and bunny.PrimaryPart then
-                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForKillAura then
-                        task.spawn(function()	
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                        end)	
+Tabs.Hitbox:Toggle({Title="Expand Wolf Hitbox", Default=false, Callback=function(val) hitboxSettings.Wolf=val end})
+Tabs.Hitbox:Toggle({Title="Expand Bunny Hitbox", Default=false, Callback=function(val) hitboxSettings.Bunny=val end})
+Tabs.Hitbox:Toggle({Title="Expand Cultist Hitbox", Default=false, Callback=function(val) hitboxSettings.Cultist=val end})
+Tabs.Hitbox:Toggle({Title="Expand All Hitbox", Default=false, Callback=function(val) hitboxSettings.All=val end})
+Tabs.Hitbox:Slider({Title="Hitbox Size", Min=2, Max=250, Default=10, Step=1, Callback=function(val) hitboxSettings.Size=val end})
+Tabs.Hitbox:Toggle({Title="Show Hitbox (Transparency)", Default=false, Callback=function(val) hitboxSettings.Show=val end})
+
+Tabs.Player:Slider({
+    Title = "WalkSpeed",
+    Min = 5,
+    Max = 500,
+    Default = 16,
+    Callback = function(val)
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = val
+        end
+    end
+})
+
+Tabs.Player:Slider({
+    Title = "JumpPower",
+    Min = 10,
+    Max = 500,
+    Default = 50,
+    Callback = function(val)
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.JumpPower = val
+        end
+    end
+})
+
+local speedBoostEnabled = false
+
+Tabs.Player:Button({
+    Title = "Speed Boost",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            speedBoostEnabled = not speedBoostEnabled
+            humanoid.WalkSpeed = speedBoostEnabled and 100 or 16
+        end
+    end
+})
+
+Tabs.Player:Button({
+    Title = "Fly",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/dyumra/Dupe-Anime-Rails/refs/heads/main/Dly"))()
+    end
+})
+
+local noclipConnection
+
+Tabs.Player:Toggle({
+    Title = "NoClip",
+    Default = false,
+    Callback = function(state)
+        if state then
+            noclipConnection = RunService.Stepped:Connect(function()
+                local Character = LocalPlayer.Character
+                if Character then
+                    for _, part in pairs(Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            local Character = LocalPlayer.Character
+            if Character then
+                for _, part in pairs(Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
                     end
                 end
             end
         end
-        wait(0.01)
     end
-end)
+})
 
--- Auto Chop Tree функция
-task.spawn(function()
-    while true do
-        if ActiveAutoChopTree then 
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
-            
-            for _, bunny in pairs(workspace.Map.Foliage:GetChildren()) do
-                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2")  and bunny.PrimaryPart then
-                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForAutoChopTree then
-                        task.spawn(function()		
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                        end)		
-                    end
+Tabs.Player:Toggle({
+    Title = "God mode",
+    Default = false,
+    Callback = function(state)
+        local player = game.Players.LocalPlayer
+        local humanoid = player.Character and player.Character:WaitForChild("Humanoid")
+        if state then
+            local connection
+            connection = humanoid.HealthChanged:Connect(function()
+                if humanoid.Health < humanoid.MaxHealth then
+                    humanoid.Health = humanoid.MaxHealth
                 end
-            end 
-            
-            for _, bunny in pairs(workspace.Map.Landmarks:GetChildren()) do
-                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2")  and bunny.PrimaryPart then
-                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForAutoChopTree then
-                        task.spawn(function()	
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                        end)			
+            end)
+            humanoid:SetAttribute("GodModeConnection", connection)
+        else
+            local connection = humanoid:GetAttribute("GodModeConnection")
+            if connection then
+                connection:Disconnect()
+                humanoid:SetAttribute("GodModeConnection", nil)
+            end
+        end
+    end
+})
+
+Tabs.Player:Toggle({
+    Title = "Infinite Jump",
+    Default = false,
+    Callback = function(state)
+        local LocalPlayer = game:GetService("Players").LocalPlayer
+        local Humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+        if Humanoid then
+            if state then
+                Humanoid.JumpPower = 50
+                local jumpConnection = Humanoid.StateChanged:Connect(function(oldState, newState)
+                    if newState == Enum.HumanoidStateType.Landed then
+                        Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
                     end
+                end)
+                Humanoid:SetAttribute("InfinityJumpConnection", jumpConnection)
+            else
+                Humanoid.JumpPower = 50
+                local jumpConnection = Humanoid:GetAttribute("InfinityJumpConnection")
+                if jumpConnection then
+                    jumpConnection:Disconnect()
+                    Humanoid:SetAttribute("InfinityJumpConnection", nil)
                 end
             end
         end
-        wait(0.01)
     end
-end)
+})
 
--- Обновление размеров секций после добавления контента
-game:GetService("RunService").Heartbeat:Connect(function()
-    for _, tab in pairs({InfoTab, GameTab, KeksTab}) do
-        for _, section in pairs(tab:GetChildren()) do
-            if section:IsA("Frame") and section:FindFirstChildWhichIsA("Frame") then
-                local content = section:FindFirstChildWhichIsA("Frame")
-                if content and content:FindFirstChildOfClass("UIListLayout") then
-                    section.Size = UDim2.new(1, 0, 0, 25 + content.UIListLayout.AbsoluteContentSize.Y)
+local instantPrompt = false
+local connection
+
+Tabs.Misc:Button({
+    Title = "Insta Proximity Prompt",
+    Callback = function()
+        instantPrompt = not instantPrompt
+
+        if instantPrompt then
+            for _, prompt in ipairs(workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0
                 end
             end
+
+            if not connection then
+                connection = workspace.DescendantAdded:Connect(function(descendant)
+                    if descendant:IsA("ProximityPrompt") then
+                        descendant.HoldDuration = 0
+                    end
+                end)
+            end
+        else
+            for _, prompt in ipairs(workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") then
+                    prompt.HoldDuration = 0.5
+                end
+            end
+
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
         end
-        
-        tab.CanvasSize = UDim2.new(0, 0, 0, tab.UIListLayout.AbsoluteContentSize.Y + 10)
     end
-end)
+})
 
--- Функционал переключения вкладок
-local function switchToTab(tabName)
-    InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    
-    InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    
-    InfoTab.Visible = false
-    GameTab.Visible = false
-    KeksTab.Visible = false
-    
-    if tabName == "Info" then
-        InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        InfoTab.Visible = true
-    elseif tabName == "Game" then
-        GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        GameTab.Visible = true
-    elseif tabName == "Keks" then
-        KeksTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        KeksTab.Visible = true
+Tabs.Misc:Button({
+    Title = "Fps Boost",
+    Callback = function()
+        pcall(function()
+            settings().Rendering.QualityLevel = Enum.QualityLevel.Level01
+            local lighting = game:GetService("Lighting")
+            lighting.Brightness = 0
+            lighting.FogEnd = 100
+            lighting.GlobalShadows = false
+            lighting.EnvironmentDiffuseScale = 0
+            lighting.EnvironmentSpecularScale = 0
+            lighting.ClockTime = 14
+            lighting.OutdoorAmbient = Color3.new(0, 0, 0)
+            local terrain = workspace:FindFirstChildOfClass("Terrain")
+            if terrain then
+                terrain.WaterWaveSize = 0
+                terrain.WaterWaveSpeed = 0
+                terrain.WaterReflectance = 0
+                terrain.WaterTransparency = 1
+            end
+            for _, obj in ipairs(lighting:GetDescendants()) do
+                if obj:IsA("PostEffect") or obj:IsA("BloomEffect") or obj:IsA("ColorCorrectionEffect") or obj:IsA("SunRaysEffect") or obj:IsA("BlurEffect") then
+                    obj.Enabled = false
+                end
+            end
+            for _, obj in ipairs(game:GetDescendants()) do
+                if obj:IsA("ParticleEmitter") or obj:IsA("Trail") then
+                    obj.Enabled = false
+                elseif obj:IsA("Texture") or obj:IsA("Decal") then
+                    obj.Transparency = 1
+                end
+            end
+            for _, part in ipairs(workspace:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CastShadow = false
+                end
+            end
+        end)
+        print("fps boost just loaded")
     end
-end
-
-InfoTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Info")
-end)
-
-GameTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Game")
-end)
-
-KeksTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Keks")
-end)
-
--- Система перемещения меню для мобильных устройств
-local dragging = false
-local dragStartPos = nil
-local menuStartPos = nil
-
-local function startDragging(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStartPos = Vector2.new(input.Position.X, input.Position.Y)
-        menuStartPos = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset)
-    end
-end
-
-local function stopDragging()
-    dragging = false
-    dragStartPos = nil
-    menuStartPos = nil
-end
-
-local function updateDrag(input)
-    if dragging and dragStartPos and menuStartPos then
-        local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStartPos
-        local newX = menuStartPos.X.Offset + delta.X
-        local newY = menuStartPos.Y.Offset + delta.Y
-        
-        -- Ограничение, чтобы меню не выходило за экран
-        local screenSize = PlayerGui.AbsoluteSize
-        newX = math.clamp(newX, 0, screenSize.X - MainFrame.AbsoluteSize.X)
-        newY = math.clamp(newY, 0, screenSize.Y - MainFrame.AbsoluteSize.Y)
-        
-        MainFrame.Position = UDim2.new(0, newX, 0, newY)
-    end
-end
-
--- Обработчики для перемещения
-Title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        startDragging(input)
-    end
-end)
-
-Title.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        stopDragging()
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        updateDrag(input)
-    end
-end)
-
--- Закрытие меню
-CloseButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = false
-end)
-
--- Переключение видимости меню
-ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
-end)
-
--- По умолчанию открываем вкладку Info
-switchToTab("Info")
-
-print("Mobile ASTRALCHEAT with 3 tabs and notifications loaded! Tap the ≡ button to open/close. Drag the title to move.")
+})
