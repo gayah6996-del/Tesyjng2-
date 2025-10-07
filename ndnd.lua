@@ -544,10 +544,21 @@ CreateButton(teleportContent, "Teleport to Base", function()
     end
 end)
 
-local itemSection, itemContent = CreateSection(KeksTab, "🎒 Items")
-CreateButton(itemContent, "Bring Logs", function()
+-- Новое мини-меню для Bring Items
+local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
+
+-- Создаем выпадающий список для выбора предметов
+local bringOptions = {"Logs", "Coal", "Fuel Canister"}
+local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
+
+-- Кнопка для телепортации выбранных предметов
+CreateButton(bringItemsContent, "Bring Selected", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if root then
+    if not root then return end
+    
+    local selectedItem = bringDropdown.GetValue()
+    
+    if selectedItem == "Logs" then
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("log") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
@@ -556,6 +567,27 @@ CreateButton(itemContent, "Bring Logs", function()
                 end
             end
         end
+        ShowNotification("Brought: Logs", 2)
+    elseif selectedItem == "Coal" then
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("coal") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                end
+            end
+        end
+        ShowNotification("Brought: Coal", 2)
+    elseif selectedItem == "Fuel Canister" then
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("fuel canister") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                end
+            end
+        end
+        ShowNotification("Brought: Fuel Canister", 2)
     end
 end)
 
@@ -787,4 +819,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile ASTRALCHEAT with scrolling loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
+print("Mobile ASTRALCHEAT with Bring Items menu loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
