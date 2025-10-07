@@ -52,8 +52,8 @@ ToggleButton.Size = UDim2.new(0, 60, 0, 60)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "ASTRAL"
-ToggleButton.TextSize = 20
+ToggleButton.Text = "≡" -- Изменен текст на иконку меню
+ToggleButton.TextSize = 30 -- Увеличен размер текста для иконки
 ToggleButton.ZIndex = 10
 ToggleButton.Parent = ScreenGui
 
@@ -406,7 +406,7 @@ local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information
 CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
 
 local controlsSection, controlsContent = CreateSection(InfoTab, "🎮 Controls")
-CreateLabel(controlsContent, "- Tap ASTRAL button to show/hide menu\n- Drag title bar to move menu\n- Toggle switches to enable features\n- Adjust sliders for distance settings")
+CreateLabel(controlsContent, "- Tap ≡ button to show/hide menu\n- Drag title bar to move menu\n- Toggle switches to enable features\n- Adjust sliders for distance settings")
 
 local noteSection, noteContent = CreateSection(InfoTab, "💡 Important Note")
 CreateLabel(noteContent, "For Auto Tree and Kill Aura to work, you MUST equip any axe (Old Axe, Good Axe, Strong Axe, or Chainsaw)!")
@@ -651,4 +651,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile ASTRALCHEAT with 3 tabs and notifications loaded! Tap the button to open/close. Drag the title to move.")
+print("Mobile ASTRALCHEAT with 3 tabs and notifications loaded! Tap the ≡ button to open/close. Drag the title to move.")
