@@ -139,19 +139,22 @@ KeksTabButton.TextSize = 14
 KeksTabButton.Font = Enum.Font.GothamBold
 KeksTabButton.Parent = TabsFrame
 
--- Content frames
-local ContentFrame = Instance.new("Frame")
+-- Content frames с прокруткой
+local ContentFrame = Instance.new("ScrollingFrame")
 ContentFrame.Size = UDim2.new(1, -10, 1, -75)
 ContentFrame.Position = UDim2.new(0, 5, 0, 70)
 ContentFrame.BackgroundTransparency = 1
+ContentFrame.BorderSizePixel = 0
+ContentFrame.ScrollBarThickness = 8
+ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
 ContentFrame.Parent = MainFrame
 
 -- Info Tab Content
-local InfoTab = Instance.new("ScrollingFrame")
+local InfoTab = Instance.new("Frame")
 InfoTab.Size = UDim2.new(1, 0, 1, 0)
 InfoTab.BackgroundTransparency = 1
 InfoTab.BorderSizePixel = 0
-InfoTab.ScrollBarThickness = 6
 InfoTab.Visible = true
 InfoTab.Parent = ContentFrame
 
@@ -160,11 +163,10 @@ InfoListLayout.Padding = UDim.new(0, 8)
 InfoListLayout.Parent = InfoTab
 
 -- Game Tab Content
-local GameTab = Instance.new("ScrollingFrame")
+local GameTab = Instance.new("Frame")
 GameTab.Size = UDim2.new(1, 0, 1, 0)
 GameTab.BackgroundTransparency = 1
 GameTab.BorderSizePixel = 0
-GameTab.ScrollBarThickness = 6
 GameTab.Visible = false
 GameTab.Parent = ContentFrame
 
@@ -173,11 +175,10 @@ GameListLayout.Padding = UDim.new(0, 8)
 GameListLayout.Parent = GameTab
 
 -- Keks Tab Content
-local KeksTab = Instance.new("ScrollingFrame")
+local KeksTab = Instance.new("Frame")
 KeksTab.Size = UDim2.new(1, 0, 1, 0)
 KeksTab.BackgroundTransparency = 1
 KeksTab.BorderSizePixel = 0
-KeksTab.ScrollBarThickness = 6
 KeksTab.Visible = false
 KeksTab.Parent = ContentFrame
 
@@ -197,6 +198,7 @@ local function CreateSection(parent, title)
     section.Size = UDim2.new(1, 0, 0, 0)
     section.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     section.BorderSizePixel = 0
+    section.AutomaticSize = Enum.AutomaticSize.Y
     section.Parent = parent
     
     local sectionCorner = Instance.new("UICorner")
@@ -218,11 +220,17 @@ local function CreateSection(parent, title)
     content.Size = UDim2.new(1, -10, 0, 0)
     content.Position = UDim2.new(0, 5, 0, 25)
     content.BackgroundTransparency = 1
+    content.AutomaticSize = Enum.AutomaticSize.Y
     content.Parent = section
     
     local contentLayout = Instance.new("UIListLayout")
     contentLayout.Padding = UDim.new(0, 5)
     contentLayout.Parent = content
+    
+    -- Автоматическое обновление размера секции
+    contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        section.Size = UDim2.new(1, 0, 0, 25 + contentLayout.AbsoluteContentSize.Y)
+    end)
     
     return section, content
 end
@@ -592,6 +600,30 @@ CreateButton(scrapContent, "Tp Scraps", function()
     ShowNotification("Teleported: " .. selectedScrap, 2)
 end)
 
+-- Автоматическое обновление размеров контента для прокрутки
+local function updateContentSize()
+    local currentTab = nil
+    if InfoTab.Visible then
+        currentTab = InfoTab
+    elseif GameTab.Visible then
+        currentTab = GameTab
+    elseif KeksTab.Visible then
+        currentTab = KeksTab
+    end
+    
+    if currentTab then
+        local layout = currentTab:FindFirstChildOfClass("UIListLayout")
+        if layout then
+            ContentFrame.CanvasSize = UDim2.new(0, 0, 0, layout.AbsoluteContentSize.Y + 10)
+        end
+    end
+end
+
+-- Обновление размеров при изменении контента
+game:GetService("RunService").Heartbeat:Connect(function()
+    updateContentSize()
+end)
+
 -- Функции из оригинального скрипта
 -- Kill Aura функция
 task.spawn(function()
@@ -652,22 +684,6 @@ task.spawn(function()
     end
 end)
 
--- Обновление размеров секций после добавления контента
-game:GetService("RunService").Heartbeat:Connect(function()
-    for _, tab in pairs({InfoTab, GameTab, KeksTab}) do
-        for _, section in pairs(tab:GetChildren()) do
-            if section:IsA("Frame") and section:FindFirstChildWhichIsA("Frame") then
-                local content = section:FindFirstChildWhichIsA("Frame")
-                if content and content:FindFirstChildOfClass("UIListLayout") then
-                    section.Size = UDim2.new(1, 0, 0, 25 + content.UIListLayout.AbsoluteContentSize.Y)
-                end
-            end
-        end
-        
-        tab.CanvasSize = UDim2.new(0, 0, 0, tab.UIListLayout.AbsoluteContentSize.Y + 10)
-    end
-end)
-
 -- Функционал переключения вкладок
 local function switchToTab(tabName)
     InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -695,6 +711,9 @@ local function switchToTab(tabName)
         KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         KeksTab.Visible = true
     end
+    
+    -- Обновить размер контента после переключения вкладки
+    updateContentSize()
 end
 
 InfoTabButton.MouseButton1Click:Connect(function()
@@ -770,6 +789,9 @@ end)
 -- Переключение видимости меню
 ToggleButton.MouseButton1Click:Connect(function()
     MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        updateContentSize()
+    end
 end)
 
 -- По умолчанию открываем вкладку Info
