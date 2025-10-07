@@ -1,5 +1,3 @@
-[file name]: ndnd.lua
-[file content begin]
 repeat task.wait() until game:IsLoaded()
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -1024,4 +1022,3 @@ task.spawn(function()
         wait(0.01)
     end
 end)
-[file content end]
