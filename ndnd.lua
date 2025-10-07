@@ -8,7 +8,7 @@ local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GameMenu"
 ScreenGui.Parent = PlayerGui
 
--- Создаем систему уведомлений
+-- Создаем улучшенную систему уведомлений
 local NotificationFrame = Instance.new("Frame")
 NotificationFrame.Size = UDim2.new(0, 250, 0, 60)
 NotificationFrame.Position = UDim2.new(1, -260, 1, -70)
@@ -445,7 +445,7 @@ CreateButton(teleportContent, "Teleport to Base", function()
     if character and character:FindFirstChild("HumanoidRootPart") then
         -- Замените эти координаты на реальные координаты базы
         character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
-        print("Teleported to base!")
+        ShowNotification("Teleported to base!", 3)
     end
 end)
 
@@ -479,52 +479,50 @@ CreateButton(itemContent, "Find Bandages", function()
     end
 end)
 
--- Добавляем кнопку All Scrap
-CreateButton(itemContent, "All Scrap", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
+-- НОВАЯ КНОПКА: All fuel
+CreateButton(itemContent, "All fuel", function()
+    -- Притягивание всех канистр с топливом
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then 
         ShowNotification("Character not found!", 3)
         return 
     end
     
-    local scrapNames = {
-        ["tyre"] = true, 
-        ["sheet metal"] = true, 
-        ["broken fan"] = true, 
-        ["bolt"] = true, 
-        ["old radio"] = true, 
-        ["ufo junk"] = true, 
-        ["ufo scrap"] = true, 
-        ["broken microwave"] = true,
-    }
+    local root = character.HumanoidRootPart
+    local fuelCanisters = {}
     
-    local foundCount = 0
+    -- Ищем канистры с топливом в рабочем пространстве
+    for _, item in pairs(workspace:GetDescendants()) do
+        if item:IsA("Model") and item.Name:lower():find("fuel canister") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                table.insert(fuelCanisters, {model = item, main = main})
+            end
+        end
+    end
     
-    -- Проверяем, существует ли папка Items
+    -- Также проверяем папку Items, если она существует
     if workspace:FindFirstChild("Items") then
         for _, item in pairs(workspace.Items:GetChildren()) do
-            if item:IsA("Model") then
-                local itemName = item.Name:lower()
-                for scrapName, _ in pairs(scrapNames) do
-                    if itemName:find(scrapName) then
-                        local main = item:FindFirstChildWhichIsA("BasePart")
-                        if main then
-                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-                            foundCount = foundCount + 1
-                        end
-                        break
-                    end
+            if item:IsA("Model") and item.Name:lower():find("fuel canister") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    table.insert(fuelCanisters, {model = item, main = main})
                 end
             end
         end
     end
     
-    if foundCount > 0 then
-        ShowNotification("Brought " .. foundCount .. " scrap items!", 3)
-        print("Brought " .. foundCount .. " scrap items to player!")
+    if #fuelCanisters > 0 then
+        -- Перемещаем все канистры к игроку
+        for _, fuel in pairs(fuelCanisters) do
+            fuel.main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+        end
+        ShowNotification("Brought " .. #fuelCanisters .. " fuel canisters!", 3)
+        print("Brought " .. #fuelCanisters .. " fuel canisters to your location.")
     else
-        ShowNotification("No scrap found!", 3)
-        print("No scrap items found in workspace.Items")
+        ShowNotification("No fuel canisters found!", 3)
+        print("No fuel canisters found in the map.")
     end
 end)
 
