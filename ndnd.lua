@@ -1,3 +1,4 @@
+[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -432,7 +433,7 @@ end)
 
 -- Создание элементов Keks tab
 local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
-CreateButton(teleportContent, "Teleport to Base", function()
+CreateButton(teleportContent, "Teleport to Campfire", function()
     -- Телепорт на базу (координаты нужно уточнить)
     local character = Player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
@@ -465,6 +466,90 @@ CreateButton(itemContent, "Find Bandages", function()
         -- Показываем уведомление "Bandage None"
         ShowNotification("Bandage None", 3)
         print("No bandages found in the map.")
+    end
+end)
+
+-- Добавляем новую секцию для телепортации скрапа в раздел Keks
+local scrapTeleportSection, scrapTeleportContent = CreateSection(KeksTab, "📦 Scrap Teleport")
+
+-- Таблица для хранения выбранных предметов
+local selectedScrap = {
+    tyre = false,
+    ["sheet metal"] = false,
+    ["broken fan"] = false,
+    bolt = false,
+    ["old radio"] = false,
+    ["ufo junk"] = false,
+    ["ufo scrap"] = false,
+    ["broken microwave"] = false
+}
+
+-- Создаем переключатели для каждого типа скрапа
+local scrapToggles = {}
+
+for scrapName, _ in pairs(selectedScrap) do
+    local toggle = CreateToggle(scrapTeleportContent, scrapName, function(value)
+        selectedScrap[scrapName] = value
+    end)
+    scrapToggles[scrapName] = toggle
+end
+
+-- Кнопка для выбора всех предметов
+local selectAllToggle = CreateToggle(scrapTeleportContent, "Select All Scrap", function(value)
+    for scrapName, _ in pairs(selectedScrap) do
+        selectedScrap[scrapName] = value
+        if scrapToggles[scrapName] then
+            scrapToggles[scrapName].Set(value)
+        end
+    end
+end)
+
+-- Кнопка телепортации
+CreateButton(scrapTeleportContent, "TELEPORT", function()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then 
+        ShowNotification("Character not found!", 3)
+        return 
+    end
+    
+    local root = character.HumanoidRootPart
+    local foundAny = false
+    
+    -- Проверяем, выбран ли хотя бы один предмет
+    local hasSelected = false
+    for _, isSelected in pairs(selectedScrap) do
+        if isSelected then
+            hasSelected = true
+            break
+        end
+    end
+    
+    if not hasSelected then
+        ShowNotification("No items selected!", 3)
+        return
+    end
+    
+    -- Ищем и телепортируем выбранные предметы
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemName = item.Name:lower()
+            for scrapName, isSelected in pairs(selectedScrap) do
+                if isSelected and itemName:find(scrapName:lower()) then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        foundAny = true
+                    end
+                    break
+                end
+            end
+        end
+    end
+    
+    if foundAny then
+        ShowNotification("Scrap teleported!", 3)
+    else
+        ShowNotification("No selected scrap found!", 3)
     end
 end)
 
@@ -652,3 +737,4 @@ end)
 switchToTab("Info")
 
 print("Mobile ASTRALCHEAT with 3 tabs and notifications loaded! Tap the ≡ button to open/close. Drag the title to move.")
+[file content end]
