@@ -682,6 +682,73 @@ CreateButton(scrapContent, "Tp Scraps", function()
     ShowNotification("Teleported: " .. selectedScrap, 2)
 end)
 
+-- Новое мини-меню для Lost Child
+local lostChildSection, lostChildContent = CreateSection(KeksTab, "👶 Lost Child Teleport")
+
+-- Кнопка для Lost Child 1
+CreateButton(lostChildContent, "Lost Child 1", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+    ShowNotification("Teleported: Lost Child 1", 2)
+end)
+
+-- Кнопка для Lost Child 2
+CreateButton(lostChildContent, "Lost Child 2", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child2") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+    ShowNotification("Teleported: Lost Child 2", 2)
+end)
+
+-- Кнопка для Lost Child 3
+CreateButton(lostChildContent, "Lost Child 3", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child3") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+    ShowNotification("Teleported: Lost Child 3", 2)
+end)
+
+-- Кнопка для Lost Child 4
+CreateButton(lostChildContent, "Lost Child 4", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child4") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+            end
+        end
+    end
+    ShowNotification("Teleported: Lost Child 4", 2)
+end)
+
 -- Функции из оригинального скрипта
 -- Kill Aura функция
 task.spawn(function()
@@ -856,4 +923,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile ASTRALCHEAT with improved dropdowns loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
+print("Mobile ASTRALCHEAT with Lost Child teleport loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
