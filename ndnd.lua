@@ -612,34 +612,6 @@ CreateButton(scrapContent, "Tp Scraps", function()
     ShowNotification("Teleported: " .. selectedScrap, 2)
 end)
 
--- Добавляем больше контента в Keks для демонстрации прокрутки
-local moreSection1, moreContent1 = CreateSection(KeksTab, "🔮 More Features 1")
-CreateButton(moreContent1, "Feature 1", function()
-    ShowNotification("Feature 1 activated!", 2)
-end)
-
-CreateButton(moreContent1, "Feature 2", function()
-    ShowNotification("Feature 2 activated!", 2)
-end)
-
-local moreSection2, moreContent2 = CreateSection(KeksTab, "🔮 More Features 2")
-CreateButton(moreContent2, "Feature 3", function()
-    ShowNotification("Feature 3 activated!", 2)
-end)
-
-CreateButton(moreContent2, "Feature 4", function()
-    ShowNotification("Feature 4 activated!", 2)
-end)
-
-local moreSection3, moreContent3 = CreateSection(KeksTab, "🔮 More Features 3")
-CreateButton(moreContent3, "Feature 5", function()
-    ShowNotification("Feature 5 activated!", 2)
-end)
-
-CreateButton(moreContent3, "Feature 6", function()
-    ShowNotification("Feature 6 activated!", 2)
-end)
-
 -- Функции из оригинального скрипта
 -- Kill Aura функция
 task.spawn(function()
