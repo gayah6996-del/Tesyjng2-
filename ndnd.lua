@@ -4,6 +4,7 @@ local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GameMenu"
@@ -53,8 +54,8 @@ ToggleButton.Size = UDim2.new(0, 60, 0, 60)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "Open"
-ToggleButton.TextSize = 10
+ToggleButton.Text = "ASTRAL"
+ToggleButton.TextSize = 20
 ToggleButton.ZIndex = 10
 ToggleButton.Parent = ScreenGui
 
@@ -204,6 +205,9 @@ local ActiveAutoChopTree = false
 local DistanceForKillAura = 25
 local DistanceForAutoChopTree = 25
 local UpingHeight = 50
+local IsUping = false
+local UpingConnection = nil
+local BodyVelocity = nil
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
@@ -387,6 +391,8 @@ local function CreateSlider(parent, text, min, max, defaultValue, callback)
     UserInputService.InputChanged:Connect(onTouchInput)
     
     updateSlider(defaultValue)
+    
+    return sliderFrame
 end
 
 local function CreateLabel(parent, text)
@@ -543,6 +549,72 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     }
 end
 
+-- Функция для включения/выключения режима полета
+local function ToggleUping()
+    local character = Player.Character
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    
+    if not root or not humanoid then 
+        ShowNotification("Character not found!", 2)
+        return
+    end
+    
+    IsUping = not IsUping
+    
+    if IsUping then
+        -- Включаем режим полета
+        if not BodyVelocity then
+            BodyVelocity = Instance.new("BodyVelocity")
+            BodyVelocity.Velocity = Vector3.new(0, 0, 0)
+            BodyVelocity.MaxForce = Vector3.new(0, 0, 0)
+        end
+        
+        BodyVelocity.Velocity = Vector3.new(0, UpingHeight, 0)
+        BodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
+        BodyVelocity.Parent = root
+        
+        -- Сохраняем исходную гравитацию и отключаем ее
+        humanoid.PlatformStand = true
+        
+        UpingButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        UpingButton.Text = "Uping: ON"
+        
+        -- Запускаем обновление полета
+        if UpingConnection then
+            UpingConnection:Disconnect()
+        end
+        
+        UpingConnection = RunService.Heartbeat:Connect(function()
+            if IsUping and BodyVelocity and BodyVelocity.Parent then
+                BodyVelocity.Velocity = Vector3.new(0, UpingHeight, 0)
+            else
+                UpingConnection:Disconnect()
+            end
+        end)
+        
+        ShowNotification("Uping activated! You can fly now.", 2)
+    else
+        -- Выключаем режим полета
+        if BodyVelocity then
+            BodyVelocity:Destroy()
+            BodyVelocity = nil
+        end
+        
+        if UpingConnection then
+            UpingConnection:Disconnect()
+            UpingConnection = nil
+        end
+        
+        humanoid.PlatformStand = false
+        
+        UpingButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+        UpingButton.Text = "Uping"
+        
+        ShowNotification("Uping deactivated!", 2)
+    end
+end
+
 -- Создание элементов Info tab
 local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
 CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
@@ -582,23 +654,12 @@ CreateButton(teleportContent, "Teleport to Base", function()
     end
 end)
 
--- Добавляем кнопку Uping и слайдер для высоты
-CreateSlider(teleportContent, "Uping Height", 10, 200, 50, function(value)
+-- Добавляем слайдер для высоты полета и кнопку Uping
+local upingSlider = CreateSlider(teleportContent, "Uping Height", 0, 100, 50, function(value)
     UpingHeight = value
 end)
 
-CreateButton(teleportContent, "Uping", function()
-    local character = Player.Character
-    local root = character and character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
-    
-    -- Поднимаем персонажа вверх на указанную высоту
-    local currentPosition = root.Position
-    local newPosition = Vector3.new(currentPosition.X, currentPosition.Y + UpingHeight, currentPosition.Z)
-    root.CFrame = CFrame.new(newPosition)
-    
-    ShowNotification("Uping activated! Height: " .. UpingHeight, 2)
-end)
+UpingButton = CreateButton(teleportContent, "Uping", ToggleUping)
 
 -- Новое мини-меню для Bring Items
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
@@ -950,4 +1011,4 @@ end)
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
-print("Mobile ASTRALCHEAT with Uping and Lost Child teleport loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
+print("Mobile ASTRALCHEAT with flying Uping loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
