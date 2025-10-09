@@ -712,7 +712,7 @@ end)
 local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
 
 -- Создаем выпадающий список для выбора скрапов
-local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "bandage", "medkit", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
+local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
 local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа
@@ -725,8 +725,6 @@ CreateButton(scrapContent, "Tp Scraps", function()
         ["tyre"] = true, 
         ["sheet metal"] = true, 
         ["broken fan"] = true, 
-        ["bandage"] = true, 
-        ["medkit"] = true, 
         ["bolt"] = true, 
         ["old radio"] = true, 
         ["ufo junk"] = true, 
@@ -842,7 +840,7 @@ end)
 local BandageSection, BandageContent = CreateSection(KeksTab, "Bandage Selection:")
 
 -- Создаем выпадающий список для выбора скрапов
-local BandageOptions = {"All", "bandage", "medkit"}
+local BandageOptions = {"All", "Morsel", "Carrot", "Bandage", "Bedkit"}
 local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа
@@ -852,6 +850,8 @@ CreateButton(BandageContent, "Tp Bandage", function()
     
     local selectedBandage = BandageDropdown.GetValue()
     local BandageNames = {
+        ["morsel"] = true, 
+        ["carrot"] = true, 
         ["bandage"] = true, 
         ["medkit"] = true, 
     }
