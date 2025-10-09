@@ -665,7 +665,7 @@ UpingButton = CreateButton(teleportContent, "Uping", ToggleUping)
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
 
 -- Создаем выпадающий список для выбора предметов
-local bringOptions = {"Logs", "Coal", "Fuel Canister", "oil barrel"}
+local bringOptions = {"Logs", "Coal", "Fuel Canister"}
 local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
 
 -- Кнопка для телепортации выбранных предметов
@@ -706,16 +706,6 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         ShowNotification("Brought: Fuel Canister", 2)
     end
-ShowNotification("Brought: oil barrel", 2)
-    elseif selectedItem == "oil barrel" then
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item.Name:lower():find("oil barrel") and item:IsA("Model") then
-                local main = item:FindFirstChildWhichIsA("BasePart")
-                if main then
-                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
-                end
-            end
-        end
 end)
 
 -- Мини-меню для выбора скрапов
@@ -847,6 +837,53 @@ CreateButton(lostChildContent, "Lost Child 4", function()
         end
     end
     ShowNotification("Lost Child 4 not found", 2)
+end)
+
+local BandageSection, BandageContent = CreateSection(KeksTab, "Bandage Selection:")
+
+-- Создаем выпадающий список для выбора скрапов
+local BandageOptions = {"All", "bandage", "medkit"}
+local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
+
+-- Кнопка для телепортации выбранного скрапа
+CreateButton(BandageContent, "Tp Bandage", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+    
+    local selectedBandage = BandageDropdown.GetValue()
+    local BandageNames = {
+        ["bandage"] = true, 
+        ["medkit"] = true, 
+    }
+    
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemName = item.Name:lower()
+            
+            if selectedScrap == "All" then
+                -- Телепортировать все скрапы
+                for scrapName, _ in pairs(scrapNames) do
+                    if itemName:find(scrapName) then
+                        local main = item:FindFirstChildWhichIsA("BasePart")
+                        if main then
+                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        end
+                        break
+                    end
+                end
+            else
+                -- Телепортировать только выбранный скрап
+                if itemName:find(selectedScrap) then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    end
+                end
+            end
+        end
+    end
+    
+    ShowNotification("Teleported: " .. selectedScrap, 2)
 end)
 
 -- Функции из оригинального скрипта
