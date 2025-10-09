@@ -665,7 +665,7 @@ UpingButton = CreateButton(teleportContent, "Uping", ToggleUping)
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
 
 -- Создаем выпадающий список для выбора предметов
-local bringOptions = {"Logs", "Coal", "Fuel Canister"}
+local bringOptions = {"Logs", "Coal", "Fuel Canister", "oil barrel"}
 local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
 
 -- Кнопка для телепортации выбранных предметов
@@ -706,6 +706,16 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         ShowNotification("Brought: Fuel Canister", 2)
     end
+ShowNotification("Brought: oil barrel", 2)
+    elseif selectedItem == "oil barrel" then
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("oil barrel") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                end
+            end
+        end
 end)
 
 -- Мини-меню для выбора скрапов
