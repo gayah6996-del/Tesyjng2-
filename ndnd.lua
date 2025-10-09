@@ -1080,7 +1080,32 @@ ScrollContainer:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
     end
 end)
 
+-- Функция для ограничения прокрутки в мини-меню
+local function SetupScrollLimits()
+    -- Ждем обновления макета
+    wait(0.1)
+    
+    -- Получаем общий размер контента
+    local contentSize = ContentFrame.AbsoluteSize.Y
+    local containerSize = ScrollContainer.AbsoluteWindowSize.Y
+    
+    -- Устанавливаем максимальную прокрутку
+    local maxScroll = math.max(0, contentSize - containerSize)
+    
+    -- Ограничиваем текущую позицию прокрутки
+    if ScrollContainer.CanvasPosition.Y > maxScroll then
+        ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
+    end
+end
+
+-- Вызываем функцию ограничения прокрутки при изменении размера контента
+ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(SetupScrollLimits)
+
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
+
+-- Устанавливаем ограничения прокрутки после загрузки
+wait(0.5)
+SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with flying Uping loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
