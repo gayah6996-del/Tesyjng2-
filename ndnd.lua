@@ -55,7 +55,7 @@ ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Text = "ASTRAL"
-ToggleButton.TextSize = 20
+ToggleButton.TextSize = 7
 ToggleButton.ZIndex = 10
 ToggleButton.Parent = ScreenGui
 
@@ -198,6 +198,14 @@ KeksTab.Parent = ContentFrame
 local KeksListLayout = Instance.new("UIListLayout")
 KeksListLayout.Padding = UDim.new(0, 8)
 KeksListLayout.Parent = KeksTab
+
+-- Переменные для сохранения позиции прокрутки
+local LastScrollPositions = {
+    Info = Vector2.new(0, 0),
+    Game = Vector2.new(0, 0),
+    Keks = Vector2.new(0, 0)
+}
+local CurrentTab = "Info"
 
 -- Переменные для функций
 local ActiveKillAura = false
@@ -837,14 +845,14 @@ CreateButton(lostChildContent, "Lost Child 4", function()
     ShowNotification("Lost Child 4 not found", 2)
 end)
 
-local BandageSection, BandageContent = CreateSection(KeksTab, "Bandage Selection:")
+local BandageSection, BandageContent = CreateSection(KeksTab, "Food Selection:")
 
 -- Создаем выпадающий список для выбора скрапов
-local BandageOptions = {"All", "Morsel", "Carrot", "Bandage", "Bedkit"}
+local BandageOptions = {"All", "Morsel", "Carrot", "Bandage", "Medkit"}
 local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа
-CreateButton(BandageContent, "Tp Bandage", function()
+CreateButton(BandageContent, "Tp Food", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
     
@@ -861,7 +869,7 @@ CreateButton(BandageContent, "Tp Bandage", function()
             local itemName = item.Name:lower()
             
             if selectedBandage == "All" then
-                -- Телепортировать все скрапы
+                -- Телепортировать всю Еду
                 for BandageName, _ in pairs(BandageNames) do
                     if itemName:find(BandageName) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
@@ -872,7 +880,7 @@ CreateButton(BandageContent, "Tp Bandage", function()
                     end
                 end
             else
-                -- Телепортировать только выбранный скрап
+                -- Телепортировать только выбранный хил-еду
                 if itemName:find(selectedBandage) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
@@ -964,18 +972,21 @@ local function switchToTab(tabName)
         InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         InfoTab.Visible = true
+        CurrentTab = "Info"
     elseif tabName == "Game" then
         GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         GameTab.Visible = true
+        CurrentTab = "Game"
     elseif tabName == "Keks" then
         KeksTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         KeksTab.Visible = true
+        CurrentTab = "Keks"
     end
     
-    -- Сбрасываем прокрутку при переключении вкладок
-    ScrollContainer.CanvasPosition = Vector2.new(0, 0)
+    -- Восстанавливаем позицию прокрутки для выбранной вкладки
+    ScrollContainer.CanvasPosition = LastScrollPositions[CurrentTab]
 end
 
 InfoTabButton.MouseButton1Click:Connect(function()
@@ -1045,15 +1056,27 @@ end)
 
 -- Закрытие меню
 CloseButton.MouseButton1Click:Connect(function()
+    -- Сохраняем позицию прокрутки перед закрытием
+    LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
     MainFrame.Visible = false
 end)
 
 -- Переключение видимости меню
 ToggleButton.MouseButton1Click:Connect(function()
-    MainFrame.Visible = not MainFrame.Visible
     if MainFrame.Visible then
-        -- Сбрасываем прокрутку при открытии меню
-        ScrollContainer.CanvasPosition = Vector2.new(0, 0)
+        -- Сохраняем позицию прокрутки перед закрытием
+        LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
+    else
+        -- Восстанавливаем позицию прокрутки при открытии
+        ScrollContainer.CanvasPosition = LastScrollPositions[CurrentTab]
+    end
+    MainFrame.Visible = not MainFrame.Visible
+end)
+
+-- Сохраняем позицию прокрутки при изменении
+ScrollContainer:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+    if MainFrame.Visible then
+        LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
     end
 end)
 
