@@ -712,7 +712,7 @@ end)
 local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
 
 -- Создаем выпадающий список для выбора скрапов
-local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "Bandage", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
+local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "bandage", "medkit", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
 local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа
@@ -726,6 +726,8 @@ CreateButton(scrapContent, "Tp Scraps", function()
         ["sheet metal"] = true, 
         ["broken fan"] = true, 
         ["bandage"] = true, 
+        ["medkit"] = true, 
+        ["bolt"] = true, 
         ["old radio"] = true, 
         ["ufo junk"] = true, 
         ["ufo scrap"] = true, 
@@ -774,7 +776,7 @@ CreateButton(lostChildContent, "Lost Child 1", function()
         if item.Name:lower():find("lost child") and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
             if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 3, 0) -- Немного выше ребенка
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
                 ShowNotification("Teleported to Lost Child 1", 2)
                 return
             end
@@ -792,7 +794,7 @@ CreateButton(lostChildContent, "Lost Child 2", function()
         if item.Name:lower():find("lost child2") and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
             if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 3, 0) -- Немного выше ребенка
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
                 ShowNotification("Teleported to Lost Child 2", 2)
                 return
             end
@@ -828,7 +830,7 @@ CreateButton(lostChildContent, "Lost Child 4", function()
         if item.Name:lower():find("lost child4") and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
             if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 3, 0) -- Немного выше ребенка
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
                 ShowNotification("Teleported to Lost Child 4", 2)
                 return
             end
