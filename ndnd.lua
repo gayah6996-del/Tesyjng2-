@@ -860,10 +860,10 @@ CreateButton(BandageContent, "Tp Bandage", function()
         if item:IsA("Model") then
             local itemName = item.Name:lower()
             
-            if selectedScrap == "All" then
+            if selectedBandage == "All" then
                 -- Телепортировать все скрапы
-                for scrapName, _ in pairs(scrapNames) do
-                    if itemName:find(scrapName) then
+                for BandageName, _ in pairs(BandageNames) do
+                    if itemName:find(BandageName) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
                             main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
@@ -873,7 +873,7 @@ CreateButton(BandageContent, "Tp Bandage", function()
                 end
             else
                 -- Телепортировать только выбранный скрап
-                if itemName:find(selectedScrap) then
+                if itemName:find(selectedBandage) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
                         main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
@@ -883,7 +883,7 @@ CreateButton(BandageContent, "Tp Bandage", function()
         end
     end
     
-    ShowNotification("Teleported: " .. selectedScrap, 2)
+    ShowNotification("Teleported: " .. selectedBandage, 2)
 end)
 
 -- Функции из оригинального скрипта
