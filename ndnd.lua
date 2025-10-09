@@ -712,7 +712,7 @@ end)
 local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
 
 -- Создаем выпадающий список для выбора скрапов
-local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
+local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "Bandage", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
 local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа
@@ -725,7 +725,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
         ["tyre"] = true, 
         ["sheet metal"] = true, 
         ["broken fan"] = true, 
-        ["bolt"] = true, 
+        ["bandage"] = true, 
         ["old radio"] = true, 
         ["ufo junk"] = true, 
         ["ufo scrap"] = true, 
