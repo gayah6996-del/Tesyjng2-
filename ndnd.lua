@@ -675,7 +675,7 @@ UpingButton = CreateButton(teleportContent, "Uping", ToggleUping)
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
 
 -- Создаем выпадающий список для выбора предметов
-local bringOptions = {"Logs", "Coal", "Fuel Canister"}
+local bringOptions = {"Logs", "Coal", "Fuel Canister", "Oil Barrel"}
 local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
 
 -- Кнопка для телепортации выбранных предметов
@@ -715,6 +715,16 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             end
         end
         ShowNotification("Brought: Fuel Canister", 2)
+    elseif selectedItem == "Oil Barrel" then
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("oil barrel") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                end
+            end
+        end
+        ShowNotification("Brought: Oil Barrel", 2)
     end
 end)
 
@@ -849,21 +859,21 @@ end)
 
 local BandageSection, BandageContent = CreateSection(KeksTab, "Food Selection:")
 
--- Создаем выпадающий список для выбора скрапов
+-- Создаем выпадающий список для выбора еды
 local BandageOptions = {"All", "Morsel", "Carrot", "Bandage", "Medkit"}
 local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
--- Кнопка для телепортации выбранного скрапа
+-- Кнопка для телепортации выбранной еды
 CreateButton(BandageContent, "Tp Food", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not root then return end
     
     local selectedBandage = BandageDropdown.GetValue()
     local BandageNames = {
-        ["morsel"] = true, 
-        ["carrot"] = true, 
-        ["bandage"] = true, 
-        ["medkit"] = true, 
+        ["morsel"] = "Morsel", 
+        ["carrot"] = "Carrot", 
+        ["bandage"] = "Bandage", 
+        ["medkit"] = "Medkit", 
     }
     
     for _, item in pairs(workspace.Items:GetChildren()) do
@@ -871,9 +881,9 @@ CreateButton(BandageContent, "Tp Food", function()
             local itemName = item.Name:lower()
             
             if selectedBandage == "All" then
-                -- Телепортировать всю Еду
-                for BandageName, _ in pairs(BandageNames) do
-                    if itemName:find(BandageName) then
+                -- Телепортировать всю еду
+                for bandageKey, bandageValue in pairs(BandageNames) do
+                    if itemName:find(bandageKey) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
                             main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
@@ -882,8 +892,9 @@ CreateButton(BandageContent, "Tp Food", function()
                     end
                 end
             else
-                -- Телепортировать только выбранный хил-еду
-                if itemName:find(selectedBandage) then
+                -- Телепортировать только выбранную еду
+                local searchTerm = selectedBandage:lower()
+                if itemName:find(searchTerm) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
                         main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
