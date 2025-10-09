@@ -810,7 +810,7 @@ CreateButton(lostChildContent, "Lost Child 3", function()
         if item.Name:lower():find("lost child3") and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
             if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 3, 0) -- Немного выше ребенка
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
                 ShowNotification("Teleported to Lost Child 3", 2)
                 return
             end
