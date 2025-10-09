@@ -151,6 +151,8 @@ ScrollContainer.ScrollBarThickness = 8
 ScrollContainer.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 ScrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.Always
 ScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ScrollContainer.ScrollingDirection = Enum.ScrollingDirection.Y
+ScrollContainer.ElasticBehavior = Enum.ElasticBehavior.Never -- Отключаем эластичную прокрутку
 ScrollContainer.Parent = MainFrame
 
 -- Content frames
@@ -1080,32 +1082,50 @@ ScrollContainer:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
     end
 end)
 
--- Функция для ограничения прокрутки в мини-меню
-local function SetupScrollLimits()
-    -- Ждем обновления макета
-    wait(0.1)
+-- Функция для ограничения прокрутки на мобильных устройствах
+local function SetupMobileScrollFix()
+    -- Ждем полной загрузки интерфейса
+    wait(0.5)
     
-    -- Получаем общий размер контента
-    local contentSize = ContentFrame.AbsoluteSize.Y
-    local containerSize = ScrollContainer.AbsoluteWindowSize.Y
+    -- Создаем невидимый фрейм для ограничения прокрутки
+    local ScrollLimiter = Instance.new("Frame")
+    ScrollLimiter.Size = UDim2.new(1, 0, 0, 0)
+    ScrollLimiter.BackgroundTransparency = 1
+    ScrollLimiter.Parent = ContentFrame
     
-    -- Устанавливаем максимальную прокрутку
-    local maxScroll = math.max(0, contentSize - containerSize)
-    
-    -- Ограничиваем текущую позицию прокрутки
-    if ScrollContainer.CanvasPosition.Y > maxScroll then
-        ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
+    -- Функция для обновления ограничителя
+    local function updateScrollLimiter()
+        local totalHeight = 0
+        
+        -- Получаем высоту всего контента
+        for _, child in pairs(ContentFrame:GetChildren()) do
+            if child:IsA("Frame") and child.Visible then
+                totalHeight = totalHeight + child.AbsoluteSize.Y + 8 -- +8 для отступов UIListLayout
+            end
+        end
+        
+        -- Устанавливаем высоту ограничителя равной высоте контента
+        ScrollLimiter.Size = UDim2.new(1, 0, 0, totalHeight)
     end
+    
+    -- Обновляем при изменении размера контента
+    ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateScrollLimiter)
+    
+    -- Также обновляем при переключении вкладок
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if MainFrame.Visible then
+            updateScrollLimiter()
+        end
+    end)
+    
+    -- Первоначальное обновление
+    updateScrollLimiter()
 end
 
--- Вызываем функцию ограничения прокрутки при изменении размера контента
-ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(SetupScrollLimits)
+-- Запускаем фикс для мобильной прокрутки
+task.spawn(SetupMobileScrollFix)
 
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
-
--- Устанавливаем ограничения прокрутки после загрузки
-wait(0.5)
-SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with flying Uping loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
