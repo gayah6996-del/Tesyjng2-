@@ -63,6 +63,62 @@ local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 10)
 ToggleCorner.Parent = ToggleButton
 
+-- Переменные для перемещения кнопки ASTRAL
+local ToggleDragging = false
+local ToggleDragStartPos = nil
+local ToggleStartPos = nil
+
+-- Функции для перемещения кнопки ASTRAL
+local function startToggleDragging(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        ToggleDragging = true
+        ToggleDragStartPos = Vector2.new(input.Position.X, input.Position.Y)
+        ToggleStartPos = UDim2.new(ToggleButton.Position.X.Scale, ToggleButton.Position.X.Offset, ToggleButton.Position.Y.Scale, ToggleButton.Position.Y.Offset)
+    end
+end
+
+local function stopToggleDragging()
+    ToggleDragging = false
+    ToggleDragStartPos = nil
+    ToggleStartPos = nil
+end
+
+local function updateToggleDrag(input)
+    if ToggleDragging and ToggleDragStartPos and ToggleStartPos then
+        local delta = Vector2.new(input.Position.X, input.Position.Y) - ToggleDragStartPos
+        local newX = ToggleStartPos.X.Offset + delta.X
+        local newY = ToggleStartPos.Y.Offset + delta.Y
+        
+        -- Ограничение, чтобы кнопка не выходила за экран
+        local screenSize = PlayerGui.AbsoluteSize
+        newX = math.clamp(newX, 0, screenSize.X - ToggleButton.AbsoluteSize.X)
+        newY = math.clamp(newY, 0, screenSize.Y - ToggleButton.AbsoluteSize.Y)
+        
+        ToggleButton.Position = UDim2.new(0, newX, 0, newY)
+    end
+end
+
+-- Обработчики для перемещения кнопки ASTRAL
+ToggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        startToggleDragging(input)
+    end
+end)
+
+ToggleButton.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        stopToggleDragging()
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        if ToggleDragging then
+            updateToggleDrag(input)
+        end
+    end
+end)
+
 -- Основное окно меню
 local MainFrame = Instance.new("Frame")
 MainFrame.Size = UDim2.new(0, 320, 0, 400)
@@ -101,6 +157,21 @@ Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
 Title.Parent = MainFrame
 
+-- Кнопка сворачивания в заголовке
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
+MinimizeButton.Position = UDim2.new(1, -70, 0, 2)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
+MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MinimizeButton.TextSize = 16
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.Parent = Title
+
+local MinimizeCorner = Instance.new("UICorner")
+MinimizeCorner.CornerRadius = UDim.new(0, 6)
+MinimizeCorner.Parent = MinimizeButton
+
 -- Кнопка закрытия в заголовке
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
@@ -112,9 +183,9 @@ CloseButton.TextSize = 16
 CloseButton.Font = Enum.Font.GothamBold
 CloseButton.Parent = Title
 
-local UICorner2 = Instance.new("UICorner")
-UICorner2.CornerRadius = UDim.new(0, 6)
-UICorner2.Parent = CloseButton
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 6)
+CloseCorner.Parent = CloseButton
 
 -- Кнопки вкладок
 local TabsFrame = Instance.new("Frame")
@@ -234,6 +305,11 @@ local BodyVelocity = nil
 local Resizing = false
 local ResizeStart = nil
 local StartSize = nil
+
+-- Переменные для перемещения меню
+local Dragging = false
+local DragStartPos = nil
+local MenuStartPos = nil
 
 -- Координаты костра
 local CampfirePosition = Vector3.new(0, 10, 0)
@@ -1245,29 +1321,25 @@ KeksTabButton.MouseButton1Click:Connect(function()
 end)
 
 -- Система перемещения меню для мобильных устройств
-local dragging = false
-local dragStartPos = nil
-local menuStartPos = nil
-
 local function startDragging(input)
     if input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStartPos = Vector2.new(input.Position.X, input.Position.Y)
-        menuStartPos = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset)
+        Dragging = true
+        DragStartPos = Vector2.new(input.Position.X, input.Position.Y)
+        MenuStartPos = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset)
     end
 end
 
 local function stopDragging()
-    dragging = false
-    dragStartPos = nil
-    menuStartPos = nil
+    Dragging = false
+    DragStartPos = nil
+    MenuStartPos = nil
 end
 
 local function updateDrag(input)
-    if dragging and dragStartPos and menuStartPos then
-        local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStartPos
-        local newX = menuStartPos.X.Offset + delta.X
-        local newY = menuStartPos.Y.Offset + delta.Y
+    if Dragging and DragStartPos and MenuStartPos then
+        local delta = Vector2.new(input.Position.X, input.Position.Y) - DragStartPos
+        local newX = MenuStartPos.X.Offset + delta.X
+        local newY = MenuStartPos.Y.Offset + delta.Y
         
         -- Ограничение, чтобы меню не выходило за экран
         local screenSize = PlayerGui.AbsoluteSize
@@ -1308,7 +1380,7 @@ local function updateResize(input)
     end
 end
 
--- Обработчики для перемещения
+-- Обработчики для перемещения меню
 Title.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch then
         startDragging(input)
@@ -1336,19 +1408,31 @@ end)
 
 UserInputService.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch then
-        if dragging then
+        if Dragging then
             updateDrag(input)
+        elseif ToggleDragging then
+            updateToggleDrag(input)
         elseif Resizing then
             updateResize(input)
         end
     end
 end)
 
--- Закрытие меню
+-- Закрытие меню полностью
 CloseButton.MouseButton1Click:Connect(function()
     -- Сохраняем позицию прокрутки перед закрытием
     LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
     MainFrame.Visible = false
+    ToggleButton.Visible = false
+    ShowNotification("Menu closed completely", 2)
+end)
+
+-- Сворачивание меню
+MinimizeButton.MouseButton1Click:Connect(function()
+    -- Сохраняем позицию прокрутки перед сворачиванием
+    LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
+    MainFrame.Visible = false
+    ShowNotification("Menu minimized", 2)
 end)
 
 -- Переключение видимости меню
@@ -1356,11 +1440,13 @@ ToggleButton.MouseButton1Click:Connect(function()
     if MainFrame.Visible then
         -- Сохраняем позицию прокрутки перед закрытием
         LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
+        MainFrame.Visible = false
     else
         -- Восстанавливаем позицию прокрутки при открытии
         ScrollContainer.CanvasPosition = LastScrollPositions[CurrentTab]
+        MainFrame.Visible = true
+        ToggleButton.Visible = true
     end
-    MainFrame.Visible = not MainFrame.Visible
 end)
 
 -- Сохраняем позицию прокрутки при изменении
@@ -1398,4 +1484,4 @@ switchToTab("Info")
 wait(0.5)
 SetupScrollLimits()
 
-print("Mobile ASTRALCHEAT with advanced item teleportation loaded! Tap the button to open/close. Drag the title to move. Drag the bottom-right corner to resize.")
+print("Mobile ASTRALCHEAT with advanced controls loaded! Tap and drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
