@@ -700,20 +700,19 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     }
 end
 
--- Функция для поднятия персонажа
-local function UpCharacter()
+-- Функция для прыжка персонажа
+local function JumpCharacter()
     local character = Player.Character
-    local root = character and character:FindFirstChild("HumanoidRootPart")
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     
-    if not root or not humanoid then 
+    if not humanoid then 
         ShowNotification("Character not found!", 2)
         return
     end
     
-    -- Поднимаем персонажа на 10 единиц
-    root.CFrame = root.CFrame + Vector3.new(0, 10, 0)
-    ShowNotification("Character lifted up!", 2)
+    -- Заставляем персонажа прыгнуть
+    humanoid.Jump = true
+    ShowNotification("Character jumped!", 1)
 end
 
 -- Создание элементов Info tab
@@ -769,8 +768,8 @@ CreateButton(teleportContent, "Teleport to Base", function()
     end
 end)
 
--- Добавляем кнопку Up вместо слайдера и Uping
-CreateButton(teleportContent, "Up", UpCharacter)
+-- Добавляем кнопку Jump вместо Up
+CreateButton(teleportContent, "Jump", JumpCharacter)
 
 -- Новое мини-меню для Bring Items
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
