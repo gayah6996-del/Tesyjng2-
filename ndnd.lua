@@ -705,71 +705,95 @@ CreateButton(bringItemsContent, "Bring Selected", function()
     local found = false
     
     if selectedItem == "Logs" then
+        local logs = {}
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("log") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    -- Телепортируем к костру на уровне земли и отключаем Anchored
-                    main.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-                    main.Anchored = false  -- Отключаем закрепление, чтобы предмет падал
-                    main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)  -- Сбрасываем скорость
-                    found = true
+                    table.insert(logs, main)
                 end
             end
         end
-        if found then
-            ShowNotification("Brought Logs to campfire!", 2)
+        
+        -- Телепортируем по одному с задержкой
+        for i, log in ipairs(logs) do
+            log.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            log.Anchored = false
+            log.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            wait(0.1) -- Задержка между телепортациями
+        end
+        
+        if #logs > 0 then
+            ShowNotification("Brought " .. #logs .. " Logs to campfire!", 2)
         else
             ShowNotification("No Logs found on map", 2)
         end
     elseif selectedItem == "Coal" then
+        local coals = {}
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("coal") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-                    main.Anchored = false
-                    main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    found = true
+                    table.insert(coals, main)
                 end
             end
         end
-        if found then
-            ShowNotification("Brought Coal to campfire!", 2)
+        
+        for i, coal in ipairs(coals) do
+            coal.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            coal.Anchored = false
+            coal.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            wait(0.1)
+        end
+        
+        if #coals > 0 then
+            ShowNotification("Brought " .. #coals .. " Coal to campfire!", 2)
         else
             ShowNotification("No Coal found on map", 2)
         end
     elseif selectedItem == "Fuel Canister" then
+        local fuels = {}
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("fuel canister") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-                    main.Anchored = false
-                    main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    found = true
+                    table.insert(fuels, main)
                 end
             end
         end
-        if found then
-            ShowNotification("Brought Fuel Canister to campfire!", 2)
+        
+        for i, fuel in ipairs(fuels) do
+            fuel.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            fuel.Anchored = false
+            fuel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            wait(0.1)
+        end
+        
+        if #fuels > 0 then
+            ShowNotification("Brought " .. #fuels .. " Fuel Canister to campfire!", 2)
         else
             ShowNotification("No Fuel Canister found on map", 2)
         end
     elseif selectedItem == "Oil Barrel" then
+        local barrels = {}
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("oil barrel") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-                    main.Anchored = false
-                    main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                    found = true
+                    table.insert(barrels, main)
                 end
             end
         end
-        if found then
-            ShowNotification("Brought Oil Barrel to campfire!", 2)
+        
+        for i, barrel in ipairs(barrels) do
+            barrel.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            barrel.Anchored = false
+            barrel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            wait(0.1)
+        end
+        
+        if #barrels > 0 then
+            ShowNotification("Brought " .. #barrels .. " Oil Barrel to campfire!", 2)
         else
             ShowNotification("No Oil Barrel found on map", 2)
         end
@@ -803,43 +827,43 @@ CreateButton(scrapContent, "Tp Scraps", function()
         ["broken microwave"] = true,
     }
     
-    local found = false
+    local scraps = {}
     
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item:IsA("Model") then
             local itemName = item.Name:lower()
             
             if selectedScrap == "All" then
-                -- Телепортировать все скрапы к игроку на уровне земли
                 for scrapName, _ in pairs(scrapNames) do
                     if itemName:find(scrapName) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
-                            main.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-                            main.Anchored = false
-                            main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                            found = true
+                            table.insert(scraps, main)
                         end
                         break
                     end
                 end
             else
-                -- Телепортировать только выбранный скрап к игроку на уровне земли
                 if itemName:find(selectedScrap) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
-                        main.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-                        main.Anchored = false
-                        main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                        found = true
+                        table.insert(scraps, main)
                     end
                 end
             end
         end
     end
     
-    if found then
-        ShowNotification("Teleported: " .. selectedScrap, 2)
+    -- Телепортируем по одному с задержкой
+    for i, scrap in ipairs(scraps) do
+        scrap.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        scrap.Anchored = false
+        scrap.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        wait(0.1)
+    end
+    
+    if #scraps > 0 then
+        ShowNotification("Teleported " .. #scraps .. " " .. selectedScrap, 2)
     else
         ShowNotification("No " .. selectedScrap .. " found on map", 2)
     end
@@ -954,48 +978,54 @@ CreateButton(BandageContent, "Tp Food", function()
         ["medkit"] = "Medkit", 
     }
     
-    local found = false
+    local foods = {}
     
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item:IsA("Model") then
             local itemName = item.Name:lower()
             
             if selectedBandage == "All" then
-                -- Телепортировать всю еду к игроку на уровне земли
                 for bandageKey, bandageValue in pairs(BandageNames) do
                     if itemName:find(bandageKey) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
-                            main.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-                            main.Anchored = false
-                            main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                            found = true
+                            table.insert(foods, main)
                         end
                         break
                     end
                 end
             else
-                -- Телепортировать только выбранную еду к игроку на уровне земли
                 local searchTerm = selectedBandage:lower()
                 if itemName:find(searchTerm) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
-                        main.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-                        main.Anchored = false
-                        main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                        found = true
+                        table.insert(foods, main)
                     end
                 end
             end
         end
     end
     
-    if found then
-        ShowNotification("Teleported: " .. selectedBandage, 2)
+    -- Телепортируем по одному с задержкой
+    for i, food in ipairs(foods) do
+        food.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        food.Anchored = false
+        food.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        wait(0.1)
+    end
+    
+    if #foods > 0 then
+        ShowNotification("Teleported " .. #foods .. " " .. selectedBandage, 2)
     else
         ShowNotification("No " .. selectedBandage .. " found on map", 2)
     end
 end)
+
+-- Ограничитель прокрутки для вкладки Keks
+local ScrollLimiter = Instance.new("Frame")
+ScrollLimiter.Size = UDim2.new(1, 0, 0, 10)
+ScrollLimiter.BackgroundTransparency = 1
+ScrollLimiter.Parent = KeksTab
 
 -- Функции из оригинального скрипта
 -- Kill Aura функция
@@ -1086,6 +1116,17 @@ local function switchToTab(tabName)
         KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         KeksTab.Visible = true
         CurrentTab = "Keks"
+        
+        -- Устанавливаем ограничение прокрутки для вкладки Keks
+        wait(0.1) -- Ждем обновления макета
+        local contentSize = KeksTab.AbsoluteSize.Y
+        local containerSize = ScrollContainer.AbsoluteWindowSize.Y
+        local maxScroll = math.max(0, contentSize - containerSize)
+        
+        -- Ограничиваем текущую позицию прокрутки
+        if ScrollContainer.CanvasPosition.Y > maxScroll then
+            ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
+        end
     end
     
     -- Восстанавливаем позицию прокрутки для выбранной вкладки
