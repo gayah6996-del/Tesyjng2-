@@ -709,8 +709,10 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             if item.Name:lower():find("log") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    -- Телепортируем к костру с небольшой высотой
-                    main.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-5,5), 5, math.random(-5,5))
+                    -- Телепортируем к костру на уровне земли и отключаем Anchored
+                    main.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                    main.Anchored = false  -- Отключаем закрепление, чтобы предмет падал
+                    main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)  -- Сбрасываем скорость
                     found = true
                 end
             end
@@ -725,7 +727,9 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             if item.Name:lower():find("coal") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-5,5), 5, math.random(-5,5))
+                    main.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                    main.Anchored = false
+                    main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                     found = true
                 end
             end
@@ -740,7 +744,9 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             if item.Name:lower():find("fuel canister") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-5,5), 5, math.random(-5,5))
+                    main.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                    main.Anchored = false
+                    main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                     found = true
                 end
             end
@@ -755,7 +761,9 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             if item.Name:lower():find("oil barrel") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-5,5), 5, math.random(-5,5))
+                    main.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                    main.Anchored = false
+                    main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                     found = true
                 end
             end
@@ -802,23 +810,27 @@ CreateButton(scrapContent, "Tp Scraps", function()
             local itemName = item.Name:lower()
             
             if selectedScrap == "All" then
-                -- Телепортировать все скрапы к игроку с высотой
+                -- Телепортировать все скрапы к игроку на уровне земли
                 for scrapName, _ in pairs(scrapNames) do
                     if itemName:find(scrapName) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
-                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 3, math.random(-5,5))
+                            main.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                            main.Anchored = false
+                            main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                             found = true
                         end
                         break
                     end
                 end
             else
-                -- Телепортировать только выбранный скрап к игроку с высотой
+                -- Телепортировать только выбранный скрап к игроку на уровне земли
                 if itemName:find(selectedScrap) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
-                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 3, math.random(-5,5))
+                        main.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                        main.Anchored = false
+                        main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                         found = true
                     end
                 end
@@ -949,24 +961,28 @@ CreateButton(BandageContent, "Tp Food", function()
             local itemName = item.Name:lower()
             
             if selectedBandage == "All" then
-                -- Телепортировать всю еду к игроку с высотой
+                -- Телепортировать всю еду к игроку на уровне земли
                 for bandageKey, bandageValue in pairs(BandageNames) do
                     if itemName:find(bandageKey) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
-                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 3, math.random(-5,5))
+                            main.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                            main.Anchored = false
+                            main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                             found = true
                         end
                         break
                     end
                 end
             else
-                -- Телепортировать только выбранную еду к игроку с высотой
+                -- Телепортировать только выбранную еду к игроку на уровне земли
                 local searchTerm = selectedBandage:lower()
                 if itemName:find(searchTerm) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
-                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 3, math.random(-5,5))
+                        main.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+                        main.Anchored = false
+                        main.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                         found = true
                     end
                 end
