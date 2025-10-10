@@ -230,6 +230,9 @@ local IsUping = false
 local UpingConnection = nil
 local BodyVelocity = nil
 
+-- Переменная для выбранного места телепортации
+local SelectedBringLocation = "Player"
+
 -- Переменные для изменения размера
 local Resizing = false
 local ResizeStart = nil
@@ -575,6 +578,31 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     }
 end
 
+-- Функция для получения целевой позиции телепортации
+local function GetTargetPosition()
+    if SelectedBringLocation == "Player" then
+        local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            return root.CFrame
+        else
+            ShowNotification("Player not found!", 2)
+            return nil
+        end
+    else -- Campfire
+        -- Поиск костра в workspace
+        for _, item in pairs(workspace:GetChildren()) do
+            if item.Name:lower():find("campfire") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    return main.CFrame
+                end
+            end
+        end
+        ShowNotification("Campfire not found on map!", 2)
+        return nil
+    end
+end
+
 -- Функция для включения/выключения режима полета
 local function ToggleUping()
     local character = Player.Character
@@ -671,6 +699,16 @@ local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value
 end)
 
 -- Создание элементов Keks tab
+-- Новое мини-меню для выбора места телепортации
+local bringLocationSection, bringLocationContent = CreateSection(KeksTab, "📍 Bring Location")
+
+-- Создаем выпадающий список для выбора места телепортации
+local locationOptions = {"Player", "Campfire"}
+local locationDropdown = CreateDropdown(bringLocationContent, locationOptions, "Player", function(selected)
+    SelectedBringLocation = selected
+    ShowNotification("Items will be brought to: " .. selected, 2)
+end)
+
 local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
 CreateButton(teleportContent, "Teleport to Base", function()
     local character = Player.Character
@@ -698,11 +736,8 @@ local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
 
 -- Кнопка для телепортации выбранных предметов
 CreateButton(bringItemsContent, "Bring Selected", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
+    local targetCF = GetTargetPosition()
+    if not targetCF then return end
     
     local selectedItem = bringDropdown.GetValue()
     local found = false
@@ -712,13 +747,13 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             if item.Name:lower():find("log") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    main.CFrame = targetCF * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                     found = true
                 end
             end
         end
         if found then
-            ShowNotification("Brought: Logs", 2)
+            ShowNotification("Brought: Logs to " .. SelectedBringLocation, 2)
         else
             ShowNotification("No Logs found on map", 2)
         end
@@ -727,13 +762,13 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             if item.Name:lower():find("coal") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    main.CFrame = targetCF * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                     found = true
                 end
             end
         end
         if found then
-            ShowNotification("Brought: Coal", 2)
+            ShowNotification("Brought: Coal to " .. SelectedBringLocation, 2)
         else
             ShowNotification("No Coal found on map", 2)
         end
@@ -742,13 +777,13 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             if item.Name:lower():find("fuel canister") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    main.CFrame = targetCF * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                     found = true
                 end
             end
         end
         if found then
-            ShowNotification("Brought: Fuel Canister", 2)
+            ShowNotification("Brought: Fuel Canister to " .. SelectedBringLocation, 2)
         else
             ShowNotification("No Fuel Canister found on map", 2)
         end
@@ -757,13 +792,13 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             if item.Name:lower():find("oil barrel") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
-                    main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    main.CFrame = targetCF * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                     found = true
                 end
             end
         end
         if found then
-            ShowNotification("Brought: Oil Barrel", 2)
+            ShowNotification("Brought: Oil Barrel to " .. SelectedBringLocation, 2)
         else
             ShowNotification("No Oil Barrel found on map", 2)
         end
@@ -779,11 +814,8 @@ local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа
 CreateButton(scrapContent, "Tp Scraps", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
+    local targetCF = GetTargetPosition()
+    if not targetCF then return end
     
     local selectedScrap = scrapDropdown.GetValue()
     local scrapNames = {
@@ -809,7 +841,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
                     if itemName:find(scrapName) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
-                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                            main.CFrame = targetCF * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                             found = true
                         end
                         break
@@ -820,7 +852,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
                 if itemName:find(selectedScrap) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
-                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        main.CFrame = targetCF * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                         found = true
                     end
                 end
@@ -829,7 +861,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
     end
     
     if found then
-        ShowNotification("Teleported: " .. selectedScrap, 2)
+        ShowNotification("Teleported: " .. selectedScrap .. " to " .. SelectedBringLocation, 2)
     else
         ShowNotification("No " .. selectedScrap .. " found on map", 2)
     end
@@ -930,11 +962,8 @@ local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
 -- Кнопка для телепортации выбранной еды
 CreateButton(BandageContent, "Tp Food", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
+    local targetCF = GetTargetPosition()
+    if not targetCF then return end
     
     local selectedBandage = BandageDropdown.GetValue()
     local BandageNames = {
@@ -956,7 +985,7 @@ CreateButton(BandageContent, "Tp Food", function()
                     if itemName:find(bandageKey) then
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
-                            main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                            main.CFrame = targetCF * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                             found = true
                         end
                         break
@@ -968,7 +997,7 @@ CreateButton(BandageContent, "Tp Food", function()
                 if itemName:find(searchTerm) then
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
-                        main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        main.CFrame = targetCF * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
                         found = true
                     end
                 end
@@ -977,7 +1006,7 @@ CreateButton(BandageContent, "Tp Food", function()
     end
     
     if found then
-        ShowNotification("Teleported: " .. selectedBandage, 2)
+        ShowNotification("Teleported: " .. selectedBandage .. " to " .. SelectedBringLocation, 2)
     else
         ShowNotification("No " .. selectedBandage .. " found on map", 2)
     end
@@ -1244,4 +1273,4 @@ switchToTab("Info")
 wait(0.5)
 SetupScrollLimits()
 
-print("Mobile ASTRALCHEAT with flying Uping loaded! Tap the button to open/close. Drag the title to move. Drag the bottom-right corner to resize.")
+print("Mobile ASTRALCHEAT with Bring Location loaded! Tap the button to open/close. Drag the title to move. Drag the bottom-right corner to resize.")
