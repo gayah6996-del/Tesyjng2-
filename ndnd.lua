@@ -28,7 +28,7 @@ local NotificationLabel = Instance.new("TextLabel")
 NotificationLabel.Size = UDim2.new(1, -10, 1, -10)
 NotificationLabel.Position = UDim2.new(0, 5, 0, 5)
 NotificationLabel.BackgroundTransparency = 1
-NotificationLabel.Text = "Bandage None"
+NotificationLabel.Text = "Notification"
 NotificationLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
 NotificationLabel.TextSize = 14
 NotificationLabel.Font = Enum.Font.GothamBold
@@ -50,12 +50,12 @@ end
 
 -- Кнопка показа меню (всегда видна)
 local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 70, 0, 70)
+ToggleButton.Size = UDim2.new(0, 60, 0, 60)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Text = "ASTRAL"
-ToggleButton.TextSize = 9
+ToggleButton.TextSize = 7
 ToggleButton.ZIndex = 10
 ToggleButton.Parent = ScreenGui
 
@@ -63,10 +63,10 @@ local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 10)
 ToggleCorner.Parent = ToggleButton
 
--- Основное окно меню (УВЕЛИЧЕННЫЙ РАЗМЕР)
+-- Основное окно меню
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 650)  -- Увеличен размер
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -325)  -- Обновлена позиция для центрирования
+MainFrame.Size = UDim2.new(0, 320, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -76,6 +76,19 @@ MainFrame.Parent = ScreenGui
 local UICorner = Instance.new("UICorner")
 UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
+
+-- Элемент для изменения размера (правый нижний угол)
+local ResizeHandle = Instance.new("Frame")
+ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
+ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+ResizeHandle.BorderSizePixel = 0
+ResizeHandle.ZIndex = 5
+ResizeHandle.Parent = MainFrame
+
+local ResizeCorner = Instance.new("UICorner")
+ResizeCorner.CornerRadius = UDim.new(0, 4)
+ResizeCorner.Parent = ResizeHandle
 
 -- Заголовок для перемещения
 local Title = Instance.new("TextLabel")
@@ -141,7 +154,7 @@ KeksTabButton.TextSize = 14
 KeksTabButton.Font = Enum.Font.GothamBold
 KeksTabButton.Parent = TabsFrame
 
--- Основной контейнер с прокруткой (УВЕЛИЧЕННЫЙ РАЗМЕР)
+-- Основной контейнер с прокруткой
 local ScrollContainer = Instance.new("ScrollingFrame")
 ScrollContainer.Size = UDim2.new(1, -10, 1, -75)
 ScrollContainer.Position = UDim2.new(0, 5, 0, 70)
@@ -216,6 +229,11 @@ local UpingHeight = 50
 local IsUping = false
 local UpingConnection = nil
 local BodyVelocity = nil
+
+-- Переменные для изменения размера
+local Resizing = false
+local ResizeStart = nil
+local StartSize = nil
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
@@ -658,7 +676,9 @@ CreateButton(teleportContent, "Teleport to Base", function()
     local character = Player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         character.HumanoidRootPart.CFrame = CFrame.new(0, 10, 0)
-        print("Teleported to base!")
+        ShowNotification("Teleported to base!", 2)
+    else
+        ShowNotification("Character not found!", 2)
     end
 end)
 
@@ -679,9 +699,13 @@ local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
 -- Кнопка для телепортации выбранных предметов
 CreateButton(bringItemsContent, "Bring Selected", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
     
     local selectedItem = bringDropdown.GetValue()
+    local found = false
     
     if selectedItem == "Logs" then
         for _, item in pairs(workspace.Items:GetChildren()) do
@@ -689,40 +713,60 @@ CreateButton(bringItemsContent, "Bring Selected", function()
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
                     main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    found = true
                 end
             end
         end
-        ShowNotification("Brought: Logs", 2)
+        if found then
+            ShowNotification("Brought: Logs", 2)
+        else
+            ShowNotification("No Logs found on map", 2)
+        end
     elseif selectedItem == "Coal" then
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("coal") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
                     main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    found = true
                 end
             end
         end
-        ShowNotification("Brought: Coal", 2)
+        if found then
+            ShowNotification("Brought: Coal", 2)
+        else
+            ShowNotification("No Coal found on map", 2)
+        end
     elseif selectedItem == "Fuel Canister" then
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("fuel canister") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
                     main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    found = true
                 end
             end
         end
-        ShowNotification("Brought: Fuel Canister", 2)
+        if found then
+            ShowNotification("Brought: Fuel Canister", 2)
+        else
+            ShowNotification("No Fuel Canister found on map", 2)
+        end
     elseif selectedItem == "Oil Barrel" then
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("oil barrel") and item:IsA("Model") then
                 local main = item:FindFirstChildWhichIsA("BasePart")
                 if main then
                     main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                    found = true
                 end
             end
         end
-        ShowNotification("Brought: Oil Barrel", 2)
+        if found then
+            ShowNotification("Brought: Oil Barrel", 2)
+        else
+            ShowNotification("No Oil Barrel found on map", 2)
+        end
     end
 end)
 
@@ -736,7 +780,10 @@ local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 -- Кнопка для телепортации выбранного скрапа
 CreateButton(scrapContent, "Tp Scraps", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
     
     local selectedScrap = scrapDropdown.GetValue()
     local scrapNames = {
@@ -750,6 +797,8 @@ CreateButton(scrapContent, "Tp Scraps", function()
         ["broken microwave"] = true,
     }
     
+    local found = false
+    
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item:IsA("Model") then
             local itemName = item.Name:lower()
@@ -761,6 +810,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
                             main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                            found = true
                         end
                         break
                     end
@@ -771,13 +821,18 @@ CreateButton(scrapContent, "Tp Scraps", function()
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
                         main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        found = true
                     end
                 end
             end
         end
     end
     
-    ShowNotification("Teleported: " .. selectedScrap, 2)
+    if found then
+        ShowNotification("Teleported: " .. selectedScrap, 2)
+    else
+        ShowNotification("No " .. selectedScrap .. " found on map", 2)
+    end
 end)
 
 -- Новое мини-меню для Lost Child (игрок телепортируется к детям)
@@ -786,7 +841,10 @@ local lostChildSection, lostChildContent = CreateSection(KeksTab, "👶 Teleport
 -- Кнопка для Lost Child 1
 CreateButton(lostChildContent, "Lost Child 1", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
     
     for _, item in pairs(workspace.Characters:GetChildren()) do
         if item.Name:lower():find("lost child") and item:IsA("Model") then
@@ -798,13 +856,16 @@ CreateButton(lostChildContent, "Lost Child 1", function()
             end
         end
     end
-    ShowNotification("Lost Child 1 not found", 2)
+    ShowNotification("Lost Child 1 not found on map", 2)
 end)
 
 -- Кнопка для Lost Child 2
 CreateButton(lostChildContent, "Lost Child 2", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
     
     for _, item in pairs(workspace.Characters:GetChildren()) do
         if item.Name:lower():find("lost child2") and item:IsA("Model") then
@@ -816,13 +877,16 @@ CreateButton(lostChildContent, "Lost Child 2", function()
             end
         end
     end
-    ShowNotification("Lost Child 2 not found", 2)
+    ShowNotification("Lost Child 2 not found on map", 2)
 end)
 
 -- Кнопка для Lost Child 3
 CreateButton(lostChildContent, "Lost Child 3", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
     
     for _, item in pairs(workspace.Characters:GetChildren()) do
         if item.Name:lower():find("lost child3") and item:IsA("Model") then
@@ -834,13 +898,16 @@ CreateButton(lostChildContent, "Lost Child 3", function()
             end
         end
     end
-    ShowNotification("Lost Child 3 not found", 2)
+    ShowNotification("Lost Child 3 not found on map", 2)
 end)
 
 -- Кнопка для Lost Child 4
 CreateButton(lostChildContent, "Lost Child 4", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
     
     for _, item in pairs(workspace.Characters:GetChildren()) do
         if item.Name:lower():find("lost child4") and item:IsA("Model") then
@@ -852,7 +919,7 @@ CreateButton(lostChildContent, "Lost Child 4", function()
             end
         end
     end
-    ShowNotification("Lost Child 4 not found", 2)
+    ShowNotification("Lost Child 4 not found on map", 2)
 end)
 
 local BandageSection, BandageContent = CreateSection(KeksTab, "🍎 Food Selection")
@@ -864,7 +931,10 @@ local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 -- Кнопка для телепортации выбранной еды
 CreateButton(BandageContent, "Tp Food", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then return end
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
     
     local selectedBandage = BandageDropdown.GetValue()
     local BandageNames = {
@@ -873,6 +943,8 @@ CreateButton(BandageContent, "Tp Food", function()
         ["bandage"] = "Bandage", 
         ["medkit"] = "Medkit", 
     }
+    
+    local found = false
     
     for _, item in pairs(workspace.Items:GetChildren()) do
         if item:IsA("Model") then
@@ -885,6 +957,7 @@ CreateButton(BandageContent, "Tp Food", function()
                         local main = item:FindFirstChildWhichIsA("BasePart")
                         if main then
                             main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                            found = true
                         end
                         break
                     end
@@ -896,13 +969,18 @@ CreateButton(BandageContent, "Tp Food", function()
                     local main = item:FindFirstChildWhichIsA("BasePart")
                     if main then
                         main.CFrame = root.CFrame * CFrame.new(math.random(-5,5), 0, math.random(-5,5))
+                        found = true
                     end
                 end
             end
         end
     end
     
-    ShowNotification("Teleported: " .. selectedBandage, 2)
+    if found then
+        ShowNotification("Teleported: " .. selectedBandage, 2)
+    else
+        ShowNotification("No " .. selectedBandage .. " found on map", 2)
+    end
 end)
 
 -- Функции из оригинального скрипта
@@ -1046,6 +1124,36 @@ local function updateDrag(input)
     end
 end
 
+-- Система изменения размера меню
+local function startResize(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        Resizing = true
+        ResizeStart = Vector2.new(input.Position.X, input.Position.Y)
+        StartSize = UDim2.new(MainFrame.Size.X.Scale, MainFrame.Size.X.Offset, MainFrame.Size.Y.Scale, MainFrame.Size.Y.Offset)
+    end
+end
+
+local function stopResize()
+    Resizing = false
+    ResizeStart = nil
+    StartSize = nil
+end
+
+local function updateResize(input)
+    if Resizing and ResizeStart and StartSize then
+        local delta = Vector2.new(input.Position.X, input.Position.Y) - ResizeStart
+        
+        -- Минимальный размер меню
+        local minWidth = 250
+        local minHeight = 300
+        
+        local newWidth = math.max(minWidth, StartSize.X.Offset + delta.X)
+        local newHeight = math.max(minHeight, StartSize.Y.Offset + delta.Y)
+        
+        MainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+    end
+end
+
 -- Обработчики для перемещения
 Title.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch then
@@ -1059,9 +1167,26 @@ Title.InputEnded:Connect(function(input)
     end
 end)
 
+-- Обработчики для изменения размера
+ResizeHandle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        startResize(input)
+    end
+end)
+
+ResizeHandle.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        stopResize()
+    end
+end)
+
 UserInputService.InputChanged:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.Touch then
-        updateDrag(input)
+        if dragging then
+            updateDrag(input)
+        elseif Resizing then
+            updateResize(input)
+        end
     end
 end)
 
@@ -1119,4 +1244,4 @@ switchToTab("Info")
 wait(0.5)
 SetupScrollLimits()
 
-print("Mobile ASTRALCHEAT with flying Uping loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
+print("Mobile ASTRALCHEAT with flying Uping loaded! Tap the button to open/close. Drag the title to move. Drag the bottom-right corner to resize.")
