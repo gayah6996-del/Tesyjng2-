@@ -302,10 +302,6 @@ local ActiveKillAura = false
 local ActiveAutoChopTree = false
 local DistanceForKillAura = 25
 local DistanceForAutoChopTree = 25
-local UpingHeight = 50
-local IsUping = false
-local UpingConnection = nil
-local BodyVelocity = nil
 
 -- Переменные для изменения размера
 local Resizing = false
@@ -704,8 +700,8 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     }
 end
 
--- Функция для включения/выключения режима полета
-local function ToggleUping()
+-- Функция для поднятия персонажа
+local function UpCharacter()
     local character = Player.Character
     local root = character and character:FindFirstChild("HumanoidRootPart")
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
@@ -715,59 +711,9 @@ local function ToggleUping()
         return
     end
     
-    IsUping = not IsUping
-    
-    if IsUping then
-        -- Включаем режим полета
-        if not BodyVelocity then
-            BodyVelocity = Instance.new("BodyVelocity")
-            BodyVelocity.Velocity = Vector3.new(0, 0, 0)
-            BodyVelocity.MaxForce = Vector3.new(0, 0, 0)
-        end
-        
-        BodyVelocity.Velocity = Vector3.new(0, UpingHeight, 0)
-        BodyVelocity.MaxForce = Vector3.new(0, math.huge, 0)
-        BodyVelocity.Parent = root
-        
-        -- Сохраняем исходную гравитацию и отключаем ее
-        humanoid.PlatformStand = true
-        
-        UpingButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-        UpingButton.Text = "Uping: ON"
-        
-        -- Запускаем обновление полета
-        if UpingConnection then
-            UpingConnection:Disconnect()
-        end
-        
-        UpingConnection = RunService.Heartbeat:Connect(function()
-            if IsUping and BodyVelocity and BodyVelocity.Parent then
-                BodyVelocity.Velocity = Vector3.new(0, UpingHeight, 0)
-            else
-                UpingConnection:Disconnect()
-            end
-        end)
-        
-        ShowNotification("Uping activated! You can fly now.", 2)
-    else
-        -- Выключаем режим полета
-        if BodyVelocity then
-            BodyVelocity:Destroy()
-            BodyVelocity = nil
-        end
-        
-        if UpingConnection then
-            UpingConnection:Disconnect()
-            UpingConnection = nil
-        end
-        
-        humanoid.PlatformStand = false
-        
-        UpingButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-        UpingButton.Text = "Uping"
-        
-        ShowNotification("Uping deactivated!", 2)
-    end
+    -- Поднимаем персонажа на 10 единиц
+    root.CFrame = root.CFrame + Vector3.new(0, 10, 0)
+    ShowNotification("Character lifted up!", 2)
 end
 
 -- Создание элементов Info tab
@@ -823,12 +769,8 @@ CreateButton(teleportContent, "Teleport to Base", function()
     end
 end)
 
--- Добавляем слайдер для высоты полета и кнопку Uping
-local upingSlider = CreateSlider(teleportContent, "Uping Height", 0, 100, 50, function(value)
-    UpingHeight = value
-end)
-
-UpingButton = CreateButton(teleportContent, "Uping", ToggleUping)
+-- Добавляем кнопку Up вместо слайдера и Uping
+CreateButton(teleportContent, "Up", UpCharacter)
 
 -- Новое мини-меню для Bring Items
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
@@ -871,7 +813,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #logs) do
             local log = logs[i]
-            log.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 10, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            log.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 5, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
             log.Anchored = false
             log.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -900,7 +842,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #coals) do
             local coal = coals[i]
-            coal.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 10, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            coal.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 5, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
             coal.Anchored = false
             coal.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -930,7 +872,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         for i = 1, math.min(BringCount, #fuels) do
             local fuel = fuels[i]
             -- Топливо телепортируем прямо в костер без высоты
-            fuel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0, math.random(-2,2))
+            fuel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
             fuel.Anchored = false
             fuel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -960,7 +902,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         for i = 1, math.min(BringCount, #barrels) do
             local barrel = barrels[i]
             -- Бочки с маслом телепортируем прямо в костер без высоты
-            barrel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0, math.random(-2,2))
+            barrel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
             barrel.Anchored = false
             barrel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -1036,7 +978,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
     local teleported = 0
     for i = 1, math.min(BringCount, #scraps) do
         local scrap = scraps[i]
-        scrap.CFrame = CFrame.new(root.Position.X, root.Position.Y + 10, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        scrap.CFrame = CFrame.new(root.Position.X, root.Position.Y + 5, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
         scrap.Anchored = false
         scrap.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         teleported = teleported + 1
@@ -1194,7 +1136,7 @@ CreateButton(BandageContent, "Tp Food", function()
     local teleported = 0
     for i = 1, math.min(BringCount, #foods) do
         local food = foods[i]
-        food.CFrame = CFrame.new(root.Position.X, root.Position.Y + 10, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        food.CFrame = CFrame.new(root.Position.X, root.Position.Y + 5, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
         food.Anchored = false
         food.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         teleported = teleported + 1
@@ -1211,9 +1153,9 @@ CreateButton(BandageContent, "Tp Food", function()
     end
 end)
 
--- Ограничитель прокрутки для вкладки Keks
+-- Ограничитель прокрутки для вкладки Keks (добавляем 10 пикселей)
 local ScrollLimiter = Instance.new("Frame")
-ScrollLimiter.Size = UDim2.new(1, 0, 0, 10)
+ScrollLimiter.Size = UDim2.new(1, 0, 0, 20)  -- Увеличили с 10 до 20 пикселей
 ScrollLimiter.BackgroundTransparency = 1
 ScrollLimiter.Parent = KeksTab
 
@@ -1307,11 +1249,11 @@ local function switchToTab(tabName)
         KeksTab.Visible = true
         CurrentTab = "Keks"
         
-        -- Устанавливаем ограничение прокрутки для вкладки Keks
+        -- Устанавливаем ограничение прокрутки для вкладки Keks с дополнительными 10 пикселями
         wait(0.1) -- Ждем обновления макета
         local contentSize = KeksTab.AbsoluteSize.Y
         local containerSize = ScrollContainer.AbsoluteWindowSize.Y
-        local maxScroll = math.max(0, contentSize - containerSize)
+        local maxScroll = math.max(0, contentSize - containerSize + 10)  -- Добавляем 10 пикселей
         
         -- Ограничиваем текущую позицию прокрутки
         if ScrollContainer.CanvasPosition.Y > maxScroll then
@@ -1467,6 +1409,11 @@ local function SetupScrollLimits()
     -- Устанавливаем максимальную прокрутку
     local maxScroll = math.max(0, contentSize - containerSize)
     
+    -- Для вкладки Keks добавляем дополнительные 10 пикселей
+    if CurrentTab == "Keks" then
+        maxScroll = maxScroll + 10
+    end
+    
     -- Ограничиваем текущую позицию прокрутки
     if ScrollContainer.CanvasPosition.Y > maxScroll then
         ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
@@ -1483,4 +1430,4 @@ switchToTab("Info")
 wait(0.5)
 SetupScrollLimits()
 
-print("Mobile ASTRALCHEAT with improved touch controls loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
+print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
