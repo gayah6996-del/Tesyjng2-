@@ -1,3 +1,4 @@
+[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -313,8 +314,11 @@ local Dragging = false
 local DragStartPos = nil
 local MenuStartPos = nil
 
--- Координаты костра
+-- Координаты костра (по умолчанию)
 local CampfirePosition = Vector3.new(0, 10, 0)
+
+-- Координаты WorkBench (переработчика) - будут установлены через чекпоинты
+local WorkbenchPosition = Vector3.new(10, 10, 10)
 
 -- Новые переменные для телепортации предметов
 local BringCount = 2  -- Количество предметов за один раз
@@ -718,38 +722,71 @@ local function JumpCharacter()
     ShowNotification("Character jumped!", 1)
 end
 
--- Функция для получения позиции WorkBench
-local function GetWorkbenchPosition()
-    -- Ищем WorkBench в workspace
-    local workbench = workspace:FindFirstChild("WorkBench") or workspace:FindFirstChild("Workbench")
-    if workbench and workbench:FindFirstChildWhichIsA("BasePart") then
-        return workbench:FindFirstChildWhichIsA("BasePart").Position
-    else
-        -- Если WorkBench не найден, используем позицию по умолчанию рядом с костром
-        ShowNotification("WorkBench not found, using default position", 2)
-        return CampfirePosition + Vector3.new(10, 0, 0)
+-- Функция для получения текущей позиции игрока
+local function GetCurrentPlayerPosition()
+    local character = Player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        return character.HumanoidRootPart.Position
+    end
+    return Vector3.new(0, 0, 0)
+end
+
+-- Функция для установки чекпоинта
+local function SetCheckpoint(checkpointName)
+    local currentPos = GetCurrentPlayerPosition()
+    
+    if checkpointName == "Campfire" then
+        CampfirePosition = currentPos
+        ShowNotification("Campfire checkpoint set to current position!", 2)
+    elseif checkpointName == "Workbench" then
+        WorkbenchPosition = currentPos
+        ShowNotification("Workbench checkpoint set to current position!", 2)
     end
 end
 
 -- Функция для получения целевой позиции в зависимости от выбранного места
 local function GetTargetPosition()
     if SelectedTeleportLocation == "Player" then
-        local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-        if root then
-            return root.Position
-        else
-            ShowNotification("Player not found, using campfire", 2)
-            return CampfirePosition
-        end
+        return GetCurrentPlayerPosition()
     elseif SelectedTeleportLocation == "WorkBench" then
-        return GetWorkbenchPosition()
+        return WorkbenchPosition
     elseif SelectedTeleportLocation == "Fire" then
         return CampfirePosition
     else
-        -- По умолчанию используем позицию игрока
-        local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-        return root and root.Position or CampfirePosition
+        return GetCurrentPlayerPosition()
     end
+end
+
+-- Функция для телепортации дерева с горизонтальным падением
+local function TeleportLogHorizontal(log, targetPosition)
+    -- Создаем горизонтальную ориентацию (дерево лежит на боку)
+    local horizontalCFrame = CFrame.new(
+        targetPosition.X + math.random(-5, 5),
+        targetPosition.Y + 2,  -- Немного выше земли
+        targetPosition.Z + math.random(-5, 5)
+    ) * CFrame.Angles(math.rad(90), 0, 0)  -- Поворачиваем на 90 градусов вокруг оси X
+    
+    log.CFrame = horizontalCFrame
+    log.Anchored = false
+    
+    -- Добавляем случайное вращение для более естественного вида
+    log.AssemblyAngularVelocity = Vector3.new(
+        math.random(-10, 10),
+        math.random(-10, 10),
+        math.random(-10, 10)
+    )
+    log.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+end
+
+-- Функция для обычной телепортации предметов
+local function TeleportItemNormal(item, targetPosition)
+    item.CFrame = CFrame.new(
+        targetPosition.X + math.random(-5, 5),
+        targetPosition.Y + 5,
+        targetPosition.Z + math.random(-5, 5)
+    )
+    item.Anchored = false
+    item.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 end
 
 -- Создание элементов Info tab
@@ -808,8 +845,25 @@ end)
 -- Добавляем кнопку Jump вместо Up
 CreateButton(teleportContent, "Jump", JumpCharacter)
 
+-- Новое мини-меню для установки чекпоинтов
+local checkpointSection, checkpointContent = CreateSection(KeksTab, "📍 Set Checkpoints")
+
+CreateButton(checkpointContent, "Set Campfire Checkpoint", function()
+    SetCheckpoint("Campfire")
+end)
+
+CreateButton(checkpointContent, "Set Workbench Checkpoint", function()
+    SetCheckpoint("Workbench")
+end)
+
+-- Показать текущие координаты
+CreateButton(checkpointContent, "Show Current Position", function()
+    local pos = GetCurrentPlayerPosition()
+    ShowNotification(string.format("Position: X=%.1f, Y=%.1f, Z=%.1f", pos.X, pos.Y, pos.Z), 3)
+end)
+
 -- Новое мини-меню для выбора места телепортации
-local teleportLocationSection, teleportLocationContent = CreateSection(KeksTab, "📍 Teleport Location")
+local teleportLocationSection, teleportLocationContent = CreateSection(KeksTab, "🎯 Teleport Location")
 
 -- Создаем выпадающий список для выбора места телепортации
 local locationOptions = {"Player", "WorkBench", "Fire"}
@@ -862,9 +916,8 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #logs) do
             local log = logs[i]
-            log.CFrame = CFrame.new(targetPosition.X, targetPosition.Y + 5, targetPosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-            log.Anchored = false
-            log.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            -- Используем специальную функцию для горизонтального падения дерева
+            TeleportLogHorizontal(log, targetPosition)
             teleported = teleported + 1
             
             if BringDelay > 0 then
@@ -891,9 +944,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #coals) do
             local coal = coals[i]
-            coal.CFrame = CFrame.new(targetPosition.X, targetPosition.Y + 5, targetPosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-            coal.Anchored = false
-            coal.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            TeleportItemNormal(coal, targetPosition)
             teleported = teleported + 1
             
             if BringDelay > 0 then
@@ -1024,9 +1075,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
     local teleported = 0
     for i = 1, math.min(BringCount, #scraps) do
         local scrap = scraps[i]
-        scrap.CFrame = CFrame.new(targetPosition.X, targetPosition.Y + 5, targetPosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-        scrap.Anchored = false
-        scrap.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        TeleportItemNormal(scrap, targetPosition)
         teleported = teleported + 1
         
         if BringDelay > 0 then
@@ -1179,9 +1228,7 @@ CreateButton(BandageContent, "Tp Food", function()
     local teleported = 0
     for i = 1, math.min(BringCount, #foods) do
         local food = foods[i]
-        food.CFrame = CFrame.new(targetPosition.X, targetPosition.Y + 5, targetPosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-        food.Anchored = false
-        food.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        TeleportItemNormal(food, targetPosition)
         teleported = teleported + 1
         
         if BringDelay > 0 then
@@ -1474,3 +1521,4 @@ wait(0.5)
 SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
+[file content end]
