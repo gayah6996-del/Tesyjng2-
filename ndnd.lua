@@ -1,5 +1,3 @@
-[file name]: ndnd.lua
-[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -323,7 +321,7 @@ local BringCount = 2  -- Количество предметов за один �
 local BringDelay = 600  -- Задержка между падением предметов в миллисекундах
 
 -- Новая переменная для выбора места телепортации
-local TeleportLocation = "Player"  -- По умолчанию телепортация к игроку
+local SelectedTeleportLocation = "Player"  -- По умолчанию телепортация к игроку
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
@@ -720,29 +718,37 @@ local function JumpCharacter()
     ShowNotification("Character jumped!", 1)
 end
 
--- Функция для получения позиции телепортации в зависимости от выбранного места
-local function GetTeleportPosition()
-    if TeleportLocation == "Player" then
-        local character = Player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            return character.HumanoidRootPart.Position
+-- Функция для получения позиции WorkBench
+local function GetWorkbenchPosition()
+    -- Ищем WorkBench в workspace
+    local workbench = workspace:FindFirstChild("WorkBench") or workspace:FindFirstChild("Workbench")
+    if workbench and workbench:FindFirstChildWhichIsA("BasePart") then
+        return workbench:FindFirstChildWhichIsA("BasePart").Position
+    else
+        -- Если WorkBench не найден, используем позицию по умолчанию рядом с костром
+        ShowNotification("WorkBench not found, using default position", 2)
+        return CampfirePosition + Vector3.new(10, 0, 0)
+    end
+end
+
+-- Функция для получения целевой позиции в зависимости от выбранного места
+local function GetTargetPosition()
+    if SelectedTeleportLocation == "Player" then
+        local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        if root then
+            return root.Position
         else
+            ShowNotification("Player not found, using campfire", 2)
             return CampfirePosition
         end
-    elseif TeleportLocation == "WorkBench" then
-        -- Поиск верстака в рабочем пространстве
-        local workbench = workspace:FindFirstChild("Workbench") or workspace:FindFirstChild("WorkBench")
-        if workbench and workbench:FindFirstChildWhichIsA("BasePart") then
-            return workbench:FindFirstChildWhichIsA("BasePart").Position
-        else
-            -- Если верстак не найден, используем позицию костра
-            ShowNotification("Workbench not found, using campfire position", 2)
-            return CampfirePosition
-        end
-    elseif TeleportLocation == "Fire" then
+    elseif SelectedTeleportLocation == "WorkBench" then
+        return GetWorkbenchPosition()
+    elseif SelectedTeleportLocation == "Fire" then
         return CampfirePosition
     else
-        return CampfirePosition
+        -- По умолчанию используем позицию игрока
+        local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+        return root and root.Position or CampfirePosition
     end
 end
 
@@ -807,8 +813,8 @@ local teleportLocationSection, teleportLocationContent = CreateSection(KeksTab, 
 
 -- Создаем выпадающий список для выбора места телепортации
 local locationOptions = {"Player", "WorkBench", "Fire"}
-local locationDropdown = CreateDropdown(teleportLocationContent, locationOptions, "Player", function(selectedLocation)
-    TeleportLocation = selectedLocation
+local locationDropdown = CreateDropdown(teleportLocationContent, locationOptions, SelectedTeleportLocation, function(selectedLocation)
+    SelectedTeleportLocation = selectedLocation
     ShowNotification("Teleport location set to: " .. selectedLocation, 2)
 end)
 
@@ -838,8 +844,8 @@ CreateButton(bringItemsContent, "Bring Selected", function()
     local selectedItem = bringDropdown.GetValue()
     local found = false
     
-    -- Получаем позицию для телепортации
-    local targetPosition = GetTeleportPosition()
+    -- Получаем целевую позицию в зависимости от выбранного места
+    local targetPosition = GetTargetPosition()
     
     if selectedItem == "Logs" then
         local logs = {}
@@ -867,7 +873,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         
         if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #logs .. " Logs to " .. TeleportLocation .. "!", 2)
+            ShowNotification("Brought " .. teleported .. "/" .. #logs .. " Logs to " .. SelectedTeleportLocation .. "!", 2)
         else
             ShowNotification("No Logs found on map", 2)
         end
@@ -896,7 +902,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         
         if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #coals .. " Coal to " .. TeleportLocation .. "!", 2)
+            ShowNotification("Brought " .. teleported .. "/" .. #coals .. " Coal to " .. SelectedTeleportLocation .. "!", 2)
         else
             ShowNotification("No Coal found on map", 2)
         end
@@ -926,7 +932,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         
         if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #fuels .. " Fuel Canister to " .. TeleportLocation .. "!", 2)
+            ShowNotification("Brought " .. teleported .. "/" .. #fuels .. " Fuel Canister to " .. SelectedTeleportLocation .. "!", 2)
         else
             ShowNotification("No Fuel Canister found on map", 2)
         end
@@ -956,7 +962,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         
         if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #barrels .. " Oil Barrel to " .. TeleportLocation .. "!", 2)
+            ShowNotification("Brought " .. teleported .. "/" .. #barrels .. " Oil Barrel to " .. SelectedTeleportLocation .. "!", 2)
         else
             ShowNotification("No Oil Barrel found on map", 2)
         end
@@ -972,8 +978,8 @@ local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа к выбранному месту
 CreateButton(scrapContent, "Tp Scraps", function()
-    -- Получаем позицию для телепортации
-    local targetPosition = GetTeleportPosition()
+    -- Получаем целевую позицию в зависимости от выбранного места
+    local targetPosition = GetTargetPosition()
     
     local selectedScrap = scrapDropdown.GetValue()
     local scrapNames = {
@@ -1029,7 +1035,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
     end
     
     if teleported > 0 then
-        ShowNotification("Teleported " .. teleported .. "/" .. #scraps .. " " .. selectedScrap .. " to " .. TeleportLocation, 2)
+        ShowNotification("Teleported " .. teleported .. "/" .. #scraps .. " " .. selectedScrap .. " to " .. SelectedTeleportLocation, 2)
     else
         ShowNotification("No " .. selectedScrap .. " found on map", 2)
     end
@@ -1130,8 +1136,8 @@ local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
 -- Кнопка для телепортации выбранной еды к выбранному месту
 CreateButton(BandageContent, "Tp Food", function()
-    -- Получаем позицию для телепортации
-    local targetPosition = GetTeleportPosition()
+    -- Получаем целевую позицию в зависимости от выбранного места
+    local targetPosition = GetTargetPosition()
     
     local selectedBandage = BandageDropdown.GetValue()
     local BandageNames = {
@@ -1184,7 +1190,7 @@ CreateButton(BandageContent, "Tp Food", function()
     end
     
     if teleported > 0 then
-        ShowNotification("Teleported " .. teleported .. "/" .. #foods .. " " .. selectedBandage .. " to " .. TeleportLocation, 2)
+        ShowNotification("Teleported " .. teleported .. "/" .. #foods .. " " .. selectedBandage .. " to " .. SelectedTeleportLocation, 2)
     else
         ShowNotification("No " .. selectedBandage .. " found on map", 2)
     end
@@ -1468,4 +1474,3 @@ wait(0.5)
 SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
-[file content end]
