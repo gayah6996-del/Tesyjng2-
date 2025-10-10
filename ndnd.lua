@@ -70,14 +70,12 @@ local ToggleStartPos = nil
 
 -- Функции для перемещения кнопки ASTRAL
 local function startToggleDragging(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        ToggleDragging = true
-        ToggleDragStartPos = Vector2.new(input.Position.X, input.Position.Y)
-        ToggleStartPos = UDim2.new(ToggleButton.Position.X.Scale, ToggleButton.Position.X.Offset, ToggleButton.Position.Y.Scale, ToggleButton.Position.Y.Offset)
-        
-        -- Визуальная обратная связь
-        ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    end
+    ToggleDragging = true
+    ToggleDragStartPos = Vector2.new(input.Position.X, input.Position.Y)
+    ToggleStartPos = UDim2.new(ToggleButton.Position.X.Scale, ToggleButton.Position.X.Offset, ToggleButton.Position.Y.Scale, ToggleButton.Position.Y.Offset)
+    
+    -- Визуальная обратная связь
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 end
 
 local function stopToggleDragging()
@@ -104,26 +102,20 @@ end
 
 -- Обработчики для перемещения кнопки ASTRAL
 ToggleButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        startToggleDragging(input)
-    end
+    startToggleDragging(input)
 end)
 
 ToggleButton.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        stopToggleDragging()
-    end
+    stopToggleDragging()
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
-        if ToggleDragging then
-            updateToggleDrag(input)
-        elseif Dragging then
-            updateDrag(input)
-        elseif Resizing then
-            updateResize(input)
-        end
+    if ToggleDragging then
+        updateToggleDrag(input)
+    elseif Dragging then
+        updateDrag(input)
+    elseif Resizing then
+        updateResize(input)
     end
 end)
 
@@ -143,11 +135,12 @@ UICorner.Parent = MainFrame
 
 -- Элемент для изменения размера (правый нижний угол)
 local ResizeHandle = Instance.new("Frame")
-ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
-ResizeHandle.Position = UDim2.new(1, -20, 1, -20)
+ResizeHandle.Size = UDim2.new(0, 30, 0, 30)
+ResizeHandle.Position = UDim2.new(1, -30, 1, -30)
 ResizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 ResizeHandle.BorderSizePixel = 0
 ResizeHandle.ZIndex = 5
+ResizeHandle.Active = true
 ResizeHandle.Parent = MainFrame
 
 local ResizeCorner = Instance.new("UICorner")
@@ -156,13 +149,14 @@ ResizeCorner.Parent = ResizeHandle
 
 -- Заголовок для перемещения
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 35)
+Title.Size = UDim2.new(1, 0, 0, 40)
 Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 Title.Text = "ASTRALCHEAT - Drag to Move"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
+Title.Active = true
 Title.Parent = MainFrame
 
 local TitleCorner = Instance.new("UICorner")
@@ -172,7 +166,7 @@ TitleCorner.Parent = Title
 -- Кнопка сворачивания в заголовке
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
-MinimizeButton.Position = UDim2.new(1, -70, 0, 2)
+MinimizeButton.Position = UDim2.new(1, -70, 0, 5)
 MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
 MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -187,7 +181,7 @@ MinimizeCorner.Parent = MinimizeButton
 -- Кнопка закрытия в заголовке
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -35, 0, 2)
+CloseButton.Position = UDim2.new(1, -35, 0, 5)
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 CloseButton.Text = "✕"
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -202,7 +196,7 @@ CloseCorner.Parent = CloseButton
 -- Кнопки вкладок
 local TabsFrame = Instance.new("Frame")
 TabsFrame.Size = UDim2.new(1, 0, 0, 30)
-TabsFrame.Position = UDim2.new(0, 0, 0, 35)
+TabsFrame.Position = UDim2.new(0, 0, 0, 40)
 TabsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 TabsFrame.BorderSizePixel = 0
 TabsFrame.Parent = MainFrame
@@ -239,8 +233,8 @@ KeksTabButton.Parent = TabsFrame
 
 -- Основной контейнер с прокруткой
 local ScrollContainer = Instance.new("ScrollingFrame")
-ScrollContainer.Size = UDim2.new(1, -10, 1, -75)
-ScrollContainer.Position = UDim2.new(0, 5, 0, 70)
+ScrollContainer.Size = UDim2.new(1, -10, 1, -80)
+ScrollContainer.Position = UDim2.new(0, 5, 0, 75)
 ScrollContainer.BackgroundTransparency = 1
 ScrollContainer.BorderSizePixel = 0
 ScrollContainer.ScrollBarThickness = 8
@@ -487,21 +481,16 @@ local function CreateSlider(parent, text, min, max, defaultValue, callback)
         callback(value)
     end
     
-    -- Обработка для мобильного устройства
-    sliderButton.MouseButton1Down:Connect(function()
+    sliderButton.InputBegan:Connect(function(input)
         isDragging = true
     end)
     
-    sliderButton.MouseButton1Up:Connect(function()
+    sliderButton.InputEnded:Connect(function(input)
         isDragging = false
     end)
     
-    sliderButton.MouseLeave:Connect(function()
-        isDragging = false
-    end)
-    
-    local function onTouchInput(input)
-        if isDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+    local function onInputChanged(input)
+        if isDragging then
             local relativeX = input.Position.X - sliderBar.AbsolutePosition.X
             local normalized = math.clamp(relativeX / sliderBar.AbsoluteSize.X, 0, 1)
             local value = min + normalized * (max - min)
@@ -509,7 +498,7 @@ local function CreateSlider(parent, text, min, max, defaultValue, callback)
         end
     end
     
-    UserInputService.InputChanged:Connect(onTouchInput)
+    UserInputService.InputChanged:Connect(onInputChanged)
     
     updateSlider(defaultValue)
     
@@ -687,7 +676,7 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     
     -- Закрывать выпадающий список при клике вне его
     local function onInputBegan(input)
-        if (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1) and isOpen then
+        if isOpen then
             local touchPos = input.Position
             local listAbsolutePos = dropdownList.AbsolutePosition
             local listAbsoluteSize = dropdownList.AbsoluteSize
@@ -940,7 +929,8 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #fuels) do
             local fuel = fuels[i]
-            fuel.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 10, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            -- Топливо телепортируем прямо в костер без высоты
+            fuel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0, math.random(-2,2))
             fuel.Anchored = false
             fuel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -969,7 +959,8 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #barrels) do
             local barrel = barrels[i]
-            barrel.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 10, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            -- Бочки с маслом телепортируем прямо в костер без высоты
+            barrel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0, math.random(-2,2))
             barrel.Anchored = false
             barrel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -1346,14 +1337,12 @@ end)
 
 -- Система перемещения меню для мобильных устройств и PC
 local function startDragging(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        Dragging = true
-        DragStartPos = Vector2.new(input.Position.X, input.Position.Y)
-        MenuStartPos = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset)
-        
-        -- Визуальная обратная связь
-        Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    end
+    Dragging = true
+    DragStartPos = Vector2.new(input.Position.X, input.Position.Y)
+    MenuStartPos = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset)
+    
+    -- Визуальная обратная связь
+    Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 end
 
 local function stopDragging()
@@ -1380,14 +1369,12 @@ end
 
 -- Система изменения размера меню
 local function startResize(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        Resizing = true
-        ResizeStart = Vector2.new(input.Position.X, input.Position.Y)
-        StartSize = UDim2.new(MainFrame.Size.X.Scale, MainFrame.Size.X.Offset, MainFrame.Size.Y.Scale, MainFrame.Size.Y.Offset)
-        
-        -- Визуальная обратная связь
-        ResizeHandle.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
-    end
+    Resizing = true
+    ResizeStart = Vector2.new(input.Position.X, input.Position.Y)
+    StartSize = UDim2.new(MainFrame.Size.X.Scale, MainFrame.Size.X.Offset, MainFrame.Size.Y.Scale, MainFrame.Size.Y.Offset)
+    
+    -- Визуальная обратная связь
+    ResizeHandle.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
 end
 
 local function stopResize()
@@ -1414,28 +1401,20 @@ end
 
 -- Обработчики для перемещения меню
 Title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        startDragging(input)
-    end
+    startDragging(input)
 end)
 
 Title.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        stopDragging()
-    end
+    stopDragging()
 end)
 
 -- Обработчики для изменения размера
 ResizeHandle.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        startResize(input)
-    end
+    startResize(input)
 end)
 
 ResizeHandle.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        stopResize()
-    end
+    stopResize()
 end)
 
 -- Закрытие меню полностью
@@ -1504,4 +1483,4 @@ switchToTab("Info")
 wait(0.5)
 SetupScrollLimits()
 
-print("Mobile ASTRALCHEAT with advanced controls loaded! Tap and drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
+print("Mobile ASTRALCHEAT with improved touch controls loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
