@@ -1,143 +1,161 @@
--- Crystal Hub for Roblox
+-- Crystal Hub - Simple Version
 -- by shinichii.
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Mouse = Player:GetMouse()
 
-local Window = Rayfield:CreateWindow({
-    Name = "Crystal Hub",
-    LoadingTitle = "Crystal Hub",
-    LoadingSubtitle = "by shinichii",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "CrystalHub",
-        FileName = "Config"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = true
-    },
-    KeySystem = false,
-})
+-- Создание интерфейса
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "CrystalHub"
+ScreenGui.Parent = Player.PlayerGui
 
--- Auto Farm Tree Tab
-local AutoFarmTab = Window:CreateTab("Auto Farm Tree", "rbxassetid://4483345998")
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 300, 0, 400)
+MainFrame.Position = UDim2.new(0, 10, 0, 10)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+MainFrame.Parent = ScreenGui
 
-local AutoFarmSection = AutoFarmTab:CreateSection("Main")
+local Title = Instance.new("TextLabel")
+Title.Size = UDim2.new(1, 0, 0, 30)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+Title.Text = "Crystal Hub - by shinichii"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Parent = MainFrame
 
-local AutoClickToggle = AutoFarmTab:CreateToggle({
-    Name = "Auto Click Farm",
-    CurrentValue = false,
-    Flag = "AutoClickToggle",
-    Callback = function(Value)
-        if Value then
-            -- Включить автокликер
-            getgenv().AutoClick = true
-            while getgenv().AutoClick do
-                -- Здесь код автокликера
-                -- Например: кликнуть на дерево
-                task.wait(0.1)
-            end
-        else
-            -- Выключить автокликер
-            getgenv().AutoClick = false
-        end
-    end,
-})
+-- Auto Farm Tree Section
+local AutoFarmLabel = Instance.new("TextLabel")
+AutoFarmLabel.Size = UDim2.new(1, 0, 0, 20)
+AutoFarmLabel.Position = UDim2.new(0, 0, 0, 35)
+AutoFarmLabel.BackgroundTransparency = 1
+AutoFarmLabel.Text = "Auto Farm Tree:"
+AutoFarmLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoFarmLabel.TextXAlignment = Enum.TextXAlignment.Left
+AutoFarmLabel.Parent = MainFrame
 
-local KillToggle = AutoFarmTab:CreateToggle({
-    Name = "Kill",
-    CurrentValue = false,
-    Flag = "KillToggle",
-    Callback = function(Value)
-        if Value then
-            -- Включить автоматическое убийство
-            getgenv().AutoKill = true
-            while getgenv().AutoKill do
-                -- Здесь код автоматического убийства
-                task.wait(0.1)
-            end
-        else
-            -- Выключить автоматическое убийство
-            getgenv().AutoKill = false
-        end
-    end,
-})
+local AutoClickButton = Instance.new("TextButton")
+AutoClickButton.Size = UDim2.new(0.9, 0, 0, 25)
+AutoClickButton.Position = UDim2.new(0.05, 0, 0, 60)
+AutoClickButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+AutoClickButton.Text = "Auto Click Farm: OFF"
+AutoClickButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoClickButton.Parent = MainFrame
 
--- Bring Tab
-local BringTab = Window:CreateTab("Bring", "rbxassetid://4483345998")
+local KillButton = Instance.new("TextButton")
+KillButton.Size = UDim2.new(0.9, 0, 0, 25)
+KillButton.Position = UDim2.new(0.05, 0, 0, 90)
+KillButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+KillButton.Text = "Kill: OFF"
+KillButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+KillButton.Parent = MainFrame
 
-local BringSection = BringTab:CreateSection("Bring")
+-- Bring Section
+local BringLabel = Instance.new("TextLabel")
+BringLabel.Size = UDim2.new(1, 0, 0, 20)
+BringLabel.Position = UDim2.new(0, 0, 0, 130)
+BringLabel.BackgroundTransparency = 1
+BringLabel.Text = "Bring:"
+BringLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+BringLabel.TextXAlignment = Enum.TextXAlignment.Left
+BringLabel.Parent = MainFrame
 
-local KillAuraToggle = BringTab:CreateToggle({
-    Name = "Kill Aura",
-    CurrentValue = false,
-    Flag = "KillAuraToggle",
-    Callback = function(Value)
-        if Value then
-            -- Включить килл-ауру
-            getgenv().KillAura = true
-            while getgenv().KillAura do
-                -- Здесь код килл-ауры
-                local radius = Rayfield.Flags["KillAuraRadius"]
-                -- Использовать радиус для килл-ауры
-                task.wait(0.1)
-            end
-        else
-            -- Выключить килл-ауру
-            getgenv().KillAura = false
-        end
-    end,
-})
+local KillAuraButton = Instance.new("TextButton")
+KillAuraButton.Size = UDim2.new(0.9, 0, 0, 25)
+KillAuraButton.Position = UDim2.new(0.05, 0, 0, 155)
+KillAuraButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+KillAuraButton.Text = "Kill Aura: OFF"
+KillAuraButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+KillAuraButton.Parent = MainFrame
 
--- Teleport Tab
-local TeleportTab = Window:CreateTab("Teleport", "rbxassetid://4483345998")
+-- Teleport Section
+local TeleportLabel = Instance.new("TextLabel")
+TeleportLabel.Size = UDim2.new(1, 0, 0, 20)
+TeleportLabel.Position = UDim2.new(0, 0, 0, 195)
+TeleportLabel.BackgroundTransparency = 1
+TeleportLabel.Text = "Teleport:"
+TeleportLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TeleportLabel.TextXAlignment = Enum.TextXAlignment.Left
+TeleportLabel.Parent = MainFrame
 
-local TeleportSection = TeleportTab:CreateSection("Teleport")
+local RadiusLabel = Instance.new("TextLabel")
+RadiusLabel.Size = UDim2.new(1, 0, 0, 20)
+RadiusLabel.Position = UDim2.new(0, 0, 0, 220)
+RadiusLabel.BackgroundTransparency = 1
+RadiusLabel.Text = "Kill Aura Radius: 200"
+RadiusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+RadiusLabel.TextXAlignment = Enum.TextXAlignment.Left
+RadiusLabel.Parent = MainFrame
 
-local KillAuraRadius = TeleportTab:CreateSlider({
-    Name = "Kill Aura Radius",
-    Range = {0, 500},
-    Increment = 10,
-    Suffix = "studs",
-    CurrentValue = 200,
-    Flag = "KillAuraRadius",
-    Callback = function(Value)
-        -- Обновить радиус килл-ауры
-        print("Kill Aura Radius set to: " .. Value)
-    end,
-})
+-- Visual Section
+local VisualLabel = Instance.new("TextLabel")
+VisualLabel.Size = UDim2.new(1, 0, 0, 20)
+VisualLabel.Position = UDim2.new(0, 0, 0, 260)
+VisualLabel.BackgroundTransparency = 1
+VisualLabel.Text = "Visual:"
+VisualLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+VisualLabel.TextXAlignment = Enum.TextXAlignment.Left
+VisualLabel.Parent = MainFrame
 
--- Visual Tab
-local VisualTab = Window:CreateTab("Visual", "rbxassetid://4483345998")
+local InfRannaButton = Instance.new("TextButton")
+InfRannaButton.Size = UDim2.new(0.9, 0, 0, 25)
+InfRannaButton.Position = UDim2.new(0.05, 0, 0, 285)
+InfRannaButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+InfRannaButton.Text = "Inf Ranna Kill Aura: OFF"
+InfRannaButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+InfRannaButton.Parent = MainFrame
 
-local VisualSection = VisualTab:CreateSection("Visual")
+-- Функции
+local AutoClick = false
+AutoClickButton.MouseButton1Click:Connect(function()
+    AutoClick = not AutoClick
+    AutoClickButton.Text = "Auto Click Farm: " .. (AutoClick and "ON" or "OFF")
+    AutoClickButton.BackgroundColor3 = AutoClick and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(80, 80, 80)
+    
+    while AutoClick do
+        -- Код автокликера
+        print("Auto Click Farm running...")
+        wait(0.1)
+    end
+end)
 
-local InfRannaToggle = VisualTab:CreateToggle({
-    Name = "Inf Ranna Kill Aura",
-    CurrentValue = false,
-    Flag = "InfRannaToggle",
-    Callback = function(Value)
-        if Value then
-            -- Включить визуальный эффект
-            getgenv().InfRanna = true
-            while getgenv().InfRanna do
-                -- Здесь код визуального эффекта килл-ауры
-                task.wait(0.1)
-            end
-        else
-            -- Выключить визуальный эффект
-            getgenv().InfRanna = false
-        end
-    end,
-})
+local AutoKill = false
+KillButton.MouseButton1Click:Connect(function()
+    AutoKill = not AutoKill
+    KillButton.Text = "Kill: " .. (AutoKill and "ON" or "OFF")
+    KillButton.BackgroundColor3 = AutoKill and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(80, 80, 80)
+    
+    while AutoKill do
+        -- Код автоматического убийства
+        print("Auto Kill running...")
+        wait(0.1)
+    end
+end)
 
--- Уведомление о загрузке
-Rayfield:Notify({
-    Title = "Crystal Hub Loaded",
-    Content = "Menu successfully loaded!",
-    Duration = 5,
-    Image = "rbxassetid://4483345998",
-})
+local KillAura = false
+KillAuraButton.MouseButton1Click:Connect(function()
+    KillAura = not KillAura
+    KillAuraButton.Text = "Kill Aura: " .. (KillAura and "ON" or "OFF")
+    KillAuraButton.BackgroundColor3 = KillAura and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(80, 80, 80)
+    
+    while KillAura do
+        -- Код килл-ауры
+        print("Kill Aura running...")
+        wait(0.1)
+    end
+end)
+
+local InfRanna = false
+InfRannaButton.MouseButton1Click:Connect(function()
+    InfRanna = not InfRanna
+    InfRannaButton.Text = "Inf Ranna Kill Aura: " .. (InfRanna and "ON" or "OFF")
+    InfRannaButton.BackgroundColor3 = InfRanna and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(80, 80, 80)
+    
+    while InfRanna do
+        -- Код визуального эффекта
+        print("Inf Ranna Kill Aura running...")
+        wait(0.1)
+    end
+end)
 
 print("Crystal Hub by shinichii. loaded successfully!")
