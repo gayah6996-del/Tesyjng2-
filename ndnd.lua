@@ -50,12 +50,12 @@ end
 
 -- Кнопка показа меню (всегда видна)
 local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 60, 0, 60)
+ToggleButton.Size = UDim2.new(0, 70, 0, 70)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Text = "ASTRAL"
-ToggleButton.TextSize = 7
+ToggleButton.TextSize = 9
 ToggleButton.ZIndex = 10
 ToggleButton.Parent = ScreenGui
 
@@ -63,10 +63,10 @@ local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 10)
 ToggleCorner.Parent = ToggleButton
 
--- Основное окно меню
+-- Основное окно меню (УВЕЛИЧЕННЫЙ РАЗМЕР)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 320, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 400, 0, 650)  -- Увеличен размер
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -325)  -- Обновлена позиция для центрирования
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -141,7 +141,7 @@ KeksTabButton.TextSize = 14
 KeksTabButton.Font = Enum.Font.GothamBold
 KeksTabButton.Parent = TabsFrame
 
--- Основной контейнер с прокруткой
+-- Основной контейнер с прокруткой (УВЕЛИЧЕННЫЙ РАЗМЕР)
 local ScrollContainer = Instance.new("ScrollingFrame")
 ScrollContainer.Size = UDim2.new(1, -10, 1, -75)
 ScrollContainer.Position = UDim2.new(0, 5, 0, 70)
@@ -151,8 +151,6 @@ ScrollContainer.ScrollBarThickness = 8
 ScrollContainer.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 ScrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.Always
 ScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScrollContainer.ScrollingDirection = Enum.ScrollingDirection.Y
-ScrollContainer.ElasticBehavior = Enum.ElasticBehavior.Never -- Отключаем эластичную прокрутку
 ScrollContainer.Parent = MainFrame
 
 -- Content frames
@@ -857,7 +855,7 @@ CreateButton(lostChildContent, "Lost Child 4", function()
     ShowNotification("Lost Child 4 not found", 2)
 end)
 
-local BandageSection, BandageContent = CreateSection(KeksTab, "Food Selection:")
+local BandageSection, BandageContent = CreateSection(KeksTab, "🍎 Food Selection")
 
 -- Создаем выпадающий список для выбора еды
 local BandageOptions = {"All", "Morsel", "Carrot", "Bandage", "Medkit"}
@@ -1093,50 +1091,32 @@ ScrollContainer:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
     end
 end)
 
--- Функция для ограничения прокрутки на мобильных устройствах
-local function SetupMobileScrollFix()
-    -- Ждем полной загрузки интерфейса
-    wait(0.5)
+-- Функция для ограничения прокрутки в мини-меню
+local function SetupScrollLimits()
+    -- Ждем обновления макета
+    wait(0.1)
     
-    -- Создаем невидимый фрейм для ограничения прокрутки
-    local ScrollLimiter = Instance.new("Frame")
-    ScrollLimiter.Size = UDim2.new(1, 0, 0, 0)
-    ScrollLimiter.BackgroundTransparency = 1
-    ScrollLimiter.Parent = ContentFrame
+    -- Получаем общий размер контента
+    local contentSize = ContentFrame.AbsoluteSize.Y
+    local containerSize = ScrollContainer.AbsoluteWindowSize.Y
     
-    -- Функция для обновления ограничителя
-    local function updateScrollLimiter()
-        local totalHeight = 0
-        
-        -- Получаем высоту всего контента
-        for _, child in pairs(ContentFrame:GetChildren()) do
-            if child:IsA("Frame") and child.Visible then
-                totalHeight = totalHeight + child.AbsoluteSize.Y + 8 -- +8 для отступов UIListLayout
-            end
-        end
-        
-        -- Устанавливаем высоту ограничителя равной высоте контента
-        ScrollLimiter.Size = UDim2.new(1, 0, 0, totalHeight)
+    -- Устанавливаем максимальную прокрутку
+    local maxScroll = math.max(0, contentSize - containerSize)
+    
+    -- Ограничиваем текущую позицию прокрутки
+    if ScrollContainer.CanvasPosition.Y > maxScroll then
+        ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
     end
-    
-    -- Обновляем при изменении размера контента
-    ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateScrollLimiter)
-    
-    -- Также обновляем при переключении вкладок
-    game:GetService("RunService").Heartbeat:Connect(function()
-        if MainFrame.Visible then
-            updateScrollLimiter()
-        end
-    end)
-    
-    -- Первоначальное обновление
-    updateScrollLimiter()
 end
 
--- Запускаем фикс для мобильной прокрутки
-task.spawn(SetupMobileScrollFix)
+-- Вызываем функцию ограничения прокрутки при изменении размера контента
+ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(SetupScrollLimits)
 
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
+
+-- Устанавливаем ограничения прокрутки после загрузки
+wait(0.5)
+SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with flying Uping loaded! Tap the button to open/close. Drag the title to move. Scroll vertically to see all content.")
