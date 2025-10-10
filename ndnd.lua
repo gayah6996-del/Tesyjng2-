@@ -238,6 +238,10 @@ local StartSize = nil
 -- Координаты костра
 local CampfirePosition = Vector3.new(0, 10, 0)
 
+-- Новые переменные для телепортации предметов
+local BringCount = 2  -- Количество предметов за один раз
+local BringDelay = 600  -- Задержка между падением предметов в миллисекундах
+
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
     local section = Instance.new("Frame")
@@ -391,7 +395,7 @@ local function CreateSlider(parent, text, min, max, defaultValue, callback)
     local function updateSlider(value)
         local normalized = math.clamp((value - min) / (max - min), 0, 1)
         sliderFill.Size = UDim2.new(normalized, 0, 1, 0)
-        sliderText.Text = text .. ": " .. math.floor(value * 10) / 10
+        sliderText.Text = text .. ": " .. math.floor(value)
         callback(value)
     end
     
@@ -455,6 +459,51 @@ local function CreateButton(parent, text, callback)
     button.MouseButton1Click:Connect(callback)
     
     return button
+end
+
+-- Функция для создания текстового поля ввода
+local function CreateTextBox(parent, text, defaultValue, callback)
+    local textBoxFrame = Instance.new("Frame")
+    textBoxFrame.Size = UDim2.new(1, 0, 0, 40)
+    textBoxFrame.BackgroundTransparency = 1
+    textBoxFrame.Parent = parent
+    
+    local textBoxLabel = Instance.new("TextLabel")
+    textBoxLabel.Size = UDim2.new(0.5, -5, 0, 20)
+    textBoxLabel.Position = UDim2.new(0, 0, 0, 0)
+    textBoxLabel.BackgroundTransparency = 1
+    textBoxLabel.Text = text
+    textBoxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textBoxLabel.TextSize = 12
+    textBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textBoxLabel.Font = Enum.Font.Gotham
+    textBoxLabel.Parent = textBoxFrame
+    
+    local textBox = Instance.new("TextBox")
+    textBox.Size = UDim2.new(0.5, -5, 0, 30)
+    textBox.Position = UDim2.new(0.5, 5, 0, 0)
+    textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textBox.Text = tostring(defaultValue)
+    textBox.TextSize = 14
+    textBox.Font = Enum.Font.Gotham
+    textBox.Parent = textBoxFrame
+    
+    local textBoxCorner = Instance.new("UICorner")
+    textBoxCorner.CornerRadius = UDim.new(0, 6)
+    textBoxCorner.Parent = textBox
+    
+    textBox.FocusLost:Connect(function()
+        local value = tonumber(textBox.Text)
+        if value then
+            callback(value)
+        else
+            textBox.Text = tostring(defaultValue)
+            ShowNotification("Please enter a valid number!", 2)
+        end
+    end)
+    
+    return textBox
 end
 
 -- Функция для создания выпадающего списка
@@ -695,6 +744,20 @@ UpingButton = CreateButton(teleportContent, "Uping", ToggleUping)
 -- Новое мини-меню для Bring Items
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
 
+-- Добавляем настройки количества и скорости телепортации
+CreateTextBox(bringItemsContent, "Bring Count (1-200):", BringCount, function(value)
+    if value >= 1 and value <= 200 then
+        BringCount = math.floor(value)
+        ShowNotification("Bring Count set to: " .. BringCount, 2)
+    else
+        ShowNotification("Bring Count must be between 1 and 200!", 2)
+    end
+end)
+
+CreateSlider(bringItemsContent, "Bring Delay (ms)", 600, 0, 600, function(value)
+    BringDelay = math.floor(value)
+end)
+
 -- Создаем выпадающий список для выбора предметов
 local bringOptions = {"Logs", "Coal", "Fuel Canister", "Oil Barrel"}
 local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
@@ -715,16 +778,22 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             end
         end
         
-        -- Телепортируем по одному с задержкой
-        for i, log in ipairs(logs) do
-            log.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        -- Телепортируем только указанное количество с задержкой
+        local teleported = 0
+        for i = 1, math.min(BringCount, #logs) do
+            local log = logs[i]
+            log.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 10, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
             log.Anchored = false
             log.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            wait(0.1) -- Задержка между телепортациями
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)  -- Конвертируем миллисекунды в секунды
+            end
         end
         
-        if #logs > 0 then
-            ShowNotification("Brought " .. #logs .. " Logs to campfire!", 2)
+        if teleported > 0 then
+            ShowNotification("Brought " .. teleported .. "/" .. #logs .. " Logs to campfire!", 2)
         else
             ShowNotification("No Logs found on map", 2)
         end
@@ -739,15 +808,21 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             end
         end
         
-        for i, coal in ipairs(coals) do
-            coal.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        local teleported = 0
+        for i = 1, math.min(BringCount, #coals) do
+            local coal = coals[i]
+            coal.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 10, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
             coal.Anchored = false
             coal.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            wait(0.1)
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)
+            end
         end
         
-        if #coals > 0 then
-            ShowNotification("Brought " .. #coals .. " Coal to campfire!", 2)
+        if teleported > 0 then
+            ShowNotification("Brought " .. teleported .. "/" .. #coals .. " Coal to campfire!", 2)
         else
             ShowNotification("No Coal found on map", 2)
         end
@@ -762,15 +837,21 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             end
         end
         
-        for i, fuel in ipairs(fuels) do
-            fuel.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        local teleported = 0
+        for i = 1, math.min(BringCount, #fuels) do
+            local fuel = fuels[i]
+            fuel.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 10, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
             fuel.Anchored = false
             fuel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            wait(0.1)
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)
+            end
         end
         
-        if #fuels > 0 then
-            ShowNotification("Brought " .. #fuels .. " Fuel Canister to campfire!", 2)
+        if teleported > 0 then
+            ShowNotification("Brought " .. teleported .. "/" .. #fuels .. " Fuel Canister to campfire!", 2)
         else
             ShowNotification("No Fuel Canister found on map", 2)
         end
@@ -785,15 +866,21 @@ CreateButton(bringItemsContent, "Bring Selected", function()
             end
         end
         
-        for i, barrel in ipairs(barrels) do
-            barrel.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        local teleported = 0
+        for i = 1, math.min(BringCount, #barrels) do
+            local barrel = barrels[i]
+            barrel.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 10, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
             barrel.Anchored = false
             barrel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            wait(0.1)
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)
+            end
         end
         
-        if #barrels > 0 then
-            ShowNotification("Brought " .. #barrels .. " Oil Barrel to campfire!", 2)
+        if teleported > 0 then
+            ShowNotification("Brought " .. teleported .. "/" .. #barrels .. " Oil Barrel to campfire!", 2)
         else
             ShowNotification("No Oil Barrel found on map", 2)
         end
@@ -854,16 +941,22 @@ CreateButton(scrapContent, "Tp Scraps", function()
         end
     end
     
-    -- Телепортируем по одному с задержкой
-    for i, scrap in ipairs(scraps) do
-        scrap.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+    -- Телепортируем только указанное количество с задержкой
+    local teleported = 0
+    for i = 1, math.min(BringCount, #scraps) do
+        local scrap = scraps[i]
+        scrap.CFrame = CFrame.new(root.Position.X, root.Position.Y + 10, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
         scrap.Anchored = false
         scrap.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        wait(0.1)
+        teleported = teleported + 1
+        
+        if BringDelay > 0 then
+            wait(BringDelay / 1000)
+        end
     end
     
-    if #scraps > 0 then
-        ShowNotification("Teleported " .. #scraps .. " " .. selectedScrap, 2)
+    if teleported > 0 then
+        ShowNotification("Teleported " .. teleported .. "/" .. #scraps .. " " .. selectedScrap, 2)
     else
         ShowNotification("No " .. selectedScrap .. " found on map", 2)
     end
@@ -1006,16 +1099,22 @@ CreateButton(BandageContent, "Tp Food", function()
         end
     end
     
-    -- Телепортируем по одному с задержкой
-    for i, food in ipairs(foods) do
-        food.CFrame = CFrame.new(root.Position.X, root.Position.Y, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+    -- Телепортируем только указанное количество с задержкой
+    local teleported = 0
+    for i = 1, math.min(BringCount, #foods) do
+        local food = foods[i]
+        food.CFrame = CFrame.new(root.Position.X, root.Position.Y + 10, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
         food.Anchored = false
         food.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        wait(0.1)
+        teleported = teleported + 1
+        
+        if BringDelay > 0 then
+            wait(BringDelay / 1000)
+        end
     end
     
-    if #foods > 0 then
-        ShowNotification("Teleported " .. #foods .. " " .. selectedBandage, 2)
+    if teleported > 0 then
+        ShowNotification("Teleported " .. teleported .. "/" .. #foods .. " " .. selectedBandage, 2)
     else
         ShowNotification("No " .. selectedBandage .. " found on map", 2)
     end
@@ -1299,4 +1398,4 @@ switchToTab("Info")
 wait(0.5)
 SetupScrollLimits()
 
-print("Mobile ASTRALCHEAT with flying Uping loaded! Tap the button to open/close. Drag the title to move. Drag the bottom-right corner to resize.")
+print("Mobile ASTRALCHEAT with advanced item teleportation loaded! Tap the button to open/close. Drag the title to move. Drag the bottom-right corner to resize.")
