@@ -1,4 +1,4 @@
-
+[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -120,10 +120,10 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Основное окно меню
+-- Основное окно меню (увеличили ширину)
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 400, 0, 400) -- Увеличили ширину для вертикальных вкладок
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 500, 0, 500) -- Увеличили размер для горизонтального расширения
+MainFrame.Position = UDim2.new(0.5, -250, 0.5, -250)
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -196,7 +196,7 @@ CloseCorner.Parent = CloseButton
 
 -- Вертикальные кнопки вкладок
 local TabsFrame = Instance.new("Frame")
-TabsFrame.Size = UDim2.new(0, 80, 1, -40) -- Вертикальная панель вкладок
+TabsFrame.Size = UDim2.new(0, 100, 1, -40) -- Увеличили ширину для вертикальных вкладок
 TabsFrame.Position = UDim2.new(0, 0, 0, 40)
 TabsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 TabsFrame.BorderSizePixel = 0
@@ -234,8 +234,8 @@ KeksTabButton.Parent = TabsFrame
 
 -- Основной контейнер с прокруткой (смещен для вертикальных вкладок)
 local ScrollContainer = Instance.new("ScrollingFrame")
-ScrollContainer.Size = UDim2.new(1, -90, 1, -80) -- Учитываем ширину вертикальных вкладок
-ScrollContainer.Position = UDim2.new(0, 85, 0, 75)
+ScrollContainer.Size = UDim2.new(1, -110, 1, -80) -- Учитываем ширину вертикальных вкладок
+ScrollContainer.Position = UDim2.new(0, 105, 0, 75)
 ScrollContainer.BackgroundTransparency = 1
 ScrollContainer.BorderSizePixel = 0
 ScrollContainer.ScrollBarThickness = 8
@@ -320,6 +320,9 @@ local CampfirePosition = Vector3.new(0, 10, 0)
 -- Новые переменные для телепортации предметов
 local BringCount = 2  -- Количество предметов за один раз
 local BringDelay = 600  -- Задержка между падением предметов в миллисекундах
+
+-- Переменная для системы чекпоинтов
+local CheckpointPosition = nil
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
@@ -730,7 +733,7 @@ CreateLabel(noteContent, "For Auto Tree and Kill Aura to work, you MUST equip an
 local resetSection, resetContent = CreateSection(InfoTab, "🔄 Reset Positions")
 CreateButton(resetContent, "Reset Menu Positions", function()
     -- Сброс позиции основного меню
-    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
+    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -250)
     
     -- Сброс позиции кнопки ASTRAL
     ToggleButton.Position = UDim2.new(0, 10, 0, 10)
@@ -995,91 +998,81 @@ CreateButton(scrapContent, "Tp Scraps", function()
     end
 end)
 
--- Новое мини-меню для Lost Child (игрок телепортируется к детям)
+-- Улучшенное мини-меню для Lost Child с выпадающим списком
 local lostChildSection, lostChildContent = CreateSection(KeksTab, "👶 Teleport to Lost Child")
 
--- Кнопка для Lost Child 1
-CreateButton(lostChildContent, "Lost Child 1", function()
+-- Создаем выпадающий список для выбора ребенка
+local lostChildOptions = {"Lost Child 1", "Lost Child 2", "Lost Child 3", "Lost Child 4"}
+local lostChildDropdown = CreateDropdown(lostChildContent, lostChildOptions, "Lost Child 1")
+
+-- Кнопка для телепортации к выбранному ребенку
+CreateButton(lostChildContent, "Teleport to Selected Child", function()
     local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
     if not root then 
         ShowNotification("Character not found!", 2)
         return 
     end
     
+    local selectedChild = lostChildDropdown.GetValue()
+    local childName = ""
+    
+    if selectedChild == "Lost Child 1" then
+        childName = "lost child"
+    elseif selectedChild == "Lost Child 2" then
+        childName = "lost child2"
+    elseif selectedChild == "Lost Child 3" then
+        childName = "lost child3"
+    elseif selectedChild == "Lost Child 4" then
+        childName = "lost child4"
+    end
+    
     for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find("lost child") and item:IsA("Model") then
+        if item.Name:lower():find(childName) and item:IsA("Model") then
             local main = item:FindFirstChildWhichIsA("BasePart")
             if main then
                 root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to Lost Child 1", 2)
+                ShowNotification("Teleported to " .. selectedChild, 2)
                 return
             end
         end
     end
-    ShowNotification("Lost Child 1 not found on map", 2)
+    ShowNotification(selectedChild .. " not found on map", 2)
 end)
 
--- Кнопка для Lost Child 2
-CreateButton(lostChildContent, "Lost Child 2", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
+-- Новая система чекпоинтов
+local checkpointSection, checkpointContent = CreateSection(KeksTab, "📍 Checkpoint System")
+
+-- Метка для отображения координат чекпоинта
+local checkpointLabel = CreateLabel(checkpointContent, "No checkpoint set")
+checkpointLabel.Text = "Checkpoint: Not set"
+
+-- Кнопка для установки чекпоинта
+CreateButton(checkpointContent, "Set Checkpoint", function()
+    local character = Player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        CheckpointPosition = character.HumanoidRootPart.Position
+        local pos = CheckpointPosition
+        checkpointLabel.Text = string.format("Checkpoint: X:%.1f, Y:%.1f, Z:%.1f", pos.X, pos.Y, pos.Z)
+        ShowNotification("Checkpoint set!", 2)
+    else
         ShowNotification("Character not found!", 2)
-        return 
     end
-    
-    for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find("lost child2") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to Lost Child 2", 2)
-                return
-            end
-        end
-    end
-    ShowNotification("Lost Child 2 not found on map", 2)
 end)
 
--- Кнопка для Lost Child 3
-CreateButton(lostChildContent, "Lost Child 3", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
+-- Кнопка для телепортации к чекпоинту
+CreateButton(checkpointContent, "Teleport to Checkpoint", function()
+    if not CheckpointPosition then
+        ShowNotification("No checkpoint set! Set a checkpoint first.", 2)
+        return
     end
     
-    for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find("lost child3") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to Lost Child 3", 2)
-                return
-            end
-        end
-    end
-    ShowNotification("Lost Child 3 not found on map", 2)
-end)
-
--- Кнопка для Lost Child 4
-CreateButton(lostChildContent, "Lost Child 4", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
+    local character = Player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.CFrame = CFrame.new(CheckpointPosition)
+        ShowNotification("Teleported to checkpoint!", 2)
+    else
         ShowNotification("Character not found!", 2)
-        return 
     end
-    
-    for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find("lost child4") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to Lost Child 4", 2)
-                return
-            end
-        end
-    end
-    ShowNotification("Lost Child 4 not found on map", 2)
 end)
 
 local BandageSection, BandageContent = CreateSection(KeksTab, "🍎 Food Selection")
@@ -1331,8 +1324,8 @@ local function updateResize(input)
         local delta = Vector2.new(input.Position.X, input.Position.Y) - ResizeStart
         
         -- Минимальный размер меню
-        local minWidth = 350  -- Увеличили минимальную ширину для вертикальных вкладок
-        local minHeight = 300
+        local minWidth = 400  -- Увеличили минимальную ширину для вертикальных вкладок
+        local minHeight = 350
         
         local newWidth = math.max(minWidth, StartSize.X.Offset + delta.X)
         local newHeight = math.max(minHeight, StartSize.Y.Offset + delta.Y)
@@ -1431,3 +1424,4 @@ wait(0.5)
 SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
+[file content end]
