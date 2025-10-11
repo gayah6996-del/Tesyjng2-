@@ -1,7 +1,8 @@
 -- Создание основного GUI
 local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+local Player = Players
+local.LocalPlayer
+local PlayerGui = Player:WaitForChild("PchxhdhdhhshdhflayerGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
