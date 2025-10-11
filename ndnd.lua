@@ -215,7 +215,7 @@ local GameTabButton = Instance.new("TextButton")
 GameTabButton.Size = UDim2.new(0.33, 0, 1, 0)
 GameTabButton.Position = UDim2.new(0.33, 0, 0, 0)
 GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-GameTabButton.Text = "Game"
+GameTabButton.Text = "Main"
 GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
 GameTabButton.TextSize = 14
 GameTabButton.Font = Enum.Font.GothamBold
@@ -225,7 +225,7 @@ local KeksTabButton = Instance.new("TextButton")
 KeksTabButton.Size = UDim2.new(0.34, 0, 1, 0)
 KeksTabButton.Position = UDim2.new(0.66, 0, 0, 0)
 KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-KeksTabButton.Text = "Keks"
+KeksTabButton.Text = "Bring"
 KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
 KeksTabButton.TextSize = 14
 KeksTabButton.Font = Enum.Font.GothamBold
@@ -717,25 +717,7 @@ end
 
 -- Создание элементов Info tab
 local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
-CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
-
-local controlsSection, controlsContent = CreateSection(InfoTab, "🎮 Controls")
-CreateLabel(controlsContent, "- Tap ASTRAL button to show/hide menu\n- Drag title bar to move menu\n- Toggle switches to enable features\n- Adjust sliders for distance settings")
-
-local noteSection, noteContent = CreateSection(InfoTab, "💡 Important Note")
-CreateLabel(noteContent, "For Auto Tree and Kill Aura to work, you MUST equip any axe (Old Axe, Good Axe, Strong Axe, or Chainsaw)!")
-
--- Кнопка сброса позиций
-local resetSection, resetContent = CreateSection(InfoTab, "🔄 Reset Positions")
-CreateButton(resetContent, "Reset Menu Positions", function()
-    -- Сброс позиции основного меню
-    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
-    
-    -- Сброс позиции кнопки ASTRAL
-    ToggleButton.Position = UDim2.new(0, 10, 0, 10)
-    
-    ShowNotification("Menu positions reset!", 2)
-end)
+CreateLabel(infoContent, "99 Nights in the forest\nVersion:Beta\nTelegram Channel:SCRIPTTYTA\nTelegram Owner:@SFXCL")
 
 -- Создание элементов Game tab
 local killAuraSection, killAuraContent = CreateSection(GameTab, "⚔️ Kill Aura")
@@ -923,7 +905,7 @@ end)
 local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
 
 -- Создаем выпадающий список для выбора скрапов
-local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
+local scrapOptions = {"All", "Chest", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
 local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа к игроку
@@ -936,7 +918,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
     
     local selectedScrap = scrapDropdown.GetValue()
     local scrapNames = {
-        ["tyre"] = true, 
+        ["chest"] = true, 
         ["sheet metal"] = true, 
         ["broken fan"] = true, 
         ["bolt"] = true, 
@@ -1237,12 +1219,12 @@ local function switchToTab(tabName)
         InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         InfoTab.Visible = true
         CurrentTab = "Info"
-    elseif tabName == "Game" then
+    elseif tabName == "Main" then
         GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         GameTab.Visible = true
         CurrentTab = "Game"
-    elseif tabName == "Keks" then
+    elseif tabName == "Bring" then
         KeksTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
         KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         KeksTab.Visible = true
@@ -1269,11 +1251,11 @@ InfoTabButton.MouseButton1Click:Connect(function()
 end)
 
 GameTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Game")
+    switchToTab("Main")
 end)
 
 KeksTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Keks")
+    switchToTab("Bring")
 end)
 
 -- Система перемещения меню для мобильных устройств и PC
