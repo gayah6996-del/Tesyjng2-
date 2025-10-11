@@ -742,7 +742,24 @@ local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value
 end)
 
 -- Создание элементов Keks tab
--- НОВОЕ МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ В СТИЛЕ ДРУГИХ МЕНЮ
+-- НАСТРОЙКИ BRING В САМОМ НАЧАЛЕ
+local bringSettingsSection, bringSettingsContent = CreateSection(KeksTab, "⚙️ Bring Settings")
+
+-- Добавляем настройки количества и скорости телепортации В САМОЕ НАЧАЛО
+CreateTextBox(bringSettingsContent, "Bring Count (1-200):", BringCount, function(value)
+    if value >= 1 and value <= 200 then
+        BringCount = math.floor(value)
+        ShowNotification("Bring Count set to: " .. BringCount, 2)
+    else
+        ShowNotification("Bring Count must be between 1 and 200!", 2)
+    end
+end)
+
+CreateSlider(bringSettingsContent, "Bring Delay (ms)", 600, 0, 600, function(value)
+    BringDelay = math.floor(value)
+end)
+
+-- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ
 local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "🎯 Teleport Target")
 
 -- Создаем выпадающий список для выбора цели телепортации
@@ -764,7 +781,7 @@ CreateButton(teleportContent, "Teleport Campfire", function()
     end
 end)
 
--- Новое мини-меню для телепортации к детям с выпадающим списком
+-- МИНИ-МЕНЮ ДЛЯ ТЕЛЕПОРТАЦИИ К ДЕТЯМ
 local childTeleportSection, childTeleportContent = CreateSection(KeksTab, "👶 Teleport to Child")
 
 -- Создаем выпадающий список для выбора ребенка
@@ -811,22 +828,8 @@ CreateButton(childTeleportContent, "Teleport", function()
     end
 end)
 
--- Новое мини-меню для Bring Items
+-- МИНИ-МЕНЮ ДЛЯ BRING ITEMS
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
-
--- ПЕРЕМЕЩЕНЫ В САМОЕ НАЧАЛО: Добавляем настройки количества и скорости телепортации
-CreateTextBox(bringItemsContent, "Bring Count (1-200):", BringCount, function(value)
-    if value >= 1 and value <= 200 then
-        BringCount = math.floor(value)
-        ShowNotification("Bring Count set to: " .. BringCount, 2)
-    else
-        ShowNotification("Bring Count must be between 1 and 200!", 2)
-    end
-end)
-
-CreateSlider(bringItemsContent, "Bring Delay (ms)", 600, 0, 600, function(value)
-    BringDelay = math.floor(value)
-end)
 
 -- Создаем выпадающий список для выбора предметов
 local bringOptions = {"Logs", "Coal", "Fuel Canister", "Oil Barrel"}
@@ -960,7 +963,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
     end
 end)
 
--- Мини-меню для выбора скрапов
+-- МИНИ-МЕНЮ ДЛЯ ВЫБОРА СКРАПОВ
 local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
 
 -- Создаем выпадающий список для выбора скрапов
@@ -1029,6 +1032,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
     end
 end)
 
+-- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЕДЫ
 local BandageSection, BandageContent = CreateSection(KeksTab, "🍎 Food Selection")
 
 -- Создаем выпадающий список для выбора еды
