@@ -764,7 +764,52 @@ CreateButton(teleportContent, "Teleport Campfire", function()
     end
 end)
 
--- Кнопка Jump удалена
+-- Новое мини-меню для телепортации к детям с выпадающим списком
+local childTeleportSection, childTeleportContent = CreateSection(KeksTab, "👶 Teleport to Child")
+
+-- Создаем выпадающий список для выбора ребенка
+local childOptions = {"Lost Child 1", "Lost Child 2", "Lost Child 3", "Lost Child 4"}
+local childDropdown = CreateDropdown(childTeleportContent, childOptions, "Lost Child 1")
+
+-- Кнопка для телепортации к выбранному ребенку
+CreateButton(childTeleportContent, "Teleport", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
+    
+    local selectedChild = childDropdown.GetValue()
+    local childName = ""
+    
+    -- Определяем имя ребенка в зависимости от выбора
+    if selectedChild == "Lost Child 1" then
+        childName = "lost child"
+    elseif selectedChild == "Lost Child 2" then
+        childName = "lost child2"
+    elseif selectedChild == "Lost Child 3" then
+        childName = "lost child3"
+    elseif selectedChild == "Lost Child 4" then
+        childName = "lost child4"
+    end
+    
+    local found = false
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find(childName) and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
+                ShowNotification("Teleported to " .. selectedChild, 2)
+                found = true
+                break
+            end
+        end
+    end
+    
+    if not found then
+        ShowNotification(selectedChild .. " not found on map", 2)
+    end
+end)
 
 -- Новое мини-меню для Bring Items
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
@@ -982,93 +1027,6 @@ CreateButton(scrapContent, "Tp Scraps", function()
     else
         ShowNotification("No " .. selectedScrap .. " found on map", 2)
     end
-end)
-
--- Новое мини-меню для Lost Child (игрок телепортируется к детям)
-local lostChildSection, lostChildContent = CreateSection(KeksTab, "👶 Teleport to Lost Child")
-
--- Кнопка для Lost Child 1
-CreateButton(lostChildContent, "Lost Child 1", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
-    
-    for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find("lost child") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to Lost Child 1", 2)
-                return
-            end
-        end
-    end
-    ShowNotification("Lost Child 1 not found on map", 2)
-end)
-
--- Кнопка для Lost Child 2
-CreateButton(lostChildContent, "Lost Child 2", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
-    
-    for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find("lost child2") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to Lost Child 2", 2)
-                return
-            end
-        end
-    end
-    ShowNotification("Lost Child 2 not found on map", 2)
-end)
-
--- Кнопка для Lost Child 3
-CreateButton(lostChildContent, "Lost Child 3", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
-    
-    for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find("lost child3") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to Lost Child 3", 2)
-                return
-            end
-        end
-    end
-    ShowNotification("Lost Child 3 not found on map", 2)
-end)
-
--- Кнопка для Lost Child 4
-CreateButton(lostChildContent, "Lost Child 4", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
-    
-    for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find("lost child4") and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to Lost Child 4", 2)
-                return
-            end
-        end
-    end
-    ShowNotification("Lost Child 4 not found on map", 2)
 end)
 
 local BandageSection, BandageContent = CreateSection(KeksTab, "🍎 Food Selection")
