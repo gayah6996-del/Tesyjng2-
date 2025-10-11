@@ -1,3 +1,4 @@
+
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -319,6 +320,9 @@ local CampfirePosition = Vector3.new(0, 10, 0)
 -- Новые переменные для телепортации предметов
 local BringCount = 2  -- Количество предметов за один раз
 local BringDelay = 600  -- Задержка между падением предметов в миллисекундах
+
+-- Новая переменная для выбора цели телепортации
+local TeleportTarget = "Campfire"  -- По умолчанию телепорт к костру
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
@@ -715,6 +719,21 @@ local function JumpCharacter()
     ShowNotification("Character jumped!", 1)
 end
 
+-- Функция для получения целевой позиции телепортации
+local function GetTargetPosition()
+    if TeleportTarget == "Player" then
+        local character = Player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            return character.HumanoidRootPart.Position
+        else
+            ShowNotification("Character not found! Using campfire.", 2)
+            return CampfirePosition
+        end
+    else
+        return CampfirePosition
+    end
+end
+
 -- Создание элементов Info tab
 local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
 CreateLabel(infoContent, "99 Nights in the forest\n\nVersion:Beta\n\nTelegram Channel:SCRIPTTYTA\n\nTelegram Owner:@SFXCL")
@@ -739,11 +758,25 @@ local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value
 end)
 
 -- Создание элементов Keks tab
+-- НОВОЕ МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ
+local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "🎯 Teleport Target")
+
+-- Создаем кнопки для выбора цели телепортации
+local playerButton = CreateButton(teleportTargetContent, "Player", function()
+    TeleportTarget = "Player"
+    ShowNotification("Teleport target set to: Player", 2)
+end)
+
+local campfireButton = CreateButton(teleportTargetContent, "Campfire", function()
+    TeleportTarget = "Campfire"
+    ShowNotification("Teleport target set to: Campfire", 2)
+end)
+
 local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
 CreateButton(teleportContent, "Teleport to Base", function()
     local character = Player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.CFrame = CFrame.new(WorkbenchPosition)
+        character.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
         ShowNotification("Teleported to campfire!", 2)
     else
         ShowNotification("Character not found!", 2)
@@ -774,9 +807,10 @@ end)
 local bringOptions = {"Logs", "Coal", "Fuel Canister", "Oil Barrel"}
 local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
 
--- Кнопка для телепортации выбранных предметов к костру
+-- Кнопка для телепортации выбранных предметов к выбранной цели
 CreateButton(bringItemsContent, "Bring Selected", function()
     local selectedItem = bringDropdown.GetValue()
+    local targetPos = GetTargetPosition()
     local found = false
     
     if selectedItem == "Logs" then
@@ -794,7 +828,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #logs) do
             local log = logs[i]
-            log.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 5, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            log.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
             log.Anchored = false
             log.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -805,7 +839,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         
         if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #logs .. " Logs to campfire!", 2)
+            ShowNotification("Brought " .. teleported .. "/" .. #logs .. " Logs to " .. TeleportTarget .. "!", 2)
         else
             ShowNotification("No Logs found on map", 2)
         end
@@ -823,7 +857,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #coals) do
             local coal = coals[i]
-            coal.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 5, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            coal.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
             coal.Anchored = false
             coal.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -834,7 +868,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         
         if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #coals .. " Coal to campfire!", 2)
+            ShowNotification("Brought " .. teleported .. "/" .. #coals .. " Coal to " .. TeleportTarget .. "!", 2)
         else
             ShowNotification("No Coal found on map", 2)
         end
@@ -852,8 +886,8 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #fuels) do
             local fuel = fuels[i]
-            -- Топливо телепортируем прямо в костер без высоты
-            fuel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
+            -- Топливо телепортируем прямо к цели без высоты
+            fuel.CFrame = CFrame.new(targetPos) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
             fuel.Anchored = false
             fuel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -864,7 +898,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         
         if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #fuels .. " Fuel Canister to campfire!", 2)
+            ShowNotification("Brought " .. teleported .. "/" .. #fuels .. " Fuel Canister to " .. TeleportTarget .. "!", 2)
         else
             ShowNotification("No Fuel Canister found on map", 2)
         end
@@ -882,8 +916,8 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         local teleported = 0
         for i = 1, math.min(BringCount, #barrels) do
             local barrel = barrels[i]
-            -- Бочки с маслом телепортируем прямо в костер без высоты
-            barrel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
+            -- Бочки с маслом телепортируем прямо к цели без высоты
+            barrel.CFrame = CFrame.new(targetPos) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
             barrel.Anchored = false
             barrel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             teleported = teleported + 1
@@ -894,7 +928,7 @@ CreateButton(bringItemsContent, "Bring Selected", function()
         end
         
         if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #barrels .. " Oil Barrel to campfire!", 2)
+            ShowNotification("Brought " .. teleported .. "/" .. #barrels .. " Oil Barrel to " .. TeleportTarget .. "!", 2)
         else
             ShowNotification("No Oil Barrel found on map", 2)
         end
@@ -908,14 +942,9 @@ local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection"
 local scrapOptions = {"All", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
 local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
--- Кнопка для телепортации выбранного скрапа к игроку
+-- Кнопка для телепортации выбранного скрапа к выбранной цели
 CreateButton(scrapContent, "Tp Scraps", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
-    
+    local targetPos = GetTargetPosition()
     local selectedScrap = scrapDropdown.GetValue()
     local scrapNames = {
         ["sheet metal"] = true, 
@@ -958,7 +987,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
     local teleported = 0
     for i = 1, math.min(BringCount, #scraps) do
         local scrap = scraps[i]
-        scrap.CFrame = CFrame.new(root.Position.X, root.Position.Y + 5, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        scrap.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
         scrap.Anchored = false
         scrap.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         teleported = teleported + 1
@@ -969,7 +998,7 @@ CreateButton(scrapContent, "Tp Scraps", function()
     end
     
     if teleported > 0 then
-        ShowNotification("Teleported " .. teleported .. "/" .. #scraps .. " " .. selectedScrap, 2)
+        ShowNotification("Teleported " .. teleported .. "/" .. #scraps .. " " .. selectedScrap .. " to " .. TeleportTarget, 2)
     else
         ShowNotification("No " .. selectedScrap .. " found on map", 2)
     end
@@ -1068,14 +1097,9 @@ local BandageSection, BandageContent = CreateSection(KeksTab, "🍎 Food Selecti
 local BandageOptions = {"All", "Morsel", "Carrot", "Bandage", "Medkit"}
 local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
--- Кнопка для телепортации выбранной еды к игроку
+-- Кнопка для телепортации выбранной еды к выбранной цели
 CreateButton(BandageContent, "Tp Food", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
-    
+    local targetPos = GetTargetPosition()
     local selectedBandage = BandageDropdown.GetValue()
     local BandageNames = {
         ["morsel"] = "Morsel", 
@@ -1116,7 +1140,7 @@ CreateButton(BandageContent, "Tp Food", function()
     local teleported = 0
     for i = 1, math.min(BringCount, #foods) do
         local food = foods[i]
-        food.CFrame = CFrame.new(root.Position.X, root.Position.Y + 5, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        food.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
         food.Anchored = false
         food.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         teleported = teleported + 1
@@ -1127,7 +1151,7 @@ CreateButton(BandageContent, "Tp Food", function()
     end
     
     if teleported > 0 then
-        ShowNotification("Teleported " .. teleported .. "/" .. #foods .. " " .. selectedBandage, 2)
+        ShowNotification("Teleported " .. teleported .. "/" .. #foods .. " " .. selectedBandage .. " to " .. TeleportTarget, 2)
     else
         ShowNotification("No " .. selectedBandage .. " found on map", 2)
     end
