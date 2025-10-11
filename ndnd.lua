@@ -1,4 +1,3 @@
-[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -1416,4 +1415,3 @@ wait(0.5)
 SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
-[file content end]
