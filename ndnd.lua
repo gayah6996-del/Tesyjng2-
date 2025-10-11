@@ -1,4 +1,4 @@
-
+[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -704,21 +704,6 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     }
 end
 
--- Функция для прыжка персонажа
-local function JumpCharacter()
-    local character = Player.Character
-    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-    
-    if not humanoid then 
-        ShowNotification("Character not found!", 2)
-        return
-    end
-    
-    -- Заставляем персонажа прыгнуть
-    humanoid.Jump = true
-    ShowNotification("Character jumped!", 1)
-end
-
 -- Функция для получения целевой позиции телепортации
 local function GetTargetPosition()
     if TeleportTarget == "Player" then
@@ -758,22 +743,19 @@ local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value
 end)
 
 -- Создание элементов Keks tab
--- НОВОЕ МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ
+-- НОВОЕ МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ В СТИЛЕ ДРУГИХ МЕНЮ
 local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "🎯 Teleport Target")
 
--- Создаем кнопки для выбора цели телепортации
-local playerButton = CreateButton(teleportTargetContent, "Player", function()
-    TeleportTarget = "Player"
-    ShowNotification("Teleport target set to: Player", 2)
-end)
-
-local campfireButton = CreateButton(teleportTargetContent, "Campfire", function()
-    TeleportTarget = "Campfire"
-    ShowNotification("Teleport target set to: Campfire", 2)
+-- Создаем выпадающий список для выбора цели телепортации
+local teleportTargetOptions = {"Player", "Campfire"}
+local teleportTargetDropdown = CreateDropdown(teleportTargetContent, teleportTargetOptions, "Campfire", function(selected)
+    TeleportTarget = selected
+    ShowNotification("Teleport target set to: " .. selected, 2)
 end)
 
 local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
-CreateButton(teleportContent, "Teleport to Base", function()
+-- Переименовали кнопку с "Teleport to Base" на "Teleport Campfire"
+CreateButton(teleportContent, "Teleport Campfire", function()
     local character = Player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         character.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
@@ -783,8 +765,7 @@ CreateButton(teleportContent, "Teleport to Base", function()
     end
 end)
 
--- Добавляем кнопку Jump вместо Up
-CreateButton(teleportContent, "Jump", JumpCharacter)
+-- Кнопка Jump удалена
 
 -- Новое мини-меню для Bring Items
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
@@ -1435,3 +1416,4 @@ wait(0.5)
 SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
+[file content end]
