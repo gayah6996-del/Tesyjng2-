@@ -1,3 +1,4 @@
+
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -121,8 +122,8 @@ end)
 
 -- Основное окно меню
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 500, 0, 400) -- Увеличили ширину для нового расположения
-MainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
+MainFrame.Size = UDim2.new(0, 400, 0, 400) -- Увеличили ширину для вертикальных вкладок
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -193,21 +194,17 @@ local CloseCorner = Instance.new("UICorner")
 CloseCorner.CornerRadius = UDim.new(0, 6)
 CloseCorner.Parent = CloseButton
 
--- Вертикальные кнопки вкладок (слева)
+-- Вертикальные кнопки вкладок
 local TabsFrame = Instance.new("Frame")
-TabsFrame.Size = UDim2.new(0, 100, 1, -40) -- Узкая панель слева
+TabsFrame.Size = UDim2.new(0, 80, 1, -40) -- Вертикальная панель вкладок
 TabsFrame.Position = UDim2.new(0, 0, 0, 40)
 TabsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 TabsFrame.BorderSizePixel = 0
 TabsFrame.Parent = MainFrame
 
-local TabsLayout = Instance.new("UIListLayout")
-TabsLayout.Padding = UDim.new(0, 2)
-TabsLayout.Parent = TabsFrame
-
 local InfoTabButton = Instance.new("TextButton")
-InfoTabButton.Size = UDim2.new(1, -4, 0, 40)
-InfoTabButton.Position = UDim2.new(0, 2, 0, 2)
+InfoTabButton.Size = UDim2.new(1, 0, 0, 60)
+InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
 InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 InfoTabButton.Text = "Info"
 InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -216,7 +213,8 @@ InfoTabButton.Font = Enum.Font.GothamBold
 InfoTabButton.Parent = TabsFrame
 
 local GameTabButton = Instance.new("TextButton")
-GameTabButton.Size = UDim2.new(1, -4, 0, 40)
+GameTabButton.Size = UDim2.new(1, 0, 0, 60)
+GameTabButton.Position = UDim2.new(0, 0, 0, 60)
 GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 GameTabButton.Text = "Game"
 GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -225,7 +223,8 @@ GameTabButton.Font = Enum.Font.GothamBold
 GameTabButton.Parent = TabsFrame
 
 local KeksTabButton = Instance.new("TextButton")
-KeksTabButton.Size = UDim2.new(1, -4, 0, 40)
+KeksTabButton.Size = UDim2.new(1, 0, 0, 60)
+KeksTabButton.Position = UDim2.new(0, 0, 0, 120)
 KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 KeksTabButton.Text = "Keks"
 KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -233,10 +232,10 @@ KeksTabButton.TextSize = 14
 KeksTabButton.Font = Enum.Font.GothamBold
 KeksTabButton.Parent = TabsFrame
 
--- Основной контейнер с прокруткой (справа от вкладок)
+-- Основной контейнер с прокруткой (смещен для вертикальных вкладок)
 local ScrollContainer = Instance.new("ScrollingFrame")
-ScrollContainer.Size = UDim2.new(1, -110, 1, -80) -- Смещаем вправо от вкладок
-ScrollContainer.Position = UDim2.new(0, 105, 0, 75) -- Отступ слева для вкладок
+ScrollContainer.Size = UDim2.new(1, -90, 1, -80) -- Учитываем ширину вертикальных вкладок
+ScrollContainer.Position = UDim2.new(0, 85, 0, 75)
 ScrollContainer.BackgroundTransparency = 1
 ScrollContainer.BorderSizePixel = 0
 ScrollContainer.ScrollBarThickness = 8
@@ -322,7 +321,7 @@ local CampfirePosition = Vector3.new(0, 10, 0)
 local BringCount = 2  -- Количество предметов за один раз
 local BringDelay = 600  -- Задержка между падением предметов в миллисекундах
 
--- Функция создания элементов UI (остается без изменений)
+-- Функция создания элементов UI
 local function CreateSection(parent, title)
     local section = Instance.new("Frame")
     section.Size = UDim2.new(1, 0, 0, 0)
@@ -365,8 +364,342 @@ local function CreateSection(parent, title)
     return section, content
 end
 
--- Остальные функции создания элементов UI остаются без изменений
--- (CreateToggle, CreateSlider, CreateLabel, CreateButton, CreateTextBox, CreateDropdown)
+local function CreateToggle(parent, text, callback)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(1, 0, 0, 30)
+    toggleFrame.BackgroundTransparency = 1
+    toggleFrame.Parent = parent
+    
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(1, 0, 1, 0)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    toggleButton.Text = ""
+    toggleButton.Parent = toggleFrame
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 4)
+    toggleCorner.Parent = toggleButton
+    
+    local toggleText = Instance.new("TextLabel")
+    toggleText.Size = UDim2.new(0.7, 0, 1, 0)
+    toggleText.Position = UDim2.new(0, 8, 0, 0)
+    toggleText.BackgroundTransparency = 1
+    toggleText.Text = text
+    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleText.TextSize = 12
+    toggleText.TextXAlignment = Enum.TextXAlignment.Left
+    toggleText.Font = Enum.Font.Gotham
+    toggleText.Parent = toggleButton
+    
+    local toggleStatus = Instance.new("Frame")
+    toggleStatus.Size = UDim2.new(0, 20, 0, 20)
+    toggleStatus.Position = UDim2.new(1, -25, 0.5, -10)
+    toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    toggleStatus.Parent = toggleButton
+    
+    local toggleStatusCorner = Instance.new("UICorner")
+    toggleStatusCorner.CornerRadius = UDim.new(0, 10)
+    toggleStatusCorner.Parent = toggleStatus
+    
+    local isToggled = false
+    
+    local function updateToggle()
+        if isToggled then
+            toggleStatus.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        else
+            toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+        end
+    end
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        isToggled = not isToggled
+        updateToggle()
+        callback(isToggled)
+    end)
+    
+    updateToggle()
+    
+    return {
+        Set = function(value)
+            isToggled = value
+            updateToggle()
+            callback(value)
+        end
+    }
+end
+
+local function CreateSlider(parent, text, min, max, defaultValue, callback)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(1, 0, 0, 50)
+    sliderFrame.BackgroundTransparency = 1
+    sliderFrame.Parent = parent
+    
+    local sliderText = Instance.new("TextLabel")
+    sliderText.Size = UDim2.new(1, 0, 0, 20)
+    sliderText.BackgroundTransparency = 1
+    sliderText.Text = text .. ": " .. defaultValue
+    sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sliderText.TextSize = 12
+    sliderText.TextXAlignment = Enum.TextXAlignment.Left
+    sliderText.Font = Enum.Font.Gotham
+    sliderText.Parent = sliderFrame
+    
+    local sliderBar = Instance.new("Frame")
+    sliderBar.Size = UDim2.new(1, 0, 0, 15)
+    sliderBar.Position = UDim2.new(0, 0, 0, 20)
+    sliderBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    sliderBar.Parent = sliderFrame
+    
+    local sliderBarCorner = Instance.new("UICorner")
+    sliderBarCorner.CornerRadius = UDim.new(0, 7)
+    sliderBarCorner.Parent = sliderBar
+    
+    local sliderFill = Instance.new("Frame")
+    sliderFill.Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0)
+    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    sliderFill.Parent = sliderBar
+    
+    local sliderFillCorner = Instance.new("UICorner")
+    sliderFillCorner.CornerRadius = UDim.new(0, 7)
+    sliderFillCorner.Parent = sliderFill
+    
+    local sliderButton = Instance.new("TextButton")
+    sliderButton.Size = UDim2.new(1, 0, 1, 0)
+    sliderButton.BackgroundTransparency = 1
+    sliderButton.Text = ""
+    sliderButton.Parent = sliderBar
+    
+    local isDragging = false
+    
+    local function updateSlider(value)
+        local normalized = math.clamp((value - min) / (max - min), 0, 1)
+        sliderFill.Size = UDim2.new(normalized, 0, 1, 0)
+        sliderText.Text = text .. ": " .. math.floor(value)
+        callback(value)
+    end
+    
+    sliderButton.InputBegan:Connect(function(input)
+        isDragging = true
+    end)
+    
+    sliderButton.InputEnded:Connect(function(input)
+        isDragging = false
+    end)
+    
+    local function onInputChanged(input)
+        if isDragging then
+            local relativeX = input.Position.X - sliderBar.AbsolutePosition.X
+            local normalized = math.clamp(relativeX / sliderBar.AbsoluteSize.X, 0, 1)
+            local value = min + normalized * (max - min)
+            updateSlider(value)
+        end
+    end
+    
+    UserInputService.InputChanged:Connect(onInputChanged)
+    
+    updateSlider(defaultValue)
+    
+    return sliderFrame
+end
+
+local function CreateLabel(parent, text)
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 0, 0)
+    label.BackgroundTransparency = 1
+    label.Text = text
+    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextSize = 12
+    label.TextWrapped = true
+    label.Font = Enum.Font.Gotham
+    label.Parent = parent
+    label.AutomaticSize = Enum.AutomaticSize.Y
+    return label
+end
+
+local function CreateButton(parent, text, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, 0, 0, 35)
+    button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 14
+    button.Font = Enum.Font.Gotham
+    button.Parent = parent
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.Parent = button
+    
+    button.MouseButton1Click:Connect(callback)
+    
+    return button
+end
+
+-- Функция для создания текстового поля ввода
+local function CreateTextBox(parent, text, defaultValue, callback)
+    local textBoxFrame = Instance.new("Frame")
+    textBoxFrame.Size = UDim2.new(1, 0, 0, 40)
+    textBoxFrame.BackgroundTransparency = 1
+    textBoxFrame.Parent = parent
+    
+    local textBoxLabel = Instance.new("TextLabel")
+    textBoxLabel.Size = UDim2.new(0.5, -5, 0, 20)
+    textBoxLabel.Position = UDim2.new(0, 0, 0, 0)
+    textBoxLabel.BackgroundTransparency = 1
+    textBoxLabel.Text = text
+    textBoxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textBoxLabel.TextSize = 12
+    textBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+    textBoxLabel.Font = Enum.Font.Gotham
+    textBoxLabel.Parent = textBoxFrame
+    
+    local textBox = Instance.new("TextBox")
+    textBox.Size = UDim2.new(0.5, -5, 0, 30)
+    textBox.Position = UDim2.new(0.5, 5, 0, 0)
+    textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    textBox.Text = tostring(defaultValue)
+    textBox.TextSize = 14
+    textBox.Font = Enum.Font.Gotham
+    textBox.Parent = textBoxFrame
+    
+    local textBoxCorner = Instance.new("UICorner")
+    textBoxCorner.CornerRadius = UDim.new(0, 6)
+    textBoxCorner.Parent = textBox
+    
+    textBox.FocusLost:Connect(function()
+        local value = tonumber(textBox.Text)
+        if value then
+            callback(value)
+        else
+            textBox.Text = tostring(defaultValue)
+            ShowNotification("Please enter a valid number!", 2)
+        end
+    end)
+    
+    return textBox
+end
+
+-- Функция для создания выпадающего списка
+local function CreateDropdown(parent, options, defaultOption, callback)
+    local dropdownFrame = Instance.new("Frame")
+    dropdownFrame.Size = UDim2.new(1, 0, 0, 35)
+    dropdownFrame.BackgroundTransparency = 1
+    dropdownFrame.Parent = parent
+    
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
+    dropdownButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    dropdownButton.Text = defaultOption or options[1]
+    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownButton.TextSize = 14
+    dropdownButton.Font = Enum.Font.Gotham
+    dropdownButton.Parent = dropdownFrame
+    
+    local dropdownCorner = Instance.new("UICorner")
+    dropdownCorner.CornerRadius = UDim.new(0, 6)
+    dropdownCorner.Parent = dropdownButton
+    
+    local dropdownList = Instance.new("ScrollingFrame")
+    dropdownList.Size = UDim2.new(1, 0, 0, 0)
+    dropdownList.Position = UDim2.new(0, 0, 1, 5)
+    dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    dropdownList.BorderSizePixel = 0
+    dropdownList.ScrollBarThickness = 6
+    dropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    dropdownList.Visible = false
+    dropdownList.ZIndex = 5
+    dropdownList.Parent = ScreenGui  -- Делаем дочерним элементом ScreenGui чтобы был поверх всего
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = dropdownList
+    
+    local isOpen = false
+    local selectedOption = defaultOption or options[1]
+    
+    local function updateDropdownPosition()
+        if dropdownButton:IsDescendantOf(game) then
+            local buttonAbsolutePos = dropdownButton.AbsolutePosition
+            local buttonAbsoluteSize = dropdownButton.AbsoluteSize
+            
+            dropdownList.Position = UDim2.new(0, buttonAbsolutePos.X, 0, buttonAbsolutePos.Y + buttonAbsoluteSize.Y + 5)
+            dropdownList.Size = UDim2.new(0, buttonAbsoluteSize.X, 0, math.min(#options * 35, 140))
+        end
+    end
+    
+    local function toggleDropdown()
+        isOpen = not isOpen
+        if isOpen then
+            updateDropdownPosition()
+            dropdownList.Visible = true
+        else
+            dropdownList.Visible = false
+        end
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(toggleDropdown)
+    
+    -- Обновляем позицию при изменении размера экрана
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if isOpen then
+            updateDropdownPosition()
+        end
+    end)
+    
+    for _, option in ipairs(options) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Size = UDim2.new(1, 0, 0, 35)
+        optionButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+        optionButton.Text = option
+        optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        optionButton.TextSize = 14
+        optionButton.Font = Enum.Font.Gotham
+        optionButton.ZIndex = 6
+        optionButton.Parent = dropdownList
+        
+        local optionCorner = Instance.new("UICorner")
+        optionCorner.CornerRadius = UDim.new(0, 6)
+        optionCorner.Parent = optionButton
+        
+        optionButton.MouseButton1Click:Connect(function()
+            selectedOption = option
+            dropdownButton.Text = option
+            toggleDropdown()
+            if callback then
+                callback(option)
+            end
+        end)
+    end
+    
+    -- Закрывать выпадающий список при клике вне его
+    local function onInputBegan(input)
+        if isOpen then
+            local touchPos = input.Position
+            local listAbsolutePos = dropdownList.AbsolutePosition
+            local listAbsoluteSize = dropdownList.AbsoluteSize
+            
+            -- Проверяем, был ли клик вне выпадающего списка и кнопки
+            if not (touchPos.X >= listAbsolutePos.X and touchPos.X <= listAbsolutePos.X + listAbsoluteSize.X and
+                   touchPos.Y >= listAbsolutePos.Y and touchPos.Y <= listAbsolutePos.Y + listAbsoluteSize.Y) and
+               not (touchPos.X >= dropdownButton.AbsolutePosition.X and touchPos.X <= dropdownButton.AbsolutePosition.X + dropdownButton.AbsoluteSize.X and
+                   touchPos.Y >= dropdownButton.AbsolutePosition.Y and touchPos.Y <= dropdownButton.AbsolutePosition.Y + dropdownButton.AbsoluteSize.Y) then
+                toggleDropdown()
+            end
+        end
+    end
+    
+    UserInputService.InputBegan:Connect(onInputBegan)
+    
+    return {
+        GetValue = function()
+            return selectedOption
+        end,
+        SetValue = function(value)
+            selectedOption = value
+            dropdownButton.Text = value
+        end
+    }
+end
 
 -- Функция для прыжка персонажа
 local function JumpCharacter()
@@ -397,7 +730,7 @@ CreateLabel(noteContent, "For Auto Tree and Kill Aura to work, you MUST equip an
 local resetSection, resetContent = CreateSection(InfoTab, "🔄 Reset Positions")
 CreateButton(resetContent, "Reset Menu Positions", function()
     -- Сброс позиции основного меню
-    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -200)
+    MainFrame.Position = UDim2.new(0.5, -200, 0.5, -200)
     
     -- Сброс позиции кнопки ASTRAL
     ToggleButton.Position = UDim2.new(0, 10, 0, 10)
@@ -820,13 +1153,13 @@ CreateButton(BandageContent, "Tp Food", function()
     end
 end)
 
--- Ограничитель прокрутки для вкладки Keks
+-- Ограничитель прокрутки для вкладки Keks (добавляем 10 пикселей)
 local ScrollLimiter = Instance.new("Frame")
-ScrollLimiter.Size = UDim2.new(1, 0, 0, 20)
+ScrollLimiter.Size = UDim2.new(1, 0, 0, 20)  -- Увеличили с 10 до 20 пикселей
 ScrollLimiter.BackgroundTransparency = 1
 ScrollLimiter.Parent = KeksTab
 
--- Функции из оригинального скрипта (остаются без изменений)
+-- Функции из оригинального скрипта
 -- Kill Aura функция
 task.spawn(function()
     while true do
@@ -886,7 +1219,7 @@ task.spawn(function()
     end
 end)
 
--- Функционал переключения вкладок (обновлен для вертикального расположения)
+-- Функционал переключения вкладок
 local function switchToTab(tabName)
     InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
     GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -944,7 +1277,7 @@ KeksTabButton.MouseButton1Click:Connect(function()
     switchToTab("Keks")
 end)
 
--- Система перемещения меню для мобильных устройств и PC (остается без изменений)
+-- Система перемещения меню для мобильных устройств и PC
 local function startDragging(input)
     Dragging = true
     DragStartPos = Vector2.new(input.Position.X, input.Position.Y)
@@ -976,7 +1309,7 @@ local function updateDrag(input)
     end
 end
 
--- Система изменения размера меню (остается без изменений)
+-- Система изменения размера меню
 local function startResize(input)
     Resizing = true
     ResizeStart = Vector2.new(input.Position.X, input.Position.Y)
@@ -997,8 +1330,8 @@ local function updateResize(input)
     if Resizing and ResizeStart and StartSize then
         local delta = Vector2.new(input.Position.X, input.Position.Y) - ResizeStart
         
-        -- Минимальный размер меню (увеличили минимальную ширину)
-        local minWidth = 350
+        -- Минимальный размер меню
+        local minWidth = 350  -- Увеличили минимальную ширину для вертикальных вкладок
         local minHeight = 300
         
         local newWidth = math.max(minWidth, StartSize.X.Offset + delta.X)
@@ -1097,4 +1430,4 @@ switchToTab("Info")
 wait(0.5)
 SetupScrollLimits()
 
-print("Mobile ASTRALCHEAT with vertical tabs loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
+print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
