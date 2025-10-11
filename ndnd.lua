@@ -717,11 +717,11 @@ end
 
 -- Создание элементов Info tab
 local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
-CreateLabel(infoContent, "99 Nights in the forest\nVersion:Beta\nTelegram Channel:SCRIPTTYTA\nTelegram Owner:@SFXCL")
+CreateLabel(infoContent, "99 Nights in the forest\n\nVersion:Beta\n\nTelegram Channel:SCRIPTTYTA\n\nTelegram Owner:@SFXCL")
 
 -- Создание элементов Game tab
 local killAuraSection, killAuraContent = CreateSection(GameTab, "⚔️ Kill Aura")
-CreateSlider(killAuraContent, "Distance", 25, 10000, 25, function(value)
+CreateSlider(killAuraContent, "Distance", 25, 300, 25, function(value)
     DistanceForKillAura = value
 end)
 
@@ -730,7 +730,7 @@ local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value
 end)
 
 local autoChopSection, autoChopContent = CreateSection(GameTab, "🪓 Auto Tree")
-CreateSlider(autoChopContent, "Distance", 0, 1000, 25, function(value)
+CreateSlider(autoChopContent, "Distance", 0, 300, 25, function(value)
     DistanceForAutoChopTree = value
 end)
 
@@ -743,7 +743,7 @@ local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
 CreateButton(teleportContent, "Teleport to Base", function()
     local character = Player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
+        character.HumanoidRootPart.CFrame = CFrame.new(WorkbenchPosition)
         ShowNotification("Teleported to campfire!", 2)
     else
         ShowNotification("Character not found!", 2)
@@ -905,7 +905,7 @@ end)
 local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
 
 -- Создаем выпадающий список для выбора скрапов
-local scrapOptions = {"All", "Chest", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
+local scrapOptions = {"All", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
 local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа к игроку
@@ -918,7 +918,6 @@ CreateButton(scrapContent, "Tp Scraps", function()
     
     local selectedScrap = scrapDropdown.GetValue()
     local scrapNames = {
-        ["chest"] = true, 
         ["sheet metal"] = true, 
         ["broken fan"] = true, 
         ["bolt"] = true, 
