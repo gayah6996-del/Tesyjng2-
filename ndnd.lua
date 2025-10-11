@@ -54,8 +54,8 @@ ToggleButton.Size = UDim2.new(0, 60, 0, 60)
 ToggleButton.Position = UDim2.new(0, 10, 0, 10)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "VEX OP"
-ToggleButton.TextSize = 12
+ToggleButton.Text = "ASTRAL"
+ToggleButton.TextSize = 7
 ToggleButton.ZIndex = 10
 ToggleButton.Parent = ScreenGui
 
@@ -63,12 +63,12 @@ local ToggleCorner = Instance.new("UICorner")
 ToggleCorner.CornerRadius = UDim.new(0, 10)
 ToggleCorner.Parent = ToggleButton
 
--- Переменные для перемещения кнопки VEX OP
+-- Переменные для перемещения кнопки ASTRAL
 local ToggleDragging = false
 local ToggleDragStartPos = nil
 local ToggleStartPos = nil
 
--- Функции для перемещения кнопки VEX OP
+-- Функции для перемещения кнопки ASTRAL
 local function startToggleDragging(input)
     ToggleDragging = true
     ToggleDragStartPos = Vector2.new(input.Position.X, input.Position.Y)
@@ -100,7 +100,7 @@ local function updateToggleDrag(input)
     end
 end
 
--- Обработчики для перемещения кнопки VEX OP
+-- Обработчики для перемещения кнопки ASTRAL
 ToggleButton.InputBegan:Connect(function(input)
     startToggleDragging(input)
 end)
@@ -121,9 +121,9 @@ end)
 
 -- Основное окно меню
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 350, 0, 450)
-MainFrame.Position = UDim2.new(0.5, -175, 0.5, -225)
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.Size = UDim2.new(0, 320, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
 MainFrame.Visible = false
@@ -137,7 +137,7 @@ UICorner.Parent = MainFrame
 local ResizeHandle = Instance.new("Frame")
 ResizeHandle.Size = UDim2.new(0, 30, 0, 30)
 ResizeHandle.Position = UDim2.new(1, -30, 1, -30)
-ResizeHandle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ResizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
 ResizeHandle.BorderSizePixel = 0
 ResizeHandle.ZIndex = 5
 ResizeHandle.Active = true
@@ -151,8 +151,8 @@ ResizeCorner.Parent = ResizeHandle
 local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.Position = UDim2.new(0, 0, 0, 0)
-Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-Title.Text = "VEX OP - 99 Nights in the Forest"
+Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+Title.Text = "ASTRALCHEAT - Drag to Move"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
@@ -167,7 +167,7 @@ TitleCorner.Parent = Title
 local MinimizeButton = Instance.new("TextButton")
 MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
 MinimizeButton.Position = UDim2.new(1, -70, 0, 5)
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 150, 0)
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
 MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 MinimizeButton.TextSize = 16
@@ -182,7 +182,7 @@ MinimizeCorner.Parent = MinimizeButton
 local CloseButton = Instance.new("TextButton")
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
 CloseButton.Position = UDim2.new(1, -35, 0, 5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 CloseButton.Text = "✕"
 CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 CloseButton.TextSize = 16
@@ -195,73 +195,107 @@ CloseCorner.Parent = CloseButton
 
 -- Кнопки вкладок
 local TabsFrame = Instance.new("Frame")
-TabsFrame.Size = UDim2.new(1, 0, 0, 35)
+TabsFrame.Size = UDim2.new(1, 0, 0, 30)
 TabsFrame.Position = UDim2.new(0, 0, 0, 40)
-TabsFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+TabsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 TabsFrame.BorderSizePixel = 0
 TabsFrame.Parent = MainFrame
 
--- Создаем 7 вкладок как на скриншоте
-local tabNames = {"Main", "Auto", "Bring", "Combat", "Player", "Esp", "Teleport"}
-local tabButtons = {}
-local tabFrames = {}
+local InfoTabButton = Instance.new("TextButton")
+InfoTabButton.Size = UDim2.new(0.33, 0, 1, 0)
+InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
+InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+InfoTabButton.Text = "Info"
+InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+InfoTabButton.TextSize = 14
+InfoTabButton.Font = Enum.Font.GothamBold
+InfoTabButton.Parent = TabsFrame
 
-for i, tabName in ipairs(tabNames) do
-    -- Создаем кнопку вкладки
-    local tabButton = Instance.new("TextButton")
-    tabButton.Size = UDim2.new(1/7, 0, 1, 0)
-    tabButton.Position = UDim2.new((i-1)/7, 0, 0, 0)
-    tabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    tabButton.Text = tabName
-    tabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    tabButton.TextSize = 12
-    tabButton.Font = Enum.Font.GothamBold
-    tabButton.Parent = TabsFrame
-    
-    -- Создаем фрейм для контента вкладки
-    local tabFrame = Instance.new("Frame")
-    tabFrame.Size = UDim2.new(1, 0, 0, 0)
-    tabFrame.BackgroundTransparency = 1
-    tabFrame.BorderSizePixel = 0
-    tabFrame.AutomaticSize = Enum.AutomaticSize.Y
-    tabFrame.Visible = false
-    tabFrame.Parent = MainFrame
-    
-    local tabListLayout = Instance.new("UIListLayout")
-    tabListLayout.Padding = UDim.new(0, 8)
-    tabListLayout.Parent = tabFrame
-    
-    tabButtons[tabName] = tabButton
-    tabFrames[tabName] = tabFrame
-end
+local GameTabButton = Instance.new("TextButton")
+GameTabButton.Size = UDim2.new(0.33, 0, 1, 0)
+GameTabButton.Position = UDim2.new(0.33, 0, 0, 0)
+GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+GameTabButton.Text = "Game"
+GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+GameTabButton.TextSize = 14
+GameTabButton.Font = Enum.Font.GothamBold
+GameTabButton.Parent = TabsFrame
+
+local KeksTabButton = Instance.new("TextButton")
+KeksTabButton.Size = UDim2.new(0.34, 0, 1, 0)
+KeksTabButton.Position = UDim2.new(0.66, 0, 0, 0)
+KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+KeksTabButton.Text = "Keks"
+KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+KeksTabButton.TextSize = 14
+KeksTabButton.Font = Enum.Font.GothamBold
+KeksTabButton.Parent = TabsFrame
 
 -- Основной контейнер с прокруткой
 local ScrollContainer = Instance.new("ScrollingFrame")
-ScrollContainer.Size = UDim2.new(1, -10, 1, -85)
-ScrollContainer.Position = UDim2.new(0, 5, 0, 80)
+ScrollContainer.Size = UDim2.new(1, -10, 1, -80)
+ScrollContainer.Position = UDim2.new(0, 5, 0, 75)
 ScrollContainer.BackgroundTransparency = 1
 ScrollContainer.BorderSizePixel = 0
 ScrollContainer.ScrollBarThickness = 8
-ScrollContainer.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+ScrollContainer.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
 ScrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.Always
 ScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
 ScrollContainer.Parent = MainFrame
 
--- Content frame
+-- Content frames
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Size = UDim2.new(1, 0, 0, 0)
 ContentFrame.BackgroundTransparency = 1
 ContentFrame.AutomaticSize = Enum.AutomaticSize.Y
 ContentFrame.Parent = ScrollContainer
 
--- Помещаем все вкладки в ContentFrame
-for _, tabFrame in pairs(tabFrames) do
-    tabFrame.Parent = ContentFrame
-end
+-- Info Tab Content
+local InfoTab = Instance.new("Frame")
+InfoTab.Size = UDim2.new(1, 0, 0, 0)
+InfoTab.BackgroundTransparency = 1
+InfoTab.BorderSizePixel = 0
+InfoTab.AutomaticSize = Enum.AutomaticSize.Y
+InfoTab.Visible = true
+InfoTab.Parent = ContentFrame
+
+local InfoListLayout = Instance.new("UIListLayout")
+InfoListLayout.Padding = UDim.new(0, 8)
+InfoListLayout.Parent = InfoTab
+
+-- Game Tab Content
+local GameTab = Instance.new("Frame")
+GameTab.Size = UDim2.new(1, 0, 0, 0)
+GameTab.BackgroundTransparency = 1
+GameTab.BorderSizePixel = 0
+GameTab.AutomaticSize = Enum.AutomaticSize.Y
+GameTab.Visible = false
+GameTab.Parent = ContentFrame
+
+local GameListLayout = Instance.new("UIListLayout")
+GameListLayout.Padding = UDim.new(0, 8)
+GameListLayout.Parent = GameTab
+
+-- Keks Tab Content
+local KeksTab = Instance.new("Frame")
+KeksTab.Size = UDim2.new(1, 0, 0, 0)
+KeksTab.BackgroundTransparency = 1
+KeksTab.BorderSizePixel = 0
+KeksTab.AutomaticSize = Enum.AutomaticSize.Y
+KeksTab.Visible = false
+KeksTab.Parent = ContentFrame
+
+local KeksListLayout = Instance.new("UIListLayout")
+KeksListLayout.Padding = UDim.new(0, 8)
+KeksListLayout.Parent = KeksTab
 
 -- Переменные для сохранения позиции прокрутки
-local LastScrollPositions = {}
-local CurrentTab = "Main"
+local LastScrollPositions = {
+    Info = Vector2.new(0, 0),
+    Game = Vector2.new(0, 0),
+    Keks = Vector2.new(0, 0)
+}
+local CurrentTab = "Info"
 
 -- Переменные для функций
 local ActiveKillAura = false
@@ -283,14 +317,14 @@ local MenuStartPos = nil
 local CampfirePosition = Vector3.new(0, 10, 0)
 
 -- Новые переменные для телепортации предметов
-local BringCount = 2
-local BringDelay = 600
+local BringCount = 2  -- Количество предметов за один раз
+local BringDelay = 600  -- Задержка между падением предметов в миллисекундах
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
     local section = Instance.new("Frame")
     section.Size = UDim2.new(1, 0, 0, 0)
-    section.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    section.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     section.BorderSizePixel = 0
     section.AutomaticSize = Enum.AutomaticSize.Y
     section.Parent = parent
@@ -337,7 +371,7 @@ local function CreateToggle(parent, text, callback)
     
     local toggleButton = Instance.new("TextButton")
     toggleButton.Size = UDim2.new(1, 0, 1, 0)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
     toggleButton.Text = ""
     toggleButton.Parent = toggleFrame
     
@@ -359,7 +393,7 @@ local function CreateToggle(parent, text, callback)
     local toggleStatus = Instance.new("Frame")
     toggleStatus.Size = UDim2.new(0, 20, 0, 20)
     toggleStatus.Position = UDim2.new(1, -25, 0.5, -10)
-    toggleStatus.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
     toggleStatus.Parent = toggleButton
     
     local toggleStatusCorner = Instance.new("UICorner")
@@ -370,9 +404,9 @@ local function CreateToggle(parent, text, callback)
     
     local function updateToggle()
         if isToggled then
-            toggleStatus.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
+            toggleStatus.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         else
-            toggleStatus.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+            toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
         end
     end
     
@@ -412,7 +446,7 @@ local function CreateSlider(parent, text, min, max, defaultValue, callback)
     local sliderBar = Instance.new("Frame")
     sliderBar.Size = UDim2.new(1, 0, 0, 15)
     sliderBar.Position = UDim2.new(0, 0, 0, 20)
-    sliderBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    sliderBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
     sliderBar.Parent = sliderFrame
     
     local sliderBarCorner = Instance.new("UICorner")
@@ -421,7 +455,7 @@ local function CreateSlider(parent, text, min, max, defaultValue, callback)
     
     local sliderFill = Instance.new("Frame")
     sliderFill.Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
     sliderFill.Parent = sliderBar
     
     local sliderFillCorner = Instance.new("UICorner")
@@ -484,7 +518,7 @@ end
 local function CreateButton(parent, text, callback)
     local button = Instance.new("TextButton")
     button.Size = UDim2.new(1, 0, 0, 35)
-    button.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
     button.TextSize = 14
@@ -521,7 +555,7 @@ local function CreateTextBox(parent, text, defaultValue, callback)
     local textBox = Instance.new("TextBox")
     textBox.Size = UDim2.new(0.5, -5, 0, 30)
     textBox.Position = UDim2.new(0.5, 5, 0, 0)
-    textBox.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
     textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
     textBox.Text = tostring(defaultValue)
     textBox.TextSize = 14
@@ -545,76 +579,129 @@ local function CreateTextBox(parent, text, defaultValue, callback)
     return textBox
 end
 
--- Создание элементов для вкладки Main
-local mainSection, mainContent = CreateSection(tabFrames.Main, "Main Functions")
-CreateLabel(mainContent, "Welcome to VEX OP - 99 Nights in the Forest\n\nUse the tabs above to access different features:")
+-- Функция для создания выпадающего списка
+local function CreateDropdown(parent, options, defaultOption, callback)
+    local dropdownFrame = Instance.new("Frame")
+    dropdownFrame.Size = UDim2.new(1, 0, 0, 35)
+    dropdownFrame.BackgroundTransparency = 1
+    dropdownFrame.Parent = parent
+    
+    local dropdownButton = Instance.new("TextButton")
+    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
+    dropdownButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    dropdownButton.Text = defaultOption or options[1]
+    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    dropdownButton.TextSize = 14
+    dropdownButton.Font = Enum.Font.Gotham
+    dropdownButton.Parent = dropdownFrame
+    
+    local dropdownCorner = Instance.new("UICorner")
+    dropdownCorner.CornerRadius = UDim.new(0, 6)
+    dropdownCorner.Parent = dropdownButton
+    
+    local dropdownList = Instance.new("ScrollingFrame")
+    dropdownList.Size = UDim2.new(1, 0, 0, 0)
+    dropdownList.Position = UDim2.new(0, 0, 1, 5)
+    dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    dropdownList.BorderSizePixel = 0
+    dropdownList.ScrollBarThickness = 6
+    dropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    dropdownList.Visible = false
+    dropdownList.ZIndex = 5
+    dropdownList.Parent = ScreenGui  -- Делаем дочерним элементом ScreenGui чтобы был поверх всего
+    
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Parent = dropdownList
+    
+    local isOpen = false
+    local selectedOption = defaultOption or options[1]
+    
+    local function updateDropdownPosition()
+        if dropdownButton:IsDescendantOf(game) then
+            local buttonAbsolutePos = dropdownButton.AbsolutePosition
+            local buttonAbsoluteSize = dropdownButton.AbsoluteSize
+            
+            dropdownList.Position = UDim2.new(0, buttonAbsolutePos.X, 0, buttonAbsolutePos.Y + buttonAbsoluteSize.Y + 5)
+            dropdownList.Size = UDim2.new(0, buttonAbsoluteSize.X, 0, math.min(#options * 35, 140))
+        end
+    end
+    
+    local function toggleDropdown()
+        isOpen = not isOpen
+        if isOpen then
+            updateDropdownPosition()
+            dropdownList.Visible = true
+        else
+            dropdownList.Visible = false
+        end
+    end
+    
+    dropdownButton.MouseButton1Click:Connect(toggleDropdown)
+    
+    -- Обновляем позицию при изменении размера экрана
+    game:GetService("RunService").Heartbeat:Connect(function()
+        if isOpen then
+            updateDropdownPosition()
+        end
+    end)
+    
+    for _, option in ipairs(options) do
+        local optionButton = Instance.new("TextButton")
+        optionButton.Size = UDim2.new(1, 0, 0, 35)
+        optionButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
+        optionButton.Text = option
+        optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        optionButton.TextSize = 14
+        optionButton.Font = Enum.Font.Gotham
+        optionButton.ZIndex = 6
+        optionButton.Parent = dropdownList
+        
+        local optionCorner = Instance.new("UICorner")
+        optionCorner.CornerRadius = UDim.new(0, 6)
+        optionCorner.Parent = optionButton
+        
+        optionButton.MouseButton1Click:Connect(function()
+            selectedOption = option
+            dropdownButton.Text = option
+            toggleDropdown()
+            if callback then
+                callback(option)
+            end
+        end)
+    end
+    
+    -- Закрывать выпадающий список при клике вне его
+    local function onInputBegan(input)
+        if isOpen then
+            local touchPos = input.Position
+            local listAbsolutePos = dropdownList.AbsolutePosition
+            local listAbsoluteSize = dropdownList.AbsoluteSize
+            
+            -- Проверяем, был ли клик вне выпадающего списка и кнопки
+            if not (touchPos.X >= listAbsolutePos.X and touchPos.X <= listAbsolutePos.X + listAbsoluteSize.X and
+                   touchPos.Y >= listAbsolutePos.Y and touchPos.Y <= listAbsolutePos.Y + listAbsoluteSize.Y) and
+               not (touchPos.X >= dropdownButton.AbsolutePosition.X and touchPos.X <= dropdownButton.AbsolutePosition.X + dropdownButton.AbsoluteSize.X and
+                   touchPos.Y >= dropdownButton.AbsolutePosition.Y and touchPos.Y <= dropdownButton.AbsolutePosition.Y + dropdownButton.AbsoluteSize.Y) then
+                toggleDropdown()
+            end
+        end
+    end
+    
+    UserInputService.InputBegan:Connect(onInputBegan)
+    
+    return {
+        GetValue = function()
+            return selectedOption
+        end,
+        SetValue = function(value)
+            selectedOption = value
+            dropdownButton.Text = value
+        end
+    }
+end
 
-CreateButton(mainContent, "Auto Features", function()
-    ShowNotification("Switching to Auto tab...", 2)
-    switchToTab("Auto")
-end)
-
-CreateButton(mainContent, "Bring Items", function()
-    ShowNotification("Switching to Bring tab...", 2)
-    switchToTab("Bring")
-end)
-
-CreateButton(mainContent, "Combat Features", function()
-    ShowNotification("Switching to Combat tab...", 2)
-    switchToTab("Combat")
-end)
-
--- Создание элементов для вкладки Auto
-local autoSection, autoContent = CreateSection(tabFrames.Auto, "Auto Features")
-CreateLabel(autoContent, "Automated gameplay features")
-
-local autoTreeSection, autoTreeContent = CreateSection(autoContent, "🪓 Auto Tree")
-CreateSlider(autoTreeContent, "Distance", 0, 1000, 25, function(value)
-    DistanceForAutoChopTree = value
-end)
-
-local autoChopToggle = CreateToggle(autoTreeContent, "Auto Tree", function(value)
-    ActiveAutoChopTree = value
-end)
-
--- Создание элементов для вкладки Bring
-local bringSection, bringContent = CreateSection(tabFrames.Bring, "Bring Items")
-CreateLabel(bringContent, "Bring Medical Items\nPlease unlock first zone before trying to Bring!")
-
-local medicalSection, medicalContent = CreateSection(bringContent, "Medical Items")
-CreateButton(medicalContent, "Bring Bandages", function()
-    ShowNotification("Bringing Bandages...", 2)
-end)
-
-CreateButton(medicalContent, "Bring Medkits", function()
-    ShowNotification("Bringing Medkits...", 2)
-end)
-
-local equipmentSection, equipmentContent = CreateSection(bringContent, "Equipment")
-CreateLabel(equipmentContent, "Select Equipment Items\nChoose items to bring")
-
-CreateButton(equipmentContent, "Bring Equipment Items", function()
-    ShowNotification("Bring Equipment Items\nPlease unlock first zone before trying to Bring!", 2)
-end)
-
--- Создание элементов для вкладки Combat
-local combatSection, combatContent = CreateSection(tabFrames.Combat, "Combat Features")
-CreateLabel(combatContent, "Combat and enemy interaction features")
-
-local killAuraSection, killAuraContent = CreateSection(combatContent, "⚔️ Kill Aura")
-CreateSlider(killAuraContent, "Distance", 25, 10000, 25, function(value)
-    DistanceForKillAura = value
-end)
-
-local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value)
-    ActiveKillAura = value
-end)
-
--- Создание элементов для вкладки Player
-local playerSection, playerContent = CreateSection(tabFrames.Player, "Player Features")
-CreateLabel(playerContent, "Player-related functions and utilities")
-
-CreateButton(playerContent, "Jump", function()
+-- Функция для прыжка персонажа
+local function JumpCharacter()
     local character = Player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     
@@ -623,26 +710,54 @@ CreateButton(playerContent, "Jump", function()
         return
     end
     
+    -- Заставляем персонажа прыгнуть
     humanoid.Jump = true
     ShowNotification("Character jumped!", 1)
+end
+
+-- Создание элементов Info tab
+local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
+CreateLabel(infoContent, "99 Nights In The Forest\nMobile Script Menu\n\nVersion: 0.31\n\nFunctions from original Game tab\n\nTap the title bar to move the menu")
+
+local controlsSection, controlsContent = CreateSection(InfoTab, "🎮 Controls")
+CreateLabel(controlsContent, "- Tap ASTRAL button to show/hide menu\n- Drag title bar to move menu\n- Toggle switches to enable features\n- Adjust sliders for distance settings")
+
+local noteSection, noteContent = CreateSection(InfoTab, "💡 Important Note")
+CreateLabel(noteContent, "For Auto Tree and Kill Aura to work, you MUST equip any axe (Old Axe, Good Axe, Strong Axe, or Chainsaw)!")
+
+-- Кнопка сброса позиций
+local resetSection, resetContent = CreateSection(InfoTab, "🔄 Reset Positions")
+CreateButton(resetContent, "Reset Menu Positions", function()
+    -- Сброс позиции основного меню
+    MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
+    
+    -- Сброс позиции кнопки ASTRAL
+    ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+    
+    ShowNotification("Menu positions reset!", 2)
 end)
 
--- Создание элементов для вкладки Esp
-local espSection, espContent = CreateSection(tabFrames.Esp, "ESP Features")
-CreateLabel(espContent, "Visual enhancement features\n\nESP functionality will be added in future updates")
-
-CreateButton(espContent, "Toggle Item ESP", function()
-    ShowNotification("Item ESP feature coming soon!", 2)
+-- Создание элементов Game tab
+local killAuraSection, killAuraContent = CreateSection(GameTab, "⚔️ Kill Aura")
+CreateSlider(killAuraContent, "Distance", 25, 10000, 25, function(value)
+    DistanceForKillAura = value
 end)
 
-CreateButton(espContent, "Toggle Player ESP", function()
-    ShowNotification("Player ESP feature coming soon!", 2)
+local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value)
+    ActiveKillAura = value
 end)
 
--- Создание элементов для вкладки Teleport
-local teleportSection, teleportContent = CreateSection(tabFrames.Teleport, "Teleport Features")
-CreateLabel(teleportContent, "Teleportation and movement features")
+local autoChopSection, autoChopContent = CreateSection(GameTab, "🪓 Auto Tree")
+CreateSlider(autoChopContent, "Distance", 0, 1000, 25, function(value)
+    DistanceForAutoChopTree = value
+end)
 
+local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value)
+    ActiveAutoChopTree = value
+end)
+
+-- Создание элементов Keks tab
+local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
 CreateButton(teleportContent, "Teleport to Base", function()
     local character = Player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
@@ -653,145 +768,395 @@ CreateButton(teleportContent, "Teleport to Base", function()
     end
 end)
 
--- Функционал переключения вкладок
-local function switchToTab(tabName)
-    -- Сбрасываем все вкладки
-    for name, button in pairs(tabButtons) do
-        button.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-        button.TextColor3 = Color3.fromRGB(200, 200, 200)
-        tabFrames[name].Visible = false
-    end
-    
-    -- Устанавливаем активную вкладку
-    tabButtons[tabName].BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    tabButtons[tabName].TextColor3 = Color3.fromRGB(255, 255, 255)
-    tabFrames[tabName].Visible = true
-    CurrentTab = tabName
-end
+-- Добавляем кнопку Jump вместо Up
+CreateButton(teleportContent, "Jump", JumpCharacter)
 
--- Подключаем обработчики для вкладок
-for tabName, button in pairs(tabButtons) do
-    button.MouseButton1Click:Connect(function()
-        switchToTab(tabName)
-    end)
-end
+-- Новое мини-меню для Bring Items
+local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
 
--- Инициализируем позиции прокрутки
-for _, tabName in ipairs(tabNames) do
-    LastScrollPositions[tabName] = Vector2.new(0, 0)
-end
-
--- Система перемещения меню
-local function startDragging(input)
-    Dragging = true
-    DragStartPos = Vector2.new(input.Position.X, input.Position.Y)
-    MenuStartPos = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset)
-    
-    Title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-end
-
-local function stopDragging()
-    Dragging = false
-    DragStartPos = nil
-    MenuStartPos = nil
-    Title.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-end
-
-local function updateDrag(input)
-    if Dragging and DragStartPos and MenuStartPos then
-        local delta = Vector2.new(input.Position.X, input.Position.Y) - DragStartPos
-        local newX = MenuStartPos.X.Offset + delta.X
-        local newY = MenuStartPos.Y.Offset + delta.Y
-        
-        local screenSize = PlayerGui.AbsoluteSize
-        newX = math.clamp(newX, 0, screenSize.X - MainFrame.AbsoluteSize.X)
-        newY = math.clamp(newY, 0, screenSize.Y - MainFrame.AbsoluteSize.Y)
-        
-        MainFrame.Position = UDim2.new(0, newX, 0, newY)
-    end
-end
-
--- Система изменения размера меню
-local function startResize(input)
-    Resizing = true
-    ResizeStart = Vector2.new(input.Position.X, input.Position.Y)
-    StartSize = UDim2.new(MainFrame.Size.X.Scale, MainFrame.Size.X.Offset, MainFrame.Size.Y.Scale, MainFrame.Size.Y.Offset)
-    
-    ResizeHandle.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-end
-
-local function stopResize()
-    Resizing = false
-    ResizeStart = nil
-    StartSize = nil
-    ResizeHandle.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-end
-
-local function updateResize(input)
-    if Resizing and ResizeStart and StartSize then
-        local delta = Vector2.new(input.Position.X, input.Position.Y) - ResizeStart
-        
-        local minWidth = 300
-        local minHeight = 350
-        
-        local newWidth = math.max(minWidth, StartSize.X.Offset + delta.X)
-        local newHeight = math.max(minHeight, StartSize.Y.Offset + delta.Y)
-        
-        MainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
-    end
-end
-
--- Обработчики для перемещения меню
-Title.InputBegan:Connect(function(input)
-    startDragging(input)
-end)
-
-Title.InputEnded:Connect(function(input)
-    stopDragging()
-end)
-
--- Обработчики для изменения размера
-ResizeHandle.InputBegan:Connect(function(input)
-    startResize(input)
-end)
-
-ResizeHandle.InputEnded:Connect(function(input)
-    stopResize()
-end)
-
--- Закрытие меню полностью
-CloseButton.MouseButton1Click:Connect(function()
-    LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
-    MainFrame.Visible = false
-    ToggleButton.Visible = false
-    ShowNotification("Menu closed completely", 2)
-end)
-
--- Сворачивание меню
-MinimizeButton.MouseButton1Click:Connect(function()
-    LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
-    MainFrame.Visible = false
-    ShowNotification("Menu minimized", 2)
-end)
-
--- Переключение видимости меню
-ToggleButton.MouseButton1Click:Connect(function()
-    if MainFrame.Visible then
-        LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
-        MainFrame.Visible = false
+-- Добавляем настройки количества и скорости телепортации
+CreateTextBox(bringItemsContent, "Bring Count (1-200):", BringCount, function(value)
+    if value >= 1 and value <= 200 then
+        BringCount = math.floor(value)
+        ShowNotification("Bring Count set to: " .. BringCount, 2)
     else
-        ScrollContainer.CanvasPosition = LastScrollPositions[CurrentTab]
-        MainFrame.Visible = true
-        ToggleButton.Visible = true
+        ShowNotification("Bring Count must be between 1 and 200!", 2)
     end
 end)
 
--- Сохраняем позицию прокрутки при изменении
-ScrollContainer:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-    if MainFrame.Visible then
-        LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
+CreateSlider(bringItemsContent, "Bring Delay (ms)", 600, 0, 600, function(value)
+    BringDelay = math.floor(value)
+end)
+
+-- Создаем выпадающий список для выбора предметов
+local bringOptions = {"Logs", "Coal", "Fuel Canister", "Oil Barrel"}
+local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
+
+-- Кнопка для телепортации выбранных предметов к костру
+CreateButton(bringItemsContent, "Bring Selected", function()
+    local selectedItem = bringDropdown.GetValue()
+    local found = false
+    
+    if selectedItem == "Logs" then
+        local logs = {}
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("log") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    table.insert(logs, main)
+                end
+            end
+        end
+        
+        -- Телепортируем только указанное количество с задержкой
+        local teleported = 0
+        for i = 1, math.min(BringCount, #logs) do
+            local log = logs[i]
+            log.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 5, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            log.Anchored = false
+            log.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)  -- Конвертируем миллисекунды в секунды
+            end
+        end
+        
+        if teleported > 0 then
+            ShowNotification("Brought " .. teleported .. "/" .. #logs .. " Logs to campfire!", 2)
+        else
+            ShowNotification("No Logs found on map", 2)
+        end
+    elseif selectedItem == "Coal" then
+        local coals = {}
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("coal") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    table.insert(coals, main)
+                end
+            end
+        end
+        
+        local teleported = 0
+        for i = 1, math.min(BringCount, #coals) do
+            local coal = coals[i]
+            coal.CFrame = CFrame.new(CampfirePosition.X, CampfirePosition.Y + 5, CampfirePosition.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+            coal.Anchored = false
+            coal.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)
+            end
+        end
+        
+        if teleported > 0 then
+            ShowNotification("Brought " .. teleported .. "/" .. #coals .. " Coal to campfire!", 2)
+        else
+            ShowNotification("No Coal found on map", 2)
+        end
+    elseif selectedItem == "Fuel Canister" then
+        local fuels = {}
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("fuel canister") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    table.insert(fuels, main)
+                end
+            end
+        end
+        
+        local teleported = 0
+        for i = 1, math.min(BringCount, #fuels) do
+            local fuel = fuels[i]
+            -- Топливо телепортируем прямо в костер без высоты
+            fuel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
+            fuel.Anchored = false
+            fuel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)
+            end
+        end
+        
+        if teleported > 0 then
+            ShowNotification("Brought " .. teleported .. "/" .. #fuels .. " Fuel Canister to campfire!", 2)
+        else
+            ShowNotification("No Fuel Canister found on map", 2)
+        end
+    elseif selectedItem == "Oil Barrel" then
+        local barrels = {}
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item.Name:lower():find("oil barrel") and item:IsA("Model") then
+                local main = item:FindFirstChildWhichIsA("BasePart")
+                if main then
+                    table.insert(barrels, main)
+                end
+            end
+        end
+        
+        local teleported = 0
+        for i = 1, math.min(BringCount, #barrels) do
+            local barrel = barrels[i]
+            -- Бочки с маслом телепортируем прямо в костер без высоты
+            barrel.CFrame = CFrame.new(CampfirePosition) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
+            barrel.Anchored = false
+            barrel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)
+            end
+        end
+        
+        if teleported > 0 then
+            ShowNotification("Brought " .. teleported .. "/" .. #barrels .. " Oil Barrel to campfire!", 2)
+        else
+            ShowNotification("No Oil Barrel found on map", 2)
+        end
     end
 end)
+
+-- Мини-меню для выбора скрапов
+local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
+
+-- Создаем выпадающий список для выбора скрапов
+local scrapOptions = {"All", "tyre", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
+local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
+
+-- Кнопка для телепортации выбранного скрапа к игроку
+CreateButton(scrapContent, "Tp Scraps", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
+    
+    local selectedScrap = scrapDropdown.GetValue()
+    local scrapNames = {
+        ["tyre"] = true, 
+        ["sheet metal"] = true, 
+        ["broken fan"] = true, 
+        ["bolt"] = true, 
+        ["old radio"] = true, 
+        ["ufo junk"] = true, 
+        ["ufo scrap"] = true, 
+        ["broken microwave"] = true,
+    }
+    
+    local scraps = {}
+    
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemName = item.Name:lower()
+            
+            if selectedScrap == "All" then
+                for scrapName, _ in pairs(scrapNames) do
+                    if itemName:find(scrapName) then
+                        local main = item:FindFirstChildWhichIsA("BasePart")
+                        if main then
+                            table.insert(scraps, main)
+                        end
+                        break
+                    end
+                end
+            else
+                if itemName:find(selectedScrap) then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        table.insert(scraps, main)
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Телепортируем только указанное количество с задержкой
+    local teleported = 0
+    for i = 1, math.min(BringCount, #scraps) do
+        local scrap = scraps[i]
+        scrap.CFrame = CFrame.new(root.Position.X, root.Position.Y + 5, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        scrap.Anchored = false
+        scrap.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        teleported = teleported + 1
+        
+        if BringDelay > 0 then
+            wait(BringDelay / 1000)
+        end
+    end
+    
+    if teleported > 0 then
+        ShowNotification("Teleported " .. teleported .. "/" .. #scraps .. " " .. selectedScrap, 2)
+    else
+        ShowNotification("No " .. selectedScrap .. " found on map", 2)
+    end
+end)
+
+-- Новое мини-меню для Lost Child (игрок телепортируется к детям)
+local lostChildSection, lostChildContent = CreateSection(KeksTab, "👶 Teleport to Lost Child")
+
+-- Кнопка для Lost Child 1
+CreateButton(lostChildContent, "Lost Child 1", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
+    
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
+                ShowNotification("Teleported to Lost Child 1", 2)
+                return
+            end
+        end
+    end
+    ShowNotification("Lost Child 1 not found on map", 2)
+end)
+
+-- Кнопка для Lost Child 2
+CreateButton(lostChildContent, "Lost Child 2", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
+    
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child2") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
+                ShowNotification("Teleported to Lost Child 2", 2)
+                return
+            end
+        end
+    end
+    ShowNotification("Lost Child 2 not found on map", 2)
+end)
+
+-- Кнопка для Lost Child 3
+CreateButton(lostChildContent, "Lost Child 3", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
+    
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child3") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
+                ShowNotification("Teleported to Lost Child 3", 2)
+                return
+            end
+        end
+    end
+    ShowNotification("Lost Child 3 not found on map", 2)
+end)
+
+-- Кнопка для Lost Child 4
+CreateButton(lostChildContent, "Lost Child 4", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
+    
+    for _, item in pairs(workspace.Characters:GetChildren()) do
+        if item.Name:lower():find("lost child4") and item:IsA("Model") then
+            local main = item:FindFirstChildWhichIsA("BasePart")
+            if main then
+                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
+                ShowNotification("Teleported to Lost Child 4", 2)
+                return
+            end
+        end
+    end
+    ShowNotification("Lost Child 4 not found on map", 2)
+end)
+
+local BandageSection, BandageContent = CreateSection(KeksTab, "🍎 Food Selection")
+
+-- Создаем выпадающий список для выбора еды
+local BandageOptions = {"All", "Morsel", "Carrot", "Bandage", "Medkit"}
+local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
+
+-- Кнопка для телепортации выбранной еды к игроку
+CreateButton(BandageContent, "Tp Food", function()
+    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
+    if not root then 
+        ShowNotification("Character not found!", 2)
+        return 
+    end
+    
+    local selectedBandage = BandageDropdown.GetValue()
+    local BandageNames = {
+        ["morsel"] = "Morsel", 
+        ["carrot"] = "Carrot", 
+        ["bandage"] = "Bandage", 
+        ["medkit"] = "Medkit", 
+    }
+    
+    local foods = {}
+    
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemName = item.Name:lower()
+            
+            if selectedBandage == "All" then
+                for bandageKey, bandageValue in pairs(BandageNames) do
+                    if itemName:find(bandageKey) then
+                        local main = item:FindFirstChildWhichIsA("BasePart")
+                        if main then
+                            table.insert(foods, main)
+                        end
+                        break
+                    end
+                end
+            else
+                local searchTerm = selectedBandage:lower()
+                if itemName:find(searchTerm) then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        table.insert(foods, main)
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Телепортируем только указанное количество с задержкой
+    local teleported = 0
+    for i = 1, math.min(BringCount, #foods) do
+        local food = foods[i]
+        food.CFrame = CFrame.new(root.Position.X, root.Position.Y + 5, root.Position.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        food.Anchored = false
+        food.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        teleported = teleported + 1
+        
+        if BringDelay > 0 then
+            wait(BringDelay / 1000)
+        end
+    end
+    
+    if teleported > 0 then
+        ShowNotification("Teleported " .. teleported .. "/" .. #foods .. " " .. selectedBandage, 2)
+    else
+        ShowNotification("No " .. selectedBandage .. " found on map", 2)
+    end
+end)
+
+-- Ограничитель прокрутки для вкладки Keks (добавляем 10 пикселей)
+local ScrollLimiter = Instance.new("Frame")
+ScrollLimiter.Size = UDim2.new(1, 0, 0, 20)  -- Увеличили с 10 до 20 пикселей
+ScrollLimiter.BackgroundTransparency = 1
+ScrollLimiter.Parent = KeksTab
 
 -- Функции из оригинального скрипта
 -- Kill Aura функция
@@ -853,7 +1218,215 @@ task.spawn(function()
     end
 end)
 
--- По умолчанию открываем вкладку Main
-switchToTab("Main")
+-- Функционал переключения вкладок
+local function switchToTab(tabName)
+    InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    
+    InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+    
+    InfoTab.Visible = false
+    GameTab.Visible = false
+    KeksTab.Visible = false
+    
+    if tabName == "Info" then
+        InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        InfoTab.Visible = true
+        CurrentTab = "Info"
+    elseif tabName == "Game" then
+        GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        GameTab.Visible = true
+        CurrentTab = "Game"
+    elseif tabName == "Keks" then
+        KeksTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+        KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        KeksTab.Visible = true
+        CurrentTab = "Keks"
+        
+        -- Устанавливаем ограничение прокрутки для вкладки Keks с дополнительными 10 пикселями
+        wait(0.1) -- Ждем обновления макета
+        local contentSize = KeksTab.AbsoluteSize.Y
+        local containerSize = ScrollContainer.AbsoluteWindowSize.Y
+        local maxScroll = math.max(0, contentSize - containerSize + 10)  -- Добавляем 10 пикселей
+        
+        -- Ограничиваем текущую позицию прокрутки
+        if ScrollContainer.CanvasPosition.Y > maxScroll then
+            ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
+        end
+    end
+    
+    -- Восстанавливаем позицию прокрутки для выбранной вкладки
+    ScrollContainer.CanvasPosition = LastScrollPositions[CurrentTab]
+end
 
-print("VEX OP - 99 Nights in the Forest menu loaded! Drag the VEX OP button to move it.")
+InfoTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Info")
+end)
+
+GameTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Game")
+end)
+
+KeksTabButton.MouseButton1Click:Connect(function()
+    switchToTab("Keks")
+end)
+
+-- Система перемещения меню для мобильных устройств и PC
+local function startDragging(input)
+    Dragging = true
+    DragStartPos = Vector2.new(input.Position.X, input.Position.Y)
+    MenuStartPos = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset)
+    
+    -- Визуальная обратная связь
+    Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+end
+
+local function stopDragging()
+    Dragging = false
+    DragStartPos = nil
+    MenuStartPos = nil
+    Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+end
+
+local function updateDrag(input)
+    if Dragging and DragStartPos and MenuStartPos then
+        local delta = Vector2.new(input.Position.X, input.Position.Y) - DragStartPos
+        local newX = MenuStartPos.X.Offset + delta.X
+        local newY = MenuStartPos.Y.Offset + delta.Y
+        
+        -- Ограничение, чтобы меню не выходило за экран
+        local screenSize = PlayerGui.AbsoluteSize
+        newX = math.clamp(newX, 0, screenSize.X - MainFrame.AbsoluteSize.X)
+        newY = math.clamp(newY, 0, screenSize.Y - MainFrame.AbsoluteSize.Y)
+        
+        MainFrame.Position = UDim2.new(0, newX, 0, newY)
+    end
+end
+
+-- Система изменения размера меню
+local function startResize(input)
+    Resizing = true
+    ResizeStart = Vector2.new(input.Position.X, input.Position.Y)
+    StartSize = UDim2.new(MainFrame.Size.X.Scale, MainFrame.Size.X.Offset, MainFrame.Size.Y.Scale, MainFrame.Size.Y.Offset)
+    
+    -- Визуальная обратная связь
+    ResizeHandle.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+end
+
+local function stopResize()
+    Resizing = false
+    ResizeStart = nil
+    StartSize = nil
+    ResizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+end
+
+local function updateResize(input)
+    if Resizing and ResizeStart and StartSize then
+        local delta = Vector2.new(input.Position.X, input.Position.Y) - ResizeStart
+        
+        -- Минимальный размер меню
+        local minWidth = 250
+        local minHeight = 300
+        
+        local newWidth = math.max(minWidth, StartSize.X.Offset + delta.X)
+        local newHeight = math.max(minHeight, StartSize.Y.Offset + delta.Y)
+        
+        MainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
+    end
+end
+
+-- Обработчики для перемещения меню
+Title.InputBegan:Connect(function(input)
+    startDragging(input)
+end)
+
+Title.InputEnded:Connect(function(input)
+    stopDragging()
+end)
+
+-- Обработчики для изменения размера
+ResizeHandle.InputBegan:Connect(function(input)
+    startResize(input)
+end)
+
+ResizeHandle.InputEnded:Connect(function(input)
+    stopResize()
+end)
+
+-- Закрытие меню полностью
+CloseButton.MouseButton1Click:Connect(function()
+    -- Сохраняем позицию прокрутки перед закрытием
+    LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
+    MainFrame.Visible = false
+    ToggleButton.Visible = false
+    ShowNotification("Menu closed completely", 2)
+end)
+
+-- Сворачивание меню
+MinimizeButton.MouseButton1Click:Connect(function()
+    -- Сохраняем позицию прокрутки перед сворачиванием
+    LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
+    MainFrame.Visible = false
+    ShowNotification("Menu minimized", 2)
+end)
+
+-- Переключение видимости меню
+ToggleButton.MouseButton1Click:Connect(function()
+    if MainFrame.Visible then
+        -- Сохраняем позицию прокрутки перед закрытием
+        LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
+        MainFrame.Visible = false
+    else
+        -- Восстанавливаем позицию прокрутки при открытии
+        ScrollContainer.CanvasPosition = LastScrollPositions[CurrentTab]
+        MainFrame.Visible = true
+        ToggleButton.Visible = true
+    end
+end)
+
+-- Сохраняем позицию прокрутки при изменении
+ScrollContainer:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+    if MainFrame.Visible then
+        LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
+    end
+end)
+
+-- Функция для ограничения прокрутки в мини-меню
+local function SetupScrollLimits()
+    -- Ждем обновления макета
+    wait(0.1)
+    
+    -- Получаем общий размер контента
+    local contentSize = ContentFrame.AbsoluteSize.Y
+    local containerSize = ScrollContainer.AbsoluteWindowSize.Y
+    
+    -- Устанавливаем максимальную прокрутку
+    local maxScroll = math.max(0, contentSize - containerSize)
+    
+    -- Для вкладки Keks добавляем дополнительные 10 пикселей
+    if CurrentTab == "Keks" then
+        maxScroll = maxScroll + 10
+    end
+    
+    -- Ограничиваем текущую позицию прокрутки
+    if ScrollContainer.CanvasPosition.Y > maxScroll then
+        ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
+    end
+end
+
+-- Вызываем функцию ограничения прокрутки при изменении размера контента
+ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(SetupScrollLimits)
+
+-- По умолчанию открываем вкладку Info
+switchToTab("Info")
+
+-- Устанавливаем ограничения прокрутки после загрузки
+wait(0.5)
+SetupScrollLimits()
+
+print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
