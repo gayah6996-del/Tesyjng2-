@@ -814,7 +814,7 @@ end)
 -- Новое мини-меню для Bring Items
 local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
 
--- Добавляем настройки количества и скорости телепортации
+-- ПЕРЕМЕЩЕНЫ В САМОЕ НАЧАЛО: Добавляем настройки количества и скорости телепортации
 CreateTextBox(bringItemsContent, "Bring Count (1-200):", BringCount, function(value)
     if value >= 1 and value <= 200 then
         BringCount = math.floor(value)
