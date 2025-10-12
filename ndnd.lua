@@ -1,3 +1,5 @@
+[file name]: ndnd.lua
+[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -1160,9 +1162,9 @@ CreateButton(WeaponContent, "Телепортировать Оружие/Пат�
     end
 end)
 
--- Ограничитель прокрутки для вкладки Keks (добавляем 10 пикселей)
+-- УВЕЛИЧЕННЫЙ ОГРАНИЧИТЕЛЬ ПРОКРУТКИ ДЛЯ ВКЛАДКИ KEKS
 local ScrollLimiter = Instance.new("Frame")
-ScrollLimiter.Size = UDim2.new(1, 0, 0, 20)  -- Увеличили с 10 до 20 пикселей
+ScrollLimiter.Size = UDim2.new(1, 0, 0, 50)  -- Увеличили с 20 до 50 пикселей
 ScrollLimiter.BackgroundTransparency = 1
 ScrollLimiter.Parent = KeksTab
 
@@ -1256,11 +1258,11 @@ local function switchToTab(tabName)
         KeksTab.Visible = true
         CurrentTab = "Keks"
         
-        -- Устанавливаем ограничение прокрутки для вкладки Keks с дополнительными 10 пикселями
+        -- Устанавливаем ограничение прокрутки для вкладки Keks с дополнительными 50 пикселями
         wait(0.1) -- Ждем обновления макета
         local contentSize = KeksTab.AbsoluteSize.Y
         local containerSize = ScrollContainer.AbsoluteWindowSize.Y
-        local maxScroll = math.max(0, contentSize - containerSize + 10)  -- Добавляем 10 пикселей
+        local maxScroll = math.max(0, contentSize - containerSize + 50)  -- Увеличили с 10 до 50 пикселей
         
         -- Ограничиваем текущую позицию прокрутки
         if ScrollContainer.CanvasPosition.Y > maxScroll then
@@ -1416,9 +1418,9 @@ local function SetupScrollLimits()
     -- Устанавливаем максимальную прокрутку
     local maxScroll = math.max(0, contentSize - containerSize)
     
-    -- Для вкладки Keks добавляем дополнительные 10 пикселей
+    -- Для вкладки Keks добавляем дополнительные 50 пикселей
     if CurrentTab == "Keks" then
-        maxScroll = maxScroll + 10
+        maxScroll = maxScroll + 50  -- Увеличили с 10 до 50 пикселей
     end
     
     -- Ограничиваем текущую позицию прокрутки
@@ -1438,3 +1440,4 @@ wait(0.5)
 SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
+[file content end]
