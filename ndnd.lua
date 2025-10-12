@@ -1036,7 +1036,7 @@ end)
 local BandageSection, BandageContent = CreateSection(KeksTab, "Выбор Еды")
 
 -- Создаем выпадающий список для выбора еды
-local BandageOptions = {"All", "Морсель", "Морковь", "Бандаж", "Аптечка"}
+local BandageOptions = {"All", "Морсель", "Морковь", "Бандаж", "Аптечка", "Rifle Ammo"}
 local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
 -- Кнопка для телепортации выбранной еды к выбранной цели
@@ -1048,6 +1048,7 @@ CreateButton(BandageContent, "Телепортировать Еду", function()
         ["carrot"] = "Carrot", 
         ["bandage"] = "Bandage", 
         ["medkit"] = "Medkit", 
+        ["rifle ammo"] = "Rifle Ammo", 
     }
     
     local foods = {}
