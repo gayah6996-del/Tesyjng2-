@@ -1,4 +1,3 @@
-
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -6,6 +5,59 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local DataStoreService = game:GetService("DataStoreService")
+
+-- Создаем хранилище для настроек
+local SettingsDataStore = DataStoreService:GetDataStore("AstralCheatSettings")
+
+-- Таблица для хранения текущих настроек
+local Settings = {
+    ActiveKillAura = false,
+    ActiveAutoChopTree = false,
+    DistanceForKillAura = 25,
+    DistanceForAutoChopTree = 25,
+    BringCount = 2,
+    BringDelay = 600,
+    TeleportTarget = "Костёр",
+    MenuPosition = UDim2.new(0.5, -160, 0.5, -200),
+    MenuSize = UDim2.new(0, 320, 0, 400),
+    ToggleButtonPosition = UDim2.new(0, 10, 0, 10)
+}
+
+-- Функция загрузки настроек
+local function LoadSettings()
+    local success, savedSettings = pcall(function()
+        return SettingsDataStore:GetAsync(Player.UserId)
+    end)
+    
+    if success and savedSettings then
+        -- Обновляем настройки из сохраненных данных
+        for key, value in pairs(savedSettings) do
+            if Settings[key] ~= nil then
+                Settings[key] = value
+            end
+        end
+        print("Settings loaded successfully!")
+    else
+        print("No saved settings found, using defaults")
+    end
+end
+
+-- Функция сохранения настроек
+local function SaveSettings()
+    local success, errorMessage = pcall(function()
+        SettingsDataStore:SetAsync(Player.UserId, Settings)
+    end)
+    
+    if success then
+        print("Settings saved successfully!")
+    else
+        warn("Failed to save settings: " .. tostring(errorMessage))
+    end
+end
+
+-- Загружаем настройки при запуске
+LoadSettings()
 
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "GameMenu"
@@ -52,7 +104,7 @@ end
 -- Кнопка показа меню (всегда видна)
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 60, 0, 60)
-ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.Position = Settings.ToggleButtonPosition
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Text = "ASTRAL"
@@ -84,6 +136,10 @@ local function stopToggleDragging()
     ToggleDragStartPos = nil
     ToggleStartPos = nil
     ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    
+    -- Сохраняем позицию кнопки
+    Settings.ToggleButtonPosition = ToggleButton.Position
+    SaveSettings()
 end
 
 local function updateToggleDrag(input)
@@ -122,8 +178,8 @@ end)
 
 -- Основное окно меню
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, 320, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -160, 0.5, -200)
+MainFrame.Size = Settings.MenuSize
+MainFrame.Position = Settings.MenuPosition
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -298,11 +354,11 @@ local LastScrollPositions = {
 }
 local CurrentTab = "Info"
 
--- Переменные для функций
-local ActiveKillAura = false
-local ActiveAutoChopTree = false
-local DistanceForKillAura = 25
-local DistanceForAutoChopTree = 25
+-- Переменные для функций (будут обновляться из настроек)
+local ActiveKillAura = Settings.ActiveKillAura
+local ActiveAutoChopTree = Settings.ActiveAutoChopTree
+local DistanceForKillAura = Settings.DistanceForKillAura
+local DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
 
 -- Переменные для изменения размера
 local Resizing = false
@@ -317,12 +373,12 @@ local MenuStartPos = nil
 -- Координаты костра
 local CampfirePosition = Vector3.new(0, 10, 0)
 
--- Новые переменные для телепортации предметов
-local BringCount = 2  -- Количество предметов за один раз
-local BringDelay = 600  -- Задержка между падением предметов в миллисекундах
+-- Новые переменные для телепортации предметов (будут обновляться из настроек)
+local BringCount = Settings.BringCount
+local BringDelay = Settings.BringDelay
 
--- Новая переменная для выбора цели телепортации
-local TeleportTarget = "Костёр"  -- По умолчанию телепорт к костру
+-- Новая переменная для выбора цели телепортации (будет обновляться из настроек)
+local TeleportTarget = Settings.TeleportTarget
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
@@ -427,6 +483,9 @@ local function CreateToggle(parent, text, callback)
             isToggled = value
             updateToggle()
             callback(value)
+        end,
+        Get = function()
+            return isToggled
         end
     }
 end
@@ -487,6 +546,7 @@ local function CreateSlider(parent, text, min, max, defaultValue, callback)
     
     sliderButton.InputEnded:Connect(function(input)
         isDragging = false
+        SaveSettings() -- Сохраняем настройки после изменения слайдера
     end)
     
     local function onInputChanged(input)
@@ -502,7 +562,11 @@ local function CreateSlider(parent, text, min, max, defaultValue, callback)
     
     updateSlider(defaultValue)
     
-    return sliderFrame
+    return {
+        Update = function(value)
+            updateSlider(value)
+        end
+    }
 end
 
 local function CreateLabel(parent, text)
@@ -574,6 +638,7 @@ local function CreateTextBox(parent, text, defaultValue, callback)
         local value = tonumber(textBox.Text)
         if value then
             callback(value)
+            SaveSettings() -- Сохраняем настройки после изменения текстового поля
         else
             textBox.Text = tostring(defaultValue)
             ShowNotification("Please enter a valid number!", 2)
@@ -670,6 +735,7 @@ local function CreateDropdown(parent, options, defaultOption, callback)
             toggleDropdown()
             if callback then
                 callback(option)
+                SaveSettings() -- Сохраняем настройки после изменения выпадающего списка
             end
         end)
     end
@@ -725,21 +791,27 @@ CreateLabel(infoContent, "99 Nights in the forest\n\nVersion:Beta\n\nTelegram Ch
 
 -- Создание элементов Game tab
 local killAuraSection, killAuraContent = CreateSection(GameTab, "Автоубийство")
-CreateSlider(killAuraContent, "Дистанция", 25, 300, 25, function(value)
+local killAuraSlider = CreateSlider(killAuraContent, "Дистанция", 25, 300, Settings.DistanceForKillAura, function(value)
     DistanceForKillAura = value
+    Settings.DistanceForKillAura = value
 end)
 
 local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value)
     ActiveKillAura = value
+    Settings.ActiveKillAura = value
+    SaveSettings()
 end)
 
 local autoChopSection, autoChopContent = CreateSection(GameTab, "АвтоРубка")
-CreateSlider(autoChopContent, "Дистанция", 0, 200, 25, function(value)
+local autoChopSlider = CreateSlider(autoChopContent, "Дистанция", 0, 200, Settings.DistanceForAutoChopTree, function(value)
     DistanceForAutoChopTree = value
+    Settings.DistanceForAutoChopTree = value
 end)
 
 local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value)
     ActiveAutoChopTree = value
+    Settings.ActiveAutoChopTree = value
+    SaveSettings()
 end)
 
 -- Создание элементов Keks tab
@@ -747,17 +819,19 @@ end)
 local bringSettingsSection, bringSettingsContent = CreateSection(KeksTab, "Настройки телепорта")
 
 -- Добавляем настройки количества и скорости телепортации В САМОЕ НАЧАЛО
-CreateTextBox(bringSettingsContent, "Макс число (1-200):", BringCount, function(value)
+CreateTextBox(bringSettingsContent, "Макс число (1-200):", Settings.BringCount, function(value)
     if value >= 1 and value <= 200 then
         BringCount = math.floor(value)
+        Settings.BringCount = BringCount
         ShowNotification("Bring Count set to: " .. BringCount, 2)
     else
         ShowNotification("Bring Count must be between 1 and 200!", 2)
     end
 end)
 
-CreateSlider(bringSettingsContent, "Скорость телепорта вещей(МилиСек)", 600, 0, 600, function(value)
+local bringDelaySlider = CreateSlider(bringSettingsContent, "Скорость телепорта вещей(МилиСек)", 600, 0, Settings.BringDelay, function(value)
     BringDelay = math.floor(value)
+    Settings.BringDelay = BringDelay
 end)
 
 -- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ (ИСПРАВЛЕНО)
@@ -765,8 +839,9 @@ local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "Ц�
 
 -- Создаем выпадающий список для выбора цели телепортации
 local teleportTargetOptions = {"Игрок", "Костёр"}
-local teleportTargetDropdown = CreateDropdown(teleportTargetContent, teleportTargetOptions, "Костёр", function(selected)
+local teleportTargetDropdown = CreateDropdown(teleportTargetContent, teleportTargetOptions, Settings.TeleportTarget, function(selected)
     TeleportTarget = selected
+    Settings.TeleportTarget = selected
     ShowNotification("Цель телепортации: " .. selected, 2)
 end)
 
@@ -1300,6 +1375,10 @@ local function stopDragging()
     DragStartPos = nil
     MenuStartPos = nil
     Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    
+    -- Сохраняем позицию меню
+    Settings.MenuPosition = MainFrame.Position
+    SaveSettings()
 end
 
 local function updateDrag(input)
@@ -1332,6 +1411,10 @@ local function stopResize()
     ResizeStart = nil
     StartSize = nil
     ResizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    
+    -- Сохраняем размер меню
+    Settings.MenuSize = MainFrame.Size
+    SaveSettings()
 end
 
 local function updateResize(input)
@@ -1431,6 +1514,51 @@ end
 -- Вызываем функцию ограничения прокрутки при изменении размера контента
 ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(SetupScrollLimits)
 
+-- Функция применения сохраненных настроек к UI
+local function ApplySavedSettings()
+    -- Применяем настройки Kill Aura
+    killAuraToggle.Set(Settings.ActiveKillAura)
+    killAuraSlider.Update(Settings.DistanceForKillAura)
+    
+    -- Применяем настройки Auto Chop Tree
+    autoChopToggle.Set(Settings.ActiveAutoChopTree)
+    autoChopSlider.Update(Settings.DistanceForAutoChopTree)
+    
+    -- Применяем настройки телепорта
+    teleportTargetDropdown.SetValue(Settings.TeleportTarget)
+    bringDelaySlider.Update(Settings.BringDelay)
+    
+    -- Обновляем глобальные переменные
+    ActiveKillAura = Settings.ActiveKillAura
+    ActiveAutoChopTree = Settings.ActiveAutoChopTree
+    DistanceForKillAura = Settings.DistanceForKillAura
+    DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
+    BringCount = Settings.BringCount
+    BringDelay = Settings.BringDelay
+    TeleportTarget = Settings.TeleportTarget
+    
+    print("Saved settings applied successfully!")
+end
+
+-- Применяем сохраненные настройки после создания UI
+wait(1) -- Даем время для создания всех элементов UI
+ApplySavedSettings()
+
+-- Сохраняем настройки при выходе из игры
+game:GetService("Players").PlayerRemoving:Connect(function(leavingPlayer)
+    if leavingPlayer == Player then
+        SaveSettings()
+    end
+end)
+
+-- Автосохранение каждые 30 секунд на случай неожиданного выхода
+task.spawn(function()
+    while true do
+        wait(30)
+        SaveSettings()
+    end
+end)
+
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
@@ -1439,3 +1567,4 @@ wait(0.5)
 SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
+print("Settings system: All your preferences will be saved automatically!")
