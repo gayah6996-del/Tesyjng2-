@@ -1,3 +1,5 @@
+[file name]: ndnd.lua
+[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -5,10 +7,9 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
-local DataStoreService = game:GetService("DataStoreService")
 
--- Создаем хранилище для настроек
-local SettingsDataStore = DataStoreService:GetDataStore("AstralCheatSettings")
+-- Название файла для сохранения настроек
+local SETTINGS_FILE = "astralcheat_settings.txt"
 
 -- Таблица для хранения текущих настроек
 local Settings = {
@@ -19,41 +20,48 @@ local Settings = {
     BringCount = 2,
     BringDelay = 600,
     TeleportTarget = "Костёр",
-    MenuPosition = UDim2.new(0.5, -160, 0.5, -200),
-    MenuSize = UDim2.new(0, 320, 0, 400),
-    ToggleButtonPosition = UDim2.new(0, 10, 0, 10)
+    MenuPosition = {X = 0.5, Y = 0.5, OffsetX = -160, OffsetY = -200},
+    MenuSize = {Width = 320, Height = 400},
+    ToggleButtonPosition = {X = 0, Y = 0, OffsetX = 10, OffsetY = 10}
 }
 
--- Функция загрузки настроек
-local function LoadSettings()
-    local success, savedSettings = pcall(function()
-        return SettingsDataStore:GetAsync(Player.UserId)
+-- Функция для сохранения настроек в файл
+local function SaveSettings()
+    local success, err = pcall(function()
+        local data = game:GetService("HttpService"):JSONEncode(Settings)
+        writefile(SETTINGS_FILE, data)
     end)
     
-    if success and savedSettings then
-        -- Обновляем настройки из сохраненных данных
-        for key, value in pairs(savedSettings) do
-            if Settings[key] ~= nil then
-                Settings[key] = value
-            end
-        end
-        print("Settings loaded successfully!")
+    if not success then
+        warn("Не удалось сохранить настройки: " .. tostring(err))
     else
-        print("No saved settings found, using defaults")
+        print("Настройки сохранены!")
     end
 end
 
--- Функция сохранения настроек
-local function SaveSettings()
-    local success, errorMessage = pcall(function()
-        SettingsDataStore:SetAsync(Player.UserId, Settings)
+-- Функция для загрузки настроек из файла
+local function LoadSettings()
+    local success, err = pcall(function()
+        if isfile(SETTINGS_FILE) then
+            local data = readfile(SETTINGS_FILE)
+            local loadedSettings = game:GetService("HttpService"):JSONDecode(data)
+            
+            -- Обновляем настройки из загруженных данных
+            for key, value in pairs(loadedSettings) do
+                if Settings[key] ~= nil then
+                    Settings[key] = value
+                end
+            end
+            return true
+        end
+        return false
     end)
     
-    if success then
-        print("Settings saved successfully!")
-    else
-        warn("Failed to save settings: " .. tostring(errorMessage))
+    if not success then
+        warn("Не удалось загрузить настройки: " .. tostring(err))
+        return false
     end
+    return true
 end
 
 -- Загружаем настройки при запуске
@@ -104,7 +112,7 @@ end
 -- Кнопка показа меню (всегда видна)
 local ToggleButton = Instance.new("TextButton")
 ToggleButton.Size = UDim2.new(0, 60, 0, 60)
-ToggleButton.Position = Settings.ToggleButtonPosition
+ToggleButton.Position = UDim2.new(Settings.ToggleButtonPosition.X, Settings.ToggleButtonPosition.OffsetX, Settings.ToggleButtonPosition.Y, Settings.ToggleButtonPosition.OffsetY)
 ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 ToggleButton.Text = "ASTRAL"
@@ -138,7 +146,12 @@ local function stopToggleDragging()
     ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     
     -- Сохраняем позицию кнопки
-    Settings.ToggleButtonPosition = ToggleButton.Position
+    Settings.ToggleButtonPosition = {
+        X = ToggleButton.Position.X.Scale,
+        Y = ToggleButton.Position.Y.Scale,
+        OffsetX = ToggleButton.Position.X.Offset,
+        OffsetY = ToggleButton.Position.Y.Offset
+    }
     SaveSettings()
 end
 
@@ -159,11 +172,15 @@ end
 
 -- Обработчики для перемещения кнопки ASTRAL
 ToggleButton.InputBegan:Connect(function(input)
-    startToggleDragging(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        startToggleDragging(input)
+    end
 end)
 
 ToggleButton.InputEnded:Connect(function(input)
-    stopToggleDragging()
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        stopToggleDragging()
+    end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
@@ -178,8 +195,8 @@ end)
 
 -- Основное окно меню
 local MainFrame = Instance.new("Frame")
-MainFrame.Size = Settings.MenuSize
-MainFrame.Position = Settings.MenuPosition
+MainFrame.Size = UDim2.new(0, Settings.MenuSize.Width, 0, Settings.MenuSize.Height)
+MainFrame.Position = UDim2.new(Settings.MenuPosition.X, Settings.MenuPosition.OffsetX, Settings.MenuPosition.Y, Settings.MenuPosition.OffsetY)
 MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 MainFrame.BorderSizePixel = 0
 MainFrame.ClipsDescendants = true
@@ -474,6 +491,7 @@ local function CreateToggle(parent, text, callback)
         isToggled = not isToggled
         updateToggle()
         callback(isToggled)
+        SaveSettings()
     end)
     
     updateToggle()
@@ -483,9 +501,6 @@ local function CreateToggle(parent, text, callback)
             isToggled = value
             updateToggle()
             callback(value)
-        end,
-        Get = function()
-            return isToggled
         end
     }
 end
@@ -799,7 +814,6 @@ end)
 local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value)
     ActiveKillAura = value
     Settings.ActiveKillAura = value
-    SaveSettings()
 end)
 
 local autoChopSection, autoChopContent = CreateSection(GameTab, "АвтоРубка")
@@ -811,7 +825,6 @@ end)
 local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value)
     ActiveAutoChopTree = value
     Settings.ActiveAutoChopTree = value
-    SaveSettings()
 end)
 
 -- Создание элементов Keks tab
@@ -1377,7 +1390,12 @@ local function stopDragging()
     Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     
     -- Сохраняем позицию меню
-    Settings.MenuPosition = MainFrame.Position
+    Settings.MenuPosition = {
+        X = MainFrame.Position.X.Scale,
+        Y = MainFrame.Position.Y.Scale,
+        OffsetX = MainFrame.Position.X.Offset,
+        OffsetY = MainFrame.Position.Y.Offset
+    }
     SaveSettings()
 end
 
@@ -1413,7 +1431,10 @@ local function stopResize()
     ResizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
     
     -- Сохраняем размер меню
-    Settings.MenuSize = MainFrame.Size
+    Settings.MenuSize = {
+        Width = MainFrame.Size.X.Offset,
+        Height = MainFrame.Size.Y.Offset
+    }
     SaveSettings()
 end
 
@@ -1434,20 +1455,28 @@ end
 
 -- Обработчики для перемещения меню
 Title.InputBegan:Connect(function(input)
-    startDragging(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        startDragging(input)
+    end
 end)
 
 Title.InputEnded:Connect(function(input)
-    stopDragging()
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        stopDragging()
+    end
 end)
 
 -- Обработчики для изменения размера
 ResizeHandle.InputBegan:Connect(function(input)
-    startResize(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        startResize(input)
+    end
 end)
 
 ResizeHandle.InputEnded:Connect(function(input)
-    stopResize()
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        stopResize()
+    end
 end)
 
 -- Закрытие меню полностью
@@ -1517,16 +1546,19 @@ ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(SetupScrollLimits)
 -- Функция применения сохраненных настроек к UI
 local function ApplySavedSettings()
     -- Применяем настройки Kill Aura
-    killAuraToggle.Set(Settings.ActiveKillAura)
-    killAuraSlider.Update(Settings.DistanceForKillAura)
+    if killAuraToggle then
+        killAuraToggle.Set(Settings.ActiveKillAura)
+    end
     
     -- Применяем настройки Auto Chop Tree
-    autoChopToggle.Set(Settings.ActiveAutoChopTree)
-    autoChopSlider.Update(Settings.DistanceForAutoChopTree)
+    if autoChopToggle then
+        autoChopToggle.Set(Settings.ActiveAutoChopTree)
+    end
     
     -- Применяем настройки телепорта
-    teleportTargetDropdown.SetValue(Settings.TeleportTarget)
-    bringDelaySlider.Update(Settings.BringDelay)
+    if teleportTargetDropdown then
+        teleportTargetDropdown.SetValue(Settings.TeleportTarget)
+    end
     
     -- Обновляем глобальные переменные
     ActiveKillAura = Settings.ActiveKillAura
@@ -1544,21 +1576,6 @@ end
 wait(1) -- Даем время для создания всех элементов UI
 ApplySavedSettings()
 
--- Сохраняем настройки при выходе из игры
-game:GetService("Players").PlayerRemoving:Connect(function(leavingPlayer)
-    if leavingPlayer == Player then
-        SaveSettings()
-    end
-end)
-
--- Автосохранение каждые 30 секунд на случай неожиданного выхода
-task.spawn(function()
-    while true do
-        wait(30)
-        SaveSettings()
-    end
-end)
-
 -- По умолчанию открываем вкладку Info
 switchToTab("Info")
 
@@ -1566,5 +1583,6 @@ switchToTab("Info")
 wait(0.5)
 SetupScrollLimits()
 
-print("Mobile ASTRALCHEAT with improved features loaded! Drag the ASTRAL button to move it. Drag the title to move the menu. Use - to minimize and ✕ to close completely.")
-print("Settings system: All your preferences will be saved automatically!")
+print("Mobile ASTRALCHEAT with SAVE SYSTEM loaded successfully!")
+print("All settings will be saved automatically!")
+[file content end]
