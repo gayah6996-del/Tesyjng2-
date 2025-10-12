@@ -152,7 +152,7 @@ local Title = Instance.new("TextLabel")
 Title.Size = UDim2.new(1, 0, 0, 40)
 Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Title.Text = "ASTRALCHEAT - Drag to Move"
+Title.Text = "ASTRALCHEAT BETA"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 16
 Title.Font = Enum.Font.GothamBold
@@ -720,11 +720,11 @@ end
 
 -- Создание элементов Info tab
 local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
-CreateLabel(infoContent, "99 Nights in the forest\n\nVersion:Beta\n\nTelegram Channel:SCRIPTTYTA\n\nTelegram Owner:@SFXCL")
+CreateLabel(infoContent, "99 Nights in the forest\n\nVersion:Beta\n\nTelegram Channel:SCRIPTTYTA\n\nTelegram Owner:@SFXCL\n")
 
 -- Создание элементов Game tab
-local killAuraSection, killAuraContent = CreateSection(GameTab, "⚔️ Kill Aura")
-CreateSlider(killAuraContent, "Distance", 25, 300, 25, function(value)
+local killAuraSection, killAuraContent = CreateSection(GameTab, "Автоубийство")
+CreateSlider(killAuraContent, "Дистанция", 25, 300, 25, function(value)
     DistanceForKillAura = value
 end)
 
@@ -732,8 +732,8 @@ local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value
     ActiveKillAura = value
 end)
 
-local autoChopSection, autoChopContent = CreateSection(GameTab, "🪓 Auto Tree")
-CreateSlider(autoChopContent, "Distance", 0, 300, 25, function(value)
+local autoChopSection, autoChopContent = CreateSection(GameTab, "АвтоРубка")
+CreateSlider(autoChopContent, "Дистанция", 0, 200, 25, function(value)
     DistanceForAutoChopTree = value
 end)
 
@@ -743,10 +743,10 @@ end)
 
 -- Создание элементов Keks tab
 -- НАСТРОЙКИ BRING В САМОМ НАЧАЛЕ
-local bringSettingsSection, bringSettingsContent = CreateSection(KeksTab, "⚙️ Bring Settings")
+local bringSettingsSection, bringSettingsContent = CreateSection(KeksTab, "Настройки телепорта")
 
 -- Добавляем настройки количества и скорости телепортации В САМОЕ НАЧАЛО
-CreateTextBox(bringSettingsContent, "Bring Count (1-200):", BringCount, function(value)
+CreateTextBox(bringSettingsContent, "Макс число (1-200):", BringCount, function(value)
     if value >= 1 and value <= 200 then
         BringCount = math.floor(value)
         ShowNotification("Bring Count set to: " .. BringCount, 2)
@@ -755,23 +755,23 @@ CreateTextBox(bringSettingsContent, "Bring Count (1-200):", BringCount, function
     end
 end)
 
-CreateSlider(bringSettingsContent, "Bring Delay (ms)", 600, 0, 600, function(value)
+CreateSlider(bringSettingsContent, "Скорость телепорта вещей(МилиСек)", 600, 0, 600, function(value)
     BringDelay = math.floor(value)
 end)
 
 -- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ
-local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "🎯 Teleport Target")
+local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "Цель ")
 
 -- Создаем выпадающий список для выбора цели телепортации
-local teleportTargetOptions = {"Player", "Campfire"}
+local teleportTargetOptions = {"Игрок", "Костёр"}
 local teleportTargetDropdown = CreateDropdown(teleportTargetContent, teleportTargetOptions, "Campfire", function(selected)
     TeleportTarget = selected
     ShowNotification("Teleport target set to: " .. selected, 2)
 end)
 
-local teleportSection, teleportContent = CreateSection(KeksTab, "🚀 Teleport")
+local teleportSection, teleportContent = CreateSection(KeksTab, "Телепорт")
 -- Переименовали кнопку с "Teleport to Base" на "Teleport Campfire"
-CreateButton(teleportContent, "Teleport Campfire", function()
+CreateButton(teleportContent, "Телепорт к костру", function()
     local character = Player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         character.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
@@ -782,10 +782,10 @@ CreateButton(teleportContent, "Teleport Campfire", function()
 end)
 
 -- МИНИ-МЕНЮ ДЛЯ ТЕЛЕПОРТАЦИИ К ДЕТЯМ
-local childTeleportSection, childTeleportContent = CreateSection(KeksTab, "👶 Teleport to Child")
+local childTeleportSection, childTeleportContent = CreateSection(KeksTab, "Телепорт К детям")
 
 -- Создаем выпадающий список для выбора ребенка
-local childOptions = {"Lost Child 1", "Lost Child 2", "Lost Child 3", "Lost Child 4"}
+local childOptions = {"Дино Малыш", "Кракен малыш", "Ребенчик", "Малыш Коала"}
 local childDropdown = CreateDropdown(childTeleportContent, childOptions, "Lost Child 1")
 
 -- Кнопка для телепортации к выбранному ребенку
@@ -829,14 +829,14 @@ CreateButton(childTeleportContent, "Teleport", function()
 end)
 
 -- МИНИ-МЕНЮ ДЛЯ BRING ITEMS
-local bringItemsSection, bringItemsContent = CreateSection(KeksTab, "🎒 Bring Items")
+local bringItemsSection, bringItemsContent = CreateSection(KeksTab, " Телепорт заправки")
 
 -- Создаем выпадающий список для выбора предметов
-local bringOptions = {"Logs", "Coal", "Fuel Canister", "Oil Barrel"}
+local bringOptions = {"Дерево", "Уголь", "Канистра", "Топливная бочка"}
 local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
 
 -- Кнопка для телепортации выбранных предметов к выбранной цели
-CreateButton(bringItemsContent, "Bring Selected", function()
+CreateButton(bringItemsContent, "Телепорт выбранных", function()
     local selectedItem = bringDropdown.GetValue()
     local targetPos = GetTargetPosition()
     local found = false
@@ -964,14 +964,14 @@ CreateButton(bringItemsContent, "Bring Selected", function()
 end)
 
 -- МИНИ-МЕНЮ ДЛЯ ВЫБОРА СКРАПОВ
-local scrapSection, scrapContent = CreateSection(KeksTab, "🔧 Scrap Selection")
+local scrapSection, scrapContent = CreateSection(KeksTab, "Выбор скрапа")
 
 -- Создаем выпадающий список для выбора скрапов
 local scrapOptions = {"All", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
 local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
 
 -- Кнопка для телепортации выбранного скрапа к выбранной цели
-CreateButton(scrapContent, "Tp Scraps", function()
+CreateButton(scrapContent, "Телепортировать скрапы", function()
     local targetPos = GetTargetPosition()
     local selectedScrap = scrapDropdown.GetValue()
     local scrapNames = {
@@ -1033,14 +1033,14 @@ CreateButton(scrapContent, "Tp Scraps", function()
 end)
 
 -- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЕДЫ
-local BandageSection, BandageContent = CreateSection(KeksTab, "🍎 Food Selection")
+local BandageSection, BandageContent = CreateSection(KeksTab, "Выбор Еды")
 
 -- Создаем выпадающий список для выбора еды
-local BandageOptions = {"All", "Morsel", "Carrot", "Bandage", "Medkit"}
+local BandageOptions = {"All", "Морсель", "Морковь", "Бандаж", "Аптечка"}
 local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
 -- Кнопка для телепортации выбранной еды к выбранной цели
-CreateButton(BandageContent, "Tp Food", function()
+CreateButton(BandageContent, "Телепортировать Еду", function()
     local targetPos = GetTargetPosition()
     local selectedBandage = BandageDropdown.GetValue()
     local BandageNames = {
