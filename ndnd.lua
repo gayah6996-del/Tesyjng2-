@@ -1036,7 +1036,7 @@ end)
 local BandageSection, BandageContent = CreateSection(KeksTab, "Выбор Еды")
 
 -- Создаем выпадающий список для выбора еды
-local BandageOptions = {"All", "Морсель", "Морковь", "Бандаж", "Аптечка", "Rifle Ammo"}
+local BandageOptions = {"All", "Морсель", "Морковь", "Бандаж", "Аптечка"}
 local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
 
 -- Кнопка для телепортации выбранной еды к выбранной цели
@@ -1048,7 +1048,6 @@ CreateButton(BandageContent, "Телепортировать Еду", function()
         ["carrot"] = "Carrot", 
         ["bandage"] = "Bandage", 
         ["medkit"] = "Medkit", 
-        ["rifle ammo"] = "Rifle Ammo", 
     }
     
     local foods = {}
@@ -1097,6 +1096,67 @@ CreateButton(BandageContent, "Телепортировать Еду", function()
         ShowNotification("Teleported " .. teleported .. "/" .. #foods .. " " .. selectedBandage .. " to " .. TeleportTarget, 2)
     else
         ShowNotification("No " .. selectedBandage .. " found on map", 2)
+    end
+end)
+
+-- НОВОЕ МИНИ-МЕНЮ ДЛЯ ВЫБОРА ОРУЖИЯ И ПАТРОНОВ
+local WeaponSection, WeaponContent = CreateSection(KeksTab, "Выбор Оружия и Патронов")
+
+-- Создаем выпадающий список для выбора оружия и патронов
+local WeaponOptions = {"Rifle ammo", "Rifle"}
+local WeaponDropdown = CreateDropdown(WeaponContent, WeaponOptions, "Rifle ammo")
+
+-- Кнопка для телепортации выбранного оружия/патронов к выбранной цели
+CreateButton(WeaponContent, "Телепортировать Оружие/Патроны", function()
+    local targetPos = GetTargetPosition()
+    local selectedWeapon = WeaponDropdown.GetValue()
+    local weaponNames = {
+        ["rifle ammo"] = "Rifle ammo", 
+        ["rifle"] = "Rifle", 
+    }
+    
+    local weapons = {}
+    
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemName = item.Name:lower()
+            
+            if selectedWeapon == "Rifle ammo" then
+                if itemName:find("rifle") and itemName:find("ammo") then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        table.insert(weapons, main)
+                    end
+                end
+            elseif selectedWeapon == "Rifle" then
+                if itemName:find("rifle") and not itemName:find("ammo") then
+                    local main = item:FindFirstChildWhichIsA("BasePart")
+                    if main then
+                        table.insert(weapons, main)
+                    end
+                end
+            end
+        end
+    end
+    
+    -- Телепортируем только указанное количество с задержкой
+    local teleported = 0
+    for i = 1, math.min(BringCount, #weapons) do
+        local weapon = weapons[i]
+        weapon.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
+        weapon.Anchored = false
+        weapon.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        teleported = teleported + 1
+        
+        if BringDelay > 0 then
+            wait(BringDelay / 1000)
+        end
+    end
+    
+    if teleported > 0 then
+        ShowNotification("Teleported " .. teleported .. "/" .. #weapons .. " " .. selectedWeapon .. " to " .. TeleportTarget, 2)
+    else
+        ShowNotification("No " .. selectedWeapon .. " found on map", 2)
     end
 end)
 
