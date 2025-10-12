@@ -1,5 +1,3 @@
-[file name]: ndnd.lua
-[file content begin]
 -- Создание основного GUI
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
@@ -1585,4 +1583,3 @@ SetupScrollLimits()
 
 print("Mobile ASTRALCHEAT with SAVE SYSTEM loaded successfully!")
 print("All settings will be saved automatically!")
-[file content end]
