@@ -321,7 +321,7 @@ local BringCount = 2  -- Количество предметов за один �
 local BringDelay = 600  -- Задержка между падением предметов в миллисекундах
 
 -- Новая переменная для выбора цели телепортации
-local TeleportTarget = "Campfire"  -- По умолчанию телепорт к костру
+local TeleportTarget = "Костёр"  -- По умолчанию телепорт к костру
 
 -- Функция создания элементов UI
 local function CreateSection(parent, title)
@@ -703,9 +703,9 @@ local function CreateDropdown(parent, options, defaultOption, callback)
     }
 end
 
--- Функция для получения целевой позиции телепортации
+-- Функция для получения целевой позиции телепортации (ИСПРАВЛЕНА)
 local function GetTargetPosition()
-    if TeleportTarget == "Player" then
+    if TeleportTarget == "Игрок" then
         local character = Player.Character
         if character and character:FindFirstChild("HumanoidRootPart") then
             return character.HumanoidRootPart.Position
@@ -759,14 +759,14 @@ CreateSlider(bringSettingsContent, "Скорость телепорта веще
     BringDelay = math.floor(value)
 end)
 
--- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ
-local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "Цель ")
+-- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ (ИСПРАВЛЕНО)
+local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "Цель телепортации")
 
 -- Создаем выпадающий список для выбора цели телепортации
 local teleportTargetOptions = {"Игрок", "Костёр"}
-local teleportTargetDropdown = CreateDropdown(teleportTargetContent, teleportTargetOptions, "Campfire", function(selected)
+local teleportTargetDropdown = CreateDropdown(teleportTargetContent, teleportTargetOptions, "Костёр", function(selected)
     TeleportTarget = selected
-    ShowNotification("Teleport target set to: " .. selected, 2)
+    ShowNotification("Цель телепортации: " .. selected, 2)
 end)
 
 local teleportSection, teleportContent = CreateSection(KeksTab, "Телепорт")
@@ -786,7 +786,7 @@ local childTeleportSection, childTeleportContent = CreateSection(KeksTab, "Те�
 
 -- Создаем выпадающий список для выбора ребенка
 local childOptions = {"Дино Малыш", "Кракен малыш", "Ребенчик", "Малыш Коала"}
-local childDropdown = CreateDropdown(childTeleportContent, childOptions, "Lost Child 1")
+local childDropdown = CreateDropdown(childTeleportContent, childOptions, "Дино Малыш")
 
 -- Кнопка для телепортации к выбранному ребенку
 CreateButton(childTeleportContent, "Teleport", function()
@@ -800,13 +800,13 @@ CreateButton(childTeleportContent, "Teleport", function()
     local childName = ""
     
     -- Определяем имя ребенка в зависимости от выбора
-    if selectedChild == "Lost Child 1" then
+    if selectedChild == "Дино Малыш" then
         childName = "lost child"
-    elseif selectedChild == "Lost Child 2" then
+    elseif selectedChild == "Кракен малыш" then
         childName = "lost child2"
-    elseif selectedChild == "Lost Child 3" then
+    elseif selectedChild == "Ребенчик" then
         childName = "lost child3"
-    elseif selectedChild == "Lost Child 4" then
+    elseif selectedChild == "Малыш Коала" then
         childName = "lost child4"
     end
     
@@ -833,7 +833,7 @@ local bringItemsSection, bringItemsContent = CreateSection(KeksTab, " Телеп
 
 -- Создаем выпадающий список для выбора предметов
 local bringOptions = {"Дерево", "Уголь", "Канистра", "Топливная бочка"}
-local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Logs")
+local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Дерево")
 
 -- Кнопка для телепортации выбранных предметов к выбранной цели
 CreateButton(bringItemsContent, "Телепорт выбранных", function()
@@ -841,7 +841,7 @@ CreateButton(bringItemsContent, "Телепорт выбранных", function(
     local targetPos = GetTargetPosition()
     local found = false
     
-    if selectedItem == "Logs" then
+    if selectedItem == "Дерево" then
         local logs = {}
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("log") and item:IsA("Model") then
@@ -871,7 +871,7 @@ CreateButton(bringItemsContent, "Телепорт выбранных", function(
         else
             ShowNotification("No Logs found on map", 2)
         end
-    elseif selectedItem == "Coal" then
+    elseif selectedItem == "Уголь" then
         local coals = {}
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("coal") and item:IsA("Model") then
@@ -900,7 +900,7 @@ CreateButton(bringItemsContent, "Телепорт выбранных", function(
         else
             ShowNotification("No Coal found on map", 2)
         end
-    elseif selectedItem == "Fuel Canister" then
+    elseif selectedItem == "Канистра" then
         local fuels = {}
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("fuel canister") and item:IsA("Model") then
@@ -930,7 +930,7 @@ CreateButton(bringItemsContent, "Телепорт выбранных", function(
         else
             ShowNotification("No Fuel Canister found on map", 2)
         end
-    elseif selectedItem == "Oil Barrel" then
+    elseif selectedItem == "Топливная бочка" then
         local barrels = {}
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item.Name:lower():find("oil barrel") and item:IsA("Model") then
