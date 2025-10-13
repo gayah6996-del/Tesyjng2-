@@ -59,8 +59,8 @@ LoadSettings()
 -- Создаем окно Rayfield
 local Window = Rayfield:CreateWindow({
     Name = "ASTRALCHEAT BETA",
-    LoadingTitle = "Telegram channel:@SCRIPTTYTA",
-    LoadingSubtitle = "by @SFXCL",
+    LoadingTitle = "ASTRALCHEAT BETA",
+    LoadingSubtitle = "by SCRIPTTYTA",
     ConfigurationSaving = {
         Enabled = false,
     },
@@ -68,19 +68,6 @@ local Window = Rayfield:CreateWindow({
         Enabled = false,
     },
     KeySystem = false,
-})
-
--- Переименовываем кнопку открытия GUI
-local OpenButton = Window:CreateButton({
-    Name = "Show Menu",
-    Callback = function()
-        -- Кнопка для открытия меню (уже открыто по умолчанию в Rayfield)
-        Rayfield:Notify({
-            Title = "Menu",
-            Content = "Menu is already open!",
-            Duration = 2,
-        })
-    end,
 })
 
 -- Создаем вкладки
@@ -126,49 +113,6 @@ local function GetTargetPosition()
     else
         return CampfirePosition
     end
-end
-
--- Функция для безопасной телепортации предметов
-local function TeleportItemsToTarget(items, itemName, targetPos)
-    local teleported = 0
-    local successCount = 0
-    
-    for i = 1, math.min(BringCount, #items) do
-        local item = items[i]
-        if item and item.Parent then
-            local success = pcall(function()
-                -- Сохраняем исходные свойства
-                local originalAnchored = item.Anchored
-                local originalCFrame = item.CFrame
-                
-                -- Телепортируем предмет
-                item.CFrame = CFrame.new(
-                    targetPos.X + math.random(-3, 3), 
-                    targetPos.Y + 3, 
-                    targetPos.Z + math.random(-3, 3)
-                )
-                item.Anchored = false
-                if item:FindFirstChild("AssemblyLinearVelocity") then
-                    item.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                end
-                
-                successCount = successCount + 1
-            end)
-            
-            if not success then
-                warn("Ошибка при телепортации предмета: " .. itemName)
-            end
-            
-            teleported = teleported + 1
-            
-            -- Задержка между телепортациями
-            if BringDelay > 0 then
-                wait(BringDelay / 1000)
-            end
-        end
-    end
-    
-    return teleported, successCount
 end
 
 -- Вкладка Main
@@ -296,9 +240,7 @@ local ChildDropdown = BringTab:CreateDropdown({
     Options = {"Дино Малыш", "Кракен малыш", "Ребенчик", "Малыш Коала"},
     CurrentOption = "Дино Малыш",
     Flag = "ChildSelect",
-    Callback = function(option)
-        -- Callback for child selection
-    end,
+    Callback = function(option) end,
 })
 
 BringTab:CreateButton({
@@ -315,7 +257,6 @@ BringTab:CreateButton({
         local selectedChild = ChildDropdown.CurrentOption
         local childName = ""
         
-        -- Определяем имя ребенка в зависимости от выбора
         if selectedChild == "Дино Малыш" then
             childName = "lost child"
         elseif selectedChild == "Кракен малыш" then
@@ -350,9 +291,7 @@ local BringItemsDropdown = BringTab:CreateDropdown({
     Options = {"Дерево", "Уголь", "Канистра", "Топливная бочка"},
     CurrentOption = "Дерево",
     Flag = "BringItems",
-    Callback = function(option)
-        -- Callback for item selection
-    end,
+    Callback = function(option) end,
 })
 
 BringTab:CreateButton({
@@ -362,10 +301,8 @@ BringTab:CreateButton({
         local targetPos = GetTargetPosition()
         
         local items = {}
-        local itemType = ""
         
         if selectedItem == "Дерево" then
-            itemType = "Logs"
             for _, item in pairs(workspace.Items:GetChildren()) do
                 if item:IsA("Model") then
                     local itemName = string.lower(item.Name)
@@ -378,7 +315,6 @@ BringTab:CreateButton({
                 end
             end
         elseif selectedItem == "Уголь" then
-            itemType = "Coal"
             for _, item in pairs(workspace.Items:GetChildren()) do
                 if item:IsA("Model") then
                     local itemName = string.lower(item.Name)
@@ -391,7 +327,6 @@ BringTab:CreateButton({
                 end
             end
         elseif selectedItem == "Канистра" then
-            itemType = "Fuel Canister"
             for _, item in pairs(workspace.Items:GetChildren()) do
                 if item:IsA("Model") then
                     local itemName = string.lower(item.Name)
@@ -404,7 +339,6 @@ BringTab:CreateButton({
                 end
             end
         elseif selectedItem == "Топливная бочка" then
-            itemType = "Oil Barrel"
             for _, item in pairs(workspace.Items:GetChildren()) do
                 if item:IsA("Model") then
                     local itemName = string.lower(item.Name)
@@ -419,17 +353,32 @@ BringTab:CreateButton({
         end
         
         if #items == 0 then
-            ShowNotification("Предметы '" .. selectedItem .. "' не найдены на карте!", 2)
+            ShowNotification("Предметы '" .. selectedItem .. "' не найдены!", 2)
             return
         end
         
-        local teleported, successCount = TeleportItemsToTarget(items, itemType, targetPos)
-        
-        if successCount > 0 then
-            ShowNotification("Принесено " .. successCount .. "/" .. #items .. " " .. selectedItem .. " к " .. TeleportTarget .. "!", 2)
-        else
-            ShowNotification("Ошибка при телепортации предметов!", 2)
+        local teleported = 0
+        for i = 1, math.min(BringCount, #items) do
+            local item = items[i]
+            if item and item.Parent then
+                item.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3, 3), 
+                    targetPos.Y + 3, 
+                    targetPos.Z + math.random(-3, 3)
+                )
+                item.Anchored = false
+                if item:FindFirstChild("AssemblyLinearVelocity") then
+                    item.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                end
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
         end
+        
+        ShowNotification("Принесено " .. teleported .. " " .. selectedItem .. " к " .. TeleportTarget, 2)
     end,
 })
 
@@ -439,9 +388,7 @@ local ScrapDropdown = BringTab:CreateDropdown({
     Options = {"All", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"},
     CurrentOption = "All",
     Flag = "ScrapSelect",
-    Callback = function(option)
-        -- Callback for scrap selection
-    end,
+    Callback = function(option) end,
 })
 
 BringTab:CreateButton({
@@ -451,28 +398,18 @@ BringTab:CreateButton({
         local selectedScrap = ScrapDropdown.CurrentOption
         
         local scraps = {}
-        local scrapNames = {
-            ["sheet metal"] = true, 
-            ["broken fan"] = true, 
-            ["bolt"] = true, 
-            ["old radio"] = true, 
-            ["ufo junk"] = true, 
-            ["ufo scrap"] = true, 
-            ["broken microwave"] = true,
-        }
         
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item:IsA("Model") then
                 local itemName = string.lower(item.Name)
                 
                 if selectedScrap == "All" then
-                    for scrapName, _ in pairs(scrapNames) do
-                        if itemName:find(scrapName) then
-                            local main = item:FindFirstChildWhichIsA("BasePart")
-                            if main then
-                                table.insert(scraps, main)
-                            end
-                            break
+                    if itemName:find("sheet metal") or itemName:find("broken fan") or itemName:find("bolt") or 
+                       itemName:find("old radio") or itemName:find("ufo junk") or itemName:find("ufo scrap") or 
+                       itemName:find("broken microwave") then
+                        local main = item:FindFirstChildWhichIsA("BasePart")
+                        if main then
+                            table.insert(scraps, main)
                         end
                     end
                 else
@@ -487,17 +424,32 @@ BringTab:CreateButton({
         end
         
         if #scraps == 0 then
-            ShowNotification("Скрап '" .. selectedScrap .. "' не найден на карте!", 2)
+            ShowNotification("Скрап '" .. selectedScrap .. "' не найден!", 2)
             return
         end
         
-        local teleported, successCount = TeleportItemsToTarget(scraps, selectedScrap, targetPos)
-        
-        if successCount > 0 then
-            ShowNotification("Принесено " .. successCount .. "/" .. #scraps .. " " .. selectedScrap .. " к " .. TeleportTarget, 2)
-        else
-            ShowNotification("Ошибка при телепортации скрапа!", 2)
+        local teleported = 0
+        for i = 1, math.min(BringCount, #scraps) do
+            local scrap = scraps[i]
+            if scrap and scrap.Parent then
+                scrap.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3, 3), 
+                    targetPos.Y + 3, 
+                    targetPos.Z + math.random(-3, 3)
+                )
+                scrap.Anchored = false
+                if scrap:FindFirstChild("AssemblyLinearVelocity") then
+                    scrap.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                end
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
         end
+        
+        ShowNotification("Принесено " .. teleported .. " " .. selectedScrap, 2)
     end,
 })
 
@@ -507,9 +459,7 @@ local FoodDropdown = BringTab:CreateDropdown({
     Options = {"All", "Морсель", "Морковь", "Бандаж", "Аптечка"},
     CurrentOption = "All",
     Flag = "FoodSelect",
-    Callback = function(option)
-        -- Callback for food selection
-    end,
+    Callback = function(option) end,
 })
 
 BringTab:CreateButton({
@@ -519,25 +469,16 @@ BringTab:CreateButton({
         local selectedFood = FoodDropdown.CurrentOption
         
         local foods = {}
-        local foodNames = {
-            ["morsel"] = "Морсель", 
-            ["carrot"] = "Морковь", 
-            ["bandage"] = "Бандаж", 
-            ["medkit"] = "Аптечка", 
-        }
         
         for _, item in pairs(workspace.Items:GetChildren()) do
             if item:IsA("Model") then
                 local itemName = string.lower(item.Name)
                 
                 if selectedFood == "All" then
-                    for foodKey, foodValue in pairs(foodNames) do
-                        if itemName:find(foodKey) then
-                            local main = item:FindFirstChildWhichIsA("BasePart")
-                            if main then
-                                table.insert(foods, main)
-                            end
-                            break
+                    if itemName:find("morsel") or itemName:find("carrot") or itemName:find("bandage") or itemName:find("medkit") then
+                        local main = item:FindFirstChildWhichIsA("BasePart")
+                        if main then
+                            table.insert(foods, main)
                         end
                     end
                 else
@@ -558,33 +499,46 @@ BringTab:CreateButton({
         end
         
         if #foods == 0 then
-            ShowNotification("Еда '" .. selectedFood .. "' не найдена на карте!", 2)
+            ShowNotification("Еда '" .. selectedFood .. "' не найдена!", 2)
             return
         end
         
-        local teleported, successCount = TeleportItemsToTarget(foods, selectedFood, targetPos)
-        
-        if successCount > 0 then
-            ShowNotification("Принесено " .. successCount .. "/" .. #foods .. " " .. selectedFood .. " к " .. TeleportTarget, 2)
-        else
-            ShowNotification("Ошибка при телепортации еды!", 2)
+        local teleported = 0
+        for i = 1, math.min(BringCount, #foods) do
+            local food = foods[i]
+            if food and food.Parent then
+                food.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3, 3), 
+                    targetPos.Y + 3, 
+                    targetPos.Z + math.random(-3, 3)
+                )
+                food.Anchored = false
+                if food:FindFirstChild("AssemblyLinearVelocity") then
+                    food.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                end
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
         end
+        
+        ShowNotification("Принесено " .. teleported .. " " .. selectedFood, 2)
     end,
 })
 
-local WeaponSection = BringTab:CreateSection("Телепорт оружия и патронов")
+local WeaponSection = BringTab:CreateSection("Телепорт оружия")
 local WeaponDropdown = BringTab:CreateDropdown({
     Name = "Выберите оружие/патроны",
     Options = {"Rifle ammo", "Rifle"},
     CurrentOption = "Rifle ammo",
     Flag = "WeaponSelect",
-    Callback = function(option)
-        -- Callback for weapon selection
-    end,
+    Callback = function(option) end,
 })
 
 BringTab:CreateButton({
-    Name = "Телепорт выбранного оружия/патронов",
+    Name = "Телепорт выбранного оружия",
     Callback = function()
         local targetPos = GetTargetPosition()
         local selectedWeapon = WeaponDropdown.CurrentOption
@@ -614,17 +568,32 @@ BringTab:CreateButton({
         end
         
         if #weapons == 0 then
-            ShowNotification("Оружие/патроны '" .. selectedWeapon .. "' не найдены на карте!", 2)
+            ShowNotification("Оружие '" .. selectedWeapon .. "' не найдено!", 2)
             return
         end
         
-        local teleported, successCount = TeleportItemsToTarget(weapons, selectedWeapon, targetPos)
-        
-        if successCount > 0 then
-            ShowNotification("Принесено " .. successCount .. "/" .. #weapons .. " " .. selectedWeapon .. " к " .. TeleportTarget, 2)
-        else
-            ShowNotification("Ошибка при телепортации оружия/патронов!", 2)
+        local teleported = 0
+        for i = 1, math.min(BringCount, #weapons) do
+            local weapon = weapons[i]
+            if weapon and weapon.Parent then
+                weapon.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3, 3), 
+                    targetPos.Y + 3, 
+                    targetPos.Z + math.random(-3, 3)
+                )
+                weapon.Anchored = false
+                if weapon:FindFirstChild("AssemblyLinearVelocity") then
+                    weapon.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                end
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
         end
+        
+        ShowNotification("Принесено " .. teleported .. " " .. selectedWeapon, 2)
     end,
 })
 
@@ -636,7 +605,6 @@ InfoTab:CreateParagraph({
 })
 
 -- Функции из оригинального скрипта
--- Kill Aura функция
 task.spawn(function()
     while true do
         if ActiveKillAura then 
@@ -651,7 +619,7 @@ task.spawn(function()
                     local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
                     if distance <= DistanceForKillAura then
                         task.spawn(function()	
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
                         end)	
                     end
                 end
@@ -661,7 +629,6 @@ task.spawn(function()
     end
 end)
 
--- Auto Chop Tree функция
 task.spawn(function()
     while true do
         if ActiveAutoChopTree then 
@@ -672,22 +639,22 @@ task.spawn(function()
             local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
             
             for _, bunny in pairs(workspace.Map.Foliage:GetChildren()) do
-                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2")  and bunny.PrimaryPart then
+                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
                     local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
                     if distance <= DistanceForAutoChopTree then
                         task.spawn(function()		
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
                         end)		
                     end
                 end
             end 
             
             for _, bunny in pairs(workspace.Map.Landmarks:GetChildren()) do
-                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2")  and bunny.PrimaryPart then
+                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
                     local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
                     if distance <= DistanceForAutoChopTree then
                         task.spawn(function()	
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
                         end)			
                     end
                 end
@@ -700,6 +667,32 @@ end)
 -- Загружаем Rayfield
 Rayfield:LoadConfiguration()
 
-ShowNotification("ASTRALCHEAT с Rayfield загружен успешно!", 3)
+-- Создаем кнопку для мобильных устройств
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "MobileMenuButton"
+ScreenGui.Parent = PlayerGui
+
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Size = UDim2.new(0, 60, 0, 60)
+ToggleButton.Position = UDim2.new(0, 10, 0, 10)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.Text = "Show Menu"
+ToggleButton.TextSize = 12
+ToggleButton.ZIndex = 10
+ToggleButton.Parent = ScreenGui
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 10)
+ToggleCorner.Parent = ToggleButton
+
+ToggleButton.MouseButton1Click:Connect(function()
+    Rayfield:Toggle()
+end)
+
+ShowNotification("ASTRALCHEAT загружен! Нажмите кнопку 'Show Menu'", 5)
 print("ASTRALCHEAT с Rayfield загружен успешно!")
-print("Все настройки будут сохраняться автоматически!")
