@@ -66,8 +66,7 @@ end
 LoadSettings()
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "MobileCheatMenu"
-ScreenGui.ResetOnSpawn = false
+ScreenGui.Name = "GameMenu"
 ScreenGui.Parent = PlayerGui
 
 -- Создаем систему уведомлений
