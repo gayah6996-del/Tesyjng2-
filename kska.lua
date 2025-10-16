@@ -1,300 +1,844 @@
-local a=game;local b=a.CoreGui;if b:FindFirstChild("MobileCheatMenu")then b.MobileCheatMenu:Destroy()end;local c=a:GetService("Players")local d=a:GetService("UserInputService")local e=a:GetService("RunService")local f=c.LocalPlayer;local g=Instance.new("ScreenGui")g.Name="MobileCheatMenu"g.ResetOnSpawn=false;g.Parent=b;local function h(i,j)local k=Instance.new("UICorner")k.CornerRadius=UDim.new(0,j or 6)k.Parent=i end;local l=Instance.new("Frame")l.Size=UDim2.new(0,300,0,350)l.AnchorPoint=Vector2.new(0.5,0.5)l.Position=UDim2.new(0.5,0,0.5,0)l.BackgroundColor3=Color3.fromRGB(25,25,25)l.BorderSizePixel=0;l.Parent=g;h(l,10)local m=Instance.new("TextLabel")m.Size=UDim2.new(1,-40,0,20)m.Position=UDim2.new(0,10,0,5)m.BackgroundTransparency=1;m.Text="99 NIGHTS CHEAT"m.Font=Enum.Font.GothamBold;m.TextSize=14;m.TextColor3=Color3.fromRGB(220,220,220)m.TextXAlignment=Enum.TextXAlignment.Left;m.Parent=l;local n=Instance.new("TextButton")n.Size=UDim2.new(0,25,0,25)n.Position=UDim2.new(1,-30,0,5)n.BackgroundColor3=Color3.fromRGB(220,60,60)n.Text="X"n.Font=Enum.Font.GothamBold;n.TextSize=14;n.TextColor3=Color3.fromRGB(255,255,255)n.Parent=l;h(n,5)local o=Instance.new("TextButton")o.Size=UDim2.new(0,50,0,50)o.Position=UDim2.new(0,10,0,50)o.BackgroundColor3=Color3.fromRGB(40,40,40)o.Text="📱"o.Font=Enum.Font.GothamBold;o.TextSize=18;o.TextColor3=Color3.fromRGB(220,220,220)o.Visible=false;o.Parent=g;h(o,8)local p=Instance.new("Frame")p.Size=UDim2.new(1,-20,0,25)p.Position=UDim2.new(0,10,0,30)p.BackgroundTransparency=1;p.Parent=l;local q=Instance.new("UIListLayout")q.FillDirection=Enum.FillDirection.Horizontal;q.Padding=UDim.new(0,4)q.Parent=p;local r={{name="Main",defaultActive=true},{name="Bring",defaultActive=false}}local s={}local t={}for u,v in ipairs(r)do local w=Instance.new("TextButton")w.Size=UDim2.new(0.5,-2,1,0)w.BackgroundColor3=v.defaultActive and Color3.fromRGB(60,60,60)or Color3.fromRGB(40,40,40)w.Text=v.name;w.Font=Enum.Font.GothamBold;w.TextSize=11;w.TextColor3=v.defaultActive and Color3.fromRGB(220,220,220)or Color3.fromRGB(150,150,150)w.Parent=p;h(w,4)local x=Instance.new("ScrollingFrame")x.Size=UDim2.new(1,-20,1,-65)x.Position=UDim2.new(0,10,0,60)x.BackgroundTransparency=1;x.ScrollBarThickness=4;x.ScrollBarImageColor3=Color3.fromRGB(100,100,100)x.AutomaticCanvasSize=Enum.AutomaticSize.Y;x.VerticalScrollBarInset=Enum.ScrollBarInset.Always;x.Visible=v.defaultActive;x.Parent=l;local y=Instance.new("UIListLayout")y.SortOrder=Enum.SortOrder.LayoutOrder;y.Padding=UDim.new(0,6)y.Parent=x;s[v.name]=w;t[v.name]=x end;local function z(A)for B,C in pairs(t)do C.Visible=false end;for B,D in pairs(s)do D.BackgroundColor3=Color3.fromRGB(40,40,40)D.TextColor3=Color3.fromRGB(150,150,150)end;t[A].Visible=true;s[A].BackgroundColor3=Color3.fromRGB(60,60,60)s[A].TextColor3=Color3.fromRGB(220,220,220)end;for B,D in pairs(s)do D.MouseButton1Click:Connect(function()z(B)end)end;
+local player = game.Players.LocalPlayer
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FrontEvillGUI"
+screenGui.ResetOnSpawn = false
 
--- Настройки
-local SETTINGS_FILE = "astralcheat_settings.txt"
-local Settings = {
-    ActiveKillAura = false,
-    ActiveAutoChopTree = false,
-    DistanceForKillAura = 25,
-    DistanceForAutoChopTree = 25,
-    BringCount = 5,
-    BringDelay = 200
-}
-
-local function SaveSettings()
-    pcall(function()
-        local data = game:GetService("HttpService"):JSONEncode(Settings)
-        writefile(SETTINGS_FILE, data)
-    end)
+if syn then
+    syn.protect_gui(screenGui)
+    screenGui.Parent = game:GetService("CoreGui")
+elseif gethui then
+    screenGui.Parent = gethui()
+else
+    screenGui.Parent = player.PlayerGui
 end
 
-local function LoadSettings()
-    pcall(function()
-        if isfile(SETTINGS_FILE) then
-            local data = readfile(SETTINGS_FILE)
-            local loadedSettings = game:GetService("HttpService"):JSONDecode(data)
-            for key, value in pairs(loadedSettings) do
-                if Settings[key] ~= nil then Settings[key] = value end
-            end
-        end
-    end)
-end
+local scriptIcon = "rbxassetid://130714468148923"
+local arabicIcon = "rbxassetid://109597213480889"
+local englishIcon = "rbxassetid://113626041682134"
 
-LoadSettings()
-
--- Функции для UI
-local function CreateToggle(parent, text, callback)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, 0, 0, 25)
-    toggleFrame.BackgroundTransparency = 1
-    toggleFrame.Parent = parent
+local function createNotification(text, duration)
+    duration = duration or 3
     
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Size = UDim2.new(1, 0, 1, 0)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(45,45,45)
-    toggleButton.Text = text .. ": OFF"
-    toggleButton.TextColor3 = Color3.fromRGB(220,220,220)
-    toggleButton.Font = Enum.Font.Gotham
-    toggleButton.TextSize = 12
-    toggleButton.Parent = toggleFrame
-    h(toggleButton, 4)
+    local notification = Instance.new("Frame")
+    notification.Name = "Notification"
+    notification.Size = UDim2.new(0, 320, 0, 90)
+    notification.Position = UDim2.new(0.5, -160, 0.85, 0)
+    notification.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    notification.BorderSizePixel = 0
+    notification.BackgroundTransparency = 0.1
+    notification.Parent = screenGui
     
-    local isActive = false
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 15)
+    uiCorner.Parent = notification
     
-    toggleButton.MouseButton1Click:Connect(function()
-        isActive = not isActive
-        toggleButton.Text = text .. (isActive and ": ON" or ": OFF")
-        toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(80,80,80) or Color3.fromRGB(45,45,45)
-        callback(isActive)
-        SaveSettings()
-    end)
+    local uiStroke = Instance.new("UIStroke")
+    uiStroke.Color = Color3.fromRGB(255, 0, 0)
+    uiStroke.Thickness = 3
+    uiStroke.Parent = notification
     
-    return {Set = function(v) isActive = v end}
-end
-
-local function CreateSlider(parent, text, min, max, default, callback)
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, 0, 0, 40)
-    sliderFrame.BackgroundTransparency = 1
-    sliderFrame.Parent = parent
+    local glowEffect = Instance.new("ImageLabel")
+    glowEffect.Name = "GlowEffect"
+    glowEffect.Size = UDim2.new(1.2, 0, 1.2, 0)
+    glowEffect.Position = UDim2.new(-0.1, 0, -0.1, 0)
+    glowEffect.BackgroundTransparency = 1
+    glowEffect.Image = "rbxassetid://5028857084"
+    glowEffect.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    glowEffect.ImageTransparency = 0.7
+    glowEffect.ZIndex = -1
+    glowEffect.Parent = notification
     
-    local sliderText = Instance.new("TextLabel")
-    sliderText.Size = UDim2.new(1, 0, 0, 15)
-    sliderText.BackgroundTransparency = 1
-    sliderText.Text = text .. ": " .. default
-    sliderText.TextColor3 = Color3.fromRGB(220,220,220)
-    sliderText.TextSize = 11
-    sliderText.TextXAlignment = Enum.TextXAlignment.Left
-    sliderText.Font = Enum.Font.Gotham
-    sliderText.Parent = sliderFrame
+    local iconImage = Instance.new("ImageLabel")
+    iconImage.Name = "NotifIcon"
+    iconImage.Size = UDim2.new(0, 60, 0, 60)
+    iconImage.Position = UDim2.new(0, 15, 0.5, -30)
+    iconImage.BackgroundTransparency = 1
+    iconImage.Image = scriptIcon
+    iconImage.Parent = notification
     
-    local sliderBar = Instance.new("Frame")
-    sliderBar.Size = UDim2.new(1, 0, 0, 12)
-    sliderBar.Position = UDim2.new(0, 0, 0, 20)
-    sliderBar.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    sliderBar.Parent = sliderFrame
-    h(sliderBar, 6)
+    local iconGlow = Instance.new("ImageLabel")
+    iconGlow.Name = "IconGlow"
+    iconGlow.Size = UDim2.new(1.3, 0, 1.3, 0)
+    iconGlow.Position = UDim2.new(-0.15, 0, -0.15, 0)
+    iconGlow.BackgroundTransparency = 1
+    iconGlow.Image = "rbxassetid://5028857084"
+    iconGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    iconGlow.ImageTransparency = 0.5
+    iconGlow.ZIndex = -1
+    iconGlow.Parent = iconImage
     
-    local sliderFill = Instance.new("Frame")
-    sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-    sliderFill.Parent = sliderBar
-    h(sliderFill, 6)
+    local notifText = Instance.new("TextLabel")
+    notifText.Name = "NotifText"
+    notifText.Size = UDim2.new(1, -90, 1, -20)
+    notifText.Position = UDim2.new(0, 85, 0, 10)
+    notifText.BackgroundTransparency = 1
+    notifText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notifText.TextSize = 20
+    notifText.Font = Enum.Font.GothamBold
+    notifText.Text = text
+    notifText.TextWrapped = true
+    notifText.TextXAlignment = Enum.TextXAlignment.Left
+    notifText.Parent = notification
     
-    local isDragging = false
+    notification.BackgroundTransparency = 1
+    uiStroke.Transparency = 1
+    notifText.TextTransparency = 1
+    iconImage.ImageTransparency = 1
+    glowEffect.ImageTransparency = 1
     
-    local function updateSlider(value)
-        local norm = math.clamp((value - min) / (max - min), 0, 1)
-        sliderFill.Size = UDim2.new(norm, 0, 1, 0)
-        sliderText.Text = text .. ": " .. math.floor(value)
-        callback(value)
-    end
+    game:GetService("TweenService"):Create(notification, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {BackgroundTransparency = 0.1}):Play()
+    game:GetService("TweenService"):Create(uiStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Transparency = 0}):Play()
+    game:GetService("TweenService"):Create(notifText, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {TextTransparency = 0}):Play()
+    game:GetService("TweenService"):Create(iconImage, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+    game:GetService("TweenService"):Create(glowEffect, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {ImageTransparency = 0.7}):Play()
     
-    sliderBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            isDragging = true
-        end
-    end)
-    
-    sliderBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch then
-            isDragging = false
-            SaveSettings()
-        end
-    end)
-    
-    sliderBar.InputChanged:Connect(function(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.Touch then
-            local pos = input.Position.X - sliderBar.AbsolutePosition.X
-            local norm = math.clamp(pos / sliderBar.AbsoluteSize.X, 0, 1)
-            local value = min + norm * (max - min)
-            updateSlider(value)
-        end
-    end)
-    
-    updateSlider(default)
-end
-
-local function CreateButton(parent, text, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 30)
-    button.BackgroundColor3 = Color3.fromRGB(50,50,50)
-    button.Text = text
-    button.TextColor3 = Color3.fromRGB(220,220,220)
-    button.TextSize = 12
-    button.Font = Enum.Font.Gotham
-    button.Parent = parent
-    h(button, 5)
-    
-    button.MouseButton1Click:Connect(callback)
-end
-
--- Переменные для функций
-local ActiveKillAura = Settings.ActiveKillAura
-local ActiveAutoChopTree = Settings.ActiveAutoChopTree
-local DistanceForKillAura = Settings.DistanceForKillAura
-local DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
-local BringCount = Settings.BringCount
-local BringDelay = Settings.BringDelay
-
--- Kill Aura
-local killToggle = CreateToggle(t["Main"], "Kill Aura", function(v)
-    ActiveKillAura = v
-    Settings.ActiveKillAura = v
-end)
-
-CreateSlider(t["Main"], "Kill Distance", 10, 50, Settings.DistanceForKillAura, function(v)
-    DistanceForKillAura = v
-    Settings.DistanceForKillAura = v
-end)
-
--- Auto Chop
-local chopToggle = CreateToggle(t["Main"], "Auto Chop", function(v)
-    ActiveAutoChopTree = v
-    Settings.ActiveAutoChopTree = v
-end)
-
-CreateSlider(t["Main"], "Chop Distance", 10, 50, Settings.DistanceForAutoChopTree, function(v)
-    DistanceForAutoChopTree = v
-    Settings.DistanceForAutoChopTree = v
-end)
-
--- Bring Items
-CreateSlider(t["Bring"], "Bring Count", 1, 20, Settings.BringCount, function(v)
-    BringCount = math.floor(v)
-    Settings.BringCount = BringCount
-end)
-
-CreateSlider(t["Bring"], "Bring Speed", 50, 500, Settings.BringDelay, function(v)
-    BringDelay = math.floor(v)
-    Settings.BringDelay = BringDelay
-end)
-
-local CampfirePosition = Vector3.new(0, 10, 0)
-
-CreateButton(t["Bring"], "Teleport to Campfire", function()
-    local char = f.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
-        char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
-    end
-end)
-
--- Bring Items Buttons
-local itemsToBring = {
-    "Wood",
-    "Coal", 
-    "Fuel Can",
-    "Oil Barrel",
-    "Scrap Metal",
-    "Carrot",
-    "Bandage",
-    "Rifle Ammo"
-}
-
-for _, itemName in pairs(itemsToBring) do
-    CreateButton(t["Bring"], "Bring " .. itemName, function()
-        local targetPos = CampfirePosition
-        local items = {}
+    local pulseAnimation = function()
+        local pulseIn = game:GetService("TweenService"):Create(iconGlow, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageTransparency = 0.3})
+        local pulseOut = game:GetService("TweenService"):Create(iconGlow, TweenInfo.new(1.2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {ImageTransparency = 0.7})
         
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item:IsA("Model") then
-                local itemLower = item.Name:lower()
-                local searchLower = itemName:lower()
+        pulseIn:Play()
+        pulseIn.Completed:Connect(function()
+            pulseOut:Play()
+            pulseOut.Completed:Connect(function()
+                if iconGlow.Parent then
+                    pulseIn:Play()
+                end
+            end)
+        end)
+    end
+    
+    spawn(pulseAnimation)
+    
+    spawn(function()
+        wait(duration)
+        local fadeOut = game:GetService("TweenService"):Create(notification, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {BackgroundTransparency = 1})
+        local strokeFade = game:GetService("TweenService"):Create(uiStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Transparency = 1})
+        local textFade = game:GetService("TweenService"):Create(notifText, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {TextTransparency = 1})
+        local iconFade = game:GetService("TweenService"):Create(iconImage, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {ImageTransparency = 1})
+        local glowFade = game:GetService("TweenService"):Create(glowEffect, TweenInfo.new(0.6, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {ImageTransparency = 1})
+        
+        fadeOut:Play()
+        strokeFade:Play()
+        textFade:Play()
+        iconFade:Play()
+        glowFade:Play()
+        
+        fadeOut.Completed:Wait()
+        notification:Destroy()
+    end)
+end
+
+local function typewriterEffect(text)
+    local background = Instance.new("Frame")
+    background.Name = "WelcomeScreen"
+    background.Size = UDim2.new(1, 0, 1, 0)
+    background.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    background.BackgroundTransparency = 0.2
+    background.BorderSizePixel = 0
+    background.Parent = screenGui
+    
+    game:GetService("TweenService"):Create(background, TweenInfo.new(0.8, Enum.EasingStyle.Quart), {BackgroundTransparency = 0.2}):Play()
+    
+    local blur = Instance.new("BlurEffect")
+    blur.Size = 0
+    blur.Parent = game:GetService("Lighting")
+    
+    game:GetService("TweenService"):Create(blur, TweenInfo.new(0.8, Enum.EasingStyle.Quart), {Size = 20}):Play()
+    
+    local contentFrame = Instance.new("Frame")
+    contentFrame.Name = "ContentFrame"
+    contentFrame.Size = UDim2.new(0.8, 0, 0.6, 0)
+    contentFrame.Position = UDim2.new(0.1, 0, 0.2, 0)
+    contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    contentFrame.BackgroundTransparency = 0.3
+    contentFrame.BorderSizePixel = 0
+    contentFrame.Parent = background
+    
+    local contentCorner = Instance.new("UICorner")
+    contentCorner.CornerRadius = UDim.new(0, 20)
+    contentCorner.Parent = contentFrame
+    
+    local contentStroke = Instance.new("UIStroke")
+    contentStroke.Color = Color3.fromRGB(255, 0, 0)
+    contentStroke.Thickness = 3
+    contentStroke.Transparency = 0.2
+    contentStroke.Parent = contentFrame
+    
+    local contentGlow = Instance.new("ImageLabel")
+    contentGlow.Name = "ContentGlow"
+    contentGlow.Size = UDim2.new(1.1, 0, 1.1, 0)
+    contentGlow.Position = UDim2.new(-0.05, 0, -0.05, 0)
+    contentGlow.BackgroundTransparency = 1
+    contentGlow.Image = "rbxassetid://5028857084"
+    contentGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    contentGlow.ImageTransparency = 0.7
+    contentGlow.ZIndex = -1
+    contentGlow.Parent = contentFrame
+    
+    local logoImage = Instance.new("ImageLabel")
+    logoImage.Name = "LogoImage"
+    logoImage.Size = UDim2.new(0, 180, 0, 180)
+    logoImage.Position = UDim2.new(0.5, -90, 0.25, -90)
+    logoImage.BackgroundTransparency = 1
+    logoImage.Image = scriptIcon
+    logoImage.ImageTransparency = 1
+    logoImage.Parent = contentFrame
+    
+    local logoGlow = Instance.new("ImageLabel")
+    logoGlow.Name = "LogoGlow"
+    logoGlow.Size = UDim2.new(1.2, 0, 1.2, 0)
+    logoGlow.Position = UDim2.new(-0.1, 0, -0.1, 0)
+    logoGlow.BackgroundTransparency = 1
+    logoGlow.Image = "rbxassetid://5028857084"
+    logoGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    logoGlow.ImageTransparency = 0.5
+    logoGlow.ZIndex = -1
+    logoGlow.Parent = logoImage
+    
+    local welcomeText = Instance.new("TextLabel")
+    welcomeText.Name = "WelcomeText"
+    welcomeText.Size = UDim2.new(0.8, 0, 0.2, 0)
+    welcomeText.Position = UDim2.new(0.1, 0, 0.45, 0)
+    welcomeText.BackgroundTransparency = 1
+    welcomeText.TextColor3 = Color3.fromRGB(255, 0, 0)
+    welcomeText.TextSize = 48
+    welcomeText.Font = Enum.Font.GothamBold
+    welcomeText.Text = ""
+    welcomeText.TextWrapped = true
+    welcomeText.Parent = contentFrame
+    
+    local textGradient = Instance.new("UIGradient")
+    textGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+    })
+    textGradient.Parent = welcomeText
+    
+    local subText = Instance.new("TextLabel")
+    subText.Name = "SubText"
+    subText.Size = UDim2.new(0.6, 0, 0.1, 0)
+    subText.Position = UDim2.new(0.2, 0, 0.65, 0)
+    subText.BackgroundTransparency = 1
+    subText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    subText.TextSize = 28
+    subText.Font = Enum.Font.Gotham
+    subText.Text = "Created by Front-Evill"
+    subText.TextTransparency = 1
+    subText.Parent = contentFrame
+    
+    local particles = Instance.new("Frame")
+    particles.Name = "Particles"
+    particles.Size = UDim2.new(1, 0, 1, 0)
+    particles.BackgroundTransparency = 1
+    particles.ZIndex = 0
+    particles.Parent = background
+    
+    for i = 1, 30 do
+        local particle = Instance.new("Frame")
+        particle.Name = "Particle" .. i
+        particle.Size = UDim2.new(0, math.random(2, 5), 0, math.random(2, 5))
+        particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+        particle.BackgroundColor3 = Color3.fromRGB(255, math.random(0, 100), 0)
+        particle.BackgroundTransparency = math.random(0.3, 0.7)
+        particle.BorderSizePixel = 0
+        particle.Parent = particles
+        
+        local particleCorner = Instance.new("UICorner")
+        particleCorner.CornerRadius = UDim.new(1, 0)
+        particleCorner.Parent = particle
+        
+        local randomDuration = math.random(3, 8)
+        local randomX = math.random() - 0.5
+        local randomY = math.random() - 0.5
+        
+        spawn(function()
+            while true do
+                local moveParticle = game:GetService("TweenService"):Create(
+                    particle, 
+                    TweenInfo.new(randomDuration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+                    {Position = UDim2.new(particle.Position.X.Scale + randomX, 0, particle.Position.Y.Scale + randomY, 0)}
+                )
+                moveParticle:Play()
+                moveParticle.Completed:Wait()
                 
-                if itemLower:find(searchLower) then
-                    local part = item:FindFirstChildWhichIsA("BasePart")
-                    if part then table.insert(items, part) end
-                end
+                randomX = math.random() - 0.5
+                randomY = math.random() - 0.5
             end
+        end)
+        
+        spawn(function()
+            while true do
+                local pulseParticle = game:GetService("TweenService"):Create(
+                    particle, 
+                    TweenInfo.new(math.random(1, 3), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+                    {BackgroundTransparency = math.random(0.3, 0.9)}
+                )
+                pulseParticle:Play()
+                wait(math.random(1, 3))
+            end
+        end)
+    end
+    
+    game:GetService("TweenService"):Create(subText, TweenInfo.new(1, Enum.EasingStyle.Quart), {TextTransparency = 0}):Play()
+    
+    spawn(function()
+        for i = 0, 1, 0.02 do
+            textGradient.Offset = Vector2.new(i, 0)
+            wait(0.05)
+        end
+    end)
+    
+    spawn(function()
+        while true do
+            local rotateLogo = game:GetService("TweenService"):Create(
+                logoImage, 
+                TweenInfo.new(10, Enum.EasingStyle.Linear), 
+                {Rotation = logoImage.Rotation + 360}
+            )
+            rotateLogo:Play()
+            wait(10)
+        end
+    end)
+    
+    local pulseLogo = function()
+        local scaleUp = game:GetService("TweenService"):Create(
+            logoGlow, 
+            TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+            {Size = UDim2.new(1.3, 0, 1.3, 0), ImageTransparency = 0.3}
+        )
+        local scaleDown = game:GetService("TweenService"):Create(
+            logoGlow, 
+            TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+            {Size = UDim2.new(1.1, 0, 1.1, 0), ImageTransparency = 0.7}
+        )
+        
+        scaleUp:Play()
+        scaleUp.Completed:Connect(function()
+            scaleDown:Play()
+            scaleDown.Completed:Connect(function()
+                if logoGlow.Parent then
+                    scaleUp:Play()
+                end
+            end)
+        end)
+    end
+    
+    spawn(pulseLogo)
+    
+    game:GetService("TweenService"):Create(logoImage, TweenInfo.new(1.2, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+    
+    spawn(function()
+        for i = 1, #text do
+            welcomeText.Text = string.sub(text, 1, i)
+            wait(0.04)
         end
         
-        local teleported = 0
-        for i = 1, math.min(BringCount, #items) do
-            local item = items[i]
-            item.CFrame = CFrame.new(
-                targetPos.X + math.random(-3,3),
-                targetPos.Y + 3,
-                targetPos.Z + math.random(-3,3)
-            )
-            item.Anchored = false
-            item.AssemblyLinearVelocity = Vector3.new(0,0,0)
-            teleported = teleported + 1
-            
-            if BringDelay > 0 then
-                wait(BringDelay / 1000)
-            end
-        end
+        wait(1.5)
+        
+        game:GetService("TweenService"):Create(background, TweenInfo.new(1, Enum.EasingStyle.Quart), {BackgroundTransparency = 1}):Play()
+        game:GetService("TweenService"):Create(contentFrame, TweenInfo.new(1, Enum.EasingStyle.Quart), {BackgroundTransparency = 1}):Play()
+        game:GetService("TweenService"):Create(welcomeText, TweenInfo.new(1, Enum.EasingStyle.Quart), {TextTransparency = 1}):Play()
+        game:GetService("TweenService"):Create(logoImage, TweenInfo.new(1, Enum.EasingStyle.Quart), {ImageTransparency = 1}):Play()
+        game:GetService("TweenService"):Create(subText, TweenInfo.new(1, Enum.EasingStyle.Quart), {TextTransparency = 1}):Play()
+        game:GetService("TweenService"):Create(contentStroke, TweenInfo.new(1, Enum.EasingStyle.Quart), {Transparency = 1}):Play()
+        game:GetService("TweenService"):Create(contentGlow, TweenInfo.new(1, Enum.EasingStyle.Quart), {ImageTransparency = 1}):Play()
+        game:GetService("TweenService"):Create(blur, TweenInfo.new(1, Enum.EasingStyle.Quart), {Size = 0}):Play()
+        
+        wait(1)
+        showLanguageSelector()
+        
+        wait(0.5)
+        background:Destroy()
+        blur:Destroy()
     end)
 end
 
--- Функции геймплея
-task.spawn(function()
-    while true do
-        if ActiveKillAura then 
-            local char = f.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            local weapon = f.Inventory:FindFirstChild("Old Axe") or f.Inventory:FindFirstChild("Good Axe") or f.Inventory:FindFirstChild("Strong Axe")
-            
-            if hrp and weapon then
-                for _, enemy in pairs(workspace.Characters:GetChildren()) do
-                    if enemy:IsA("Model") and enemy.PrimaryPart then
-                        local dist = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
-                        if dist <= DistanceForKillAura then
-                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
-                        end
-                    end
-                end
-            end
-        end
-        wait(0.1)
-    end
-end)
+function showLanguageSelector()
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "LanguageSelector"
+    mainFrame.Size = UDim2.new(0, 350, 0, 250)  -- حجم أصغر للجوال
+    mainFrame.Position = UDim2.new(0.5, -175, 0.5, -125)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Parent = screenGui
+    mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    
+    local uiCorner = Instance.new("UICorner")
+    uiCorner.CornerRadius = UDim.new(0, 20)
+    uiCorner.Parent = mainFrame
+    
+    local uiStroke = Instance.new("UIStroke")
+    uiStroke.Color = Color3.fromRGB(255, 0, 0)
+    uiStroke.Thickness = 3
+    uiStroke.Parent = mainFrame
+    
+    local frameGlow = Instance.new("ImageLabel")
+    frameGlow.Name = "FrameGlow"
+    frameGlow.Size = UDim2.new(1.1, 0, 1.1, 0)
+    frameGlow.Position = UDim2.new(-0.05, 0, -0.05, 0)
+    frameGlow.BackgroundTransparency = 1
+    frameGlow.Image = "rbxassetid://5028857084"
+    frameGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    frameGlow.ImageTransparency = 0.7
+    frameGlow.ZIndex = -1
+    frameGlow.Parent = mainFrame
+    
+    local topIcon = Instance.new("ImageLabel")
+    topIcon.Name = "TopIcon"
+    topIcon.Size = UDim2.new(0, 60, 0, 60)  -- أيقونة أصغر
+    topIcon.Position = UDim2.new(0.5, -30, 0, 20)
+    topIcon.BackgroundTransparency = 1
+    topIcon.Image = scriptIcon
+    topIcon.Parent = mainFrame
+    
+    local iconGlow = Instance.new("ImageLabel")
+    iconGlow.Name = "IconGlow"
+    iconGlow.Size = UDim2.new(1.2, 0, 1.2, 0)
+    iconGlow.Position = UDim2.new(-0.1, 0, -0.1, 0)
+    iconGlow.BackgroundTransparency = 1
+    iconGlow.Image = "rbxassetid://5028857084"
+    iconGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    iconGlow.ImageTransparency = 0.5
+    iconGlow.ZIndex = -1
+    iconGlow.Parent = topIcon
+    
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "TitleLabel"
+    titleLabel.Size = UDim2.new(1, 0, 0, 40)
+    titleLabel.Position = UDim2.new(0, 0, 0, 85)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextSize = 24  -- نص أصغر
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.Text = "Select Your Language"
+    titleLabel.Parent = mainFrame
+    
+    local titleGradient = Instance.new("UIGradient")
+    titleGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 0, 0)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+    })
+    titleGradient.Parent = titleLabel
+    
+    -- ترتيب الأزرار عمودياً في المنتصف
+    local arabicButton = Instance.new("Frame")
+    arabicButton.Name = "ArabicButton"
+    arabicButton.Size = UDim2.new(0.8, 0, 0, 50)  -- أزرار أصغر
+    arabicButton.Position = UDim2.new(0.1, 0, 0.5, -30)  -- توسيط
+    arabicButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    arabicButton.Parent = mainFrame
+    
+    local arabicCorner = Instance.new("UICorner")
+    arabicCorner.CornerRadius = UDim.new(0, 15)
+    arabicCorner.Parent = arabicButton
+    
+    local arabicStroke = Instance.new("UIStroke")
+    arabicStroke.Color = Color3.fromRGB(150, 0, 0)
+    arabicStroke.Thickness = 2
+    arabicStroke.Transparency = 0.5
+    arabicStroke.Parent = arabicButton
+    
+    local arabicIconImage = Instance.new("ImageLabel")
+    arabicIconImage.Name = "ArabicIcon"
+    arabicIconImage.Size = UDim2.new(0, 35, 0, 35)  -- أيقونة أصغر
+    arabicIconImage.Position = UDim2.new(0, 10, 0.5, -17.5)
+    arabicIconImage.BackgroundTransparency = 1
+    arabicIconImage.Image = arabicIcon
+    arabicIconImage.Parent = arabicButton
+    
+    local arabicGlow = Instance.new("ImageLabel")
+    arabicGlow.Name = "ArabicGlow"
+    arabicGlow.Size = UDim2.new(1.2, 0, 1.2, 0)
+    arabicGlow.Position = UDim2.new(-0.1, 0, -0.1, 0)
+    arabicGlow.BackgroundTransparency = 1
+    arabicGlow.Image = "rbxassetid://5028857084"
+    arabicGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    arabicGlow.ImageTransparency = 0.8
+    arabicGlow.ZIndex = 0
+    arabicGlow.Parent = arabicIconImage
+    
+    local arabicText = Instance.new("TextLabel")
+    arabicText.Name = "ArabicText"
+    arabicText.Size = UDim2.new(1, -50, 1, 0)
+    arabicText.Position = UDim2.new(0, 50, 0, 0)
+    arabicText.BackgroundTransparency = 1
+    arabicText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    arabicText.TextSize = 20  -- نص أصغر
+    arabicText.Font = Enum.Font.GothamBold
+    arabicText.Text = "Arabic"
+    arabicText.TextXAlignment = Enum.TextXAlignment.Left
+    arabicText.Parent = arabicButton
+    
+    local arabicClickDetector = Instance.new("TextButton")
+    arabicClickDetector.Name = "ArabicClickDetector"
+    arabicClickDetector.Size = UDim2.new(1, 0, 1, 0)
+    arabicClickDetector.BackgroundTransparency = 1
+    arabicClickDetector.Text = ""
+    arabicClickDetector.Parent = arabicButton
+    
+    local englishButton = Instance.new("Frame")
+    englishButton.Name = "EnglishButton"
+    englishButton.Size = UDim2.new(0.8, 0, 0, 50)  -- أزرار أصغر
+    englishButton.Position = UDim2.new(0.1, 0, 0.5, 30)  -- تحت الزر العربي
+    englishButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    englishButton.Parent = mainFrame
+    
+    local englishCorner = Instance.new("UICorner")
+    englishCorner.CornerRadius = UDim.new(0, 15)
+    englishCorner.Parent = englishButton
+    
+    local englishStroke = Instance.new("UIStroke")
+    englishStroke.Color = Color3.fromRGB(150, 0, 0)
+    englishStroke.Thickness = 2
+    englishStroke.Transparency = 0.5
+    englishStroke.Parent = englishButton
+    
+    local englishIconImage = Instance.new("ImageLabel")
+    englishIconImage.Name = "EnglishIcon"
+    englishIconImage.Size = UDim2.new(0, 35, 0, 35)  -- أيقونة أصغر
+    englishIconImage.Position = UDim2.new(0, 10, 0.5, -17.5)
+    englishIconImage.BackgroundTransparency = 1
+    englishIconImage.Image = englishIcon
+    englishIconImage.Parent = englishButton
+    
+    local englishGlow = Instance.new("ImageLabel")
+    englishGlow.Name = "EnglishGlow"
+    englishGlow.Size = UDim2.new(1.2, 0, 1.2, 0)
+    englishGlow.Position = UDim2.new(-0.1, 0, -0.1, 0)
+    englishGlow.BackgroundTransparency = 1
+    englishGlow.Image = "rbxassetid://5028857084"
+    englishGlow.ImageColor3 = Color3.fromRGB(255, 0, 0)
+    englishGlow.ImageTransparency = 0.8
+    englishGlow.ZIndex = 0
+    englishGlow.Parent = englishIconImage
+    
+    local englishText = Instance.new("TextLabel")
+    englishText.Name = "EnglishText"
+    englishText.Size = UDim2.new(1, -50, 1, 0)
+    englishText.Position = UDim2.new(0, 50, 0, 0)
+    englishText.BackgroundTransparency = 1
+   englishText.TextColor3 = Color3.fromRGB(255, 255, 255)
+   englishText.TextSize = 20  -- نص أصغر
+   englishText.Font = Enum.Font.GothamBold
+   englishText.Text = "English"
+   englishText.TextXAlignment = Enum.TextXAlignment.Left
+   englishText.Parent = englishButton
+   
+   local englishClickDetector = Instance.new("TextButton")
+   englishClickDetector.Name = "EnglishClickDetector"
+   englishClickDetector.Size = UDim2.new(1, 0, 1, 0)
+   englishClickDetector.BackgroundTransparency = 1
+   englishClickDetector.Text = ""
+   englishClickDetector.Parent = englishButton
+   
+   local divider = Instance.new("Frame")
+   divider.Name = "Divider"
+   divider.Size = UDim2.new(0.8, 0, 0, 2)
+   divider.Position = UDim2.new(0.1, 0, 1, -40)
+   divider.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+   divider.BorderSizePixel = 0
+   divider.Parent = mainFrame
+   
+   local dividerGradient = Instance.new("UIGradient")
+   dividerGradient.Color = ColorSequence.new({
+       ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+       ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+       ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))
+   })
+   dividerGradient.Parent = divider
+   
+   local scriptInfo = Instance.new("TextLabel")
+   scriptInfo.Name = "ScriptInfo"
+   scriptInfo.Size = UDim2.new(0.9, 0, 0, 25)
+   scriptInfo.Position = UDim2.new(0.05, 0, 1, -30)
+   scriptInfo.BackgroundTransparency = 1
+   scriptInfo.TextColor3 = Color3.fromRGB(200, 200, 200)
+   scriptInfo.TextSize = 14  -- نص أصغر للجوال
+   scriptInfo.Font = Enum.Font.GothamSemibold
+   scriptInfo.Text = "GUI BY: FRONT-EVILL | Script By: front-evill / 7sone"
+   scriptInfo.TextXAlignment = Enum.TextXAlignment.Center
+   scriptInfo.Parent = mainFrame
+   
+   -- إضافة تأثيرات الجسيمات المتحركة
+   local particles = Instance.new("Frame")
+   particles.Name = "Particles"
+   particles.Size = UDim2.new(1, 0, 1, 0)
+   particles.BackgroundTransparency = 1
+   particles.ZIndex = 0
+   particles.Parent = mainFrame
+   
+   for i = 1, 15 do  -- عدد أقل من الجسيمات للجوال
+       local particle = Instance.new("Frame")
+       particle.Name = "Particle" .. i
+       particle.Size = UDim2.new(0, math.random(2, 3), 0, math.random(2, 3))
+       particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+       particle.BackgroundColor3 = Color3.fromRGB(255, math.random(0, 100), 0)
+       particle.BackgroundTransparency = math.random(0.4, 0.8)
+       particle.BorderSizePixel = 0
+       particle.ZIndex = 0
+       particle.Parent = particles
+       
+       local particleCorner = Instance.new("UICorner")
+       particleCorner.CornerRadius = UDim.new(1, 0)
+       particleCorner.Parent = particle
+       
+       local randomDuration = math.random(4, 7)
+       local randomX = math.random() - 0.5
+       local randomY = math.random() - 0.5
+       
+       spawn(function()
+           while particle.Parent do
+               local moveParticle = game:GetService("TweenService"):Create(
+                   particle, 
+                   TweenInfo.new(randomDuration, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+                   {Position = UDim2.new(math.clamp(particle.Position.X.Scale + randomX, 0, 1), 0, math.clamp(particle.Position.Y.Scale + randomY, 0, 1), 0)}
+               )
+               moveParticle:Play()
+               moveParticle.Completed:Wait()
+               
+               randomX = math.random() - 0.5
+               randomY = math.random() - 0.5
+           end
+       end)
+       
+       spawn(function()
+           while particle.Parent do
+               local pulseParticle = game:GetService("TweenService"):Create(
+                   particle, 
+                   TweenInfo.new(math.random(2, 4), Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+                   {BackgroundTransparency = math.random(0.4, 0.9)}
+               )
+               pulseParticle:Play()
+               wait(math.random(2, 4))
+           end
+       end)
+   end
+   
+   -- تأثيرات متحركة للخط المتدرج
+   spawn(function()
+       while divider.Parent do
+           local gradientMove = game:GetService("TweenService"):Create(
+               dividerGradient, 
+               TweenInfo.new(3, Enum.EasingStyle.Linear), 
+               {Offset = Vector2.new(1, 0)}
+           )
+           dividerGradient.Offset = Vector2.new(-1, 0)
+           gradientMove:Play()
+           wait(3)
+       end
+   end)
+   
+   spawn(function()
+       while titleGradient.Parent do
+           local gradientMove = game:GetService("TweenService"):Create(
+               titleGradient, 
+               TweenInfo.new(3, Enum.EasingStyle.Linear), 
+               {Offset = Vector2.new(1, 0)}
+           )
+           titleGradient.Offset = Vector2.new(-1, 0)
+           gradientMove:Play()
+           wait(3)
+       end
+   end)
+   
+   -- تأثيرات الإضاءة المتنبضة
+   local pulseIconGlow = function()
+       local fadeIn = game:GetService("TweenService"):Create(
+           iconGlow, 
+           TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+           {ImageTransparency = 0.3, Size = UDim2.new(1.3, 0, 1.3, 0)}
+       )
+       local fadeOut = game:GetService("TweenService"):Create(
+           iconGlow, 
+           TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+           {ImageTransparency = 0.7, Size = UDim2.new(1.1, 0, 1.1, 0)}
+       )
+       
+       fadeIn:Play()
+       fadeIn.Completed:Connect(function()
+           if iconGlow.Parent then
+               fadeOut:Play()
+               fadeOut.Completed:Connect(function()
+                   if iconGlow.Parent then
+                       fadeIn:Play()
+                   end
+               end)
+           end
+       end)
+   end
+   
+   local rotateIcon = function()
+       while topIcon.Parent do
+           local rotation = game:GetService("TweenService"):Create(
+               topIcon, 
+               TweenInfo.new(8, Enum.EasingStyle.Linear), 
+               {Rotation = topIcon.Rotation + 360}
+           )
+           rotation:Play()
+           wait(8)
+       end
+   end
+   
+   local pulseFrameGlow = function()
+       local fadeIn = game:GetService("TweenService"):Create(
+           frameGlow, 
+           TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+           {ImageTransparency = 0.5, Size = UDim2.new(1.12, 0, 1.12, 0)}
+       )
+       local fadeOut = game:GetService("TweenService"):Create(
+           frameGlow, 
+           TweenInfo.new(2.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), 
+           {ImageTransparency = 0.8, Size = UDim2.new(1.08, 0, 1.08, 0)}
+       )
+       
+       fadeIn:Play()
+       fadeIn.Completed:Connect(function()
+           if frameGlow.Parent then
+               fadeOut:Play()
+               fadeOut.Completed:Connect(function()
+                   if frameGlow.Parent then
+                       fadeIn:Play()
+                   end
+               end)
+           end
+       end)
+   end
+   
+   spawn(pulseIconGlow)
+   spawn(rotateIcon)
+   spawn(pulseFrameGlow)
+   
+   -- تأثير الظهور التدريجي
+   mainFrame.Position = mainFrame.Position + UDim2.new(0, 0, 0.3, 0)
+   mainFrame.BackgroundTransparency = 1
+   topIcon.ImageTransparency = 1
+   titleLabel.TextTransparency = 1
+   arabicButton.BackgroundTransparency = 1
+   arabicText.TextTransparency = 1
+   arabicIconImage.ImageTransparency = 1
+   arabicStroke.Transparency = 1
+   englishButton.BackgroundTransparency = 1
+   englishText.TextTransparency = 1
+   englishIconImage.ImageTransparency = 1
+   englishStroke.Transparency = 1
+   scriptInfo.TextTransparency = 1
+   divider.BackgroundTransparency = 1
+   uiStroke.Transparency = 1
+   frameGlow.ImageTransparency = 1
+   
+   game:GetService("TweenService"):Create(mainFrame, TweenInfo.new(0.8, Enum.EasingStyle.Bounce), {Position = UDim2.new(0.5, -175, 0.5, -125), BackgroundTransparency = 0}):Play()
+   wait(0.1)
+   game:GetService("TweenService"):Create(uiStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {Transparency = 0}):Play()
+   game:GetService("TweenService"):Create(frameGlow, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {ImageTransparency = 0.7}):Play()
+   wait(0.1)
+   game:GetService("TweenService"):Create(topIcon, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {ImageTransparency = 0}):Play()
+   wait(0.1)
+   game:GetService("TweenService"):Create(titleLabel, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {TextTransparency = 0}):Play()
+   wait(0.1)
+   game:GetService("TweenService"):Create(arabicButton, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+   game:GetService("TweenService"):Create(arabicText, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {TextTransparency = 0}):Play()
+   game:GetService("TweenService"):Create(arabicIconImage, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {ImageTransparency = 0}):Play()
+   game:GetService("TweenService"):Create(arabicStroke, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Transparency = 0.5}):Play()
+   wait(0.1)
+   game:GetService("TweenService"):Create(englishButton, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {BackgroundTransparency = 0}):Play()
+   game:GetService("TweenService"):Create(englishText, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {TextTransparency = 0}):Play()
+   game:GetService("TweenService"):Create(englishIconImage, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {ImageTransparency = 0}):Play()
+   game:GetService("TweenService"):Create(englishStroke, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {Transparency = 0.5}):Play()
+   wait(0.1)
+   game:GetService("TweenService"):Create(scriptInfo, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {TextTransparency = 0}):Play()
+   game:GetService("TweenService"):Create(divider, TweenInfo.new(0.5, Enum.EasingStyle.Quart), {BackgroundTransparency = 0}):Play()
+   
+   -- تأثيرات التفاعل مع الأزرار
+   arabicClickDetector.MouseEnter:Connect(function()
+       game:GetService("TweenService"):Create(arabicButton, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {BackgroundColor3 = Color3.fromRGB(255, 0, 0)}):Play()
+       game:GetService("TweenService"):Create(arabicText, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {TextSize = 22}):Play()
+       game:GetService("TweenService"):Create(arabicButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0.82, 0, 0, 52)}):Play()
+       game:GetService("TweenService"):Create(arabicStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Transparency = 0}):Play()
+       game:GetService("TweenService"):Create(arabicGlow, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {ImageTransparency = 0.5}):Play()
+   end)
+   
+   arabicClickDetector.MouseLeave:Connect(function()
+       game:GetService("TweenService"):Create(arabicButton, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+       game:GetService("TweenService"):Create(arabicText, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {TextSize = 20}):Play()
+       game:GetService("TweenService"):Create(arabicButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0.8, 0, 0, 50)}):Play()
+       game:GetService("TweenService"):Create(arabicStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Transparency = 0.5}):Play()
+       game:GetService("TweenService"):Create(arabicGlow, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {ImageTransparency = 0.8}):Play()
+   end)
+   
+   englishClickDetector.MouseEnter:Connect(function()
+       game:GetService("TweenService"):Create(englishButton, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {BackgroundColor3 = Color3.fromRGB(255, 0, 0)}):Play()
+       game:GetService("TweenService"):Create(englishText, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {TextSize = 22}):Play()
+       game:GetService("TweenService"):Create(englishButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0.82, 0, 0, 52)}):Play()
+       game:GetService("TweenService"):Create(englishStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Transparency = 0}):Play()
+       game:GetService("TweenService"):Create(englishGlow, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {ImageTransparency = 0.5}):Play()
+   end)
+   
+   englishClickDetector.MouseLeave:Connect(function()
+       game:GetService("TweenService"):Create(englishButton, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {BackgroundColor3 = Color3.fromRGB(35, 35, 35)}):Play()
+       game:GetService("TweenService"):Create(englishText, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {TextSize = 20}):Play()
+       game:GetService("TweenService"):Create(englishButton, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Size = UDim2.new(0.8, 0, 0, 50)}):Play()
+       game:GetService("TweenService"):Create(englishStroke, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Transparency = 0.5}):Play()
+       game:GetService("TweenService"):Create(englishGlow, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {ImageTransparency = 0.8}):Play()
+   end)
+   
+   -- إجراءات النقر على الأزرار
+   arabicClickDetector.MouseButton1Click:Connect(function()
+       local clickEffect = game:GetService("TweenService"):Create(arabicButton, TweenInfo.new(0.15, Enum.EasingStyle.Quart), {Size = UDim2.new(0.76, 0, 0, 48), BackgroundTransparency = 0.2})
+       clickEffect:Play()
+       wait(0.15)
+       game:GetService("TweenService"):Create(arabicButton, TweenInfo.new(0.15, Enum.EasingStyle.Quart), {Size = UDim2.new(0.8, 0, 0, 50), BackgroundTransparency = 0}):Play()
+       
+       local brightnessEffect = Instance.new("ColorCorrectionEffect")
+       brightnessEffect.Brightness = 0
+       brightnessEffect.Parent = game:GetService("Lighting")
+       
+       game:GetService("TweenService"):Create(brightnessEffect, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Brightness = 0.2}):Play()
+       
+       game:GetService("TweenService"):Create(mainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -175, 1.5, 0), BackgroundTransparency = 1}):Play()
+       game:GetService("TweenService"):Create(uiStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {Transparency = 1}):Play()
+       game:GetService("TweenService"):Create(frameGlow, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {ImageTransparency = 1}):Play()
+       
+       createNotification("تم تشغيل السكربت باللغة العربية ✓", 5)
+       
+       wait(0.6)
+       game:GetService("TweenService"):Create(brightnessEffect, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Brightness = 0}):Play()
+       
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/Front-Evill/Script-Hub/refs/heads/main/Arabic.lua"))()
+       
+       wait(0.3)
+       brightnessEffect:Destroy()
+       mainFrame:Destroy()
+   end)
+   
+   englishClickDetector.MouseButton1Click:Connect(function()
+       local clickEffect = game:GetService("TweenService"):Create(englishButton, TweenInfo.new(0.15, Enum.EasingStyle.Quart), {Size = UDim2.new(0.76, 0, 0, 48), BackgroundTransparency = 0.2})
+       clickEffect:Play()
+       wait(0.15)
+       game:GetService("TweenService"):Create(englishButton, TweenInfo.new(0.15, Enum.EasingStyle.Quart), {Size = UDim2.new(0.8, 0, 0, 50), BackgroundTransparency = 0}):Play()
+       
+       local brightnessEffect = Instance.new("ColorCorrectionEffect")
+       brightnessEffect.Brightness = 0
+       brightnessEffect.Parent = game:GetService("Lighting")
+       
+       game:GetService("TweenService"):Create(brightnessEffect, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Brightness = 0.2}):Play()
+       
+       game:GetService("TweenService"):Create(mainFrame, TweenInfo.new(0.6, Enum.EasingStyle.Back, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -175, 1.5, 0), BackgroundTransparency = 1}):Play()
+       game:GetService("TweenService"):Create(uiStroke, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {Transparency = 1}):Play()
+       game:GetService("TweenService"):Create(frameGlow, TweenInfo.new(0.6, Enum.EasingStyle.Quart), {ImageTransparency = 1}):Play()
 
-task.spawn(function()
-    while true do
-        if ActiveAutoChopTree then 
-            local char = f.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            local weapon = f.Inventory:FindFirstChild("Old Axe") or f.Inventory:FindFirstChild("Good Axe") or f.Inventory:FindFirstChild("Strong Axe")
-            
-            if hrp and weapon then
-                for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-                    if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                        local dist = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                        if dist <= DistanceForAutoChopTree then
-                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                        end
-                    end
-                end
-            end
-        end
-        wait(0.1)
-    end
-end)
+       createNotification("Script launched in English ✓", 5)
+      
+       wait(0.6)
+       game:GetService("TweenService"):Create(brightnessEffect, TweenInfo.new(0.3, Enum.EasingStyle.Quart), {Brightness = 0}):Play()
+      
+       loadstring(game:HttpGet("https://raw.githubusercontent.com/Front-Evill/Script-Hub/refs/heads/main/F-150.lua"))()
+      
+       wait(0.3)
+       brightnessEffect:Destroy()
+       mainFrame:Destroy()
+   end)
+end
 
--- Применить сохраненные настройки
-if Settings.ActiveKillAura then killToggle.Set(true) end
-if Settings.ActiveAutoChopTree then chopToggle.Set(true) end
-
--- Обработчики кнопок
-n.MouseButton1Click:Connect(function()
-    l.Visible = false
-    o.Visible = true
-end)
-
-o.MouseButton1Click:Connect(function()
-    l.Visible = true
-    o.Visible = false
-end)
-
-print("99 NIGHTS MOBILE CHEAT LOADED!")
+typewriterEffect("Welcome to Front Evill Script 🔥👀")
