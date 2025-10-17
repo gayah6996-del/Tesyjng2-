@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
@@ -96,6 +97,11 @@ local fovCorner = Instance.new("UICorner")
 fovCorner.CornerRadius = UDim.new(1, 0)
 fovCorner.Parent = fovCircle
 
+-- Таблицы для хранения данных
+local wallHackItems = {}
+local killFeed = {}
+local currentTarget = nil
+
 -- Функция создания переключателей
 function createToggle(name, parent, defaultValue)
     local frame = Instance.new("Frame")
@@ -136,6 +142,18 @@ function createToggle(name, parent, defaultValue)
         -- Особые действия для некоторых переключателей
         if name == "AimBot" then
             fovCircle.Visible = newValue
+        elseif name == "WallHack" then
+            if newValue then
+                createWallHack()
+            else
+                removeWallHack()
+            end
+        elseif name == "Kill Check" then
+            if newValue then
+                setupKillFeed()
+            else
+                clearKillFeed()
+            end
         end
     end)
 
@@ -236,6 +254,270 @@ function createSlider(name, parent, minValue, maxValue, defaultValue)
     return container
 end
 
+-- АИМБОТ ФУНКЦИЯ
+function findTarget()
+    local closestPlayer = nil
+    local shortestDistance = settings.fov
+    
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
+            
+            -- Team Check
+            if settings.teamCheck then
+                if player.Team and otherPlayer.Team and player.Team == otherPlayer.Team then
+                    continue
+                end
+            end
+            
+            local character = otherPlayer.Character
+            local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            
+            if humanoidRootPart then
+                local screenPoint, onScreen = workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position)
+                
+                if onScreen then
+                    local mouseLocation = Vector2.new(mouse.X, mouse.Y)
+                    local playerLocation = Vector2.new(screenPoint.X, screenPoint.Y)
+                    local distance = (mouseLocation - playerLocation).Magnitude
+                    
+                    if distance < shortestDistance then
+                        closestPlayer = otherPlayer
+                        shortestDistance = distance
+                    end
+                end
+            end
+        end
+    end
+    
+    return closestPlayer
+end
+
+function aimAtTarget(target)
+    if not target or not target.Character then return end
+    
+    local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return end
+    
+    -- Для мобильных устройств - плавное наведение
+    local camera = workspace.CurrentCamera
+    local targetPosition = humanoidRootPart.Position
+    
+    -- Плавное перемещение камеры к цели
+    local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(camera, tweenInfo, {CFrame = CFrame.new(camera.CFrame.Position, targetPosition)})
+    tween:Play()
+end
+
+-- WALLHACK ФУНКЦИИ
+function createWallHack()
+    removeWallHack()
+    
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= player then
+            createPlayerESP(otherPlayer)
+        end
+    end
+    
+    -- Слушаем новых игроков
+    Players.PlayerAdded:Connect(function(newPlayer)
+        createPlayerESP(newPlayer)
+    end)
+end
+
+function createPlayerESP(targetPlayer)
+    if wallHackItems[targetPlayer] then return end
+    
+    local espFolder = Instance.new("Folder")
+    espFolder.Name = targetPlayer.Name .. "_ESP"
+    espFolder.Parent = gui
+    
+    wallHackItems[targetPlayer] = {
+        folder = espFolder,
+        tracers = {},
+        boxes = {},
+        healthBars = {}
+    }
+    
+    if targetPlayer.Character then
+        setupCharacterESP(targetPlayer, targetPlayer.Character)
+    end
+    
+    targetPlayer.CharacterAdded:Connect(function(character)
+        setupCharacterESP(targetPlayer, character)
+    end)
+end
+
+function setupCharacterESP(player, character)
+    local espData = wallHackItems[player]
+    if not espData then return end
+    
+    -- TRACER (линия от центра экрана к игроку)
+    local tracer = Instance.new("Frame")
+    tracer.Name = "Tracer"
+    tracer.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    tracer.BorderSizePixel = 0
+    tracer.Size = UDim2.new(0, 2, 0, 100)
+    tracer.AnchorPoint = Vector2.new(0.5, 0)
+    tracer.Parent = espData.folder
+    
+    table.insert(espData.tracers, tracer)
+    
+    -- BOX (рамка вокруг игрока)
+    local box = Instance.new("Frame")
+    box.Name = "Box"
+    box.BackgroundTransparency = 1
+    box.BorderColor3 = Color3.fromRGB(0, 255, 0)
+    box.BorderSizePixel = 2
+    box.Size = UDim2.new(0, 50, 0, 100)
+    box.Parent = espData.folder
+    
+    table.insert(espData.boxes, box)
+    
+    -- HEALTH BAR
+    local healthBar = Instance.new("Frame")
+    healthBar.Name = "HealthBar"
+    healthBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    healthBar.BorderSizePixel = 0
+    healthBar.Size = UDim2.new(0, 4, 0, 30)
+    healthBar.Parent = espData.folder
+    
+    local healthBarBackground = Instance.new("Frame")
+    healthBarBackground.Name = "HealthBarBackground"
+    healthBarBackground.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    healthBarBackground.BorderSizePixel = 0
+    healthBarBackground.Size = UDim2.new(1, 0, 1, 0)
+    healthBarBackground.Parent = healthBar
+    healthBarBackground.ZIndex = -1
+    
+    table.insert(espData.healthBars, healthBar)
+    
+    -- Обновление позиций
+    local humanoid = character:WaitForChild("Humanoid")
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    
+    RunService.Heartbeat:Connect(function()
+        if not character or not humanoidRootPart or not humanoid then
+            return
+        end
+        
+        local screenPoint, onScreen = workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position)
+        
+        if onScreen then
+            -- Обновление трассера
+            tracer.Visible = true
+            tracer.Position = UDim2.new(0, workspace.CurrentCamera.ViewportSize.X/2, 0, workspace.CurrentCamera.ViewportSize.Y)
+            local angle = math.atan2(screenPoint.Y - workspace.CurrentCamera.ViewportSize.Y/2, screenPoint.X - workspace.CurrentCamera.ViewportSize.X/2)
+            tracer.Rotation = math.deg(angle) + 90
+            
+            local distance = (Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y) - Vector2.new(screenPoint.X, screenPoint.Y)).Magnitude
+            tracer.Size = UDim2.new(0, 2, 0, distance)
+            
+            -- Обновление бокса
+            box.Visible = true
+            box.Position = UDim2.new(0, screenPoint.X - 25, 0, screenPoint.Y - 100)
+            
+            -- Обновление health bar
+            healthBar.Visible = true
+            healthBar.Position = UDim2.new(0, screenPoint.X + 30, 0, screenPoint.Y - 100)
+            healthBar.Size = UDim2.new(0, 4, 0, 60 * (humanoid.Health / humanoid.MaxHealth))
+        else
+            tracer.Visible = false
+            box.Visible = false
+            healthBar.Visible = false
+        end
+    end)
+end
+
+function removeWallHack()
+    for player, espData in pairs(wallHackItems) do
+        if espData.folder then
+            espData.folder:Destroy()
+        end
+    end
+    wallHackItems = {}
+end
+
+-- KILL FEED ФУНКЦИИ
+function setupKillFeed()
+    clearKillFeed()
+    
+    -- Создаем GUI для kill feed
+    local killFeedFrame = Instance.new("Frame")
+    killFeedFrame.Name = "KillFeed"
+    killFeedFrame.Size = UDim2.new(0, 200, 0, 200)
+    killFeedFrame.Position = UDim2.new(0, 10, 0, 50)
+    killFeedFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    killFeedFrame.BackgroundTransparency = 0.5
+    killFeedFrame.Parent = gui
+    
+    local killFeedCorner = Instance.new("UICorner")
+    killFeedCorner.CornerRadius = UDim.new(0, 8)
+    killFeedCorner.Parent = killFeedFrame
+    
+    local killFeedLayout = Instance.new("UIListLayout")
+    killFeedLayout.Parent = killFeedFrame
+    killFeedLayout.Padding = UDim.new(0, 5)
+    
+    local killFeedPadding = Instance.new("UIPadding")
+    killFeedPadding.Parent = killFeedFrame
+    killFeedPadding.PaddingLeft = UDim.new(0, 5)
+    killFeedPadding.PaddingRight = UDim.new(0, 5)
+    killFeedPadding.PaddingTop = UDim.new(0, 5)
+    killFeedPadding.PaddingBottom = UDim.new(0, 5)
+    
+    -- Отслеживаем смерти игроков
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        trackPlayerDeaths(otherPlayer, killFeedFrame)
+    end
+    
+    Players.PlayerAdded:Connect(function(newPlayer)
+        trackPlayerDeaths(newPlayer, killFeedFrame)
+    end)
+end
+
+function trackPlayerDeaths(targetPlayer, killFeedFrame)
+    targetPlayer.CharacterAdded:Connect(function(character)
+        local humanoid = character:WaitForChild("Humanoid")
+        humanoid.Died:Connect(function()
+            addKillToFeed(targetPlayer.Name .. " был убит", killFeedFrame)
+        end)
+    end)
+end
+
+function addKillToFeed(killText, killFeedFrame)
+    local killLabel = Instance.new("TextLabel")
+    killLabel.Size = UDim2.new(1, 0, 0, 20)
+    killLabel.BackgroundTransparency = 1
+    killLabel.Text = killText
+    killLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
+    killLabel.TextSize = 12
+    killLabel.Font = Enum.Font.Gotham
+    killLabel.TextXAlignment = Enum.TextXAlignment.Left
+    killLabel.Parent = killFeedFrame
+    
+    table.insert(killFeed, killLabel)
+    
+    -- Автоматическое удаление старых записей
+    wait(10)
+    if killLabel and killLabel.Parent then
+        killLabel:Destroy()
+    end
+end
+
+function clearKillFeed()
+    for _, killLabel in pairs(killFeed) do
+        if killLabel and killLabel.Parent then
+            killLabel:Destroy()
+        end
+    end
+    killFeed = {}
+    
+    local existingKillFeed = gui:FindFirstChild("KillFeed")
+    if existingKillFeed then
+        existingKillFeed:Destroy()
+    end
+end
+
 -- Создание элементов интерфейса
 createToggle("AimBot", scrollFrame, false)
 createSlider("FOV", scrollFrame, 10, 200, 50)
@@ -275,10 +557,22 @@ toggleButton.MouseButton1Click:Connect(function()
     mainFrame.Visible = not mainFrame.Visible
 end)
 
--- Обновление позиции FOV круга
+-- Основной цикл аимбота
 RunService.RenderStepped:Connect(function()
+    -- Обновление позиции FOV круга
     if settings.aimbot and fovCircle.Visible then
         fovCircle.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
+    end
+    
+    -- Аимбот логика
+    if settings.aimbot then
+        local target = findTarget()
+        if target and target ~= currentTarget then
+            currentTarget = target
+            aimAtTarget(target)
+        end
+    else
+        currentTarget = nil
     end
 end)
 
