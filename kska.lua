@@ -584,13 +584,14 @@ createToggle("WallHack", scrollFrame, false)
 
 -- Кнопка переоткрытия меню (квадратная)
 local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0, 40, 0, 40)
-toggleButton.Position = UDim2.new(1, -50, 0, 10)
+toggleButton.Size = UDim2.new(0, 50, 0, 50)
+toggleButton.Position = UDim2.new(1, -60, 0, 10)
 toggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
 toggleButton.Text = "≡"
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.TextSize = 20
 toggleButton.Font = Enum.Font.GothamBold
+toggleButton.ZIndex = 10
 toggleButton.Parent = gui
 
 local toggleCorner = Instance.new("UICorner")
@@ -607,17 +608,18 @@ toggleShadow.ImageTransparency = 0.8
 toggleShadow.ScaleType = Enum.ScaleType.Slice
 toggleShadow.SliceCenter = Rect.new(10, 10, 118, 118)
 toggleShadow.Parent = toggleButton
-toggleShadow.ZIndex = -1
+toggleShadow.ZIndex = 9
 
 -- Функционал скрытия/показа меню
-toggleButton.MouseButton1Click:Connect(function()
+local function toggleMenu()
     mainFrame.Visible = not mainFrame.Visible
-end)
+    print("Меню " .. (mainFrame.Visible and "открыто" or "скрыто"))
+end
+
+toggleButton.MouseButton1Click:Connect(toggleMenu)
 
 -- Обработка касаний для мобильных устройств
-toggleButton.TouchTap:Connect(function()
-    mainFrame.Visible = not mainFrame.Visible
-end)
+toggleButton.TouchTap:Connect(toggleMenu)
 
 -- Основной цикл аимбота
 RunService.RenderStepped:Connect(function()    
@@ -635,15 +637,17 @@ end)
 
 -- Защита от удаления GUI при смерти
 player.CharacterAdded:Connect(function()
-    -- Пересоздаем GUI если он был удален
+    -- Убедимся, что GUI все еще существует
     if not gui or not gui.Parent then
-        gui = Instance.new("ScreenGui")
-        gui.Name = "AimbotGUI"
-        gui.Parent = CoreGui
+        local oldGUI = CoreGui:FindFirstChild("AimbotGUI")
+        if oldGUI then
+            oldGUI:Destroy()
+        end
         
-        -- Здесь нужно пересоздать все элементы GUI...
-        -- Для простоты перезагрузим скрипт
-        print("GUI был пересоздан после смерти")
+        -- Перезагружаем скрипт
+        print("Перезагрузка GUI...")
+        wait(1)
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/your-repo/aimbot.lua"))()
     end
 end)
 
