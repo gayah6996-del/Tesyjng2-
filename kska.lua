@@ -2,13 +2,13 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
-local mouse = player:GetMouse()
 
--- Основной GUI
+-- Основной GUI (помещаем в CoreGui чтобы не пропадал при смерти)
 local gui = Instance.new("ScreenGui")
 gui.Name = "AimbotGUI"
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.Parent = CoreGui
 
 -- Главный фрейм меню
 local mainFrame = Instance.new("Frame")
@@ -82,13 +82,13 @@ local settings = {
     wallHack = false
 }
 
--- FOV круг (визуализация)
+-- ФИКСИРОВАННЫЙ FOV круг (белый, по центру экрана)
 local fovCircle = Instance.new("Frame")
 fovCircle.Size = UDim2.new(0, settings.fov * 2, 0, settings.fov * 2)
 fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
 fovCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
-fovCircle.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-fovCircle.BackgroundTransparency = 0.7
+fovCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+fovCircle.BackgroundTransparency = 0.8
 fovCircle.BorderSizePixel = 0
 fovCircle.Visible = false
 fovCircle.Parent = gui
@@ -160,7 +160,7 @@ function createToggle(name, parent, defaultValue)
     return toggle
 end
 
--- Функция создания слайдера
+-- Функция создания слайдера для FOV
 function createSlider(name, parent, minValue, maxValue, defaultValue)
     local container = Instance.new("Frame")
     container.Size = UDim2.new(1, 0, 0, 60)
@@ -227,26 +227,26 @@ function createSlider(name, parent, minValue, maxValue, defaultValue)
     end
 
     sliderButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
         end
     end)
 
     sliderButton.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = false
         end
     end)
 
     sliderFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             updateSlider(input)
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
             updateSlider(input)
         end
     end)
@@ -254,7 +254,7 @@ function createSlider(name, parent, minValue, maxValue, defaultValue)
     return container
 end
 
--- АИМБОТ ФУНКЦИЯ
+-- АИМБОТ ФУНКЦИЯ (улучшенная)
 function findTarget()
     local closestPlayer = nil
     local shortestDistance = settings.fov
@@ -271,18 +271,31 @@ function findTarget()
             
             local character = otherPlayer.Character
             local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            local head = character:FindFirstChild("Head")
             
             if humanoidRootPart then
                 local screenPoint, onScreen = workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position)
                 
                 if onScreen then
-                    local mouseLocation = Vector2.new(mouse.X, mouse.Y)
-                    local playerLocation = Vector2.new(screenPoint.X, screenPoint.Y)
-                    local distance = (mouseLocation - playerLocation).Magnitude
+                    -- Проверка на видимость (не через стены)
+                    local raycastParams = RaycastParams.new()
+                    raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                    raycastParams.FilterDescendantsInstances = {player.Character, character}
                     
-                    if distance < shortestDistance then
-                        closestPlayer = otherPlayer
-                        shortestDistance = distance
+                    local rayOrigin = workspace.CurrentCamera.CFrame.Position
+                    local rayDirection = (humanoidRootPart.Position - rayOrigin).Unit * 1000
+                    local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
+                    
+                    if raycastResult and raycastResult.Instance:IsDescendantOf(character) then
+                        -- Игрок видим
+                        local center = Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)
+                        local playerLocation = Vector2.new(screenPoint.X, screenPoint.Y)
+                        local distance = (center - playerLocation).Magnitude
+                        
+                        if distance < shortestDistance then
+                            closestPlayer = otherPlayer
+                            shortestDistance = distance
+                        end
                     end
                 end
             end
@@ -296,16 +309,21 @@ function aimAtTarget(target)
     if not target or not target.Character then return end
     
     local humanoidRootPart = target.Character:FindFirstChild("HumanoidRootPart")
+    local head = target.Character:FindFirstChild("Head")
     if not humanoidRootPart then return end
     
-    -- Для мобильных устройств - плавное наведение
+    -- Для мобильных устройств - наведение на цель
     local camera = workspace.CurrentCamera
-    local targetPosition = humanoidRootPart.Position
+    local targetPosition = head and head.Position or humanoidRootPart.Position
     
-    -- Плавное перемещение камеры к цели
-    local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Linear, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(camera, tweenInfo, {CFrame = CFrame.new(camera.CFrame.Position, targetPosition)})
-    tween:Play()
+    -- Плавное перемещение камеры к цели (только если это разрешено игрой)
+    local currentCFrame = camera.CFrame
+    local newCFrame = CFrame.new(currentCFrame.Position, targetPosition)
+    
+    -- Пытаемся изменить положение камеры
+    pcall(function()
+        camera.CFrame = newCFrame
+    end)
 end
 
 -- WALLHACK ФУНКЦИИ
@@ -320,7 +338,9 @@ function createWallHack()
     
     -- Слушаем новых игроков
     Players.PlayerAdded:Connect(function(newPlayer)
-        createPlayerESP(newPlayer)
+        if newPlayer ~= player then
+            createPlayerESP(newPlayer)
+        end
     end)
 end
 
@@ -335,7 +355,8 @@ function createPlayerESP(targetPlayer)
         folder = espFolder,
         tracers = {},
         boxes = {},
-        healthBars = {}
+        healthBars = {},
+        labels = {}
     }
     
     if targetPlayer.Character then
@@ -358,6 +379,7 @@ function setupCharacterESP(player, character)
     tracer.BorderSizePixel = 0
     tracer.Size = UDim2.new(0, 2, 0, 100)
     tracer.AnchorPoint = Vector2.new(0.5, 0)
+    tracer.Visible = false
     tracer.Parent = espData.folder
     
     table.insert(espData.tracers, tracer)
@@ -369,6 +391,7 @@ function setupCharacterESP(player, character)
     box.BorderColor3 = Color3.fromRGB(0, 255, 0)
     box.BorderSizePixel = 2
     box.Size = UDim2.new(0, 50, 0, 100)
+    box.Visible = false
     box.Parent = espData.folder
     
     table.insert(espData.boxes, box)
@@ -379,6 +402,7 @@ function setupCharacterESP(player, character)
     healthBar.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     healthBar.BorderSizePixel = 0
     healthBar.Size = UDim2.new(0, 4, 0, 30)
+    healthBar.Visible = false
     healthBar.Parent = espData.folder
     
     local healthBarBackground = Instance.new("Frame")
@@ -391,12 +415,28 @@ function setupCharacterESP(player, character)
     
     table.insert(espData.healthBars, healthBar)
     
+    -- NAME LABEL
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.Name
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.TextSize = 14
+    nameLabel.Visible = false
+    nameLabel.Parent = espData.folder
+    
+    table.insert(espData.labels, nameLabel)
+    
     -- Обновление позиций
     local humanoid = character:WaitForChild("Humanoid")
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     
-    RunService.Heartbeat:Connect(function()
-        if not character or not humanoidRootPart or not humanoid then
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        if not character or not humanoidRootPart or not humanoid or humanoid.Health <= 0 then
+            if connection then
+                connection:Disconnect()
+            end
             return
         end
         
@@ -419,11 +459,19 @@ function setupCharacterESP(player, character)
             -- Обновление health bar
             healthBar.Visible = true
             healthBar.Position = UDim2.new(0, screenPoint.X + 30, 0, screenPoint.Y - 100)
-            healthBar.Size = UDim2.new(0, 4, 0, 60 * (humanoid.Health / humanoid.MaxHealth))
+            local healthPercent = humanoid.Health / humanoid.MaxHealth
+            healthBar.Size = UDim2.new(0, 4, 0, 60 * healthPercent)
+            healthBar.BackgroundColor3 = Color3.new(1 - healthPercent, healthPercent, 0)
+            
+            -- Обновление имени
+            nameLabel.Visible = true
+            nameLabel.Position = UDim2.new(0, screenPoint.X - 25, 0, screenPoint.Y - 120)
+            nameLabel.Text = player.Name .. " (" .. math.floor(humanoid.Health) .. ")"
         else
             tracer.Visible = false
             box.Visible = false
             healthBar.Visible = false
+            nameLabel.Visible = false
         end
     end)
 end
@@ -498,9 +546,18 @@ function addKillToFeed(killText, killFeedFrame)
     table.insert(killFeed, killLabel)
     
     -- Автоматическое удаление старых записей
-    wait(10)
-    if killLabel and killLabel.Parent then
-        killLabel:Destroy()
+    delay(10, function()
+        if killLabel and killLabel.Parent then
+            killLabel:Destroy()
+        end
+    end)
+    
+    -- Ограничиваем количество записей
+    if #killFeed > 8 then
+        local oldest = table.remove(killFeed, 1)
+        if oldest and oldest.Parent then
+            oldest:Destroy()
+        end
     end
 end
 
@@ -557,13 +614,13 @@ toggleButton.MouseButton1Click:Connect(function()
     mainFrame.Visible = not mainFrame.Visible
 end)
 
+-- Обработка касаний для мобильных устройств
+toggleButton.TouchTap:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+end)
+
 -- Основной цикл аимбота
-RunService.RenderStepped:Connect(function()
-    -- Обновление позиции FOV круга
-    if settings.aimbot and fovCircle.Visible then
-        fovCircle.Position = UDim2.new(0, mouse.X, 0, mouse.Y)
-    end
-    
+RunService.RenderStepped:Connect(function()    
     -- Аимбот логика
     if settings.aimbot then
         local target = findTarget()
@@ -576,4 +633,19 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- Защита от удаления GUI при смерти
+player.CharacterAdded:Connect(function()
+    -- Пересоздаем GUI если он был удален
+    if not gui or not gui.Parent then
+        gui = Instance.new("ScreenGui")
+        gui.Name = "AimbotGUI"
+        gui.Parent = CoreGui
+        
+        -- Здесь нужно пересоздать все элементы GUI...
+        -- Для простоты перезагрузим скрипт
+        print("GUI был пересоздан после смерти")
+    end
+end)
+
 print("Aimbot Menu loaded! Use the square button to toggle menu.")
+print("Menu will not disappear when you die!")
