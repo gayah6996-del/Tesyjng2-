@@ -26,7 +26,8 @@ local MainFrame = nil
 local minimized = false
 local fovCircle = nil
 local savedPosition = UDim2.new(0, 10, 0, 10)
-local isGuiOpen = true
+local savedButtonPosition = UDim2.new(0, 10, 0, 10)
+local isGuiOpen = false  -- Меню изначально закрыто
 local OpenCloseButton = nil
 
 -- ESP объекты
@@ -67,13 +68,15 @@ local function createOpenCloseButton()
     OpenCloseButton = Instance.new("TextButton")
     OpenCloseButton.Name = "OpenCloseButton"
     OpenCloseButton.Size = UDim2.new(0, 60, 0, 60)
-    OpenCloseButton.Position = UDim2.new(0, 10, 0, 10)
+    OpenCloseButton.Position = savedButtonPosition
     OpenCloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
     OpenCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    OpenCloseButton.Text = "☰"
+    OpenCloseButton.Text = "≡"
     OpenCloseButton.Font = Enum.Font.GothamBold
-    OpenCloseButton.TextSize = 20
+    OpenCloseButton.TextSize = 24
     OpenCloseButton.ZIndex = 10
+    OpenCloseButton.Active = true
+    OpenCloseButton.Draggable = true
     OpenCloseButton.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
@@ -91,12 +94,17 @@ local function createOpenCloseButton()
         MainFrame.Visible = isGuiOpen
         
         if isGuiOpen then
-            OpenCloseButton.Text = "☰"
+            OpenCloseButton.Text = "≡"
             OpenCloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
         else
-            OpenCloseButton.Text = "☰"
+            OpenCloseButton.Text = "≡"
             OpenCloseButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
         end
+    end)
+
+    -- Сохраняем позицию кнопки при перетаскивании
+    OpenCloseButton.DragStopped:Connect(function()
+        savedButtonPosition = OpenCloseButton.Position
     end)
 end
 
@@ -352,6 +360,7 @@ local function createGUI()
     MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
     MainFrame.Draggable = true
+    MainFrame.Visible = isGuiOpen  -- Состояние сохраняется
     MainFrame.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
@@ -903,7 +912,7 @@ local function createGUI()
                 local mouseLocation = UserInputService:GetMouseLocation()
                 local relativeX = math.clamp((mouseLocation.X - SpeedHackSlider.AbsolutePosition.X) / SpeedHackSlider.AbsoluteSize.X, 0, 1)
                 currentSpeed = math.floor(16 + (relativeX * 84)) -- 16 to 100
-                SpeedValue.Text = "Speed: " .. currentSpeed
+                SpeedValue.Text = "Speed: " .. currentSpeed .. " -"
                 
                 if speedHackEnabled then
                     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -1066,7 +1075,7 @@ local function createGUI()
                 local mouseLocation = UserInputService:GetMouseLocation()
                 local relativeX = math.clamp((mouseLocation.X - AimBotFOVFrame.AbsolutePosition.X) / AimBotFOVFrame.AbsoluteSize.X, 0, 1)
                 aimBotFOV = math.floor(10 + (relativeX * 190)) -- 10 to 200
-                AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
+                AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV .. " -"
                 updateFOVCircle()
             end)
             
