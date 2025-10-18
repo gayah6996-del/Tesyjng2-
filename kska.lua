@@ -14,8 +14,9 @@ local MainFrame = nil
 local minimized = false
 local fovCircle = nil
 local aimBotFOV = 50
-local savedPosition = UDim2.new(0, 10, 0, 10) -- Сохраняем позицию GUI
+local savedPosition = UDim2.new(0, 10, 0, 10)
 local isGuiOpen = true
+local OpenCloseButton = nil
 
 -- Функция создания FOV Circle
 local function createFOVCircle()
@@ -25,7 +26,7 @@ local function createFOVCircle()
     
     fovCircle = Drawing.new("Circle")
     fovCircle.Visible = false
-    fovCircle.Color = Color3.fromRGB(255, 255, 255)
+    fovCircle.Color = Color3.fromRGB(255, 0, 0)
     fovCircle.Thickness = 1
     fovCircle.Filled = false
     fovCircle.Radius = aimBotFOV
@@ -40,13 +41,56 @@ local function updateFOVCircle()
     end
 end
 
+-- Функция создания кнопки открытия/закрытия
+local function createOpenCloseButton()
+    if OpenCloseButton then
+        OpenCloseButton:Destroy()
+    end
+
+    OpenCloseButton = Instance.new("TextButton")
+    OpenCloseButton.Name = "OpenCloseButton"
+    OpenCloseButton.Size = UDim2.new(0, 60, 0, 60)
+    OpenCloseButton.Position = UDim2.new(0, 10, 0, 10)
+    OpenCloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    OpenCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    OpenCloseButton.Text = "☰"
+    OpenCloseButton.Font = Enum.Font.GothamBold
+    OpenCloseButton.TextSize = 20
+    OpenCloseButton.ZIndex = 10
+    OpenCloseButton.Parent = ScreenGui
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = OpenCloseButton
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(255, 255, 255)
+    Stroke.Thickness = 2
+    Stroke.Parent = OpenCloseButton
+
+    -- Обработчик нажатия
+    OpenCloseButton.MouseButton1Click:Connect(function()
+        isGuiOpen = not isGuiOpen
+        MainFrame.Visible = isGuiOpen
+        
+        if isGuiOpen then
+            OpenCloseButton.Text = "☰"
+            OpenCloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+        else
+            OpenCloseButton.Text = "☰"
+            OpenCloseButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
+        end
+    end)
+end
+
 -- Функция создания GUI
 local function createGUI()
     if ScreenGui then
-        savedPosition = MainFrame.Position -- Сохраняем текущую позицию
+        savedPosition = MainFrame.Position
         ScreenGui:Destroy()
         ScreenGui = nil
         MainFrame = nil
+        OpenCloseButton = nil
     end
 
     -- Create GUI
@@ -58,8 +102,8 @@ local function createGUI()
     MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 300, 0, 400)
-    MainFrame.Position = savedPosition -- Восстанавливаем сохраненную позицию
-    MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    MainFrame.Position = savedPosition
+    MainFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
     MainFrame.Draggable = true
@@ -73,28 +117,12 @@ local function createGUI()
     Title.Name = "Title"
     Title.Size = UDim2.new(1, 0, 0, 40)
     Title.Position = UDim2.new(0, 0, 0, 0)
-    Title.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Text = "SANSTRO|t.me//SCRIPTYTA"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
     Title.Parent = MainFrame
-
-    -- Кнопка сворачивания/разворачивания
-    local ToggleButton = Instance.new("TextButton")
-    ToggleButton.Name = "ToggleButton"
-    ToggleButton.Size = UDim2.new(0, 30, 0, 30)
-    ToggleButton.Position = UDim2.new(1, -35, 0, 5)
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-    ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ToggleButton.Text = "-"
-    ToggleButton.Font = Enum.Font.GothamBold
-    ToggleButton.TextSize = 14
-    ToggleButton.Parent = MainFrame
-
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 6)
-    ToggleCorner.Parent = ToggleButton
 
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
@@ -108,7 +136,7 @@ local function createGUI()
     MovementTab.Name = "MovementTab"
     MovementTab.Size = UDim2.new(0.33, 0, 1, 0)
     MovementTab.Position = UDim2.new(0, 0, 0, 0)
-    MovementTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    MovementTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     MovementTab.TextColor3 = Color3.fromRGB(255, 255, 255)
     MovementTab.Text = "Movement"
     MovementTab.Font = Enum.Font.Gotham
@@ -120,7 +148,7 @@ local function createGUI()
     VisualTab.Name = "VisualTab"
     VisualTab.Size = UDim2.new(0.33, 0, 1, 0)
     VisualTab.Position = UDim2.new(0.33, 0, 0, 0)
-    VisualTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    VisualTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     VisualTab.TextColor3 = Color3.fromRGB(255, 255, 255)
     VisualTab.Text = "Visual"
     VisualTab.Font = Enum.Font.Gotham
@@ -132,7 +160,7 @@ local function createGUI()
     AimBotTab.Name = "AimBotTab"
     AimBotTab.Size = UDim2.new(0.34, 0, 1, 0)
     AimBotTab.Position = UDim2.new(0.66, 0, 0, 0)
-    AimBotTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+    AimBotTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     AimBotTab.TextColor3 = Color3.fromRGB(255, 255, 255)
     AimBotTab.Text = "AimBot"
     AimBotTab.Font = Enum.Font.Gotham
@@ -165,7 +193,7 @@ local function createGUI()
     local SpeedHackFrame = Instance.new("Frame")
     SpeedHackFrame.Name = "SpeedHackFrame"
     SpeedHackFrame.Size = UDim2.new(1, 0, 0, 80)
-    SpeedHackFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    SpeedHackFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     SpeedHackFrame.BorderSizePixel = 0
     SpeedHackFrame.Parent = MovementContent
 
@@ -189,7 +217,7 @@ local function createGUI()
     SpeedHackToggle.Name = "SpeedHackToggle"
     SpeedHackToggle.Size = UDim2.new(0.3, 0, 0, 30)
     SpeedHackToggle.Position = UDim2.new(0.7, 0, 0, 10)
-    SpeedHackToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+    SpeedHackToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     SpeedHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     SpeedHackToggle.Text = "OFF"
     SpeedHackToggle.Font = Enum.Font.Gotham
@@ -200,7 +228,7 @@ local function createGUI()
     SpeedHackSlider.Name = "SpeedHackSlider"
     SpeedHackSlider.Size = UDim2.new(1, -20, 0, 30)
     SpeedHackSlider.Position = UDim2.new(0, 10, 0, 45)
-    SpeedHackSlider.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+    SpeedHackSlider.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     SpeedHackSlider.BorderSizePixel = 0
     SpeedHackSlider.Visible = false
     SpeedHackSlider.Parent = SpeedHackFrame
@@ -224,7 +252,7 @@ local function createGUI()
     JumpHackFrame.Name = "JumpHackFrame"
     JumpHackFrame.Size = UDim2.new(1, 0, 0, 40)
     JumpHackFrame.Position = UDim2.new(0, 0, 0, 90)
-    JumpHackFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    JumpHackFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     JumpHackFrame.BorderSizePixel = 0
     JumpHackFrame.Parent = MovementContent
 
@@ -248,7 +276,7 @@ local function createGUI()
     JumpHackToggle.Name = "JumpHackToggle"
     JumpHackToggle.Size = UDim2.new(0.3, 0, 0, 30)
     JumpHackToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    JumpHackToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+    JumpHackToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     JumpHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     JumpHackToggle.Text = "OFF"
     JumpHackToggle.Font = Enum.Font.Gotham
@@ -260,7 +288,7 @@ local function createGUI()
     NoClipFrame.Name = "NoClipFrame"
     NoClipFrame.Size = UDim2.new(1, 0, 0, 40)
     NoClipFrame.Position = UDim2.new(0, 0, 0, 140)
-    NoClipFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    NoClipFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     NoClipFrame.BorderSizePixel = 0
     NoClipFrame.Parent = MovementContent
 
@@ -284,7 +312,7 @@ local function createGUI()
     NoClipToggle.Name = "NoClipToggle"
     NoClipToggle.Size = UDim2.new(0.3, 0, 0, 30)
     NoClipToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    NoClipToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+    NoClipToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     NoClipToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     NoClipToggle.Text = "OFF"
     NoClipToggle.Font = Enum.Font.Gotham
@@ -294,7 +322,7 @@ local function createGUI()
     -- Visual Content
     local VisualContent = Instance.new("Frame")
     VisualContent.Name = "VisualContent"
-    VisualContent.Size = UDim2.new(1, 0, 0, 200)
+    VisualContent.Size = UDim2.new(1, 0, 0, 300)
     VisualContent.BackgroundTransparency = 1
     VisualContent.Visible = false
     VisualContent.Parent = ScrollFrame
@@ -303,7 +331,7 @@ local function createGUI()
     local ESPTracersFrame = Instance.new("Frame")
     ESPTracersFrame.Name = "ESPTracersFrame"
     ESPTracersFrame.Size = UDim2.new(1, 0, 0, 40)
-    ESPTracersFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    ESPTracersFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPTracersFrame.BorderSizePixel = 0
     ESPTracersFrame.Parent = VisualContent
 
@@ -327,7 +355,7 @@ local function createGUI()
     ESPTracersToggle.Name = "ESPTracersToggle"
     ESPTracersToggle.Size = UDim2.new(0.3, 0, 0, 30)
     ESPTracersToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    ESPTracersToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+    ESPTracersToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     ESPTracersToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPTracersToggle.Text = "OFF"
     ESPTracersToggle.Font = Enum.Font.Gotham
@@ -339,7 +367,7 @@ local function createGUI()
     ESPBoxFrame.Name = "ESPBoxFrame"
     ESPBoxFrame.Size = UDim2.new(1, 0, 0, 40)
     ESPBoxFrame.Position = UDim2.new(0, 0, 0, 50)
-    ESPBoxFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    ESPBoxFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPBoxFrame.BorderSizePixel = 0
     ESPBoxFrame.Parent = VisualContent
 
@@ -363,7 +391,7 @@ local function createGUI()
     ESPBoxToggle.Name = "ESPBoxToggle"
     ESPBoxToggle.Size = UDim2.new(0.3, 0, 0, 30)
     ESPBoxToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    ESPBoxToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+    ESPBoxToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     ESPBoxToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPBoxToggle.Text = "OFF"
     ESPBoxToggle.Font = Enum.Font.Gotham
@@ -375,7 +403,7 @@ local function createGUI()
     ESPHealthFrame.Name = "ESPHealthFrame"
     ESPHealthFrame.Size = UDim2.new(1, 0, 0, 40)
     ESPHealthFrame.Position = UDim2.new(0, 0, 0, 100)
-    ESPHealthFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    ESPHealthFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPHealthFrame.BorderSizePixel = 0
     ESPHealthFrame.Parent = VisualContent
 
@@ -399,12 +427,84 @@ local function createGUI()
     ESPHealthToggle.Name = "ESPHealthToggle"
     ESPHealthToggle.Size = UDim2.new(0.3, 0, 0, 30)
     ESPHealthToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    ESPHealthToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+    ESPHealthToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     ESPHealthToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPHealthToggle.Text = "OFF"
     ESPHealthToggle.Font = Enum.Font.Gotham
     ESPHealthToggle.TextSize = 12
     ESPHealthToggle.Parent = ESPHealthFrame
+
+    -- ESP Distance
+    local ESPDistanceFrame = Instance.new("Frame")
+    ESPDistanceFrame.Name = "ESPDistanceFrame"
+    ESPDistanceFrame.Size = UDim2.new(1, 0, 0, 40)
+    ESPDistanceFrame.Position = UDim2.new(0, 0, 0, 150)
+    ESPDistanceFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    ESPDistanceFrame.BorderSizePixel = 0
+    ESPDistanceFrame.Parent = VisualContent
+
+    local ESPDistanceCorner = Instance.new("UICorner")
+    ESPDistanceCorner.CornerRadius = UDim.new(0, 6)
+    ESPDistanceCorner.Parent = ESPDistanceFrame
+
+    local ESPDistanceLabel = Instance.new("TextLabel")
+    ESPDistanceLabel.Name = "ESPDistanceLabel"
+    ESPDistanceLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    ESPDistanceLabel.Position = UDim2.new(0, 10, 0, 0)
+    ESPDistanceLabel.BackgroundTransparency = 1
+    ESPDistanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPDistanceLabel.Text = "ESP Distance"
+    ESPDistanceLabel.Font = Enum.Font.Gotham
+    ESPDistanceLabel.TextSize = 14
+    ESPDistanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPDistanceLabel.Parent = ESPDistanceFrame
+
+    local ESPDistanceToggle = Instance.new("TextButton")
+    ESPDistanceToggle.Name = "ESPDistanceToggle"
+    ESPDistanceToggle.Size = UDim2.new(0.3, 0, 0, 30)
+    ESPDistanceToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
+    ESPDistanceToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+    ESPDistanceToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPDistanceToggle.Text = "OFF"
+    ESPDistanceToggle.Font = Enum.Font.Gotham
+    ESPDistanceToggle.TextSize = 12
+    ESPDistanceToggle.Parent = ESPDistanceFrame
+
+    -- ESP Count
+    local ESPCountFrame = Instance.new("Frame")
+    ESPCountFrame.Name = "ESPCountFrame"
+    ESPCountFrame.Size = UDim2.new(1, 0, 0, 40)
+    ESPCountFrame.Position = UDim2.new(0, 0, 0, 200)
+    ESPCountFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    ESPCountFrame.BorderSizePixel = 0
+    ESPCountFrame.Parent = VisualContent
+
+    local ESPCountCorner = Instance.new("UICorner")
+    ESPCountCorner.CornerRadius = UDim.new(0, 6)
+    ESPCountCorner.Parent = ESPCountFrame
+
+    local ESPCountLabel = Instance.new("TextLabel")
+    ESPCountLabel.Name = "ESPCountLabel"
+    ESPCountLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    ESPCountLabel.Position = UDim2.new(0, 10, 0, 0)
+    ESPCountLabel.BackgroundTransparency = 1
+    ESPCountLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPCountLabel.Text = "ESP Count"
+    ESPCountLabel.Font = Enum.Font.Gotham
+    ESPCountLabel.TextSize = 14
+    ESPCountLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPCountLabel.Parent = ESPCountFrame
+
+    local ESPCountToggle = Instance.new("TextButton")
+    ESPCountToggle.Name = "ESPCountToggle"
+    ESPCountToggle.Size = UDim2.new(0.3, 0, 0, 30)
+    ESPCountToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
+    ESPCountToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+    ESPCountToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPCountToggle.Text = "OFF"
+    ESPCountToggle.Font = Enum.Font.Gotham
+    ESPCountToggle.TextSize = 12
+    ESPCountToggle.Parent = ESPCountFrame
 
     -- AimBot Content
     local AimBotContent = Instance.new("Frame")
@@ -418,7 +518,7 @@ local function createGUI()
     local AimBotFrame = Instance.new("Frame")
     AimBotFrame.Name = "AimBotFrame"
     AimBotFrame.Size = UDim2.new(1, 0, 0, 40)
-    AimBotFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    AimBotFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     AimBotFrame.BorderSizePixel = 0
     AimBotFrame.Parent = AimBotContent
 
@@ -442,7 +542,7 @@ local function createGUI()
     AimBotToggle.Name = "AimBotToggle"
     AimBotToggle.Size = UDim2.new(0.3, 0, 0, 30)
     AimBotToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    AimBotToggle.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+    AimBotToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
     AimBotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     AimBotToggle.Text = "OFF"
     AimBotToggle.Font = Enum.Font.Gotham
@@ -454,7 +554,7 @@ local function createGUI()
     AimBotFOVFrame.Name = "AimBotFOVFrame"
     AimBotFOVFrame.Size = UDim2.new(1, 0, 0, 60)
     AimBotFOVFrame.Position = UDim2.new(0, 0, 0, 50)
-    AimBotFOVFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    AimBotFOVFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     AimBotFOVFrame.BorderSizePixel = 0
     AimBotFOVFrame.Visible = false
     AimBotFOVFrame.Parent = AimBotContent
@@ -481,20 +581,24 @@ local function createGUI()
     local espTracersEnabled = false
     local espBoxEnabled = false
     local espHealthEnabled = false
+    local espDistanceEnabled = false
+    local espCountEnabled = false
     local aimBotEnabled = false
 
     local currentSpeed = 16
 
     local espObjects = {}
     local noclipConnection
+    local espConnections = {}
+    local espCountText = nil
 
     -- Functions
     local function toggleButton(button, enabled)
         if enabled then
-            button.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
+            button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
             button.Text = "ON"
         else
-            button.BackgroundColor3 = Color3.fromRGB(80, 80, 100)
+            button.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
             button.Text = "OFF"
         end
     end
@@ -560,7 +664,7 @@ local function createGUI()
         end
     end)
 
-    -- NoClip
+    -- NoClip - ИСПРАВЛЕННЫЙ
     NoClipToggle.MouseButton1Click:Connect(function()
         noclipEnabled = not noclipEnabled
         toggleButton(NoClipToggle, noclipEnabled)
@@ -578,116 +682,192 @@ local function createGUI()
         else
             if noclipConnection then
                 noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            
+            -- Восстанавливаем коллизию
+            if player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
             end
         end
     end)
 
     -- ESP Functions
+    local function cleanupESP(otherPlayer)
+        if espObjects[otherPlayer] then
+            if espObjects[otherPlayer].tracer then
+                espObjects[otherPlayer].tracer:Remove()
+            end
+            if espObjects[otherPlayer].box then
+                espObjects[otherPlayer].box:Remove()
+            end
+            if espObjects[otherPlayer].health then
+                espObjects[otherPlayer].health:Remove()
+            end
+            if espObjects[otherPlayer].distance then
+                espObjects[otherPlayer].distance:Remove()
+            end
+            espObjects[otherPlayer] = nil
+        end
+        
+        if espConnections[otherPlayer] then
+            espConnections[otherPlayer]:Disconnect()
+            espConnections[otherPlayer] = nil
+        end
+    end
+
     local function createESP(otherPlayer)
         if otherPlayer == player then return end
+        
+        cleanupESP(otherPlayer)
         
         espObjects[otherPlayer] = {
             tracer = nil,
             box = nil,
-            health = nil
+            health = nil,
+            distance = nil
         }
         
         local function updateESP()
             if not espObjects[otherPlayer] then return end
             
-            if otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") and otherPlayer.Character:FindFirstChild("Humanoid") then
-                local rootPart = otherPlayer.Character.HumanoidRootPart
-                local humanoid = otherPlayer.Character.Humanoid
-                local head = otherPlayer.Character:FindFirstChild("Head")
-                
-                if not head then return end
-                
-                local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
-                
-                if onScreen then
-                    -- Tracer
-                    if espTracersEnabled then
-                        if not espObjects[otherPlayer].tracer then
-                            espObjects[otherPlayer].tracer = Drawing.new("Line")
-                            espObjects[otherPlayer].tracer.Thickness = 1
-                            espObjects[otherPlayer].tracer.Color = Color3.fromRGB(255, 255, 255)
-                        end
-                        
-                        local screenCenter = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-                        espObjects[otherPlayer].tracer.From = screenCenter
-                        espObjects[otherPlayer].tracer.To = Vector2.new(vector.X, vector.Y)
-                        espObjects[otherPlayer].tracer.Visible = true
-                    elseif espObjects[otherPlayer].tracer then
-                        espObjects[otherPlayer].tracer.Visible = false
+            -- Check if player is dead or doesn't exist
+            if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
+                if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
+                if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
+                if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+                if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+                return
+            end
+            
+            local rootPart = otherPlayer.Character.HumanoidRootPart
+            local humanoid = otherPlayer.Character.Humanoid
+            local head = otherPlayer.Character:FindFirstChild("Head")
+            
+            if not head then return end
+            
+            -- Check if player is dead
+            if humanoid.Health <= 0 then
+                if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
+                if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
+                if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+                if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+                return
+            end
+            
+            local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+            
+            if onScreen then
+                -- Tracer
+                if espTracersEnabled then
+                    if not espObjects[otherPlayer].tracer then
+                        espObjects[otherPlayer].tracer = Drawing.new("Line")
+                        espObjects[otherPlayer].tracer.Thickness = 1
+                        espObjects[otherPlayer].tracer.Color = Color3.fromRGB(255, 0, 0)
                     end
                     
-                    -- Box ESP
-                    if espBoxEnabled then
-                        if not espObjects[otherPlayer].box then
-                            espObjects[otherPlayer].box = Drawing.new("Square")
-                            espObjects[otherPlayer].box.Thickness = 1
-                            espObjects[otherPlayer].box.Color = Color3.fromRGB(255, 255, 255)
-                            espObjects[otherPlayer].box.Filled = false
-                        end
-                        
-                        local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                        local rootPos = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
-                        
-                        local size = Vector2.new(2000 / rootPos.Z, 3000 / rootPos.Z)
-                        local position = Vector2.new(headPos.X - size.X / 2, headPos.Y - size.Y / 2)
-                        
-                        espObjects[otherPlayer].box.Size = size
-                        espObjects[otherPlayer].box.Position = position
-                        espObjects[otherPlayer].box.Visible = true
-                    elseif espObjects[otherPlayer].box then
-                        espObjects[otherPlayer].box.Visible = false
+                    local screenCenter = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                    espObjects[otherPlayer].tracer.From = screenCenter
+                    espObjects[otherPlayer].tracer.To = Vector2.new(vector.X, vector.Y)
+                    espObjects[otherPlayer].tracer.Visible = true
+                elseif espObjects[otherPlayer].tracer then
+                    espObjects[otherPlayer].tracer.Visible = false
+                end
+                
+                -- Box ESP
+                if espBoxEnabled then
+                    if not espObjects[otherPlayer].box then
+                        espObjects[otherPlayer].box = Drawing.new("Square")
+                        espObjects[otherPlayer].box.Thickness = 1
+                        espObjects[otherPlayer].box.Color = Color3.fromRGB(255, 0, 0)
+                        espObjects[otherPlayer].box.Filled = false
                     end
                     
-                    -- Health ESP
-                    if espHealthEnabled then
-                        if not espObjects[otherPlayer].health then
-                            espObjects[otherPlayer].health = Drawing.new("Text")
-                            espObjects[otherPlayer].health.Size = 14
-                            espObjects[otherPlayer].health.Center = true
-                            espObjects[otherPlayer].health.Outline = true
-                            espObjects[otherPlayer].health.Color = Color3.fromRGB(255, 255, 255)
-                        end
-                        
-                        local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                        espObjects[otherPlayer].health.Position = Vector2.new(headPos.X, headPos.Y - 40)
-                        espObjects[otherPlayer].health.Text = "HP: " .. math.floor(humanoid.Health)
-                        espObjects[otherPlayer].health.Visible = true
-                    elseif espObjects[otherPlayer].health then
-                        espObjects[otherPlayer].health.Visible = false
+                    local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                    local rootPos = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+                    
+                    local size = Vector2.new(2000 / rootPos.Z, 3000 / rootPos.Z)
+                    local position = Vector2.new(headPos.X - size.X / 2, headPos.Y - size.Y / 2)
+                    
+                    espObjects[otherPlayer].box.Size = size
+                    espObjects[otherPlayer].box.Position = position
+                    espObjects[otherPlayer].box.Visible = true
+                elseif espObjects[otherPlayer].box then
+                    espObjects[otherPlayer].box.Visible = false
+                end
+                
+                -- Health ESP
+                if espHealthEnabled then
+                    if not espObjects[otherPlayer].health then
+                        espObjects[otherPlayer].health = Drawing.new("Text")
+                        espObjects[otherPlayer].health.Size = 14
+                        espObjects[otherPlayer].health.Center = true
+                        espObjects[otherPlayer].health.Outline = true
+                        espObjects[otherPlayer].health.Color = Color3.fromRGB(255, 0, 0)
                     end
-                else
-                    if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-                    if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-                    if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+                    
+                    local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                    espObjects[otherPlayer].health.Position = Vector2.new(headPos.X, headPos.Y - 40)
+                    espObjects[otherPlayer].health.Text = "HP: " .. math.floor(humanoid.Health)
+                    espObjects[otherPlayer].health.Visible = true
+                elseif espObjects[otherPlayer].health then
+                    espObjects[otherPlayer].health.Visible = false
+                end
+                
+                -- Distance ESP
+                if espDistanceEnabled then
+                    if not espObjects[otherPlayer].distance then
+                        espObjects[otherPlayer].distance = Drawing.new("Text")
+                        espObjects[otherPlayer].distance.Size = 14
+                        espObjects[otherPlayer].distance.Center = true
+                        espObjects[otherPlayer].distance.Outline = true
+                        espObjects[otherPlayer].distance.Color = Color3.fromRGB(255, 0, 0)
+                    end
+                    
+                    local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                    local distance = (player.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
+                    espObjects[otherPlayer].distance.Position = Vector2.new(headPos.X, headPos.Y - 60)
+                    espObjects[otherPlayer].distance.Text = math.floor(distance) .. " studs"
+                    espObjects[otherPlayer].distance.Visible = true
+                elseif espObjects[otherPlayer].distance then
+                    espObjects[otherPlayer].distance.Visible = false
                 end
             else
                 if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
                 if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
                 if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+                if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
             end
         end
         
         -- Update ESP continuously
-        local espConnection
-        espConnection = RunService.Heartbeat:Connect(updateESP)
+        espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
         
         -- Clean up when player leaves
         otherPlayer.AncestryChanged:Connect(function()
             if not otherPlayer.Parent then
-                espConnection:Disconnect()
-                if espObjects[otherPlayer] then
-                    if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer:Remove() end
-                    if espObjects[otherPlayer].box then espObjects[otherPlayer].box:Remove() end
-                    if espObjects[otherPlayer].health then espObjects[otherPlayer].health:Remove() end
-                    espObjects[otherPlayer] = nil
-                end
+                cleanupESP(otherPlayer)
             end
         end)
+    end
+
+    -- ESP Count Function
+    local function updateESPCount()
+        if not espCountEnabled or not espCountText then return end
+        
+        local aliveCount = 0
+        for _, otherPlayer in pairs(Players:GetPlayers()) do
+            if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
+                aliveCount = aliveCount + 1
+            end
+        end
+        
+        espCountText.Text = "Players: " .. aliveCount
+        espCountText.Visible = true
     end
 
     -- ESP Tracers Toggle
@@ -708,6 +888,34 @@ local function createGUI()
         toggleButton(ESPHealthToggle, espHealthEnabled)
     end)
 
+    -- ESP Distance Toggle
+    ESPDistanceToggle.MouseButton1Click:Connect(function()
+        espDistanceEnabled = not espDistanceEnabled
+        toggleButton(ESPDistanceToggle, espDistanceEnabled)
+    end)
+
+    -- ESP Count Toggle
+    ESPCountToggle.MouseButton1Click:Connect(function()
+        espCountEnabled = not espCountEnabled
+        toggleButton(ESPCountToggle, espCountEnabled)
+        
+        if espCountEnabled then
+            if not espCountText then
+                espCountText = Drawing.new("Text")
+                espCountText.Size = 20
+                espCountText.Center = true
+                espCountText.Outline = true
+                espCountText.Color = Color3.fromRGB(255, 0, 0)
+                espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
+            end
+            espCountText.Visible = true
+        else
+            if espCountText then
+                espCountText.Visible = false
+            end
+        end
+    end)
+
     -- Initialize ESP for existing players
     for _, otherPlayer in pairs(Players:GetPlayers()) do
         createESP(otherPlayer)
@@ -720,17 +928,16 @@ local function createGUI()
 
     -- Remove ESP when player leaves
     Players.PlayerRemoving:Connect(function(leftPlayer)
-        if espObjects[leftPlayer] then
-            if espObjects[leftPlayer].tracer then
-                espObjects[leftPlayer].tracer:Remove()
-            end
-            if espObjects[leftPlayer].box then
-                espObjects[leftPlayer].box:Remove()
-            end
-            if espObjects[leftPlayer].health then
-                espObjects[leftPlayer].health:Remove()
-            end
-            espObjects[leftPlayer] = nil
+        cleanupESP(leftPlayer)
+    end)
+
+    -- Update ESP Count continuously
+    RunService.Heartbeat:Connect(updateESPCount)
+
+    -- Update ESP Count position when screen size changes
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        if espCountText then
+            espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
         end
     end)
 
@@ -844,9 +1051,9 @@ local function createGUI()
         VisualContent.Visible = false
         AimBotContent.Visible = false
         
-        MovementTab.BackgroundColor3 = Color3.fromRGB(80, 80, 120)
-        VisualTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-        AimBotTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+        MovementTab.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+        VisualTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        AimBotTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     end)
 
     VisualTab.MouseButton1Click:Connect(function()
@@ -854,9 +1061,9 @@ local function createGUI()
         VisualContent.Visible = true
         AimBotContent.Visible = false
         
-        MovementTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-        VisualTab.BackgroundColor3 = Color3.fromRGB(80, 80, 120)
-        AimBotTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
+        MovementTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        VisualTab.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+        AimBotTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     end)
 
     AimBotTab.MouseButton1Click:Connect(function()
@@ -864,72 +1071,39 @@ local function createGUI()
         VisualContent.Visible = false
         AimBotContent.Visible = true
         
-        MovementTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-        VisualTab.BackgroundColor3 = Color3.fromRGB(60, 60, 80)
-        AimBotTab.BackgroundColor3 = Color3.fromRGB(80, 80, 120)
-    end)
-
-    -- Toggle minimize/maximize - ИСПРАВЛЕННАЯ ЧАСТЬ
-    local toggleDebounce = false
-    ToggleButton.MouseButton1Click:Connect(function()
-        if toggleDebounce then return end
-        toggleDebounce = true
-        
-        minimized = not minimized
-        if minimized then
-            -- Плавное скрытие
-            local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-            local tween = TweenService:Create(MainFrame, tweenInfo, {Size = UDim2.new(0, 300, 0, 40)})
-            tween:Play()
-            
-            -- Ждем завершения твина перед скрытием контента
-            tween.Completed:Connect(function()
-                ContentFrame.Visible = false
-                TabButtons.Visible = false
-                ToggleButton.Text = "+"
-                toggleDebounce = false
-            end)
-        else
-            -- Сначала показываем контент
-            ContentFrame.Visible = true
-            TabButtons.Visible = true
-            
-            -- Затем плавное увеличение
-            local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-            local tween = TweenService:Create(MainFrame, tweenInfo, {Size = UDim2.new(0, 300, 0, 400)})
-            tween:Play()
-            
-            tween.Completed:Connect(function()
-                ToggleButton.Text = "-"
-                toggleDebounce = false
-            end)
-        end
+        MovementTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        VisualTab.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        AimBotTab.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
     end)
 
     -- Auto-resize for mobile
     local function updateSize()
         local viewportSize = workspace.CurrentCamera.ViewportSize
-        if minimized then
-            MainFrame.Size = UDim2.new(0, math.min(300, viewportSize.X - 20), 0, 40)
-        else
-            MainFrame.Size = UDim2.new(0, math.min(300, viewportSize.X - 20), 0, math.min(400, viewportSize.Y - 20))
-        end
+        MainFrame.Size = UDim2.new(0, math.min(300, viewportSize.X - 20), 0, math.min(400, viewportSize.Y - 20))
         
         -- Update FOV circle position
         updateFOVCircle()
+        
+        -- Update ESP Count position
+        if espCountText then
+            espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
+        end
     end
 
     updateSize()
     workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateSize)
+    
+    -- Создаем кнопку открытия/закрытия
+    createOpenCloseButton()
 end
 
 -- Создаем GUI при запуске
 createGUI()
 createFOVCircle()
 
--- Восстанавливаем GUI после смерти (с задержкой для оптимизации)
+-- Восстанавливаем GUI после смерти
 player.CharacterAdded:Connect(function()
-    wait(2) -- Увеличил задержку для стабильности
+    wait(2)
     createGUI()
     if aimBotEnabled then
         createFOVCircle()
