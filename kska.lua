@@ -8,14 +8,13 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
--- Переменные для GUI
+-- Глобальные переменные
 local ScreenGui = nil
 local MainFrame = nil
 local minimized = false
-
--- FOV Circle variables
 local fovCircle = nil
 local aimBotFOV = 50
+local savedPosition = UDim2.new(0, 10, 0, 10) -- Сохраняем позицию GUI
 
 -- Функция создания FOV Circle
 local function createFOVCircle()
@@ -43,19 +42,22 @@ end
 -- Функция создания GUI
 local function createGUI()
     if ScreenGui then
+        savedPosition = MainFrame.Position -- Сохраняем текущую позицию
         ScreenGui:Destroy()
+        ScreenGui = nil
+        MainFrame = nil
     end
 
     -- Create GUI
     ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "SANSTRO_GUI"
     ScreenGui.Parent = player.PlayerGui
-    ScreenGui.ResetOnSpawn = false -- Чтобы GUI не пропадал после смерти
+    ScreenGui.ResetOnSpawn = false
 
-    local MainFrame = Instance.new("Frame")
+    MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 300, 0, 400)
-    MainFrame.Position = UDim2.new(0, 10, 0, 10)
+    MainFrame.Position = savedPosition -- Восстанавливаем сохраненную позицию
     MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
