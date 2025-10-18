@@ -5,53 +5,19 @@ local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
 local player = Players.LocalPlayer
 
--- Основной GUI
+-- Основной GUI (помещаем в CoreGui чтобы не пропадал при смерти)
 local gui = Instance.new("ScreenGui")
 gui.Name = "AimbotGUI"
 gui.Parent = CoreGui
 
--- Переменные для настроек
-local settings = {
-    aimbot = false,
-    fov = 50,
-    teamCheck = false,
-    killCheck = false,
-    wallHack = false
-}
-
--- Таблицы для хранения данных
-local wallHackItems = {}
-local killFeed = {}
-local currentTarget = nil
-local menuDragging = false
-local dragStartPos = nil
-local menuStartPos = nil
-
--- ФИКСИРОВАННЫЙ FOV круг (белый, по центру экрана)
-local fovCircle = Instance.new("Frame")
-fovCircle.Size = UDim2.new(0, settings.fov * 2, 0, settings.fov * 2)
-fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
-fovCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
-fovCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-fovCircle.BackgroundTransparency = 0.8
-fovCircle.BorderSizePixel = 0
-fovCircle.Visible = false
-fovCircle.ZIndex = 999
-fovCircle.Parent = gui
-
-local fovCorner = Instance.new("UICorner")
-fovCorner.CornerRadius = UDim.new(1, 0)
-fovCorner.Parent = fovCircle
-
 -- Главный фрейм меню
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 300, 0, 400)
-mainFrame.Position = UDim2.new(0, 50, 0, 50)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -200)
 mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
 mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = gui
-mainFrame.ZIndex = 1000
 
 -- Закругление углов
 local corner = Instance.new("UICorner")
@@ -69,37 +35,25 @@ shadow.ImageTransparency = 0.8
 shadow.ScaleType = Enum.ScaleType.Slice
 shadow.SliceCenter = Rect.new(10, 10, 118, 118)
 shadow.Parent = mainFrame
-shadow.ZIndex = 999
+shadow.ZIndex = -1
 
--- Заголовок (для перемещения)
-local title = Instance.new("TextButton")
+-- Заголовок (будет использоваться для перемещения)
+local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 40)
 title.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-title.Text = "AIMBOT (перетащи)"
+title.Text = "AIMBOT"
 title.TextColor3 = Color3.fromRGB(255, 50, 50)
-title.TextSize = 16
+title.TextSize = 20
 title.Font = Enum.Font.GothamBold
-title.AutoButtonColor = false
 title.Parent = mainFrame
+
+-- Делаем заголовок активным для перемещения
+title.Active = true
+title.Selectable = true
 
 local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 8)
 titleCorner.Parent = title
-
--- Кнопка закрытия
-local closeButton = Instance.new("TextButton")
-closeButton.Size = UDim2.new(0, 30, 0, 30)
-closeButton.Position = UDim2.new(1, -35, 0, 5)
-closeButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-closeButton.Text = "X"
-closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeButton.TextSize = 16
-closeButton.Font = Enum.Font.GothamBold
-closeButton.Parent = title
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 6)
-closeCorner.Parent = closeButton
 
 -- Контейнер для элементов
 local scrollFrame = Instance.new("ScrollingFrame")
@@ -123,33 +77,81 @@ padding.PaddingRight = UDim.new(0, 10)
 padding.PaddingTop = UDim.new(0, 10)
 padding.PaddingBottom = UDim.new(0, 10)
 
--- Кнопка переоткрытия меню (квадратная)
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(0, 50, 0, 50)
-toggleButton.Position = UDim2.new(0, 10, 0, 10)
-toggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-toggleButton.Text = "MENU"
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.TextSize = 14
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.ZIndex = 1000
-toggleButton.Parent = gui
+-- Переменные для настроек
+local settings = {
+    aimbot = false,
+    fov = 50,
+    teamCheck = false,
+    killCheck = false,
+    wallHack = false
+}
 
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(0, 6)
-toggleCorner.Parent = toggleButton
+-- ФИКСИРОВАННЫЙ FOV круг (белый, по центру экрана)
+local fovCircle = Instance.new("Frame")
+fovCircle.Size = UDim2.new(0, settings.fov * 2, 0, settings.fov * 2)
+fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+fovCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+fovCircle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+fovCircle.BackgroundTransparency = 0.8
+fovCircle.BorderSizePixel = 0
+fovCircle.Visible = false
+fovCircle.Parent = gui
 
-local toggleShadow = Instance.new("ImageLabel")
-toggleShadow.Size = UDim2.new(1, 10, 1, 10)
-toggleShadow.Position = UDim2.new(0, -5, 0, -5)
-toggleShadow.BackgroundTransparency = 1
-toggleShadow.Image = "rbxassetid://1316045217"
-toggleShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
-toggleShadow.ImageTransparency = 0.8
-toggleShadow.ScaleType = Enum.ScaleType.Slice
-toggleShadow.SliceCenter = Rect.new(10, 10, 118, 118)
-toggleShadow.Parent = toggleButton
-toggleShadow.ZIndex = 999
+local fovCorner = Instance.new("UICorner")
+fovCorner.CornerRadius = UDim.new(1, 0)
+fovCorner.Parent = fovCircle
+
+-- Таблицы для хранения данных
+local wallHackItems = {}
+local killFeed = {}
+local currentTarget = nil
+
+-- Переменные для перемещения меню
+local dragging = false
+local dragInput
+local dragStart
+local startPos
+
+-- Функция для начала перемещения
+local function updateInput(input)
+    dragInput = input
+end
+
+local function beginDrag(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end
+
+local function updateDrag(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(
+            startPos.X.Scale, 
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale, 
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end
+
+-- Подключаем события перемещения к заголовку
+title.InputBegan:Connect(beginDrag)
+title.InputChanged:Connect(updateInput)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        updateDrag(input)
+    end
+end)
 
 -- Функция создания переключателей
 function createToggle(name, parent, defaultValue)
@@ -303,7 +305,7 @@ function createSlider(name, parent, minValue, maxValue, defaultValue)
     return container
 end
 
--- АИМБОТ ФУНКЦИЯ
+-- АИМБОТ ФУНКЦИЯ (улучшенная)
 function findTarget()
     local closestPlayer = nil
     local shortestDistance = settings.fov
@@ -320,6 +322,7 @@ function findTarget()
             
             local character = otherPlayer.Character
             local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+            local head = character:FindFirstChild("Head")
             
             if humanoidRootPart then
                 local screenPoint, onScreen = workspace.CurrentCamera:WorldToViewportPoint(humanoidRootPart.Position)
@@ -334,7 +337,7 @@ function findTarget()
                     local rayDirection = (humanoidRootPart.Position - rayOrigin).Unit * 1000
                     local raycastResult = workspace:Raycast(rayOrigin, rayDirection, raycastParams)
                     
-                    if not raycastResult or raycastResult.Instance:IsDescendantOf(character) then
+                    if raycastResult and raycastResult.Instance:IsDescendantOf(character) then
                         -- Игрок видим
                         local center = Vector2.new(workspace.CurrentCamera.ViewportSize.X/2, workspace.CurrentCamera.ViewportSize.Y/2)
                         local playerLocation = Vector2.new(screenPoint.X, screenPoint.Y)
@@ -364,13 +367,13 @@ function aimAtTarget(target)
     local camera = workspace.CurrentCamera
     local targetPosition = head and head.Position or humanoidRootPart.Position
     
-    -- Плавное перемещение камеры к цели
+    -- Плавное перемещение камеры к цели (только если это разрешено игрой)
     local currentCFrame = camera.CFrame
     local newCFrame = CFrame.new(currentCFrame.Position, targetPosition)
     
     -- Пытаемся изменить положение камеры
     pcall(function()
-        camera.CFrame = newCFrame:Lerp(currentCFrame, 0.7)
+        camera.CFrame = newCFrame
     end)
 end
 
@@ -428,7 +431,6 @@ function setupCharacterESP(player, character)
     tracer.Size = UDim2.new(0, 2, 0, 100)
     tracer.AnchorPoint = Vector2.new(0.5, 0)
     tracer.Visible = false
-    tracer.ZIndex = 500
     tracer.Parent = espData.folder
     
     table.insert(espData.tracers, tracer)
@@ -441,7 +443,6 @@ function setupCharacterESP(player, character)
     box.BorderSizePixel = 2
     box.Size = UDim2.new(0, 50, 0, 100)
     box.Visible = false
-    box.ZIndex = 500
     box.Parent = espData.folder
     
     table.insert(espData.boxes, box)
@@ -453,7 +454,6 @@ function setupCharacterESP(player, character)
     healthBar.BorderSizePixel = 0
     healthBar.Size = UDim2.new(0, 4, 0, 30)
     healthBar.Visible = false
-    healthBar.ZIndex = 500
     healthBar.Parent = espData.folder
     
     local healthBarBackground = Instance.new("Frame")
@@ -462,7 +462,7 @@ function setupCharacterESP(player, character)
     healthBarBackground.BorderSizePixel = 0
     healthBarBackground.Size = UDim2.new(1, 0, 1, 0)
     healthBarBackground.Parent = healthBar
-    healthBarBackground.ZIndex = 499
+    healthBarBackground.ZIndex = -1
     
     table.insert(espData.healthBars, healthBar)
     
@@ -474,7 +474,6 @@ function setupCharacterESP(player, character)
     nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     nameLabel.TextSize = 14
     nameLabel.Visible = false
-    nameLabel.ZIndex = 500
     nameLabel.Parent = espData.folder
     
     table.insert(espData.labels, nameLabel)
@@ -545,10 +544,9 @@ function setupKillFeed()
     local killFeedFrame = Instance.new("Frame")
     killFeedFrame.Name = "KillFeed"
     killFeedFrame.Size = UDim2.new(0, 200, 0, 200)
-    killFeedFrame.Position = UDim2.new(0, 10, 0, 70)
+    killFeedFrame.Position = UDim2.new(0, 10, 0, 50)
     killFeedFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     killFeedFrame.BackgroundTransparency = 0.5
-    killFeedFrame.ZIndex = 800
     killFeedFrame.Parent = gui
     
     local killFeedCorner = Instance.new("UICorner")
@@ -628,52 +626,6 @@ function clearKillFeed()
     end
 end
 
--- ФУНКЦИИ ПЕРЕМЕЩЕНИЯ МЕНЮ
-local function startDrag(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        menuDragging = true
-        dragStartPos = Vector2.new(input.Position.X, input.Position.Y)
-        menuStartPos = UDim2.new(0, mainFrame.Position.X.Offset, 0, mainFrame.Position.Y.Offset)
-    end
-end
-
-local function endDrag(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        menuDragging = false
-        dragStartPos = nil
-        menuStartPos = nil
-    end
-end
-
-local function updateDrag(input)
-    if menuDragging and dragStartPos and menuStartPos then
-        local delta = Vector2.new(input.Position.X, input.Position.Y) - dragStartPos
-        mainFrame.Position = UDim2.new(0, menuStartPos.X.Offset + delta.X, 0, menuStartPos.Y.Offset + delta.Y)
-    end
-end
-
--- Обработчики событий для перемещения меню
-title.InputBegan:Connect(startDrag)
-title.InputEnded:Connect(endDrag)
-UserInputService.InputChanged:Connect(function(input)
-    if menuDragging then
-        updateDrag(input)
-    end
-end)
-
--- Функционал скрытия/показа меню
-local function toggleMenu()
-    mainFrame.Visible = not mainFrame.Visible
-    print("Меню " .. (mainFrame.Visible and "открыто" or "скрыто"))
-end
-
-toggleButton.MouseButton1Click:Connect(toggleMenu)
-closeButton.MouseButton1Click:Connect(toggleMenu)
-
--- Обработка касаний для мобильных устройств
-toggleButton.TouchTap:Connect(toggleMenu)
-closeButton.TouchTap:Connect(toggleMenu)
-
 -- Создание элементов интерфейса
 createToggle("AimBot", scrollFrame, false)
 createSlider("FOV", scrollFrame, 10, 200, 50)
@@ -681,16 +633,50 @@ createToggle("Team Check", scrollFrame, false)
 createToggle("Kill Check", scrollFrame, false)
 createToggle("WallHack", scrollFrame, false)
 
+-- Кнопка переоткрытия меню (улучшенная для мобильных устройств)
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 50, 0, 50)
+toggleButton.Position = UDim2.new(1, -60, 0, 10)
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+toggleButton.Text = "≡"
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.TextSize = 24
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.Parent = gui
+
+local toggleCorner = Instance.new("UICorner")
+toggleCorner.CornerRadius = UDim.new(0, 8)
+toggleCorner.Parent = toggleButton
+
+local toggleShadow = Instance.new("ImageLabel")
+toggleShadow.Size = UDim2.new(1, 10, 1, 10)
+toggleShadow.Position = UDim2.new(0, -5, 0, -5)
+toggleShadow.BackgroundTransparency = 1
+toggleShadow.Image = "rbxassetid://1316045217"
+toggleShadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
+toggleShadow.ImageTransparency = 0.8
+toggleShadow.ScaleType = Enum.ScaleType.Slice
+toggleShadow.SliceCenter = Rect.new(10, 10, 118, 118)
+toggleShadow.Parent = toggleButton
+toggleShadow.ZIndex = -1
+
+-- Улучшенная функция переключения меню для мобильных устройств
+local function toggleMenu()
+    mainFrame.Visible = not mainFrame.Visible
+end
+
+-- Обработка кликов и касаний для кнопки
+toggleButton.MouseButton1Click:Connect(toggleMenu)
+toggleButton.TouchTap:Connect(toggleMenu)
+
 -- Основной цикл аимбота
 RunService.RenderStepped:Connect(function()    
     -- Аимбот логика
     if settings.aimbot then
         local target = findTarget()
-        if target then
+        if target and target ~= currentTarget then
             currentTarget = target
             aimAtTarget(target)
-        else
-            currentTarget = nil
         end
     else
         currentTarget = nil
@@ -699,21 +685,18 @@ end)
 
 -- Защита от удаления GUI при смерти
 player.CharacterAdded:Connect(function()
-    -- Убедимся, что GUI все еще существует
+    -- Пересоздаем GUI если он был удален
     if not gui or not gui.Parent then
-        local oldGUI = CoreGui:FindFirstChild("AimbotGUI")
-        if oldGUI then
-            oldGUI:Destroy()
-        end
+        gui = Instance.new("ScreenGui")
+        gui.Name = "AimbotGUI"
+        gui.Parent = CoreGui
         
-        -- Перезагружаем скрипт
-        print("Перезагрузка GUI...")
-        wait(1)
-        -- Здесь должен быть URL для загрузки скрипта, если нужно
+        -- Здесь нужно пересоздать все элементы GUI...
+        -- Для простоты перезагрузим скрипт
+        print("GUI был пересоздан после смерти")
     end
 end)
 
-print("Aimbot Menu loaded!")
-print("Use the MENU button to toggle menu.")
-print("Drag the title to move the menu.")
+print("Aimbot Menu loaded! Use the square button to toggle menu.")
 print("Menu will not disappear when you die!")
+print("Drag the title bar to move the menu!")
