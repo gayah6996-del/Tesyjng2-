@@ -8,15 +8,32 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
--- Глобальные переменные
+-- Глобальные переменные для сохранения состояний
+local speedHackEnabled = false
+local jumpHackEnabled = false
+local noclipEnabled = false
+local espTracersEnabled = false
+local espBoxEnabled = false
+local espHealthEnabled = false
+local espDistanceEnabled = false
+local espCountEnabled = false
+local aimBotEnabled = false
+local currentSpeed = 16
+local aimBotFOV = 50
+
 local ScreenGui = nil
 local MainFrame = nil
 local minimized = false
 local fovCircle = nil
-local aimBotFOV = 50
 local savedPosition = UDim2.new(0, 10, 0, 10)
 local isGuiOpen = true
 local OpenCloseButton = nil
+
+-- ESP объекты
+local espObjects = {}
+local espConnections = {}
+local espCountText = nil
+local noclipConnection = nil
 
 -- Функция создания FOV Circle
 local function createFOVCircle()
@@ -81,6 +98,234 @@ local function createOpenCloseButton()
             OpenCloseButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
         end
     end)
+end
+
+-- Функция для переключения кнопок
+local function toggleButton(button, enabled)
+    if enabled then
+        button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        button.Text = "ON"
+    else
+        button.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+        button.Text = "OFF"
+    end
+end
+
+-- Функция очистки ESP
+local function cleanupESP(otherPlayer)
+    if espObjects[otherPlayer] then
+        if espObjects[otherPlayer].tracer then
+            espObjects[otherPlayer].tracer:Remove()
+        end
+        if espObjects[otherPlayer].box then
+            espObjects[otherPlayer].box:Remove()
+        end
+        if espObjects[otherPlayer].health then
+            espObjects[otherPlayer].health:Remove()
+        end
+        if espObjects[otherPlayer].distance then
+            espObjects[otherPlayer].distance:Remove()
+        end
+        espObjects[otherPlayer] = nil
+    end
+    
+    if espConnections[otherPlayer] then
+        espConnections[otherPlayer]:Disconnect()
+        espConnections[otherPlayer] = nil
+    end
+end
+
+-- ESP Functions
+local function createESP(otherPlayer)
+    if otherPlayer == player then return end
+    
+    cleanupESP(otherPlayer)
+    
+    espObjects[otherPlayer] = {
+        tracer = nil,
+        box = nil,
+        health = nil,
+        distance = nil
+    }
+    
+    local function updateESP()
+        if not espObjects[otherPlayer] then return end
+        
+        -- Check if player is dead or doesn't exist
+        if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
+            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
+            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
+            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+            return
+        end
+        
+        local rootPart = otherPlayer.Character.HumanoidRootPart
+        local humanoid = otherPlayer.Character.Humanoid
+        local head = otherPlayer.Character:FindFirstChild("Head")
+        
+        if not head then return end
+        
+        -- Check if player is dead
+        if humanoid.Health <= 0 then
+            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
+            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
+            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+            return
+        end
+        
+        local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+        
+        if onScreen then
+            -- Tracer
+            if espTracersEnabled then
+                if not espObjects[otherPlayer].tracer then
+                    espObjects[otherPlayer].tracer = Drawing.new("Line")
+                    espObjects[otherPlayer].tracer.Thickness = 1
+                    espObjects[otherPlayer].tracer.Color = Color3.fromRGB(255, 0, 0)
+                end
+                
+                local screenCenter = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                espObjects[otherPlayer].tracer.From = screenCenter
+                espObjects[otherPlayer].tracer.To = Vector2.new(vector.X, vector.Y)
+                espObjects[otherPlayer].tracer.Visible = true
+            elseif espObjects[otherPlayer].tracer then
+                espObjects[otherPlayer].tracer.Visible = false
+            end
+            
+            -- Box ESP
+            if espBoxEnabled then
+                if not espObjects[otherPlayer].box then
+                    espObjects[otherPlayer].box = Drawing.new("Square")
+                    espObjects[otherPlayer].box.Thickness = 1
+                    espObjects[otherPlayer].box.Color = Color3.fromRGB(255, 0, 0)
+                    espObjects[otherPlayer].box.Filled = false
+                end
+                
+                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                local rootPos = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+                
+                local size = Vector2.new(2000 / rootPos.Z, 3000 / rootPos.Z)
+                local position = Vector2.new(headPos.X - size.X / 2, headPos.Y - size.Y / 2)
+                
+                espObjects[otherPlayer].box.Size = size
+                espObjects[otherPlayer].box.Position = position
+                espObjects[otherPlayer].box.Visible = true
+            elseif espObjects[otherPlayer].box then
+                espObjects[otherPlayer].box.Visible = false
+            end
+            
+            -- Health ESP
+            if espHealthEnabled then
+                if not espObjects[otherPlayer].health then
+                    espObjects[otherPlayer].health = Drawing.new("Text")
+                    espObjects[otherPlayer].health.Size = 14
+                    espObjects[otherPlayer].health.Center = true
+                    espObjects[otherPlayer].health.Outline = true
+                    espObjects[otherPlayer].health.Color = Color3.fromRGB(255, 0, 0)
+                end
+                
+                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                espObjects[otherPlayer].health.Position = Vector2.new(headPos.X, headPos.Y - 40)
+                espObjects[otherPlayer].health.Text = "HP: " .. math.floor(humanoid.Health)
+                espObjects[otherPlayer].health.Visible = true
+            elseif espObjects[otherPlayer].health then
+                espObjects[otherPlayer].health.Visible = false
+            end
+            
+            -- Distance ESP
+            if espDistanceEnabled then
+                if not espObjects[otherPlayer].distance then
+                    espObjects[otherPlayer].distance = Drawing.new("Text")
+                    espObjects[otherPlayer].distance.Size = 14
+                    espObjects[otherPlayer].distance.Center = true
+                    espObjects[otherPlayer].distance.Outline = true
+                    espObjects[otherPlayer].distance.Color = Color3.fromRGB(255, 0, 0)
+                end
+                
+                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                local distance = (player.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
+                espObjects[otherPlayer].distance.Position = Vector2.new(headPos.X, headPos.Y - 60)
+                espObjects[otherPlayer].distance.Text = "Distance: " .. math.floor(distance)
+                espObjects[otherPlayer].distance.Visible = true
+            elseif espObjects[otherPlayer].distance then
+                espObjects[otherPlayer].distance.Visible = false
+            end
+        else
+            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
+            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
+            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+        end
+    end
+    
+    -- Update ESP continuously
+    espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
+    
+    -- Clean up when player leaves
+    otherPlayer.AncestryChanged:Connect(function()
+        if not otherPlayer.Parent then
+            cleanupESP(otherPlayer)
+        end
+    end)
+end
+
+-- ESP Count Function
+local function updateESPCount()
+    if not espCountEnabled or not espCountText then return end
+    
+    local aliveCount = 0
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
+            aliveCount = aliveCount + 1
+        end
+    end
+    
+    espCountText.Text = "Players: " .. aliveCount
+    espCountText.Visible = true
+end
+
+-- Improved AimBot with wall check and FOV
+local function isPlayerVisible(targetPlayer)
+    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        return false
+    end
+    
+    local targetRoot = targetPlayer.Character.HumanoidRootPart
+    local camera = workspace.CurrentCamera
+    local origin = camera.CFrame.Position
+    
+    -- Raycast to target
+    local direction = (targetRoot.Position - origin).Unit
+    local ray = Ray.new(origin, direction * 1000)
+    
+    local ignoreList = {player.Character, camera}
+    local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
+    
+    if hit then
+        -- Check if we hit the target player
+        local hitModel = hit:FindFirstAncestorOfClass("Model")
+        if hitModel and hitModel == targetPlayer.Character then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Check if target is within FOV circle
+local function isInFOV(targetPosition)
+    local camera = workspace.CurrentCamera
+    local screenPoint, onScreen = camera:WorldToViewportPoint(targetPosition)
+    
+    if not onScreen then return false end
+    
+    local center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    local targetPoint = Vector2.new(screenPoint.X, screenPoint.Y)
+    local distance = (targetPoint - center).Magnitude
+    
+    return distance <= aimBotFOV
 end
 
 -- Функция создания GUI
@@ -242,7 +487,7 @@ local function createGUI()
     SpeedValue.Size = UDim2.new(1, 0, 1, 0)
     SpeedValue.BackgroundTransparency = 1
     SpeedValue.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SpeedValue.Text = "Speed: 16"
+    SpeedValue.Text = "Speed: " .. currentSpeed
     SpeedValue.Font = Enum.Font.Gotham
     SpeedValue.TextSize = 12
     SpeedValue.Parent = SpeedHackSlider
@@ -569,38 +814,66 @@ local function createGUI()
     AimBotFOVLabel.Position = UDim2.new(0, 0, 0, 0)
     AimBotFOVLabel.BackgroundTransparency = 1
     AimBotFOVLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    AimBotFOVLabel.Text = "AimBot FOV: 50"
+    AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
     AimBotFOVLabel.Font = Enum.Font.Gotham
     AimBotFOVLabel.TextSize = 12
     AimBotFOVLabel.Parent = AimBotFOVFrame
 
-    -- Variables
-    local speedHackEnabled = false
-    local jumpHackEnabled = false
-    local noclipEnabled = false
-    local espTracersEnabled = false
-    local espBoxEnabled = false
-    local espHealthEnabled = false
-    local espDistanceEnabled = false
-    local espCountEnabled = false
-    local aimBotEnabled = false
+    -- Восстанавливаем состояния кнопок при создании GUI
+    toggleButton(SpeedHackToggle, speedHackEnabled)
+    SpeedHackSlider.Visible = speedHackEnabled
+    
+    toggleButton(JumpHackToggle, jumpHackEnabled)
+    toggleButton(NoClipToggle, noclipEnabled)
+    toggleButton(ESPTracersToggle, espTracersEnabled)
+    toggleButton(ESPBoxToggle, espBoxEnabled)
+    toggleButton(ESPHealthToggle, espHealthEnabled)
+    toggleButton(ESPDistanceToggle, espDistanceEnabled)
+    toggleButton(ESPCountToggle, espCountEnabled)
+    toggleButton(AimBotToggle, aimBotEnabled)
+    AimBotFOVFrame.Visible = aimBotEnabled
 
-    local currentSpeed = 16
+    -- Восстанавливаем ESP Count если он был включен
+    if espCountEnabled and not espCountText then
+        espCountText = Drawing.new("Text")
+        espCountText.Size = 20
+        espCountText.Center = true
+        espCountText.Outline = true
+        espCountText.Color = Color3.fromRGB(255, 0, 0)
+        espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
+        espCountText.Visible = true
+    end
 
-    local espObjects = {}
-    local noclipConnection
-    local espConnections = {}
-    local espCountText = nil
-
-    -- Functions
-    local function toggleButton(button, enabled)
-        if enabled then
-            button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-            button.Text = "ON"
-        else
-            button.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
-            button.Text = "OFF"
+    -- Восстанавливаем FOV Circle если он был включен
+    if aimBotEnabled then
+        if not fovCircle then
+            createFOVCircle()
         end
+        fovCircle.Visible = true
+    end
+
+    -- Восстанавливаем скорость если она была изменена
+    if speedHackEnabled then
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = currentSpeed
+        end
+    end
+
+    -- Восстанавливаем NoClip если он был включен
+    if noclipEnabled then
+        if noclipConnection then
+            noclipConnection:Disconnect()
+        end
+        noclipConnection = RunService.Stepped:Connect(function()
+            if player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
     end
 
     -- Speed Hack
@@ -664,12 +937,15 @@ local function createGUI()
         end
     end)
 
-    -- NoClip - ИСПРАВЛЕННЫЙ
+    -- NoClip
     NoClipToggle.MouseButton1Click:Connect(function()
         noclipEnabled = not noclipEnabled
         toggleButton(NoClipToggle, noclipEnabled)
         
         if noclipEnabled then
+            if noclipConnection then
+                noclipConnection:Disconnect()
+            end
             noclipConnection = RunService.Stepped:Connect(function()
                 if player.Character then
                     for _, part in pairs(player.Character:GetDescendants()) do
@@ -695,180 +971,6 @@ local function createGUI()
             end
         end
     end)
-
-    -- ESP Functions
-    local function cleanupESP(otherPlayer)
-        if espObjects[otherPlayer] then
-            if espObjects[otherPlayer].tracer then
-                espObjects[otherPlayer].tracer:Remove()
-            end
-            if espObjects[otherPlayer].box then
-                espObjects[otherPlayer].box:Remove()
-            end
-            if espObjects[otherPlayer].health then
-                espObjects[otherPlayer].health:Remove()
-            end
-            if espObjects[otherPlayer].distance then
-                espObjects[otherPlayer].distance:Remove()
-            end
-            espObjects[otherPlayer] = nil
-        end
-        
-        if espConnections[otherPlayer] then
-            espConnections[otherPlayer]:Disconnect()
-            espConnections[otherPlayer] = nil
-        end
-    end
-
-    local function createESP(otherPlayer)
-        if otherPlayer == player then return end
-        
-        cleanupESP(otherPlayer)
-        
-        espObjects[otherPlayer] = {
-            tracer = nil,
-            box = nil,
-            health = nil,
-            distance = nil
-        }
-        
-        local function updateESP()
-            if not espObjects[otherPlayer] then return end
-            
-            -- Check if player is dead or doesn't exist
-            if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
-                if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-                if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-                if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-                if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
-                return
-            end
-            
-            local rootPart = otherPlayer.Character.HumanoidRootPart
-            local humanoid = otherPlayer.Character.Humanoid
-            local head = otherPlayer.Character:FindFirstChild("Head")
-            
-            if not head then return end
-            
-            -- Check if player is dead
-            if humanoid.Health <= 0 then
-                if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-                if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-                if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-                if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
-                return
-            end
-            
-            local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
-            
-            if onScreen then
-                -- Tracer
-                if espTracersEnabled then
-                    if not espObjects[otherPlayer].tracer then
-                        espObjects[otherPlayer].tracer = Drawing.new("Line")
-                        espObjects[otherPlayer].tracer.Thickness = 1
-                        espObjects[otherPlayer].tracer.Color = Color3.fromRGB(255, 0, 0)
-                    end
-                    
-                    local screenCenter = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-                    espObjects[otherPlayer].tracer.From = screenCenter
-                    espObjects[otherPlayer].tracer.To = Vector2.new(vector.X, vector.Y)
-                    espObjects[otherPlayer].tracer.Visible = true
-                elseif espObjects[otherPlayer].tracer then
-                    espObjects[otherPlayer].tracer.Visible = false
-                end
-                
-                -- Box ESP
-                if espBoxEnabled then
-                    if not espObjects[otherPlayer].box then
-                        espObjects[otherPlayer].box = Drawing.new("Square")
-                        espObjects[otherPlayer].box.Thickness = 1
-                        espObjects[otherPlayer].box.Color = Color3.fromRGB(255, 0, 0)
-                        espObjects[otherPlayer].box.Filled = false
-                    end
-                    
-                    local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                    local rootPos = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
-                    
-                    local size = Vector2.new(2000 / rootPos.Z, 3000 / rootPos.Z)
-                    local position = Vector2.new(headPos.X - size.X / 2, headPos.Y - size.Y / 2)
-                    
-                    espObjects[otherPlayer].box.Size = size
-                    espObjects[otherPlayer].box.Position = position
-                    espObjects[otherPlayer].box.Visible = true
-                elseif espObjects[otherPlayer].box then
-                    espObjects[otherPlayer].box.Visible = false
-                end
-                
-                -- Health ESP
-                if espHealthEnabled then
-                    if not espObjects[otherPlayer].health then
-                        espObjects[otherPlayer].health = Drawing.new("Text")
-                        espObjects[otherPlayer].health.Size = 14
-                        espObjects[otherPlayer].health.Center = true
-                        espObjects[otherPlayer].health.Outline = true
-                        espObjects[otherPlayer].health.Color = Color3.fromRGB(255, 0, 0)
-                    end
-                    
-                    local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                    espObjects[otherPlayer].health.Position = Vector2.new(headPos.X, headPos.Y - 40)
-                    espObjects[otherPlayer].health.Text = "HP: " .. math.floor(humanoid.Health)
-                    espObjects[otherPlayer].health.Visible = true
-                elseif espObjects[otherPlayer].health then
-                    espObjects[otherPlayer].health.Visible = false
-                end
-                
-                -- Distance ESP
-                if espDistanceEnabled then
-                    if not espObjects[otherPlayer].distance then
-                        espObjects[otherPlayer].distance = Drawing.new("Text")
-                        espObjects[otherPlayer].distance.Size = 14
-                        espObjects[otherPlayer].distance.Center = true
-                        espObjects[otherPlayer].distance.Outline = true
-                        espObjects[otherPlayer].distance.Color = Color3.fromRGB(255, 0, 0)
-                    end
-                    
-                    local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                    local distance = (player.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
-                    espObjects[otherPlayer].distance.Position = Vector2.new(headPos.X, headPos.Y - 60)
-                    espObjects[otherPlayer].distance.Text = math.floor(distance) .. " studs"
-                    espObjects[otherPlayer].distance.Visible = true
-                elseif espObjects[otherPlayer].distance then
-                    espObjects[otherPlayer].distance.Visible = false
-                end
-            else
-                if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-                if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-                if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-                if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
-            end
-        end
-        
-        -- Update ESP continuously
-        espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
-        
-        -- Clean up when player leaves
-        otherPlayer.AncestryChanged:Connect(function()
-            if not otherPlayer.Parent then
-                cleanupESP(otherPlayer)
-            end
-        end)
-    end
-
-    -- ESP Count Function
-    local function updateESPCount()
-        if not espCountEnabled or not espCountText then return end
-        
-        local aliveCount = 0
-        for _, otherPlayer in pairs(Players:GetPlayers()) do
-            if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
-                aliveCount = aliveCount + 1
-            end
-        end
-        
-        espCountText.Text = "Players: " .. aliveCount
-        espCountText.Visible = true
-    end
 
     -- ESP Tracers Toggle
     ESPTracersToggle.MouseButton1Click:Connect(function()
@@ -976,48 +1078,6 @@ local function createGUI()
         end
     end)
 
-    -- Improved AimBot with wall check and FOV
-    local function isPlayerVisible(targetPlayer)
-        if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            return false
-        end
-        
-        local targetRoot = targetPlayer.Character.HumanoidRootPart
-        local camera = workspace.CurrentCamera
-        local origin = camera.CFrame.Position
-        
-        -- Raycast to target
-        local direction = (targetRoot.Position - origin).Unit
-        local ray = Ray.new(origin, direction * 1000)
-        
-        local ignoreList = {player.Character, camera}
-        local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
-        
-        if hit then
-            -- Check if we hit the target player
-            local hitModel = hit:FindFirstAncestorOfClass("Model")
-            if hitModel and hitModel == targetPlayer.Character then
-                return true
-            end
-        end
-        
-        return false
-    end
-
-    -- Check if target is within FOV circle
-    local function isInFOV(targetPosition)
-        local camera = workspace.CurrentCamera
-        local screenPoint, onScreen = camera:WorldToViewportPoint(targetPosition)
-        
-        if not onScreen then return false end
-        
-        local center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
-        local targetPoint = Vector2.new(screenPoint.X, screenPoint.Y)
-        local distance = (targetPoint - center).Magnitude
-        
-        return distance <= aimBotFOV
-    end
-
     -- AimBot Logic with FOV
     RunService.Heartbeat:Connect(function()
         if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -1105,10 +1165,6 @@ createFOVCircle()
 player.CharacterAdded:Connect(function()
     wait(2)
     createGUI()
-    if aimBotEnabled then
-        createFOVCircle()
-        fovCircle.Visible = true
-    end
 end)
 
 -- Clean up when player leaves
@@ -1118,5 +1174,25 @@ game:GetService("CoreGui").ChildRemoved:Connect(function(child)
             fovCircle:Remove()
             fovCircle = nil
         end
+        if espCountText then
+            espCountText:Remove()
+            espCountText = nil
+        end
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        -- Clean up ESP objects
+        for _, espData in pairs(espObjects) do
+            if espData.tracer then espData.tracer:Remove() end
+            if espData.box then espData.box:Remove() end
+            if espData.health then espData.health:Remove() end
+            if espData.distance then espData.distance:Remove() end
+        end
+        espObjects = {}
+        for _, connection in pairs(espConnections) do
+            connection:Disconnect()
+        end
+        espConnections = {}
     end
 end)
