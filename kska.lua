@@ -8,13 +8,30 @@ local Workspace = game:GetService("Workspace")
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
 
--- Глобальные переменные
+-- Глобальные переменные для сохранения состояний
 local ScreenGui = nil
 local MainFrame = nil
 local minimized = false
 local fovCircle = nil
 local aimBotFOV = 50
-local savedPosition = UDim2.new(0, 10, 0, 10) -- Сохраняем позицию GUI
+local savedPosition = UDim2.new(0, 10, 0, 10)
+
+-- Сохраняем состояния функций
+local states = {
+    speedHackEnabled = false,
+    jumpHackEnabled = false,
+    noclipEnabled = false,
+    espTracersEnabled = false,
+    espBoxEnabled = false,
+    espHealthEnabled = false,
+    aimBotEnabled = false,
+    currentSpeed = 16
+}
+
+-- Переменные для соединений
+local noclipConnection = nil
+local espConnections = {}
+local espObjects = {}
 
 -- Функция создания FOV Circle
 local function createFOVCircle()
@@ -39,10 +56,25 @@ local function updateFOVCircle()
     end
 end
 
+-- Функция очистки ESP
+local function clearESP()
+    for _, connection in pairs(espConnections) do
+        connection:Disconnect()
+    end
+    espConnections = {}
+    
+    for _, drawings in pairs(espObjects) do
+        if drawings.tracer then drawings.tracer:Remove() end
+        if drawings.box then drawings.box:Remove() end
+        if drawings.health then drawings.health:Remove() end
+    end
+    espObjects = {}
+end
+
 -- Функция создания GUI
 local function createGUI()
+    -- Очищаем предыдущий GUI если существует
     if ScreenGui then
-        savedPosition = MainFrame.Position -- Сохраняем текущую позицию
         ScreenGui:Destroy()
         ScreenGui = nil
         MainFrame = nil
@@ -57,7 +89,7 @@ local function createGUI()
     MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
     MainFrame.Size = UDim2.new(0, 300, 0, 400)
-    MainFrame.Position = savedPosition -- Восстанавливаем сохраненную позицию
+    MainFrame.Position = savedPosition
     MainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
     MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
@@ -213,7 +245,7 @@ local function createGUI()
     SpeedValue.Size = UDim2.new(1, 0, 1, 0)
     SpeedValue.BackgroundTransparency = 1
     SpeedValue.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SpeedValue.Text = "Speed: 16"
+    SpeedValue.Text = "Speed: " .. states.currentSpeed
     SpeedValue.Font = Enum.Font.Gotham
     SpeedValue.TextSize = 12
     SpeedValue.Parent = SpeedHackSlider
@@ -468,26 +500,12 @@ local function createGUI()
     AimBotFOVLabel.Position = UDim2.new(0, 0, 0, 0)
     AimBotFOVLabel.BackgroundTransparency = 1
     AimBotFOVLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    AimBotFOVLabel.Text = "AimBot FOV: 50"
+    AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
     AimBotFOVLabel.Font = Enum.Font.Gotham
     AimBotFOVLabel.TextSize = 12
     AimBotFOVLabel.Parent = AimBotFOVFrame
 
-    -- Variables
-    local speedHackEnabled = false
-    local jumpHackEnabled = false
-    local noclipEnabled = false
-    local espTracersEnabled = false
-    local espBoxEnabled = false
-    local espHealthEnabled = false
-    local aimBotEnabled = false
-
-    local currentSpeed = 16
-
-    local espObjects = {}
-    local noclipConnection
-
-    -- Functions
+    -- Восстанавливаем состояния кнопок
     local function toggleButton(button, enabled)
         if enabled then
             button.BackgroundColor3 = Color3.fromRGB(0, 170, 127)
@@ -498,16 +516,28 @@ local function createGUI()
         end
     end
 
+    -- Применяем сохраненные состояния
+    toggleButton(SpeedHackToggle, states.speedHackEnabled)
+    toggleButton(JumpHackToggle, states.jumpHackEnabled)
+    toggleButton(NoClipToggle, states.noclipEnabled)
+    toggleButton(ESPTracersToggle, states.espTracersEnabled)
+    toggleButton(ESPBoxToggle, states.espBoxEnabled)
+    toggleButton(ESPHealthToggle, states.espHealthEnabled)
+    toggleButton(AimBotToggle, states.aimBotEnabled)
+    
+    SpeedHackSlider.Visible = states.speedHackEnabled
+    AimBotFOVFrame.Visible = states.aimBotEnabled
+
     -- Speed Hack
     SpeedHackToggle.MouseButton1Click:Connect(function()
-        speedHackEnabled = not speedHackEnabled
-        toggleButton(SpeedHackToggle, speedHackEnabled)
-        SpeedHackSlider.Visible = speedHackEnabled
+        states.speedHackEnabled = not states.speedHackEnabled
+        toggleButton(SpeedHackToggle, states.speedHackEnabled)
+        SpeedHackSlider.Visible = states.speedHackEnabled
         
-        if speedHackEnabled then
+        if states.speedHackEnabled then
             local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
-                humanoid.WalkSpeed = currentSpeed
+                humanoid.WalkSpeed = states.currentSpeed
             end
         else
             local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -524,13 +554,13 @@ local function createGUI()
             connection = RunService.Heartbeat:Connect(function()
                 local mouseLocation = UserInputService:GetMouseLocation()
                 local relativeX = math.clamp((mouseLocation.X - SpeedHackSlider.AbsolutePosition.X) / SpeedHackSlider.AbsoluteSize.X, 0, 1)
-                currentSpeed = math.floor(16 + (relativeX * 84)) -- 16 to 100
-                SpeedValue.Text = "Speed: " .. currentSpeed
+                states.currentSpeed = math.floor(16 + (relativeX * 84)) -- 16 to 100
+                SpeedValue.Text = "Speed: " .. states.currentSpeed
                 
-                if speedHackEnabled then
+                if states.speedHackEnabled then
                     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
                     if humanoid then
-                        humanoid.WalkSpeed = currentSpeed
+                        humanoid.WalkSpeed = states.currentSpeed
                     end
                 end
             end)
@@ -545,13 +575,13 @@ local function createGUI()
 
     -- Jump Hack
     JumpHackToggle.MouseButton1Click:Connect(function()
-        jumpHackEnabled = not jumpHackEnabled
-        toggleButton(JumpHackToggle, jumpHackEnabled)
+        states.jumpHackEnabled = not states.jumpHackEnabled
+        toggleButton(JumpHackToggle, states.jumpHackEnabled)
     end)
 
     -- Infinite Jump
     UserInputService.JumpRequest:Connect(function()
-        if jumpHackEnabled and player.Character then
+        if states.jumpHackEnabled and player.Character then
             local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
@@ -561,10 +591,13 @@ local function createGUI()
 
     -- NoClip
     NoClipToggle.MouseButton1Click:Connect(function()
-        noclipEnabled = not noclipEnabled
-        toggleButton(NoClipToggle, noclipEnabled)
+        states.noclipEnabled = not states.noclipEnabled
+        toggleButton(NoClipToggle, states.noclipEnabled)
         
-        if noclipEnabled then
+        if states.noclipEnabled then
+            if noclipConnection then
+                noclipConnection:Disconnect()
+            end
             noclipConnection = RunService.Stepped:Connect(function()
                 if player.Character then
                     for _, part in pairs(player.Character:GetDescendants()) do
@@ -577,6 +610,7 @@ local function createGUI()
         else
             if noclipConnection then
                 noclipConnection:Disconnect()
+                noclipConnection = nil
             end
         end
     end)
@@ -605,7 +639,7 @@ local function createGUI()
                 
                 if onScreen then
                     -- Tracer
-                    if espTracersEnabled then
+                    if states.espTracersEnabled then
                         if not espObjects[otherPlayer].tracer then
                             espObjects[otherPlayer].tracer = Drawing.new("Line")
                             espObjects[otherPlayer].tracer.Thickness = 1
@@ -621,7 +655,7 @@ local function createGUI()
                     end
                     
                     -- Box ESP
-                    if espBoxEnabled then
+                    if states.espBoxEnabled then
                         if not espObjects[otherPlayer].box then
                             espObjects[otherPlayer].box = Drawing.new("Square")
                             espObjects[otherPlayer].box.Thickness = 1
@@ -643,7 +677,7 @@ local function createGUI()
                     end
                     
                     -- Health ESP
-                    if espHealthEnabled then
+                    if states.espHealthEnabled then
                         if not espObjects[otherPlayer].health then
                             espObjects[otherPlayer].health = Drawing.new("Text")
                             espObjects[otherPlayer].health.Size = 14
@@ -674,11 +708,15 @@ local function createGUI()
         -- Update ESP continuously
         local espConnection
         espConnection = RunService.Heartbeat:Connect(updateESP)
+        espConnections[otherPlayer] = espConnection
         
         -- Clean up when player leaves
         otherPlayer.AncestryChanged:Connect(function()
             if not otherPlayer.Parent then
-                espConnection:Disconnect()
+                if espConnections[otherPlayer] then
+                    espConnections[otherPlayer]:Disconnect()
+                    espConnections[otherPlayer] = nil
+                end
                 if espObjects[otherPlayer] then
                     if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer:Remove() end
                     if espObjects[otherPlayer].box then espObjects[otherPlayer].box:Remove() end
@@ -691,20 +729,20 @@ local function createGUI()
 
     -- ESP Tracers Toggle
     ESPTracersToggle.MouseButton1Click:Connect(function()
-        espTracersEnabled = not espTracersEnabled
-        toggleButton(ESPTracersToggle, espTracersEnabled)
+        states.espTracersEnabled = not states.espTracersEnabled
+        toggleButton(ESPTracersToggle, states.espTracersEnabled)
     end)
 
     -- ESP Box Toggle
     ESPBoxToggle.MouseButton1Click:Connect(function()
-        espBoxEnabled = not espBoxEnabled
-        toggleButton(ESPBoxToggle, espBoxEnabled)
+        states.espBoxEnabled = not states.espBoxEnabled
+        toggleButton(ESPBoxToggle, states.espBoxEnabled)
     end)
 
     -- ESP Health Toggle
     ESPHealthToggle.MouseButton1Click:Connect(function()
-        espHealthEnabled = not espHealthEnabled
-        toggleButton(ESPHealthToggle, espHealthEnabled)
+        states.espHealthEnabled = not states.espHealthEnabled
+        toggleButton(ESPHealthToggle, states.espHealthEnabled)
     end)
 
     -- Initialize ESP for existing players
@@ -717,34 +755,18 @@ local function createGUI()
         createESP(newPlayer)
     end)
 
-    -- Remove ESP when player leaves
-    Players.PlayerRemoving:Connect(function(leftPlayer)
-        if espObjects[leftPlayer] then
-            if espObjects[leftPlayer].tracer then
-                espObjects[leftPlayer].tracer:Remove()
-            end
-            if espObjects[leftPlayer].box then
-                espObjects[leftPlayer].box:Remove()
-            end
-            if espObjects[leftPlayer].health then
-                espObjects[leftPlayer].health:Remove()
-            end
-            espObjects[leftPlayer] = nil
-        end
-    end)
-
     -- AimBot
     AimBotToggle.MouseButton1Click:Connect(function()
-        aimBotEnabled = not aimBotEnabled
-        toggleButton(AimBotToggle, aimBotEnabled)
-        AimBotFOVFrame.Visible = aimBotEnabled
+        states.aimBotEnabled = not states.aimBotEnabled
+        toggleButton(AimBotToggle, states.aimBotEnabled)
+        AimBotFOVFrame.Visible = states.aimBotEnabled
         
         -- Show/hide FOV circle
         if fovCircle then
-            fovCircle.Visible = aimBotEnabled
+            fovCircle.Visible = states.aimBotEnabled
         else
             createFOVCircle()
-            fovCircle.Visible = aimBotEnabled
+            fovCircle.Visible = states.aimBotEnabled
         end
     end)
 
@@ -812,7 +834,7 @@ local function createGUI()
 
     -- AimBot Logic with FOV
     RunService.Heartbeat:Connect(function()
-        if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        if states.aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local closestPlayer = nil
             local closestDistance = 1000
             
@@ -905,22 +927,53 @@ end
 createGUI()
 createFOVCircle()
 
--- Восстанавливаем GUI после смерти (с задержкой для оптимизации)
+-- Восстанавливаем GUI после смерти
 player.CharacterAdded:Connect(function()
-    wait(2) -- Увеличил задержку для стабильности
+    wait(3) -- Увеличиваем задержку для стабильности
+    
+    -- Восстанавливаем NoClip если был включен
+    if states.noclipEnabled and noclipConnection then
+        noclipConnection:Disconnect()
+        noclipConnection = RunService.Stepped:Connect(function()
+            if player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
+    
+    -- Восстанавливаем скорость если была включена
+    if states.speedHackEnabled then
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = states.currentSpeed
+        end
+    end
+    
+    -- Пересоздаем GUI
     createGUI()
-    if aimBotEnabled then
+    
+    -- Восстанавливаем FOV circle если был включен
+    if states.aimBotEnabled then
         createFOVCircle()
         fovCircle.Visible = true
     end
 end)
 
--- Clean up when player leaves
+-- Clean up when script ends
 game:GetService("CoreGui").ChildRemoved:Connect(function(child)
     if child == ScreenGui then
         if fovCircle then
             fovCircle:Remove()
             fovCircle = nil
+        end
+        clearESP()
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
         end
     end
 end)
