@@ -13,6 +13,33 @@ local ScreenGui = nil
 local MainFrame = nil
 local minimized = false
 
+-- FOV Circle variables
+local fovCircle = nil
+local aimBotFOV = 50
+
+-- Функция создания FOV Circle
+local function createFOVCircle()
+    if fovCircle then
+        fovCircle:Remove()
+    end
+    
+    fovCircle = Drawing.new("Circle")
+    fovCircle.Visible = false
+    fovCircle.Color = Color3.fromRGB(255, 255, 255)
+    fovCircle.Thickness = 1
+    fovCircle.Filled = false
+    fovCircle.Radius = aimBotFOV
+    fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+end
+
+-- Функция обновления FOV Circle
+local function updateFOVCircle()
+    if fovCircle then
+        fovCircle.Radius = aimBotFOV
+        fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+    end
+end
+
 -- Функция создания GUI
 local function createGUI()
     if ScreenGui then
@@ -419,30 +446,30 @@ local function createGUI()
     AimBotToggle.TextSize = 12
     AimBotToggle.Parent = AimBotFrame
 
-    -- AimBot Radius Slider
-    local AimBotRadiusFrame = Instance.new("Frame")
-    AimBotRadiusFrame.Name = "AimBotRadiusFrame"
-    AimBotRadiusFrame.Size = UDim2.new(1, 0, 0, 60)
-    AimBotRadiusFrame.Position = UDim2.new(0, 0, 0, 50)
-    AimBotRadiusFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
-    AimBotRadiusFrame.BorderSizePixel = 0
-    AimBotRadiusFrame.Visible = false
-    AimBotRadiusFrame.Parent = AimBotContent
+    -- AimBot FOV Slider
+    local AimBotFOVFrame = Instance.new("Frame")
+    AimBotFOVFrame.Name = "AimBotFOVFrame"
+    AimBotFOVFrame.Size = UDim2.new(1, 0, 0, 60)
+    AimBotFOVFrame.Position = UDim2.new(0, 0, 0, 50)
+    AimBotFOVFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+    AimBotFOVFrame.BorderSizePixel = 0
+    AimBotFOVFrame.Visible = false
+    AimBotFOVFrame.Parent = AimBotContent
 
-    local AimBotRadiusCorner = Instance.new("UICorner")
-    AimBotRadiusCorner.CornerRadius = UDim.new(0, 6)
-    AimBotRadiusCorner.Parent = AimBotRadiusFrame
+    local AimBotFOVCorner = Instance.new("UICorner")
+    AimBotFOVCorner.CornerRadius = UDim.new(0, 6)
+    AimBotFOVCorner.Parent = AimBotFOVFrame
 
-    local AimBotRadiusLabel = Instance.new("TextLabel")
-    AimBotRadiusLabel.Name = "AimBotRadiusLabel"
-    AimBotRadiusLabel.Size = UDim2.new(1, 0, 0, 30)
-    AimBotRadiusLabel.Position = UDim2.new(0, 0, 0, 0)
-    AimBotRadiusLabel.BackgroundTransparency = 1
-    AimBotRadiusLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    AimBotRadiusLabel.Text = "AimBot Radius: 50"
-    AimBotRadiusLabel.Font = Enum.Font.Gotham
-    AimBotRadiusLabel.TextSize = 12
-    AimBotRadiusLabel.Parent = AimBotRadiusFrame
+    local AimBotFOVLabel = Instance.new("TextLabel")
+    AimBotFOVLabel.Name = "AimBotFOVLabel"
+    AimBotFOVLabel.Size = UDim2.new(1, 0, 0, 30)
+    AimBotFOVLabel.Position = UDim2.new(0, 0, 0, 0)
+    AimBotFOVLabel.BackgroundTransparency = 1
+    AimBotFOVLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AimBotFOVLabel.Text = "AimBot FOV: 50"
+    AimBotFOVLabel.Font = Enum.Font.Gotham
+    AimBotFOVLabel.TextSize = 12
+    AimBotFOVLabel.Parent = AimBotFOVFrame
 
     -- Variables
     local speedHackEnabled = false
@@ -454,7 +481,6 @@ local function createGUI()
     local aimBotEnabled = false
 
     local currentSpeed = 16
-    local aimBotRadius = 50
 
     local espObjects = {}
     local noclipConnection
@@ -709,29 +735,38 @@ local function createGUI()
     AimBotToggle.MouseButton1Click:Connect(function()
         aimBotEnabled = not aimBotEnabled
         toggleButton(AimBotToggle, aimBotEnabled)
-        AimBotRadiusFrame.Visible = aimBotEnabled
+        AimBotFOVFrame.Visible = aimBotEnabled
+        
+        -- Show/hide FOV circle
+        if fovCircle then
+            fovCircle.Visible = aimBotEnabled
+        else
+            createFOVCircle()
+            fovCircle.Visible = aimBotEnabled
+        end
     end)
 
-    -- AimBot Radius Slider
-    AimBotRadiusFrame.InputBegan:Connect(function(input)
+    -- AimBot FOV Slider
+    AimBotFOVFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             local connection
             connection = RunService.Heartbeat:Connect(function()
                 local mouseLocation = UserInputService:GetMouseLocation()
-                local relativeX = math.clamp((mouseLocation.X - AimBotRadiusFrame.AbsolutePosition.X) / AimBotRadiusFrame.AbsoluteSize.X, 0, 1)
-                aimBotRadius = math.floor(10 + (relativeX * 190)) -- 10 to 200
-                AimBotRadiusLabel.Text = "AimBot Radius: " .. aimBotRadius
+                local relativeX = math.clamp((mouseLocation.X - AimBotFOVFrame.AbsolutePosition.X) / AimBotFOVFrame.AbsoluteSize.X, 0, 1)
+                aimBotFOV = math.floor(10 + (relativeX * 190)) -- 10 to 200
+                AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
+                updateFOVCircle()
             end)
             
             local function disconnect()
                 connection:Disconnect()
             end
             
-            AimBotRadiusFrame.InputEnded:Connect(disconnect)
+            AimBotFOVFrame.InputEnded:Connect(disconnect)
         end
     end)
 
-    -- Improved AimBot with wall check
+    -- Improved AimBot with wall check and FOV
     local function isPlayerVisible(targetPlayer)
         if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
             return false
@@ -743,7 +778,7 @@ local function createGUI()
         
         -- Raycast to target
         local direction = (targetRoot.Position - origin).Unit
-        local ray = Ray.new(origin, direction * aimBotRadius)
+        local ray = Ray.new(origin, direction * 1000)
         
         local ignoreList = {player.Character, camera}
         local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
@@ -759,19 +794,37 @@ local function createGUI()
         return false
     end
 
-    -- AimBot Logic
+    -- Check if target is within FOV circle
+    local function isInFOV(targetPosition)
+        local camera = workspace.CurrentCamera
+        local screenPoint, onScreen = camera:WorldToViewportPoint(targetPosition)
+        
+        if not onScreen then return false end
+        
+        local center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+        local targetPoint = Vector2.new(screenPoint.X, screenPoint.Y)
+        local distance = (targetPoint - center).Magnitude
+        
+        return distance <= aimBotFOV
+    end
+
+    -- AimBot Logic with FOV
     RunService.Heartbeat:Connect(function()
         if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local closestPlayer = nil
-            local closestDistance = aimBotRadius
+            local closestDistance = 1000
             
             for _, otherPlayer in pairs(Players:GetPlayers()) do
                 if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
-                    local distance = (player.Character.HumanoidRootPart.Position - otherPlayer.Character.HumanoidRootPart.Position).Magnitude
+                    local targetRoot = otherPlayer.Character.HumanoidRootPart
+                    local distance = (player.Character.HumanoidRootPart.Position - targetRoot.Position).Magnitude
                     
-                    if distance < closestDistance and isPlayerVisible(otherPlayer) then
-                        closestDistance = distance
-                        closestPlayer = otherPlayer
+                    -- Check if player is in FOV and visible
+                    if isInFOV(targetRoot.Position) and isPlayerVisible(otherPlayer) then
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestPlayer = otherPlayer
+                        end
                     end
                 end
             end
@@ -837,6 +890,9 @@ local function createGUI()
         else
             MainFrame.Size = UDim2.new(0, math.min(300, viewportSize.X - 20), 0, math.min(400, viewportSize.Y - 20))
         end
+        
+        -- Update FOV circle position
+        updateFOVCircle()
     end
 
     updateSize()
@@ -845,9 +901,24 @@ end
 
 -- Создаем GUI при запуске
 createGUI()
+createFOVCircle()
 
--- Восстанавливаем GUI после смерти
+-- Восстанавливаем GUI после смерти (с задержкой для оптимизации)
 player.CharacterAdded:Connect(function()
-    wait(1) -- Небольшая задержка для загрузки персонажа
+    wait(2) -- Увеличил задержку для стабильности
     createGUI()
+    if aimBotEnabled then
+        createFOVCircle()
+        fovCircle.Visible = true
+    end
+end)
+
+-- Clean up when player leaves
+game:GetService("CoreGui").ChildRemoved:Connect(function(child)
+    if child == ScreenGui then
+        if fovCircle then
+            fovCircle:Remove()
+            fovCircle = nil
+        end
+    end
 end)
