@@ -27,7 +27,7 @@ local minimized = false
 local fovCircle = nil
 local savedPosition = UDim2.new(0, 10, 0, 10)
 local savedButtonPosition = UDim2.new(0, 10, 0, 10)
-local isGuiOpen = false  -- Меню изначально закрыто
+local isGuiOpen = false
 local OpenCloseButton = nil
 
 -- ESP объекты
@@ -35,6 +35,118 @@ local espObjects = {}
 local espConnections = {}
 local espCountText = nil
 local noclipConnection = nil
+
+-- Анимация дерева
+local treeAnimationEnabled = true
+local treeParts = {}
+local treeConnections = {}
+
+-- Функция создания анимации падающего дерева
+local function createTreeAnimation()
+    -- Очищаем предыдущие анимации
+    for _, part in pairs(treeParts) do
+        if part then
+            part:Destroy()
+        end
+    end
+    for _, conn in pairs(treeConnections) do
+        if conn then
+            conn:Disconnect()
+        end
+    end
+    
+    treeParts = {}
+    treeConnections = {}
+    
+    if not treeAnimationEnabled or not MainFrame then return end
+    
+    -- Создаем фоновый контейнер для анимации
+    local backgroundFrame = Instance.new("Frame")
+    backgroundFrame.Name = "TreeBackground"
+    backgroundFrame.Size = UDim2.new(1, 0, 1, 0)
+    backgroundFrame.Position = UDim2.new(0, 0, 0, 0)
+    backgroundFrame.BackgroundTransparency = 1
+    backgroundFrame.ZIndex = 0
+    backgroundFrame.Parent = MainFrame
+
+    -- Создаем несколько реалистичных листьев
+    for i = 1, 12 do
+        local leaf = Instance.new("Frame")
+        leaf.Name = "Leaf" .. i
+        leaf.Size = UDim2.new(0, math.random(15, 25), 0, math.random(8, 15))
+        leaf.Position = UDim2.new(math.random() * 0.8, 0, 0, -math.random(30, 100))
+        leaf.BackgroundColor3 = Color3.fromRGB(
+            math.random(30, 80),
+            math.random(120, 180),
+            math.random(30, 70)
+        )
+        leaf.BackgroundTransparency = math.random(20, 50) / 100
+        leaf.BorderSizePixel = 0
+        leaf.ZIndex = 0
+        leaf.Parent = backgroundFrame
+        
+        -- Создаем форму листа через скругление
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, math.random(5, 12))
+        corner.Parent = leaf
+        
+        -- Добавляем градиент для эффекта размытия
+        local gradient = Instance.new("UIGradient")
+        gradient.Rotation = math.random(0, 360)
+        gradient.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, leaf.BackgroundTransparency),
+            NumberSequenceKeypoint.new(0.5, leaf.BackgroundTransparency + 0.2),
+            NumberSequenceKeypoint.new(1, leaf.BackgroundTransparency + 0.4)
+        })
+        gradient.Parent = leaf
+        
+        -- Начальный поворот
+        leaf.Rotation = math.random(0, 360)
+        
+        table.insert(treeParts, leaf)
+        
+        -- Анимация падения с реалистичной физикой
+        local startTime = tick()
+        local startX = math.random() * 0.8
+        local swingAmount = math.random(10, 30) / 100
+        local swingSpeed = math.random(5, 15) / 10
+        local fallSpeed = math.random(20, 40)
+        local rotationSpeed = math.random(-180, 180)
+        
+        local connection
+        connection = RunService.Heartbeat:Connect(function(delta)
+            if not leaf or not leaf.Parent then
+                connection:Disconnect()
+                return
+            end
+            
+            local currentTime = tick() - startTime
+            
+            -- Позиция по Y (падение)
+            local progress = (currentTime * fallSpeed) / 100
+            local yPos = progress
+            
+            -- Боковое колебание (эффект ветра)
+            local swing = math.sin(currentTime * swingSpeed) * swingAmount
+            local xPos = startX + swing
+            
+            -- Вращение
+            leaf.Rotation = leaf.Rotation + (rotationSpeed * delta)
+            
+            -- Обновление позиции
+            leaf.Position = UDim2.new(xPos, 0, yPos, 0)
+            
+            -- Если лист упал за пределы, возвращаем его наверх
+            if yPos > 1.2 then
+                startTime = tick()
+                startX = math.random() * 0.8
+                leaf.Position = UDim2.new(startX, 0, 0, -math.random(30, 100))
+            end
+        end)
+        
+        table.insert(treeConnections, connection)
+    end
+end
 
 -- Функция создания FOV Circle
 local function createFOVCircle()
@@ -357,15 +469,19 @@ local function createGUI()
     MainFrame.Size = UDim2.new(0, 300, 0, 400)
     MainFrame.Position = savedPosition
     MainFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+    MainFrame.BackgroundTransparency = 0.1
     MainFrame.BorderSizePixel = 0
     MainFrame.Active = true
     MainFrame.Draggable = true
-    MainFrame.Visible = isGuiOpen  -- Состояние сохраняется
+    MainFrame.Visible = isGuiOpen
     MainFrame.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
     Corner.CornerRadius = UDim.new(0, 8)
     Corner.Parent = MainFrame
+
+    -- Создаем анимацию дерева на заднем фоне
+    createTreeAnimation()
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
@@ -376,6 +492,7 @@ local function createGUI()
     Title.Text = "SANSTRO|t.me//SCRIPTYTA"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
+    Title.ZIndex = 2
     Title.Parent = MainFrame
 
     local TabButtons = Instance.new("Frame")
@@ -383,6 +500,7 @@ local function createGUI()
     TabButtons.Size = UDim2.new(1, 0, 0, 40)
     TabButtons.Position = UDim2.new(0, 0, 0, 40)
     TabButtons.BackgroundTransparency = 1
+    TabButtons.ZIndex = 2
     TabButtons.Parent = MainFrame
 
     -- Movement Tab
@@ -395,6 +513,7 @@ local function createGUI()
     MovementTab.Text = "Movement"
     MovementTab.Font = Enum.Font.Gotham
     MovementTab.TextSize = 14
+    MovementTab.ZIndex = 2
     MovementTab.Parent = TabButtons
 
     -- Visual Tab
@@ -407,6 +526,7 @@ local function createGUI()
     VisualTab.Text = "Visual"
     VisualTab.Font = Enum.Font.Gotham
     VisualTab.TextSize = 14
+    VisualTab.ZIndex = 2
     VisualTab.Parent = TabButtons
 
     -- AimBot Tab
@@ -419,6 +539,7 @@ local function createGUI()
     AimBotTab.Text = "AimBot"
     AimBotTab.Font = Enum.Font.Gotham
     AimBotTab.TextSize = 14
+    AimBotTab.ZIndex = 2
     AimBotTab.Parent = TabButtons
 
     local ContentFrame = Instance.new("Frame")
@@ -426,6 +547,7 @@ local function createGUI()
     ContentFrame.Size = UDim2.new(1, -20, 1, -100)
     ContentFrame.Position = UDim2.new(0, 10, 0, 90)
     ContentFrame.BackgroundTransparency = 1
+    ContentFrame.ZIndex = 2
     ContentFrame.Parent = MainFrame
 
     local ScrollFrame = Instance.new("ScrollingFrame")
@@ -433,6 +555,7 @@ local function createGUI()
     ScrollFrame.Size = UDim2.new(1, 0, 1, 0)
     ScrollFrame.BackgroundTransparency = 1
     ScrollFrame.ScrollBarThickness = 4
+    ScrollFrame.ZIndex = 2
     ScrollFrame.Parent = ContentFrame
 
     -- Movement Content
@@ -441,6 +564,7 @@ local function createGUI()
     MovementContent.Size = UDim2.new(1, 0, 0, 300)
     MovementContent.BackgroundTransparency = 1
     MovementContent.Visible = true
+    MovementContent.ZIndex = 2
     MovementContent.Parent = ScrollFrame
 
     -- Speed Hack
@@ -449,6 +573,7 @@ local function createGUI()
     SpeedHackFrame.Size = UDim2.new(1, 0, 0, 80)
     SpeedHackFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     SpeedHackFrame.BorderSizePixel = 0
+    SpeedHackFrame.ZIndex = 2
     SpeedHackFrame.Parent = MovementContent
 
     local SpeedHackCorner = Instance.new("UICorner")
@@ -465,6 +590,7 @@ local function createGUI()
     SpeedHackLabel.Font = Enum.Font.Gotham
     SpeedHackLabel.TextSize = 14
     SpeedHackLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SpeedHackLabel.ZIndex = 2
     SpeedHackLabel.Parent = SpeedHackFrame
 
     local SpeedHackToggle = Instance.new("TextButton")
@@ -476,6 +602,7 @@ local function createGUI()
     SpeedHackToggle.Text = "OFF"
     SpeedHackToggle.Font = Enum.Font.Gotham
     SpeedHackToggle.TextSize = 12
+    SpeedHackToggle.ZIndex = 2
     SpeedHackToggle.Parent = SpeedHackFrame
 
     local SpeedHackSlider = Instance.new("Frame")
@@ -485,6 +612,7 @@ local function createGUI()
     SpeedHackSlider.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     SpeedHackSlider.BorderSizePixel = 0
     SpeedHackSlider.Visible = false
+    SpeedHackSlider.ZIndex = 2
     SpeedHackSlider.Parent = SpeedHackFrame
 
     local SpeedHackSliderCorner = Instance.new("UICorner")
@@ -499,6 +627,7 @@ local function createGUI()
     SpeedValue.Text = "Speed: " .. currentSpeed
     SpeedValue.Font = Enum.Font.Gotham
     SpeedValue.TextSize = 12
+    SpeedValue.ZIndex = 2
     SpeedValue.Parent = SpeedHackSlider
 
     -- Jump Hack
@@ -508,6 +637,7 @@ local function createGUI()
     JumpHackFrame.Position = UDim2.new(0, 0, 0, 90)
     JumpHackFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     JumpHackFrame.BorderSizePixel = 0
+    JumpHackFrame.ZIndex = 2
     JumpHackFrame.Parent = MovementContent
 
     local JumpHackCorner = Instance.new("UICorner")
@@ -524,6 +654,7 @@ local function createGUI()
     JumpHackLabel.Font = Enum.Font.Gotham
     JumpHackLabel.TextSize = 14
     JumpHackLabel.TextXAlignment = Enum.TextXAlignment.Left
+    JumpHackLabel.ZIndex = 2
     JumpHackLabel.Parent = JumpHackFrame
 
     local JumpHackToggle = Instance.new("TextButton")
@@ -535,6 +666,7 @@ local function createGUI()
     JumpHackToggle.Text = "OFF"
     JumpHackToggle.Font = Enum.Font.Gotham
     JumpHackToggle.TextSize = 12
+    JumpHackToggle.ZIndex = 2
     JumpHackToggle.Parent = JumpHackFrame
 
     -- NoClip
@@ -544,6 +676,7 @@ local function createGUI()
     NoClipFrame.Position = UDim2.new(0, 0, 0, 140)
     NoClipFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     NoClipFrame.BorderSizePixel = 0
+    NoClipFrame.ZIndex = 2
     NoClipFrame.Parent = MovementContent
 
     local NoClipCorner = Instance.new("UICorner")
@@ -560,6 +693,7 @@ local function createGUI()
     NoClipLabel.Font = Enum.Font.Gotham
     NoClipLabel.TextSize = 14
     NoClipLabel.TextXAlignment = Enum.TextXAlignment.Left
+    NoClipLabel.ZIndex = 2
     NoClipLabel.Parent = NoClipFrame
 
     local NoClipToggle = Instance.new("TextButton")
@@ -571,6 +705,7 @@ local function createGUI()
     NoClipToggle.Text = "OFF"
     NoClipToggle.Font = Enum.Font.Gotham
     NoClipToggle.TextSize = 12
+    NoClipToggle.ZIndex = 2
     NoClipToggle.Parent = NoClipFrame
 
     -- Visual Content
@@ -579,6 +714,7 @@ local function createGUI()
     VisualContent.Size = UDim2.new(1, 0, 0, 300)
     VisualContent.BackgroundTransparency = 1
     VisualContent.Visible = false
+    VisualContent.ZIndex = 2
     VisualContent.Parent = ScrollFrame
 
     -- ESP Tracers
@@ -587,6 +723,7 @@ local function createGUI()
     ESPTracersFrame.Size = UDim2.new(1, 0, 0, 40)
     ESPTracersFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPTracersFrame.BorderSizePixel = 0
+    ESPTracersFrame.ZIndex = 2
     ESPTracersFrame.Parent = VisualContent
 
     local ESPTracersCorner = Instance.new("UICorner")
@@ -603,6 +740,7 @@ local function createGUI()
     ESPTracersLabel.Font = Enum.Font.Gotham
     ESPTracersLabel.TextSize = 14
     ESPTracersLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPTracersLabel.ZIndex = 2
     ESPTracersLabel.Parent = ESPTracersFrame
 
     local ESPTracersToggle = Instance.new("TextButton")
@@ -614,6 +752,7 @@ local function createGUI()
     ESPTracersToggle.Text = "OFF"
     ESPTracersToggle.Font = Enum.Font.Gotham
     ESPTracersToggle.TextSize = 12
+    ESPTracersToggle.ZIndex = 2
     ESPTracersToggle.Parent = ESPTracersFrame
 
     -- ESP Box
@@ -623,6 +762,7 @@ local function createGUI()
     ESPBoxFrame.Position = UDim2.new(0, 0, 0, 50)
     ESPBoxFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPBoxFrame.BorderSizePixel = 0
+    ESPBoxFrame.ZIndex = 2
     ESPBoxFrame.Parent = VisualContent
 
     local ESPBoxCorner = Instance.new("UICorner")
@@ -639,6 +779,7 @@ local function createGUI()
     ESPBoxLabel.Font = Enum.Font.Gotham
     ESPBoxLabel.TextSize = 14
     ESPBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPBoxLabel.ZIndex = 2
     ESPBoxLabel.Parent = ESPBoxFrame
 
     local ESPBoxToggle = Instance.new("TextButton")
@@ -650,6 +791,7 @@ local function createGUI()
     ESPBoxToggle.Text = "OFF"
     ESPBoxToggle.Font = Enum.Font.Gotham
     ESPBoxToggle.TextSize = 12
+    ESPBoxToggle.ZIndex = 2
     ESPBoxToggle.Parent = ESPBoxFrame
 
     -- ESP Health
@@ -659,6 +801,7 @@ local function createGUI()
     ESPHealthFrame.Position = UDim2.new(0, 0, 0, 100)
     ESPHealthFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPHealthFrame.BorderSizePixel = 0
+    ESPHealthFrame.ZIndex = 2
     ESPHealthFrame.Parent = VisualContent
 
     local ESPHealthCorner = Instance.new("UICorner")
@@ -675,6 +818,7 @@ local function createGUI()
     ESPHealthLabel.Font = Enum.Font.Gotham
     ESPHealthLabel.TextSize = 14
     ESPHealthLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPHealthLabel.ZIndex = 2
     ESPHealthLabel.Parent = ESPHealthFrame
 
     local ESPHealthToggle = Instance.new("TextButton")
@@ -686,6 +830,7 @@ local function createGUI()
     ESPHealthToggle.Text = "OFF"
     ESPHealthToggle.Font = Enum.Font.Gotham
     ESPHealthToggle.TextSize = 12
+    ESPHealthToggle.ZIndex = 2
     ESPHealthToggle.Parent = ESPHealthFrame
 
     -- ESP Distance
@@ -695,6 +840,7 @@ local function createGUI()
     ESPDistanceFrame.Position = UDim2.new(0, 0, 0, 150)
     ESPDistanceFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPDistanceFrame.BorderSizePixel = 0
+    ESPDistanceFrame.ZIndex = 2
     ESPDistanceFrame.Parent = VisualContent
 
     local ESPDistanceCorner = Instance.new("UICorner")
@@ -711,6 +857,7 @@ local function createGUI()
     ESPDistanceLabel.Font = Enum.Font.Gotham
     ESPDistanceLabel.TextSize = 14
     ESPDistanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPDistanceLabel.ZIndex = 2
     ESPDistanceLabel.Parent = ESPDistanceFrame
 
     local ESPDistanceToggle = Instance.new("TextButton")
@@ -722,6 +869,7 @@ local function createGUI()
     ESPDistanceToggle.Text = "OFF"
     ESPDistanceToggle.Font = Enum.Font.Gotham
     ESPDistanceToggle.TextSize = 12
+    ESPDistanceToggle.ZIndex = 2
     ESPDistanceToggle.Parent = ESPDistanceFrame
 
     -- ESP Count
@@ -731,6 +879,7 @@ local function createGUI()
     ESPCountFrame.Position = UDim2.new(0, 0, 0, 200)
     ESPCountFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPCountFrame.BorderSizePixel = 0
+    ESPCountFrame.ZIndex = 2
     ESPCountFrame.Parent = VisualContent
 
     local ESPCountCorner = Instance.new("UICorner")
@@ -747,6 +896,7 @@ local function createGUI()
     ESPCountLabel.Font = Enum.Font.Gotham
     ESPCountLabel.TextSize = 14
     ESPCountLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPCountLabel.ZIndex = 2
     ESPCountLabel.Parent = ESPCountFrame
 
     local ESPCountToggle = Instance.new("TextButton")
@@ -758,7 +908,47 @@ local function createGUI()
     ESPCountToggle.Text = "OFF"
     ESPCountToggle.Font = Enum.Font.Gotham
     ESPCountToggle.TextSize = 12
+    ESPCountToggle.ZIndex = 2
     ESPCountToggle.Parent = ESPCountFrame
+
+    -- Tree Animation Toggle
+    local TreeAnimationFrame = Instance.new("Frame")
+    TreeAnimationFrame.Name = "TreeAnimationFrame"
+    TreeAnimationFrame.Size = UDim2.new(1, 0, 0, 40)
+    TreeAnimationFrame.Position = UDim2.new(0, 0, 0, 250)
+    TreeAnimationFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    TreeAnimationFrame.BorderSizePixel = 0
+    TreeAnimationFrame.ZIndex = 2
+    TreeAnimationFrame.Parent = VisualContent
+
+    local TreeAnimationCorner = Instance.new("UICorner")
+    TreeAnimationCorner.CornerRadius = UDim.new(0, 6)
+    TreeAnimationCorner.Parent = TreeAnimationFrame
+
+    local TreeAnimationLabel = Instance.new("TextLabel")
+    TreeAnimationLabel.Name = "TreeAnimationLabel"
+    TreeAnimationLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    TreeAnimationLabel.Position = UDim2.new(0, 10, 0, 0)
+    TreeAnimationLabel.BackgroundTransparency = 1
+    TreeAnimationLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TreeAnimationLabel.Text = "Tree Animation"
+    TreeAnimationLabel.Font = Enum.Font.Gotham
+    TreeAnimationLabel.TextSize = 14
+    TreeAnimationLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TreeAnimationLabel.ZIndex = 2
+    TreeAnimationLabel.Parent = TreeAnimationFrame
+
+    local TreeAnimationToggle = Instance.new("TextButton")
+    TreeAnimationToggle.Name = "TreeAnimationToggle"
+    TreeAnimationToggle.Size = UDim2.new(0.3, 0, 0, 30)
+    TreeAnimationToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
+    TreeAnimationToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+    TreeAnimationToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TreeAnimationToggle.Text = "ON"
+    TreeAnimationToggle.Font = Enum.Font.Gotham
+    TreeAnimationToggle.TextSize = 12
+    TreeAnimationToggle.ZIndex = 2
+    TreeAnimationToggle.Parent = TreeAnimationFrame
 
     -- AimBot Content
     local AimBotContent = Instance.new("Frame")
@@ -766,6 +956,7 @@ local function createGUI()
     AimBotContent.Size = UDim2.new(1, 0, 0, 120)
     AimBotContent.BackgroundTransparency = 1
     AimBotContent.Visible = false
+    AimBotContent.ZIndex = 2
     AimBotContent.Parent = ScrollFrame
 
     -- AimBot Toggle
@@ -774,6 +965,7 @@ local function createGUI()
     AimBotFrame.Size = UDim2.new(1, 0, 0, 40)
     AimBotFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     AimBotFrame.BorderSizePixel = 0
+    AimBotFrame.ZIndex = 2
     AimBotFrame.Parent = AimBotContent
 
     local AimBotCorner = Instance.new("UICorner")
@@ -790,6 +982,7 @@ local function createGUI()
     AimBotLabel.Font = Enum.Font.Gotham
     AimBotLabel.TextSize = 14
     AimBotLabel.TextXAlignment = Enum.TextXAlignment.Left
+    AimBotLabel.ZIndex = 2
     AimBotLabel.Parent = AimBotFrame
 
     local AimBotToggle = Instance.new("TextButton")
@@ -801,6 +994,7 @@ local function createGUI()
     AimBotToggle.Text = "OFF"
     AimBotToggle.Font = Enum.Font.Gotham
     AimBotToggle.TextSize = 12
+    AimBotToggle.ZIndex = 2
     AimBotToggle.Parent = AimBotFrame
 
     -- AimBot FOV Slider
@@ -811,6 +1005,7 @@ local function createGUI()
     AimBotFOVFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     AimBotFOVFrame.BorderSizePixel = 0
     AimBotFOVFrame.Visible = false
+    AimBotFOVFrame.ZIndex = 2
     AimBotFOVFrame.Parent = AimBotContent
 
     local AimBotFOVCorner = Instance.new("UICorner")
@@ -826,6 +1021,7 @@ local function createGUI()
     AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
     AimBotFOVLabel.Font = Enum.Font.Gotham
     AimBotFOVLabel.TextSize = 12
+    AimBotFOVLabel.ZIndex = 2
     AimBotFOVLabel.Parent = AimBotFOVFrame
 
     -- Восстанавливаем состояния кнопок при создании GUI
@@ -841,6 +1037,15 @@ local function createGUI()
     toggleButton(ESPCountToggle, espCountEnabled)
     toggleButton(AimBotToggle, aimBotEnabled)
     AimBotFOVFrame.Visible = aimBotEnabled
+    
+    -- Устанавливаем состояние анимации дерева
+    if treeAnimationEnabled then
+        TreeAnimationToggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        TreeAnimationToggle.Text = "ON"
+    else
+        TreeAnimationToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+        TreeAnimationToggle.Text = "OFF"
+    end
 
     -- Восстанавливаем ESP Count если он был включен
     if espCountEnabled and not espCountText then
@@ -1027,6 +1232,32 @@ local function createGUI()
         end
     end)
 
+    -- Tree Animation Toggle
+    TreeAnimationToggle.MouseButton1Click:Connect(function()
+        treeAnimationEnabled = not treeAnimationEnabled
+        if treeAnimationEnabled then
+            TreeAnimationToggle.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+            TreeAnimationToggle.Text = "ON"
+            createTreeAnimation()
+        else
+            TreeAnimationToggle.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+            TreeAnimationToggle.Text = "OFF"
+            -- Очищаем анимацию
+            for _, part in pairs(treeParts) do
+                if part then
+                    part:Destroy()
+                end
+            end
+            for _, conn in pairs(treeConnections) do
+                if conn then
+                    conn:Disconnect()
+                end
+            end
+            treeParts = {}
+            treeConnections = {}
+        end
+    end)
+
     -- Initialize ESP for existing players
     for _, otherPlayer in pairs(Players:GetPlayers()) do
         createESP(otherPlayer)
@@ -1203,5 +1434,19 @@ game:GetService("CoreGui").ChildRemoved:Connect(function(child)
             connection:Disconnect()
         end
         espConnections = {}
+        
+        -- Clean up tree animation
+        for _, part in pairs(treeParts) do
+            if part then
+                part:Destroy()
+            end
+        end
+        for _, conn in pairs(treeConnections) do
+            if conn then
+                conn:Disconnect()
+            end
+        end
+        treeParts = {}
+        treeConnections = {}
     end
 end)
