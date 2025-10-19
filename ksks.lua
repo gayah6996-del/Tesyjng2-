@@ -748,19 +748,10 @@ local function createGunMenu()
     Title.ZIndex = 2
     Title.Parent = GunMenu
 
-    -- Добавляем кнопку возврата в главное меню
-    local MainMenuButton = CreateButton(GunMenu, "MAIN MENU", function()
-        GunMenu.Visible = false
-        MainMenu.Visible = true
-        currentActiveMenu = MainMenu
-    end)
-    MainMenuButton.Position = UDim2.new(0, 10, 0, 50)
-    MainMenuButton.Size = UDim2.new(1, -20, 0, 30)
-
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
     TabButtons.Size = UDim2.new(1, 0, 0, 40)
-    TabButtons.Position = UDim2.new(0, 0, 0, 90)
+    TabButtons.Position = UDim2.new(0, 0, 0, 50)
     TabButtons.BackgroundTransparency = 0.2
     TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     TabButtons.ZIndex = 2
@@ -791,8 +782,8 @@ local function createGunMenu()
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -20, 1, -140)
-        ContentFrame.Position = UDim2.new(0, 10, 0, 140)
+        ContentFrame.Size = UDim2.new(1, -20, 1, -100)
+        ContentFrame.Position = UDim2.new(0, 10, 0, 100)
         ContentFrame.BackgroundTransparency = 1
         ContentFrame.ScrollBarThickness = 4
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
@@ -1254,30 +1245,26 @@ local function createGunMenu()
     end)
 
     local speedSliderConnection
-    SpeedHackSlider.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            speedSliderConnection = RunService.Heartbeat:Connect(function()
-                local mouseLocation = UserInputService:GetMouseLocation()
-                local relativeX = math.clamp((mouseLocation.X - SpeedHackSlider.AbsolutePosition.X) / SpeedHackSlider.AbsoluteSize.X, 0, 1)
-                currentSpeed = math.floor(16 + (relativeX * 84))
-                SpeedValue.Text = "Speed: " .. currentSpeed
-                
-                if speedHackEnabled then
-                    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid.WalkSpeed = currentSpeed
-                    end
+    SpeedHackSlider.InputBegan:Connect(function()
+        speedSliderConnection = RunService.Heartbeat:Connect(function()
+            local mouseLocation = UserInputService:GetMouseLocation()
+            local relativeX = math.clamp((mouseLocation.X - SpeedHackSlider.AbsolutePosition.X) / SpeedHackSlider.AbsoluteSize.X, 0, 1)
+            currentSpeed = math.floor(16 + (relativeX * 84))
+            SpeedValue.Text = "Speed: " .. currentSpeed
+            
+            if speedHackEnabled then
+                local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = currentSpeed
                 end
-            end)
-        end
+            end
+        end)
     end)
 
-    SpeedHackSlider.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if speedSliderConnection then
-                speedSliderConnection:Disconnect()
-                speedSliderConnection = nil
-            end
+    SpeedHackSlider.InputEnded:Connect(function()
+        if speedSliderConnection then
+            speedSliderConnection:Disconnect()
+            speedSliderConnection = nil
         end
     end)
 
@@ -1383,24 +1370,20 @@ local function createGunMenu()
     end)
 
     local aimbotSliderConnection
-    AimBotFOVFrame.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            aimbotSliderConnection = RunService.Heartbeat:Connect(function()
-                local mouseLocation = UserInputService:GetMouseLocation()
-                local relativeX = math.clamp((mouseLocation.X - AimBotFOVFrame.AbsolutePosition.X) / AimBotFOVFrame.AbsoluteSize.X, 0, 1)
-                aimBotFOV = math.floor(10 + (relativeX * 190))
-                AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
-                updateFOVCircle()
-            end)
-        end
+    AimBotFOVFrame.InputBegan:Connect(function()
+        aimbotSliderConnection = RunService.Heartbeat:Connect(function()
+            local mouseLocation = UserInputService:GetMouseLocation()
+            local relativeX = math.clamp((mouseLocation.X - AimBotFOVFrame.AbsolutePosition.X) / AimBotFOVFrame.AbsoluteSize.X, 0, 1)
+            aimBotFOV = math.floor(10 + (relativeX * 190))
+            AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
+            updateFOVCircle()
+        end)
     end)
 
-    AimBotFOVFrame.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if aimbotSliderConnection then
-                aimbotSliderConnection:Disconnect()
-                aimbotSliderConnection = nil
-            end
+    AimBotFOVFrame.InputEnded:Connect(function()
+        if aimbotSliderConnection then
+            aimbotSliderConnection:Disconnect()
+            aimbotSliderConnection = nil
         end
     end)
 
@@ -1495,26 +1478,17 @@ local function createNightsMenu()
     Title.ZIndex = 2
     Title.Parent = NightsMenu
 
-    -- Добавляем кнопку возврата в главное меню
-    local MainMenuButton = CreateButton(NightsMenu, "MAIN MENU", function()
-        NightsMenu.Visible = false
-        MainMenu.Visible = true
-        currentActiveMenu = MainMenu
-    end)
-    MainMenuButton.Position = UDim2.new(0, 10, 0, 50)
-    MainMenuButton.Size = UDim2.new(1, -20, 0, 30)
-
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
     TabButtons.Size = UDim2.new(1, 0, 0, 40)
-    TabButtons.Position = UDim2.new(0, 0, 0, 90)
+    TabButtons.Position = UDim2.new(0, 0, 0, 50)
     TabButtons.BackgroundTransparency = 0.2
     TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     TabButtons.ZIndex = 2
     TabButtons.Parent = NightsMenu
 
     local nightsTabs = {
-        {name = "Functions", defaultActive = true},
+        {name = "Main", defaultActive = true},
         {name = "Bring", defaultActive = false}
     }
 
@@ -1537,8 +1511,8 @@ local function createNightsMenu()
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -20, 1, -140)
-        ContentFrame.Position = UDim2.new(0, 10, 0, 140)
+        ContentFrame.Size = UDim2.new(1, -20, 1, -100)
+        ContentFrame.Position = UDim2.new(0, 10, 0, 100)
         ContentFrame.BackgroundTransparency = 1
         ContentFrame.ScrollBarThickness = 4
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
@@ -1557,20 +1531,20 @@ local function createNightsMenu()
         nightsTabContents[tab.name] = ContentFrame
     end
 
-    -- Functions Tab Content
-    local KillAuraToggle = CreateToggle(nightsTabContents["Functions"], "Kill Aura", function(v)
+    -- Main Tab Content
+    local KillAuraToggle = CreateToggle(nightsTabContents["Main"], "Kill Aura", function(v)
         ActiveKillAura = v
     end, ActiveKillAura)
 
-    CreateSlider(nightsTabContents["Functions"], "Kill Distance", 10, 100, DistanceForKillAura, function(v)
+    CreateSlider(nightsTabContents["Main"], "Kill Distance", 10, 100, DistanceForKillAura, function(v)
         DistanceForKillAura = v
     end)
 
-    local AutoChopToggle = CreateToggle(nightsTabContents["Functions"], "Auto Chop", function(v)
+    local AutoChopToggle = CreateToggle(nightsTabContents["Main"], "Auto Chop", function(v)
         ActiveAutoChopTree = v
     end, ActiveAutoChopTree)
 
-    CreateSlider(nightsTabContents["Functions"], "Chop Distance", 10, 100, DistanceForAutoChopTree, function(v)
+    CreateSlider(nightsTabContents["Main"], "Chop Distance", 10, 100, DistanceForAutoChopTree, function(v)
         DistanceForAutoChopTree = v
     end)
 
