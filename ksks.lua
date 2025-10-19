@@ -59,6 +59,9 @@ local espConnections = {}
 local espCountText = nil
 local noclipConnection = nil
 
+-- Текущее активное меню
+local currentActiveMenu = nil
+
 -- Функции сохранения настроек
 local function SaveSettings()
     pcall(function()
@@ -318,7 +321,11 @@ local function createOpenCloseButton()
     -- Обработчик нажатия
     OpenCloseButton.MouseButton1Click:Connect(function()
         isGuiOpen = not isGuiOpen
-        MainMenu.Visible = isGuiOpen
+        
+        -- Закрываем/открываем текущее активное меню
+        if currentActiveMenu then
+            currentActiveMenu.Visible = isGuiOpen
+        end
         
         if isGuiOpen then
             OpenCloseButton.Text = "≡"
@@ -694,6 +701,7 @@ local function createMainMenu()
     local GunButton = CreateButton(MainMenu, "GUNGAME", function()
         MainMenu.Visible = false
         GunMenu.Visible = true
+        currentActiveMenu = GunMenu
     end)
     GunButton.Position = UDim2.new(0, 10, 0, 50)
     GunButton.Size = UDim2.new(1, -20, 0, 60)
@@ -701,9 +709,12 @@ local function createMainMenu()
     local NightsButton = CreateButton(MainMenu, "99 NIGHTS", function()
         MainMenu.Visible = false
         NightsMenu.Visible = true
+        currentActiveMenu = NightsMenu
     end)
     NightsButton.Position = UDim2.new(0, 10, 0, 120)
     NightsButton.Size = UDim2.new(1, -20, 0, 60)
+    
+    currentActiveMenu = MainMenu
 end
 
 -- Функция создания Gun Menu
@@ -737,12 +748,14 @@ local function createGunMenu()
     Title.ZIndex = 2
     Title.Parent = GunMenu
 
-    local BackButton = CreateButton(GunMenu, "BACK", function()
+    -- Добавляем кнопку возврата в главное меню
+    local MainMenuButton = CreateButton(GunMenu, "MAIN MENU", function()
         GunMenu.Visible = false
         MainMenu.Visible = true
+        currentActiveMenu = MainMenu
     end)
-    BackButton.Position = UDim2.new(0, 10, 0, 50)
-    BackButton.Size = UDim2.new(1, -20, 0, 30)
+    MainMenuButton.Position = UDim2.new(0, 10, 0, 50)
+    MainMenuButton.Size = UDim2.new(1, -20, 0, 30)
 
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
@@ -1482,12 +1495,14 @@ local function createNightsMenu()
     Title.ZIndex = 2
     Title.Parent = NightsMenu
 
-    local BackButton = CreateButton(NightsMenu, "BACK", function()
+    -- Добавляем кнопку возврата в главное меню
+    local MainMenuButton = CreateButton(NightsMenu, "MAIN MENU", function()
         NightsMenu.Visible = false
         MainMenu.Visible = true
+        currentActiveMenu = MainMenu
     end)
-    BackButton.Position = UDim2.new(0, 10, 0, 50)
-    BackButton.Size = UDim2.new(1, -20, 0, 30)
+    MainMenuButton.Position = UDim2.new(0, 10, 0, 50)
+    MainMenuButton.Size = UDim2.new(1, -20, 0, 30)
 
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
@@ -1499,7 +1514,7 @@ local function createNightsMenu()
     TabButtons.Parent = NightsMenu
 
     local nightsTabs = {
-        {name = "Main", defaultActive = true},
+        {name = "Functions", defaultActive = true},
         {name = "Bring", defaultActive = false}
     }
 
@@ -1542,20 +1557,20 @@ local function createNightsMenu()
         nightsTabContents[tab.name] = ContentFrame
     end
 
-    -- Main Tab Content
-    local KillAuraToggle = CreateToggle(nightsTabContents["Main"], "Kill Aura", function(v)
+    -- Functions Tab Content
+    local KillAuraToggle = CreateToggle(nightsTabContents["Functions"], "Kill Aura", function(v)
         ActiveKillAura = v
     end, ActiveKillAura)
 
-    CreateSlider(nightsTabContents["Main"], "Kill Distance", 10, 100, DistanceForKillAura, function(v)
+    CreateSlider(nightsTabContents["Functions"], "Kill Distance", 10, 100, DistanceForKillAura, function(v)
         DistanceForKillAura = v
     end)
 
-    local AutoChopToggle = CreateToggle(nightsTabContents["Main"], "Auto Chop", function(v)
+    local AutoChopToggle = CreateToggle(nightsTabContents["Functions"], "Auto Chop", function(v)
         ActiveAutoChopTree = v
     end, ActiveAutoChopTree)
 
-    CreateSlider(nightsTabContents["Main"], "Chop Distance", 10, 100, DistanceForAutoChopTree, function(v)
+    CreateSlider(nightsTabContents["Functions"], "Chop Distance", 10, 100, DistanceForAutoChopTree, function(v)
         DistanceForAutoChopTree = v
     end)
 
@@ -1577,6 +1592,14 @@ local function createNightsMenu()
 
     -- Подменю для ресурсов
     local ResourcesButton = CreateButton(nightsTabContents["Bring"], "Resources", function()
+        -- Закрываем все другие подменю
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name:find("SubMenu") and child.Name ~= "ResourcesSubMenu" then
+                child.Visible = false
+            end
+        end
+        
+        -- Переключаем текущее подменю
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "ResourcesSubMenu" then
                 child.Visible = not child.Visible
@@ -1607,6 +1630,14 @@ local function createNightsMenu()
 
     -- Подменю для металлов
     local MetalsButton = CreateButton(nightsTabContents["Bring"], "Metals", function()
+        -- Закрываем все другие подменю
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name:find("SubMenu") and child.Name ~= "MetalsSubMenu" then
+                child.Visible = false
+            end
+        end
+        
+        -- Переключаем текущее подменю
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "MetalsSubMenu" then
                 child.Visible = not child.Visible
@@ -1637,6 +1668,14 @@ local function createNightsMenu()
 
     -- Подменю для электроники
     local ElectronicsButton = CreateButton(nightsTabContents["Bring"], "Electronics", function()
+        -- Закрываем все другие подменю
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name:find("SubMenu") and child.Name ~= "ElectronicsSubMenu" then
+                child.Visible = false
+            end
+        end
+        
+        -- Переключаем текущее подменю
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "ElectronicsSubMenu" then
                 child.Visible = not child.Visible
@@ -1667,6 +1706,14 @@ local function createNightsMenu()
 
     -- Подменю для еды и медицины
     local FoodMedButton = CreateButton(nightsTabContents["Bring"], "Food & Medical", function()
+        -- Закрываем все другие подменю
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name:find("SubMenu") and child.Name ~= "FoodMedSubMenu" then
+                child.Visible = false
+            end
+        end
+        
+        -- Переключаем текущее подменю
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "FoodMedSubMenu" then
                 child.Visible = not child.Visible
@@ -1712,7 +1759,7 @@ end
 -- Функция создания GUI
 local function createGUI()
     if ScreenGui then
-        savedPosition = MainMenu.Position
+        savedPosition = currentActiveMenu and currentActiveMenu.Position or savedPosition
         ScreenGui:Destroy()
         ScreenGui = nil
         MainMenu = nil
