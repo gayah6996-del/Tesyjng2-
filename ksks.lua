@@ -44,12 +44,15 @@ local Settings = {
 
 local ScreenGui = nil
 local MainFrame = nil
+local GunMenu = nil
+local NightsMenu = nil
 local minimized = false
 local fovCircle = nil
 local savedPosition = UDim2.new(0, 10, 0, 10)
 local savedButtonPosition = UDim2.new(0, 10, 0, 10)
 local isGuiOpen = false
 local OpenCloseButton = nil
+local currentMenu = "Gun" -- "Gun" или "Nights"
 
 -- ESP объекты
 local espObjects = {}
@@ -205,6 +208,7 @@ local function CreateSlider(parent, text, min, max, default, callback)
     fillCorner.Parent = sliderFill
     
     local isDragging = false
+    local connection = nil
     
     local function updateSlider(value)
         local norm = math.clamp((value - min) / (max - min), 0, 1)
@@ -213,29 +217,35 @@ local function CreateSlider(parent, text, min, max, default, callback)
         callback(value)
     end
     
+    local function onInputChanged(input)
+        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+            local mouseLocation = UserInputService:GetMouseLocation()
+            local relativeX = math.clamp((mouseLocation.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X, 0, 1)
+            local value = min + relativeX * (max - min)
+            updateSlider(value)
+        end
+    end
+    
     sliderBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             isDragging = true
-        end
-    end)
-    
-    sliderBar.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDragging = false
-            SaveSettings()
-        end
-    end)
-    
-    local connection
-    sliderBar.InputChanged:Connect(function(input)
-        if isDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
-            if connection then connection:Disconnect() end
             connection = RunService.Heartbeat:Connect(function()
                 local mouseLocation = UserInputService:GetMouseLocation()
                 local relativeX = math.clamp((mouseLocation.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X, 0, 1)
                 local value = min + relativeX * (max - min)
                 updateSlider(value)
             end)
+        end
+    end)
+    
+    sliderBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            SaveSettings()
         end
     end)
     
@@ -699,51 +709,104 @@ local function createGUI()
     Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     Title.BackgroundTransparency = 0.2
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.Text = "SANSTRO|t.me//SCRIPTYTA"
+    Title.Text = "SANSTRO MENU"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
     Title.ZIndex = 2
     Title.Parent = MainFrame
 
-    local TabButtons = Instance.new("Frame")
-    TabButtons.Name = "TabButtons"
-    TabButtons.Size = UDim2.new(1, 0, 0, 40)
-    TabButtons.Position = UDim2.new(0, 0, 0, 40)
-    TabButtons.BackgroundTransparency = 0.2
-    TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-    TabButtons.ZIndex = 2
-    TabButtons.Parent = MainFrame
+    -- Кнопки выбора режима
+    local ModeButtons = Instance.new("Frame")
+    ModeButtons.Name = "ModeButtons"
+    ModeButtons.Size = UDim2.new(1, 0, 0, 40)
+    ModeButtons.Position = UDim2.new(0, 0, 0, 40)
+    ModeButtons.BackgroundTransparency = 1
+    ModeButtons.ZIndex = 2
+    ModeButtons.Parent = MainFrame
 
-    -- Создаем 5 табов
-    local tabs = {
+    local GunButton = Instance.new("TextButton")
+    GunButton.Name = "GunButton"
+    GunButton.Size = UDim2.new(0.5, 0, 1, 0)
+    GunButton.Position = UDim2.new(0, 0, 0, 0)
+    GunButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+    GunButton.BackgroundTransparency = 0.2
+    GunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    GunButton.Text = "GUN"
+    GunButton.Font = Enum.Font.GothamBold
+    GunButton.TextSize = 14
+    GunButton.ZIndex = 3
+    GunButton.Parent = ModeButtons
+
+    local NightsButton = Instance.new("TextButton")
+    NightsButton.Name = "NightsButton"
+    NightsButton.Size = UDim2.new(0.5, 0, 1, 0)
+    NightsButton.Position = UDim2.new(0.5, 0, 0, 0)
+    NightsButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+    NightsButton.BackgroundTransparency = 0.2
+    NightsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NightsButton.Text = "99 NIGHTS"
+    NightsButton.Font = Enum.Font.GothamBold
+    NightsButton.TextSize = 14
+    NightsButton.ZIndex = 3
+    NightsButton.Parent = ModeButtons
+
+    -- Gun Menu (Movement, Visual, AimBot)
+    GunMenu = Instance.new("Frame")
+    GunMenu.Name = "GunMenu"
+    GunMenu.Size = UDim2.new(1, 0, 1, -80)
+    GunMenu.Position = UDim2.new(0, 0, 0, 80)
+    GunMenu.BackgroundTransparency = 1
+    GunMenu.Visible = currentMenu == "Gun"
+    GunMenu.ZIndex = 2
+    GunMenu.Parent = MainFrame
+
+    -- Nights Menu (Main, Bring)
+    NightsMenu = Instance.new("Frame")
+    NightsMenu.Name = "NightsMenu"
+    NightsMenu.Size = UDim2.new(1, 0, 1, -80)
+    NightsMenu.Position = UDim2.new(0, 0, 0, 80)
+    NightsMenu.BackgroundTransparency = 1
+    NightsMenu.Visible = currentMenu == "Nights"
+    NightsMenu.ZIndex = 2
+    NightsMenu.Parent = MainFrame
+
+    -- Gun Menu Content
+    local GunTabButtons = Instance.new("Frame")
+    GunTabButtons.Name = "GunTabButtons"
+    GunTabButtons.Size = UDim2.new(1, 0, 0, 40)
+    GunTabButtons.Position = UDim2.new(0, 0, 0, 0)
+    GunTabButtons.BackgroundTransparency = 0.2
+    GunTabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    GunTabButtons.ZIndex = 2
+    GunTabButtons.Parent = GunMenu
+
+    local gunTabs = {
         {name = "Movement", defaultActive = true},
         {name = "Visual", defaultActive = false},
-        {name = "AimBot", defaultActive = false},
-        {name = "Main", defaultActive = false},
-        {name = "Bring", defaultActive = false}
+        {name = "AimBot", defaultActive = false}
     }
 
-    local tabButtons = {}
-    local tabContents = {}
+    local gunTabButtons = {}
+    local gunTabContents = {}
 
-    for i, tab in ipairs(tabs) do
+    for i, tab in ipairs(gunTabs) do
         local tabButton = Instance.new("TextButton")
         tabButton.Name = tab.name .. "Tab"
-        tabButton.Size = UDim2.new(0.2, 0, 1, 0)
-        tabButton.Position = UDim2.new(0.2 * (i-1), 0, 0, 0)
+        tabButton.Size = UDim2.new(0.33, 0, 1, 0)
+        tabButton.Position = UDim2.new(0.33 * (i-1), 0, 0, 0)
         tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
         tabButton.BackgroundTransparency = 0.2
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         tabButton.Text = tab.name
         tabButton.Font = Enum.Font.Gotham
-        tabButton.TextSize = 11
+        tabButton.TextSize = 12
         tabButton.ZIndex = 3
-        tabButton.Parent = TabButtons
+        tabButton.Parent = GunTabButtons
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -20, 1, -100)
-        ContentFrame.Position = UDim2.new(0, 10, 0, 90)
+        ContentFrame.Size = UDim2.new(1, -20, 1, -50)
+        ContentFrame.Position = UDim2.new(0, 10, 0, 50)
         ContentFrame.BackgroundTransparency = 1
         ContentFrame.ScrollBarThickness = 4
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
@@ -751,18 +814,73 @@ local function createGUI()
         ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
         ContentFrame.Visible = tab.defaultActive
         ContentFrame.ZIndex = 2
-        ContentFrame.Parent = MainFrame
+        ContentFrame.Parent = GunMenu
 
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
         ContentLayout.Padding = UDim.new(0, 8)
         ContentLayout.Parent = ContentFrame
 
-        tabButtons[tab.name] = tabButton
-        tabContents[tab.name] = ContentFrame
+        gunTabButtons[tab.name] = tabButton
+        gunTabContents[tab.name] = ContentFrame
     end
 
-    -- Movement Content
+    -- Nights Menu Content
+    local NightsTabButtons = Instance.new("Frame")
+    NightsTabButtons.Name = "NightsTabButtons"
+    NightsTabButtons.Size = UDim2.new(1, 0, 0, 40)
+    NightsTabButtons.Position = UDim2.new(0, 0, 0, 0)
+    NightsTabButtons.BackgroundTransparency = 0.2
+    NightsTabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    NightsTabButtons.ZIndex = 2
+    NightsTabButtons.Parent = NightsMenu
+
+    local nightsTabs = {
+        {name = "Main", defaultActive = true},
+        {name = "Bring", defaultActive = false}
+    }
+
+    local nightsTabButtons = {}
+    local nightsTabContents = {}
+
+    for i, tab in ipairs(nightsTabs) do
+        local tabButton = Instance.new("TextButton")
+        tabButton.Name = tab.name .. "Tab"
+        tabButton.Size = UDim2.new(0.5, 0, 1, 0)
+        tabButton.Position = UDim2.new(0.5 * (i-1), 0, 0, 0)
+        tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
+        tabButton.BackgroundTransparency = 0.2
+        tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tabButton.Text = tab.name
+        tabButton.Font = Enum.Font.Gotham
+        tabButton.TextSize = 12
+        tabButton.ZIndex = 3
+        tabButton.Parent = NightsTabButtons
+
+        local ContentFrame = Instance.new("ScrollingFrame")
+        ContentFrame.Name = tab.name .. "Content"
+        ContentFrame.Size = UDim2.new(1, -20, 1, -50)
+        ContentFrame.Position = UDim2.new(0, 10, 0, 50)
+        ContentFrame.BackgroundTransparency = 1
+        ContentFrame.ScrollBarThickness = 4
+        ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+        ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+        ContentFrame.Visible = tab.defaultActive
+        ContentFrame.ZIndex = 2
+        ContentFrame.Parent = NightsMenu
+
+        local ContentLayout = Instance.new("UIListLayout")
+        ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        ContentLayout.Padding = UDim.new(0, 8)
+        ContentLayout.Parent = ContentFrame
+
+        nightsTabButtons[tab.name] = tabButton
+        nightsTabContents[tab.name] = ContentFrame
+    end
+
+    -- Gun Menu Content
+    -- Movement Tab
     local SpeedHackFrame = Instance.new("Frame")
     SpeedHackFrame.Name = "SpeedHackFrame"
     SpeedHackFrame.Size = UDim2.new(1, 0, 0, 80)
@@ -771,7 +889,7 @@ local function createGUI()
     SpeedHackFrame.BorderSizePixel = 0
     SpeedHackFrame.ZIndex = 2
     SpeedHackFrame.LayoutOrder = 1
-    SpeedHackFrame.Parent = tabContents["Movement"]
+    SpeedHackFrame.Parent = gunTabContents["Movement"]
 
     local SpeedHackCorner = Instance.new("UICorner")
     SpeedHackCorner.CornerRadius = UDim.new(0, 6)
@@ -838,7 +956,7 @@ local function createGUI()
     JumpHackFrame.BorderSizePixel = 0
     JumpHackFrame.ZIndex = 2
     JumpHackFrame.LayoutOrder = 2
-    JumpHackFrame.Parent = tabContents["Movement"]
+    JumpHackFrame.Parent = gunTabContents["Movement"]
 
     local JumpHackCorner = Instance.new("UICorner")
     JumpHackCorner.CornerRadius = UDim.new(0, 6)
@@ -879,7 +997,7 @@ local function createGUI()
     NoClipFrame.BorderSizePixel = 0
     NoClipFrame.ZIndex = 2
     NoClipFrame.LayoutOrder = 3
-    NoClipFrame.Parent = tabContents["Movement"]
+    NoClipFrame.Parent = gunTabContents["Movement"]
 
     local NoClipCorner = Instance.new("UICorner")
     NoClipCorner.CornerRadius = UDim.new(0, 6)
@@ -911,7 +1029,7 @@ local function createGUI()
     NoClipToggle.ZIndex = 3
     NoClipToggle.Parent = NoClipFrame
 
-    -- Visual Content
+    -- Visual Tab
     -- ESP Tracers
     local ESPTracersFrame = Instance.new("Frame")
     ESPTracersFrame.Name = "ESPTracersFrame"
@@ -921,7 +1039,7 @@ local function createGUI()
     ESPTracersFrame.BorderSizePixel = 0
     ESPTracersFrame.ZIndex = 2
     ESPTracersFrame.LayoutOrder = 1
-    ESPTracersFrame.Parent = tabContents["Visual"]
+    ESPTracersFrame.Parent = gunTabContents["Visual"]
 
     local ESPTracersCorner = Instance.new("UICorner")
     ESPTracersCorner.CornerRadius = UDim.new(0, 6)
@@ -962,7 +1080,7 @@ local function createGUI()
     ESPBoxFrame.BorderSizePixel = 0
     ESPBoxFrame.ZIndex = 2
     ESPBoxFrame.LayoutOrder = 2
-    ESPBoxFrame.Parent = tabContents["Visual"]
+    ESPBoxFrame.Parent = gunTabContents["Visual"]
 
     local ESPBoxCorner = Instance.new("UICorner")
     ESPBoxCorner.CornerRadius = UDim.new(0, 6)
@@ -1003,7 +1121,7 @@ local function createGUI()
     ESPHealthFrame.BorderSizePixel = 0
     ESPHealthFrame.ZIndex = 2
     ESPHealthFrame.LayoutOrder = 3
-    ESPHealthFrame.Parent = tabContents["Visual"]
+    ESPHealthFrame.Parent = gunTabContents["Visual"]
 
     local ESPHealthCorner = Instance.new("UICorner")
     ESPHealthCorner.CornerRadius = UDim.new(0, 6)
@@ -1044,7 +1162,7 @@ local function createGUI()
     ESPDistanceFrame.BorderSizePixel = 0
     ESPDistanceFrame.ZIndex = 2
     ESPDistanceFrame.LayoutOrder = 4
-    ESPDistanceFrame.Parent = tabContents["Visual"]
+    ESPDistanceFrame.Parent = gunTabContents["Visual"]
 
     local ESPDistanceCorner = Instance.new("UICorner")
     ESPDistanceCorner.CornerRadius = UDim.new(0, 6)
@@ -1085,7 +1203,7 @@ local function createGUI()
     ESPCountFrame.BorderSizePixel = 0
     ESPCountFrame.ZIndex = 2
     ESPCountFrame.LayoutOrder = 5
-    ESPCountFrame.Parent = tabContents["Visual"]
+    ESPCountFrame.Parent = gunTabContents["Visual"]
 
     local ESPCountCorner = Instance.new("UICorner")
     ESPCountCorner.CornerRadius = UDim.new(0, 6)
@@ -1117,7 +1235,7 @@ local function createGUI()
     ESPCountToggle.ZIndex = 3
     ESPCountToggle.Parent = ESPCountFrame
 
-    -- AimBot Content
+    -- AimBot Tab
     local AimBotFrame = Instance.new("Frame")
     AimBotFrame.Name = "AimBotFrame"
     AimBotFrame.Size = UDim2.new(1, 0, 0, 40)
@@ -1126,7 +1244,7 @@ local function createGUI()
     AimBotFrame.BorderSizePixel = 0
     AimBotFrame.ZIndex = 2
     AimBotFrame.LayoutOrder = 1
-    AimBotFrame.Parent = tabContents["AimBot"]
+    AimBotFrame.Parent = gunTabContents["AimBot"]
 
     local AimBotCorner = Instance.new("UICorner")
     AimBotCorner.CornerRadius = UDim.new(0, 6)
@@ -1168,7 +1286,7 @@ local function createGUI()
     AimBotFOVFrame.Visible = aimBotEnabled
     AimBotFOVFrame.ZIndex = 2
     AimBotFOVFrame.LayoutOrder = 2
-    AimBotFOVFrame.Parent = tabContents["AimBot"]
+    AimBotFOVFrame.Parent = gunTabContents["AimBot"]
 
     local AimBotFOVCorner = Instance.new("UICorner")
     AimBotFOVCorner.CornerRadius = UDim.new(0, 6)
@@ -1186,60 +1304,158 @@ local function createGUI()
     AimBotFOVLabel.ZIndex = 3
     AimBotFOVLabel.Parent = AimBotFOVFrame
 
-    -- Main Content (новый таб из второго скрипта)
-    -- Kill Aura
-    local KillAuraToggle = CreateToggle(tabContents["Main"], "Kill Aura", function(v)
+    -- Nights Menu Content
+    -- Main Tab
+    local KillAuraToggle = CreateToggle(nightsTabContents["Main"], "Kill Aura", function(v)
         ActiveKillAura = v
     end, ActiveKillAura)
 
-    CreateSlider(tabContents["Main"], "Kill Distance", 10, 50, DistanceForKillAura, function(v)
+    CreateSlider(nightsTabContents["Main"], "Kill Distance", 10, 100, DistanceForKillAura, function(v)
         DistanceForKillAura = v
     end)
 
-    -- Auto Chop
-    local AutoChopToggle = CreateToggle(tabContents["Main"], "Auto Chop", function(v)
+    local AutoChopToggle = CreateToggle(nightsTabContents["Main"], "Auto Chop", function(v)
         ActiveAutoChopTree = v
     end, ActiveAutoChopTree)
 
-    CreateSlider(tabContents["Main"], "Chop Distance", 10, 50, DistanceForAutoChopTree, function(v)
+    CreateSlider(nightsTabContents["Main"], "Chop Distance", 10, 100, DistanceForAutoChopTree, function(v)
         DistanceForAutoChopTree = v
     end)
 
-    -- Bring Content (новый таб из второго скрипта)
-    CreateSlider(tabContents["Bring"], "Bring Count", 1, 20, BringCount, function(v)
+    -- Bring Tab
+    CreateSlider(nightsTabContents["Bring"], "Bring Count", 1, 20, BringCount, function(v)
         BringCount = math.floor(v)
     end)
 
-    CreateSlider(tabContents["Bring"], "Bring Speed", 50, 500, BringDelay, function(v)
+    CreateSlider(nightsTabContents["Bring"], "Bring Speed", 50, 500, BringDelay, function(v)
         BringDelay = math.floor(v)
     end)
 
-    CreateButton(tabContents["Bring"], "Teleport to Campfire", function()
+    CreateButton(nightsTabContents["Bring"], "Teleport to Campfire", function()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
         end
     end)
 
-    -- Bring Items Buttons
-    local itemsToBring = {
-        "Wood",
-        "Coal", 
-        "Fuel Can",
-        "Oil Barrel",
-        "Scrap Metal",
-        "Carrot",
-        "Bandage",
-        "Rifle Ammo"
-    }
+    -- Подменю для ресурсов
+    local ResourcesButton = CreateButton(nightsTabContents["Bring"], "Resources", function()
+        -- Открываем подменю ресурсов
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "ResourcesSubMenu" then
+                child.Visible = not child.Visible
+            end
+        end
+    end)
 
-    for _, itemName in pairs(itemsToBring) do
-        CreateButton(tabContents["Bring"], "Bring " .. itemName, function()
+    local ResourcesSubMenu = Instance.new("Frame")
+    ResourcesSubMenu.Name = "ResourcesSubMenu"
+    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    ResourcesSubMenu.BackgroundTransparency = 1
+    ResourcesSubMenu.Visible = false
+    ResourcesSubMenu.LayoutOrder = 10
+    ResourcesSubMenu.Parent = nightsTabContents["Bring"]
+
+    local ResourcesLayout = Instance.new("UIListLayout")
+    ResourcesLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ResourcesLayout.Padding = UDim.new(0, 5)
+    ResourcesLayout.Parent = ResourcesSubMenu
+
+    local resourcesItems = {"Coal", "Fuel Can", "Oil Barrel"}
+    for _, itemName in pairs(resourcesItems) do
+        CreateButton(ResourcesSubMenu, "Bring " .. itemName, function()
             BringItems(itemName)
         end)
     end
 
-    -- Обработчики для существующих функций
+    -- Подменю для металлов
+    local MetalsButton = CreateButton(nightsTabContents["Bring"], "Metals", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "MetalsSubMenu" then
+                child.Visible = not child.Visible
+            end
+        end
+    end)
+
+    local MetalsSubMenu = Instance.new("Frame")
+    MetalsSubMenu.Name = "MetalsSubMenu"
+    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    MetalsSubMenu.BackgroundTransparency = 1
+    MetalsSubMenu.Visible = false
+    MetalsSubMenu.LayoutOrder = 11
+    MetalsSubMenu.Parent = nightsTabContents["Bring"]
+
+    local MetalsLayout = Instance.new("UIListLayout")
+    MetalsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    MetalsLayout.Padding = UDim.new(0, 5)
+    MetalsLayout.Parent = MetalsSubMenu
+
+    local metalsItems = {"Scrap Metal", "Bolt", "Sheet Metal", "UFO Scrap"}
+    for _, itemName in pairs(metalsItems) do
+        CreateButton(MetalsSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Подменю для электроники
+    local ElectronicsButton = CreateButton(nightsTabContents["Bring"], "Electronics", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "ElectronicsSubMenu" then
+                child.Visible = not child.Visible
+            end
+        end
+    end)
+
+    local ElectronicsSubMenu = Instance.new("Frame")
+    ElectronicsSubMenu.Name = "ElectronicsSubMenu"
+    ElectronicsSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    ElectronicsSubMenu.BackgroundTransparency = 1
+    ElectronicsSubMenu.Visible = false
+    ElectronicsSubMenu.LayoutOrder = 12
+    ElectronicsSubMenu.Parent = nightsTabContents["Bring"]
+
+    local ElectronicsLayout = Instance.new("UIListLayout")
+    ElectronicsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ElectronicsLayout.Padding = UDim.new(0, 5)
+    ElectronicsLayout.Parent = ElectronicsSubMenu
+
+    local electronicsItems = {"Broken Microwave", "Old Radio"}
+    for _, itemName in pairs(electronicsItems) do
+        CreateButton(ElectronicsSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Подменю для еды и медицины
+    local FoodMedButton = CreateButton(nightsTabContents["Bring"], "Food & Medical", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "FoodMedSubMenu" then
+                child.Visible = not child.Visible
+            end
+        end
+    end)
+
+    local FoodMedSubMenu = Instance.new("Frame")
+    FoodMedSubMenu.Name = "FoodMedSubMenu"
+    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    FoodMedSubMenu.BackgroundTransparency = 1
+    FoodMedSubMenu.Visible = false
+    FoodMedSubMenu.LayoutOrder = 13
+    FoodMedSubMenu.Parent = nightsTabContents["Bring"]
+
+    local FoodMedLayout = Instance.new("UIListLayout")
+    FoodMedLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    FoodMedLayout.Padding = UDim.new(0, 5)
+    FoodMedLayout.Parent = FoodMedSubMenu
+
+    local foodMedItems = {"Carrot", "Bandage"}
+    for _, itemName in pairs(foodMedItems) do
+        CreateButton(FoodMedSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Обработчики для Gun Menu
     -- Speed Hack
     SpeedHackToggle.MouseButton1Click:Connect(function()
         speedHackEnabled = not speedHackEnabled
@@ -1260,14 +1476,14 @@ local function createGUI()
     end)
 
     -- Speed Slider
+    local speedSliderConnection
     SpeedHackSlider.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local connection
-            connection = RunService.Heartbeat:Connect(function()
+            speedSliderConnection = RunService.Heartbeat:Connect(function()
                 local mouseLocation = UserInputService:GetMouseLocation()
                 local relativeX = math.clamp((mouseLocation.X - SpeedHackSlider.AbsolutePosition.X) / SpeedHackSlider.AbsoluteSize.X, 0, 1)
-                currentSpeed = math.floor(16 + (relativeX * 84)) -- 16 to 100
-                SpeedValue.Text = "Speed: " .. currentSpeed .. " -"
+                currentSpeed = math.floor(16 + (relativeX * 84))
+                SpeedValue.Text = "Speed: " .. currentSpeed
                 
                 if speedHackEnabled then
                     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -1276,12 +1492,15 @@ local function createGUI()
                     end
                 end
             end)
-            
-            local function disconnect()
-                connection:Disconnect()
+        end
+    end)
+
+    SpeedHackSlider.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if speedSliderConnection then
+                speedSliderConnection:Disconnect()
+                speedSliderConnection = nil
             end
-            
-            SpeedHackSlider.InputEnded:Connect(disconnect)
         end
     end)
 
@@ -1325,7 +1544,6 @@ local function createGUI()
                 noclipConnection = nil
             end
             
-            -- Восстанавливаем коллизию
             if player.Character then
                 for _, part in pairs(player.Character:GetDescendants()) do
                     if part:IsA("BasePart") then
@@ -1413,7 +1631,6 @@ local function createGUI()
         toggleButton(AimBotToggle, aimBotEnabled)
         AimBotFOVFrame.Visible = aimBotEnabled
         
-        -- Show/hide FOV circle
         if fovCircle then
             fovCircle.Visible = aimBotEnabled
         else
@@ -1423,22 +1640,25 @@ local function createGUI()
     end)
 
     -- AimBot FOV Slider
+    local aimbotSliderConnection
     AimBotFOVFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local connection
-            connection = RunService.Heartbeat:Connect(function()
+            aimbotSliderConnection = RunService.Heartbeat:Connect(function()
                 local mouseLocation = UserInputService:GetMouseLocation()
                 local relativeX = math.clamp((mouseLocation.X - AimBotFOVFrame.AbsolutePosition.X) / AimBotFOVFrame.AbsoluteSize.X, 0, 1)
-                aimBotFOV = math.floor(10 + (relativeX * 190)) -- 10 to 200
-                AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV .. " -"
+                aimBotFOV = math.floor(10 + (relativeX * 190))
+                AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
                 updateFOVCircle()
             end)
-            
-            local function disconnect()
-                connection:Disconnect()
+        end
+    end)
+
+    AimBotFOVFrame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if aimbotSliderConnection then
+                aimbotSliderConnection:Disconnect()
+                aimbotSliderConnection = nil
             end
-            
-            AimBotFOVFrame.InputEnded:Connect(disconnect)
         end
     end)
 
@@ -1453,7 +1673,6 @@ local function createGUI()
                     local targetRoot = otherPlayer.Character.HumanoidRootPart
                     local distance = (player.Character.HumanoidRootPart.Position - targetRoot.Position).Magnitude
                     
-                    -- Check if player is in FOV and visible
                     if isInFOV(targetRoot.Position) and isPlayerVisible(otherPlayer) then
                         if distance < closestDistance then
                             closestDistance = distance
@@ -1469,28 +1688,56 @@ local function createGUI()
         end
     end)
 
-    -- Tab Switching
-    for tabName, tabButton in pairs(tabButtons) do
+    -- Tab Switching для Gun Menu
+    for tabName, tabButton in pairs(gunTabButtons) do
         tabButton.MouseButton1Click:Connect(function()
-            for contentName, contentFrame in pairs(tabContents) do
+            for contentName, contentFrame in pairs(gunTabContents) do
                 contentFrame.Visible = (contentName == tabName)
             end
             
-            for btnName, btn in pairs(tabButtons) do
+            for btnName, btn in pairs(gunTabButtons) do
                 btn.BackgroundColor3 = (btnName == tabName) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
             end
         end)
     end
+
+    -- Tab Switching для Nights Menu
+    for tabName, tabButton in pairs(nightsTabButtons) do
+        tabButton.MouseButton1Click:Connect(function()
+            for contentName, contentFrame in pairs(nightsTabContents) do
+                contentFrame.Visible = (contentName == tabName)
+            end
+            
+            for btnName, btn in pairs(nightsTabButtons) do
+                btn.BackgroundColor3 = (btnName == tabName) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
+            end
+        end)
+    end
+
+    -- Mode Switching
+    GunButton.MouseButton1Click:Connect(function()
+        currentMenu = "Gun"
+        GunMenu.Visible = true
+        NightsMenu.Visible = false
+        GunButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+        NightsButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+    end)
+
+    NightsButton.MouseButton1Click:Connect(function()
+        currentMenu = "Nights"
+        GunMenu.Visible = false
+        NightsMenu.Visible = true
+        GunButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+        NightsButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
+    end)
 
     -- Auto-resize for mobile
     local function updateSize()
         local viewportSize = workspace.CurrentCamera.ViewportSize
         MainFrame.Size = UDim2.new(0, math.min(300, viewportSize.X - 20), 0, math.min(450, viewportSize.Y - 20))
         
-        -- Update FOV circle position
         updateFOVCircle()
         
-        -- Update ESP Count position
         if espCountText then
             espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
         end
@@ -1499,7 +1746,6 @@ local function createGUI()
     updateSize()
     workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateSize)
     
-    -- Создаем кнопку открытия/закрытия
     createOpenCloseButton()
 end
 
@@ -1528,7 +1774,6 @@ game:GetService("CoreGui").ChildRemoved:Connect(function(child)
             noclipConnection:Disconnect()
             noclipConnection = nil
         end
-        -- Clean up ESP objects
         for _, espData in pairs(espObjects) do
             if espData.tracer then espData.tracer:Remove() end
             if espData.box then espData.box:Remove() end
