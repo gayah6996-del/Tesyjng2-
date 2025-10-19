@@ -43,7 +43,7 @@ local Settings = {
 }
 
 local ScreenGui = nil
-local MainFrame = nil
+local MainMenu = nil
 local GunMenu = nil
 local NightsMenu = nil
 local minimized = false
@@ -52,7 +52,6 @@ local savedPosition = UDim2.new(0, 10, 0, 10)
 local savedButtonPosition = UDim2.new(0, 10, 0, 10)
 local isGuiOpen = false
 local OpenCloseButton = nil
-local currentMenu = "Gun" -- "Gun" или "Nights"
 
 -- ESP объекты
 local espObjects = {}
@@ -100,7 +99,7 @@ end
 -- Загружаем настройки при запуске
 LoadSettings()
 
--- Функции для UI элементов из второго скрипта
+-- Функции для UI элементов
 local function CreateToggle(parent, text, callback, isActive)
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Size = UDim2.new(1, 0, 0, 40)
@@ -217,15 +216,6 @@ local function CreateSlider(parent, text, min, max, default, callback)
         callback(value)
     end
     
-    local function onInputChanged(input)
-        if isDragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            local mouseLocation = UserInputService:GetMouseLocation()
-            local relativeX = math.clamp((mouseLocation.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X, 0, 1)
-            local value = min + relativeX * (max - min)
-            updateSlider(value)
-        end
-    end
-    
     sliderBar.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             isDragging = true
@@ -328,7 +318,7 @@ local function createOpenCloseButton()
     -- Обработчик нажатия
     OpenCloseButton.MouseButton1Click:Connect(function()
         isGuiOpen = not isGuiOpen
-        MainFrame.Visible = isGuiOpen
+        MainMenu.Visible = isGuiOpen
         
         if isGuiOpen then
             OpenCloseButton.Text = "≡"
@@ -670,37 +660,23 @@ task.spawn(function()
     end
 end)
 
--- Функция создания GUI
-local function createGUI()
-    if ScreenGui then
-        savedPosition = MainFrame.Position
-        ScreenGui:Destroy()
-        ScreenGui = nil
-        MainFrame = nil
-        OpenCloseButton = nil
-    end
-
-    -- Create GUI
-    ScreenGui = Instance.new("ScreenGui")
-    ScreenGui.Name = "SANSTRO_GUI"
-    ScreenGui.Parent = player.PlayerGui
-    ScreenGui.ResetOnSpawn = false
-
-    MainFrame = Instance.new("Frame")
-    MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 300, 0, 450)
-    MainFrame.Position = savedPosition
-    MainFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
-    MainFrame.BackgroundTransparency = 0.3
-    MainFrame.BorderSizePixel = 0
-    MainFrame.Active = true
-    MainFrame.Draggable = true
-    MainFrame.Visible = isGuiOpen
-    MainFrame.Parent = ScreenGui
+-- Функция создания главного меню выбора
+local function createMainMenu()
+    MainMenu = Instance.new("Frame")
+    MainMenu.Name = "MainMenu"
+    MainMenu.Size = UDim2.new(0, 300, 0, 200)
+    MainMenu.Position = savedPosition
+    MainMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+    MainMenu.BackgroundTransparency = 0.3
+    MainMenu.BorderSizePixel = 0
+    MainMenu.Active = true
+    MainMenu.Draggable = true
+    MainMenu.Visible = isGuiOpen
+    MainMenu.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
     Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = MainFrame
+    Corner.Parent = MainMenu
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
@@ -709,76 +685,73 @@ local function createGUI()
     Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     Title.BackgroundTransparency = 0.2
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Title.Text = "SANSTRO MENU"
+    Title.Text = "SELECT GAME"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 16
     Title.ZIndex = 2
-    Title.Parent = MainFrame
+    Title.Parent = MainMenu
 
-    -- Кнопки выбора режима
-    local ModeButtons = Instance.new("Frame")
-    ModeButtons.Name = "ModeButtons"
-    ModeButtons.Size = UDim2.new(1, 0, 0, 40)
-    ModeButtons.Position = UDim2.new(0, 0, 0, 40)
-    ModeButtons.BackgroundTransparency = 1
-    ModeButtons.ZIndex = 2
-    ModeButtons.Parent = MainFrame
+    local GunButton = CreateButton(MainMenu, "GUNGAME", function()
+        MainMenu.Visible = false
+        GunMenu.Visible = true
+    end)
+    GunButton.Position = UDim2.new(0, 10, 0, 50)
+    GunButton.Size = UDim2.new(1, -20, 0, 60)
 
-    local GunButton = Instance.new("TextButton")
-    GunButton.Name = "GunButton"
-    GunButton.Size = UDim2.new(0.5, 0, 1, 0)
-    GunButton.Position = UDim2.new(0, 0, 0, 0)
-    GunButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
-    GunButton.BackgroundTransparency = 0.2
-    GunButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    GunButton.Text = "GUN"
-    GunButton.Font = Enum.Font.GothamBold
-    GunButton.TextSize = 14
-    GunButton.ZIndex = 3
-    GunButton.Parent = ModeButtons
+    local NightsButton = CreateButton(MainMenu, "99 NIGHTS", function()
+        MainMenu.Visible = false
+        NightsMenu.Visible = true
+    end)
+    NightsButton.Position = UDim2.new(0, 10, 0, 120)
+    NightsButton.Size = UDim2.new(1, -20, 0, 60)
+end
 
-    local NightsButton = Instance.new("TextButton")
-    NightsButton.Name = "NightsButton"
-    NightsButton.Size = UDim2.new(0.5, 0, 1, 0)
-    NightsButton.Position = UDim2.new(0.5, 0, 0, 0)
-    NightsButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-    NightsButton.BackgroundTransparency = 0.2
-    NightsButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    NightsButton.Text = "99 NIGHTS"
-    NightsButton.Font = Enum.Font.GothamBold
-    NightsButton.TextSize = 14
-    NightsButton.ZIndex = 3
-    NightsButton.Parent = ModeButtons
-
-    -- Gun Menu (Movement, Visual, AimBot)
+-- Функция создания Gun Menu
+local function createGunMenu()
     GunMenu = Instance.new("Frame")
     GunMenu.Name = "GunMenu"
-    GunMenu.Size = UDim2.new(1, 0, 1, -80)
-    GunMenu.Position = UDim2.new(0, 0, 0, 80)
-    GunMenu.BackgroundTransparency = 1
-    GunMenu.Visible = currentMenu == "Gun"
-    GunMenu.ZIndex = 2
-    GunMenu.Parent = MainFrame
+    GunMenu.Size = UDim2.new(0, 300, 0, 450)
+    GunMenu.Position = savedPosition
+    GunMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+    GunMenu.BackgroundTransparency = 0.3
+    GunMenu.BorderSizePixel = 0
+    GunMenu.Active = true
+    GunMenu.Draggable = true
+    GunMenu.Visible = false
+    GunMenu.Parent = ScreenGui
 
-    -- Nights Menu (Main, Bring)
-    NightsMenu = Instance.new("Frame")
-    NightsMenu.Name = "NightsMenu"
-    NightsMenu.Size = UDim2.new(1, 0, 1, -80)
-    NightsMenu.Position = UDim2.new(0, 0, 0, 80)
-    NightsMenu.BackgroundTransparency = 1
-    NightsMenu.Visible = currentMenu == "Nights"
-    NightsMenu.ZIndex = 2
-    NightsMenu.Parent = MainFrame
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = GunMenu
 
-    -- Gun Menu Content
-    local GunTabButtons = Instance.new("Frame")
-    GunTabButtons.Name = "GunTabButtons"
-    GunTabButtons.Size = UDim2.new(1, 0, 0, 40)
-    GunTabButtons.Position = UDim2.new(0, 0, 0, 0)
-    GunTabButtons.BackgroundTransparency = 0.2
-    GunTabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-    GunTabButtons.ZIndex = 2
-    GunTabButtons.Parent = GunMenu
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Size = UDim2.new(1, 0, 0, 40)
+    Title.Position = UDim2.new(0, 0, 0, 0)
+    Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    Title.BackgroundTransparency = 0.2
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = "GUNGAME MENU"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 16
+    Title.ZIndex = 2
+    Title.Parent = GunMenu
+
+    local BackButton = CreateButton(GunMenu, "BACK", function()
+        GunMenu.Visible = false
+        MainMenu.Visible = true
+    end)
+    BackButton.Position = UDim2.new(0, 10, 0, 50)
+    BackButton.Size = UDim2.new(1, -20, 0, 30)
+
+    local TabButtons = Instance.new("Frame")
+    TabButtons.Name = "TabButtons"
+    TabButtons.Size = UDim2.new(1, 0, 0, 40)
+    TabButtons.Position = UDim2.new(0, 0, 0, 90)
+    TabButtons.BackgroundTransparency = 0.2
+    TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    TabButtons.ZIndex = 2
+    TabButtons.Parent = GunMenu
 
     local gunTabs = {
         {name = "Movement", defaultActive = true},
@@ -801,12 +774,12 @@ local function createGUI()
         tabButton.Font = Enum.Font.Gotham
         tabButton.TextSize = 12
         tabButton.ZIndex = 3
-        tabButton.Parent = GunTabButtons
+        tabButton.Parent = TabButtons
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -20, 1, -50)
-        ContentFrame.Position = UDim2.new(0, 10, 0, 50)
+        ContentFrame.Size = UDim2.new(1, -20, 1, -140)
+        ContentFrame.Position = UDim2.new(0, 10, 0, 140)
         ContentFrame.BackgroundTransparency = 1
         ContentFrame.ScrollBarThickness = 4
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
@@ -825,62 +798,7 @@ local function createGUI()
         gunTabContents[tab.name] = ContentFrame
     end
 
-    -- Nights Menu Content
-    local NightsTabButtons = Instance.new("Frame")
-    NightsTabButtons.Name = "NightsTabButtons"
-    NightsTabButtons.Size = UDim2.new(1, 0, 0, 40)
-    NightsTabButtons.Position = UDim2.new(0, 0, 0, 0)
-    NightsTabButtons.BackgroundTransparency = 0.2
-    NightsTabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
-    NightsTabButtons.ZIndex = 2
-    NightsTabButtons.Parent = NightsMenu
-
-    local nightsTabs = {
-        {name = "Main", defaultActive = true},
-        {name = "Bring", defaultActive = false}
-    }
-
-    local nightsTabButtons = {}
-    local nightsTabContents = {}
-
-    for i, tab in ipairs(nightsTabs) do
-        local tabButton = Instance.new("TextButton")
-        tabButton.Name = tab.name .. "Tab"
-        tabButton.Size = UDim2.new(0.5, 0, 1, 0)
-        tabButton.Position = UDim2.new(0.5 * (i-1), 0, 0, 0)
-        tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
-        tabButton.BackgroundTransparency = 0.2
-        tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        tabButton.Text = tab.name
-        tabButton.Font = Enum.Font.Gotham
-        tabButton.TextSize = 12
-        tabButton.ZIndex = 3
-        tabButton.Parent = NightsTabButtons
-
-        local ContentFrame = Instance.new("ScrollingFrame")
-        ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -20, 1, -50)
-        ContentFrame.Position = UDim2.new(0, 10, 0, 50)
-        ContentFrame.BackgroundTransparency = 1
-        ContentFrame.ScrollBarThickness = 4
-        ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
-        ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
-        ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
-        ContentFrame.Visible = tab.defaultActive
-        ContentFrame.ZIndex = 2
-        ContentFrame.Parent = NightsMenu
-
-        local ContentLayout = Instance.new("UIListLayout")
-        ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentLayout.Padding = UDim.new(0, 8)
-        ContentLayout.Parent = ContentFrame
-
-        nightsTabButtons[tab.name] = tabButton
-        nightsTabContents[tab.name] = ContentFrame
-    end
-
-    -- Gun Menu Content
-    -- Movement Tab
+    -- Movement Tab Content
     local SpeedHackFrame = Instance.new("Frame")
     SpeedHackFrame.Name = "SpeedHackFrame"
     SpeedHackFrame.Size = UDim2.new(1, 0, 0, 80)
@@ -1029,8 +947,7 @@ local function createGUI()
     NoClipToggle.ZIndex = 3
     NoClipToggle.Parent = NoClipFrame
 
-    -- Visual Tab
-    -- ESP Tracers
+    -- Visual Tab Content
     local ESPTracersFrame = Instance.new("Frame")
     ESPTracersFrame.Name = "ESPTracersFrame"
     ESPTracersFrame.Size = UDim2.new(1, 0, 0, 40)
@@ -1235,7 +1152,7 @@ local function createGUI()
     ESPCountToggle.ZIndex = 3
     ESPCountToggle.Parent = ESPCountFrame
 
-    -- AimBot Tab
+    -- AimBot Tab Content
     local AimBotFrame = Instance.new("Frame")
     AimBotFrame.Name = "AimBotFrame"
     AimBotFrame.Size = UDim2.new(1, 0, 0, 40)
@@ -1304,159 +1221,7 @@ local function createGUI()
     AimBotFOVLabel.ZIndex = 3
     AimBotFOVLabel.Parent = AimBotFOVFrame
 
-    -- Nights Menu Content
-    -- Main Tab
-    local KillAuraToggle = CreateToggle(nightsTabContents["Main"], "Kill Aura", function(v)
-        ActiveKillAura = v
-    end, ActiveKillAura)
-
-    CreateSlider(nightsTabContents["Main"], "Kill Distance", 10, 100, DistanceForKillAura, function(v)
-        DistanceForKillAura = v
-    end)
-
-    local AutoChopToggle = CreateToggle(nightsTabContents["Main"], "Auto Chop", function(v)
-        ActiveAutoChopTree = v
-    end, ActiveAutoChopTree)
-
-    CreateSlider(nightsTabContents["Main"], "Chop Distance", 10, 100, DistanceForAutoChopTree, function(v)
-        DistanceForAutoChopTree = v
-    end)
-
-    -- Bring Tab
-    CreateSlider(nightsTabContents["Bring"], "Bring Count", 1, 20, BringCount, function(v)
-        BringCount = math.floor(v)
-    end)
-
-    CreateSlider(nightsTabContents["Bring"], "Bring Speed", 50, 500, BringDelay, function(v)
-        BringDelay = math.floor(v)
-    end)
-
-    CreateButton(nightsTabContents["Bring"], "Teleport to Campfire", function()
-        local char = player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
-        end
-    end)
-
-    -- Подменю для ресурсов
-    local ResourcesButton = CreateButton(nightsTabContents["Bring"], "Resources", function()
-        -- Открываем подменю ресурсов
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "ResourcesSubMenu" then
-                child.Visible = not child.Visible
-            end
-        end
-    end)
-
-    local ResourcesSubMenu = Instance.new("Frame")
-    ResourcesSubMenu.Name = "ResourcesSubMenu"
-    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 0)
-    ResourcesSubMenu.BackgroundTransparency = 1
-    ResourcesSubMenu.Visible = false
-    ResourcesSubMenu.LayoutOrder = 10
-    ResourcesSubMenu.Parent = nightsTabContents["Bring"]
-
-    local ResourcesLayout = Instance.new("UIListLayout")
-    ResourcesLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ResourcesLayout.Padding = UDim.new(0, 5)
-    ResourcesLayout.Parent = ResourcesSubMenu
-
-    local resourcesItems = {"Coal", "Fuel Can", "Oil Barrel"}
-    for _, itemName in pairs(resourcesItems) do
-        CreateButton(ResourcesSubMenu, "Bring " .. itemName, function()
-            BringItems(itemName)
-        end)
-    end
-
-    -- Подменю для металлов
-    local MetalsButton = CreateButton(nightsTabContents["Bring"], "Metals", function()
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "MetalsSubMenu" then
-                child.Visible = not child.Visible
-            end
-        end
-    end)
-
-    local MetalsSubMenu = Instance.new("Frame")
-    MetalsSubMenu.Name = "MetalsSubMenu"
-    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 0)
-    MetalsSubMenu.BackgroundTransparency = 1
-    MetalsSubMenu.Visible = false
-    MetalsSubMenu.LayoutOrder = 11
-    MetalsSubMenu.Parent = nightsTabContents["Bring"]
-
-    local MetalsLayout = Instance.new("UIListLayout")
-    MetalsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    MetalsLayout.Padding = UDim.new(0, 5)
-    MetalsLayout.Parent = MetalsSubMenu
-
-    local metalsItems = {"Scrap Metal", "Bolt", "Sheet Metal", "UFO Scrap"}
-    for _, itemName in pairs(metalsItems) do
-        CreateButton(MetalsSubMenu, "Bring " .. itemName, function()
-            BringItems(itemName)
-        end)
-    end
-
-    -- Подменю для электроники
-    local ElectronicsButton = CreateButton(nightsTabContents["Bring"], "Electronics", function()
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "ElectronicsSubMenu" then
-                child.Visible = not child.Visible
-            end
-        end
-    end)
-
-    local ElectronicsSubMenu = Instance.new("Frame")
-    ElectronicsSubMenu.Name = "ElectronicsSubMenu"
-    ElectronicsSubMenu.Size = UDim2.new(1, 0, 0, 0)
-    ElectronicsSubMenu.BackgroundTransparency = 1
-    ElectronicsSubMenu.Visible = false
-    ElectronicsSubMenu.LayoutOrder = 12
-    ElectronicsSubMenu.Parent = nightsTabContents["Bring"]
-
-    local ElectronicsLayout = Instance.new("UIListLayout")
-    ElectronicsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ElectronicsLayout.Padding = UDim.new(0, 5)
-    ElectronicsLayout.Parent = ElectronicsSubMenu
-
-    local electronicsItems = {"Broken Microwave", "Old Radio"}
-    for _, itemName in pairs(electronicsItems) do
-        CreateButton(ElectronicsSubMenu, "Bring " .. itemName, function()
-            BringItems(itemName)
-        end)
-    end
-
-    -- Подменю для еды и медицины
-    local FoodMedButton = CreateButton(nightsTabContents["Bring"], "Food & Medical", function()
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "FoodMedSubMenu" then
-                child.Visible = not child.Visible
-            end
-        end
-    end)
-
-    local FoodMedSubMenu = Instance.new("Frame")
-    FoodMedSubMenu.Name = "FoodMedSubMenu"
-    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 0)
-    FoodMedSubMenu.BackgroundTransparency = 1
-    FoodMedSubMenu.Visible = false
-    FoodMedSubMenu.LayoutOrder = 13
-    FoodMedSubMenu.Parent = nightsTabContents["Bring"]
-
-    local FoodMedLayout = Instance.new("UIListLayout")
-    FoodMedLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    FoodMedLayout.Padding = UDim.new(0, 5)
-    FoodMedLayout.Parent = FoodMedSubMenu
-
-    local foodMedItems = {"Carrot", "Bandage"}
-    for _, itemName in pairs(foodMedItems) do
-        CreateButton(FoodMedSubMenu, "Bring " .. itemName, function()
-            BringItems(itemName)
-        end)
-    end
-
     -- Обработчики для Gun Menu
-    -- Speed Hack
     SpeedHackToggle.MouseButton1Click:Connect(function()
         speedHackEnabled = not speedHackEnabled
         toggleButton(SpeedHackToggle, speedHackEnabled)
@@ -1475,7 +1240,6 @@ local function createGUI()
         end
     end)
 
-    -- Speed Slider
     local speedSliderConnection
     SpeedHackSlider.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1504,13 +1268,11 @@ local function createGUI()
         end
     end)
 
-    -- Jump Hack
     JumpHackToggle.MouseButton1Click:Connect(function()
         jumpHackEnabled = not jumpHackEnabled
         toggleButton(JumpHackToggle, jumpHackEnabled)
     end)
 
-    -- Infinite Jump
     UserInputService.JumpRequest:Connect(function()
         if jumpHackEnabled and player.Character then
             local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
@@ -1520,7 +1282,6 @@ local function createGUI()
         end
     end)
 
-    -- NoClip
     NoClipToggle.MouseButton1Click:Connect(function()
         noclipEnabled = not noclipEnabled
         toggleButton(NoClipToggle, noclipEnabled)
@@ -1554,31 +1315,26 @@ local function createGUI()
         end
     end)
 
-    -- ESP Tracers Toggle
     ESPTracersToggle.MouseButton1Click:Connect(function()
         espTracersEnabled = not espTracersEnabled
         toggleButton(ESPTracersToggle, espTracersEnabled)
     end)
 
-    -- ESP Box Toggle
     ESPBoxToggle.MouseButton1Click:Connect(function()
         espBoxEnabled = not espBoxEnabled
         toggleButton(ESPBoxToggle, espBoxEnabled)
     end)
 
-    -- ESP Health Toggle
     ESPHealthToggle.MouseButton1Click:Connect(function()
         espHealthEnabled = not espHealthEnabled
         toggleButton(ESPHealthToggle, espHealthEnabled)
     end)
 
-    -- ESP Distance Toggle
     ESPDistanceToggle.MouseButton1Click:Connect(function()
         espDistanceEnabled = not espDistanceEnabled
         toggleButton(ESPDistanceToggle, espDistanceEnabled)
     end)
 
-    -- ESP Count Toggle
     ESPCountToggle.MouseButton1Click:Connect(function()
         espCountEnabled = not espCountEnabled
         toggleButton(ESPCountToggle, espCountEnabled)
@@ -1600,32 +1356,6 @@ local function createGUI()
         end
     end)
 
-    -- Initialize ESP for existing players
-    for _, otherPlayer in pairs(Players:GetPlayers()) do
-        createESP(otherPlayer)
-    end
-
-    -- ESP for new players
-    Players.PlayerAdded:Connect(function(newPlayer)
-        createESP(newPlayer)
-    end)
-
-    -- Remove ESP when player leaves
-    Players.PlayerRemoving:Connect(function(leftPlayer)
-        cleanupESP(leftPlayer)
-    end)
-
-    -- Update ESP Count continuously
-    RunService.Heartbeat:Connect(updateESPCount)
-
-    -- Update ESP Count position when screen size changes
-    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-        if espCountText then
-            espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
-        end
-    end)
-
-    -- AimBot
     AimBotToggle.MouseButton1Click:Connect(function()
         aimBotEnabled = not aimBotEnabled
         toggleButton(AimBotToggle, aimBotEnabled)
@@ -1639,7 +1369,6 @@ local function createGUI()
         end
     end)
 
-    -- AimBot FOV Slider
     local aimbotSliderConnection
     AimBotFOVFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1662,7 +1391,40 @@ local function createGUI()
         end
     end)
 
-    -- AimBot Logic with FOV
+    -- Tab Switching для Gun Menu
+    for tabName, tabButton in pairs(gunTabButtons) do
+        tabButton.MouseButton1Click:Connect(function()
+            for contentName, contentFrame in pairs(gunTabContents) do
+                contentFrame.Visible = (contentName == tabName)
+            end
+            
+            for btnName, btn in pairs(gunTabButtons) do
+                btn.BackgroundColor3 = (btnName == tabName) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
+            end
+        end)
+    end
+
+    -- Initialize ESP for existing players
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        createESP(otherPlayer)
+    end
+
+    Players.PlayerAdded:Connect(function(newPlayer)
+        createESP(newPlayer)
+    end)
+
+    Players.PlayerRemoving:Connect(function(leftPlayer)
+        cleanupESP(leftPlayer)
+    end)
+
+    RunService.Heartbeat:Connect(updateESPCount)
+
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        if espCountText then
+            espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
+        end
+    end)
+
     RunService.Heartbeat:Connect(function()
         if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             local closestPlayer = nil
@@ -1687,17 +1449,249 @@ local function createGUI()
             end
         end
     end)
+end
 
-    -- Tab Switching для Gun Menu
-    for tabName, tabButton in pairs(gunTabButtons) do
-        tabButton.MouseButton1Click:Connect(function()
-            for contentName, contentFrame in pairs(gunTabContents) do
-                contentFrame.Visible = (contentName == tabName)
+-- Функция создания Nights Menu
+local function createNightsMenu()
+    NightsMenu = Instance.new("Frame")
+    NightsMenu.Name = "NightsMenu"
+    NightsMenu.Size = UDim2.new(0, 300, 0, 450)
+    NightsMenu.Position = savedPosition
+    NightsMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+    NightsMenu.BackgroundTransparency = 0.3
+    NightsMenu.BorderSizePixel = 0
+    NightsMenu.Active = true
+    NightsMenu.Draggable = true
+    NightsMenu.Visible = false
+    NightsMenu.Parent = ScreenGui
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = NightsMenu
+
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Size = UDim2.new(1, 0, 0, 40)
+    Title.Position = UDim2.new(0, 0, 0, 0)
+    Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    Title.BackgroundTransparency = 0.2
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = "99 NIGHTS MENU"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 16
+    Title.ZIndex = 2
+    Title.Parent = NightsMenu
+
+    local BackButton = CreateButton(NightsMenu, "BACK", function()
+        NightsMenu.Visible = false
+        MainMenu.Visible = true
+    end)
+    BackButton.Position = UDim2.new(0, 10, 0, 50)
+    BackButton.Size = UDim2.new(1, -20, 0, 30)
+
+    local TabButtons = Instance.new("Frame")
+    TabButtons.Name = "TabButtons"
+    TabButtons.Size = UDim2.new(1, 0, 0, 40)
+    TabButtons.Position = UDim2.new(0, 0, 0, 90)
+    TabButtons.BackgroundTransparency = 0.2
+    TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    TabButtons.ZIndex = 2
+    TabButtons.Parent = NightsMenu
+
+    local nightsTabs = {
+        {name = "Main", defaultActive = true},
+        {name = "Bring", defaultActive = false}
+    }
+
+    local nightsTabButtons = {}
+    local nightsTabContents = {}
+
+    for i, tab in ipairs(nightsTabs) do
+        local tabButton = Instance.new("TextButton")
+        tabButton.Name = tab.name .. "Tab"
+        tabButton.Size = UDim2.new(0.5, 0, 1, 0)
+        tabButton.Position = UDim2.new(0.5 * (i-1), 0, 0, 0)
+        tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
+        tabButton.BackgroundTransparency = 0.2
+        tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tabButton.Text = tab.name
+        tabButton.Font = Enum.Font.Gotham
+        tabButton.TextSize = 12
+        tabButton.ZIndex = 3
+        tabButton.Parent = TabButtons
+
+        local ContentFrame = Instance.new("ScrollingFrame")
+        ContentFrame.Name = tab.name .. "Content"
+        ContentFrame.Size = UDim2.new(1, -20, 1, -140)
+        ContentFrame.Position = UDim2.new(0, 10, 0, 140)
+        ContentFrame.BackgroundTransparency = 1
+        ContentFrame.ScrollBarThickness = 4
+        ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+        ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+        ContentFrame.Visible = tab.defaultActive
+        ContentFrame.ZIndex = 2
+        ContentFrame.Parent = NightsMenu
+
+        local ContentLayout = Instance.new("UIListLayout")
+        ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        ContentLayout.Padding = UDim.new(0, 8)
+        ContentLayout.Parent = ContentFrame
+
+        nightsTabButtons[tab.name] = tabButton
+        nightsTabContents[tab.name] = ContentFrame
+    end
+
+    -- Main Tab Content
+    local KillAuraToggle = CreateToggle(nightsTabContents["Main"], "Kill Aura", function(v)
+        ActiveKillAura = v
+    end, ActiveKillAura)
+
+    CreateSlider(nightsTabContents["Main"], "Kill Distance", 10, 100, DistanceForKillAura, function(v)
+        DistanceForKillAura = v
+    end)
+
+    local AutoChopToggle = CreateToggle(nightsTabContents["Main"], "Auto Chop", function(v)
+        ActiveAutoChopTree = v
+    end, ActiveAutoChopTree)
+
+    CreateSlider(nightsTabContents["Main"], "Chop Distance", 10, 100, DistanceForAutoChopTree, function(v)
+        DistanceForAutoChopTree = v
+    end)
+
+    -- Bring Tab Content
+    CreateSlider(nightsTabContents["Bring"], "Bring Count", 1, 20, BringCount, function(v)
+        BringCount = math.floor(v)
+    end)
+
+    CreateSlider(nightsTabContents["Bring"], "Bring Speed", 50, 500, BringDelay, function(v)
+        BringDelay = math.floor(v)
+    end)
+
+    CreateButton(nightsTabContents["Bring"], "Teleport to Campfire", function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
+        end
+    end)
+
+    -- Подменю для ресурсов
+    local ResourcesButton = CreateButton(nightsTabContents["Bring"], "Resources", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "ResourcesSubMenu" then
+                child.Visible = not child.Visible
+                return
             end
-            
-            for btnName, btn in pairs(gunTabButtons) do
-                btn.BackgroundColor3 = (btnName == tabName) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
+        end
+    end)
+
+    local ResourcesSubMenu = Instance.new("Frame")
+    ResourcesSubMenu.Name = "ResourcesSubMenu"
+    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    ResourcesSubMenu.BackgroundTransparency = 1
+    ResourcesSubMenu.Visible = false
+    ResourcesSubMenu.LayoutOrder = 10
+    ResourcesSubMenu.Parent = nightsTabContents["Bring"]
+
+    local ResourcesLayout = Instance.new("UIListLayout")
+    ResourcesLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ResourcesLayout.Padding = UDim.new(0, 5)
+    ResourcesLayout.Parent = ResourcesSubMenu
+
+    local resourcesItems = {"Coal", "Fuel Can", "Oil Barrel"}
+    for _, itemName in pairs(resourcesItems) do
+        CreateButton(ResourcesSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Подменю для металлов
+    local MetalsButton = CreateButton(nightsTabContents["Bring"], "Metals", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "MetalsSubMenu" then
+                child.Visible = not child.Visible
+                return
             end
+        end
+    end)
+
+    local MetalsSubMenu = Instance.new("Frame")
+    MetalsSubMenu.Name = "MetalsSubMenu"
+    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    MetalsSubMenu.BackgroundTransparency = 1
+    MetalsSubMenu.Visible = false
+    MetalsSubMenu.LayoutOrder = 11
+    MetalsSubMenu.Parent = nightsTabContents["Bring"]
+
+    local MetalsLayout = Instance.new("UIListLayout")
+    MetalsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    MetalsLayout.Padding = UDim.new(0, 5)
+    MetalsLayout.Parent = MetalsSubMenu
+
+    local metalsItems = {"Scrap Metal", "Bolt", "Sheet Metal", "UFO Scrap"}
+    for _, itemName in pairs(metalsItems) do
+        CreateButton(MetalsSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Подменю для электроники
+    local ElectronicsButton = CreateButton(nightsTabContents["Bring"], "Electronics", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "ElectronicsSubMenu" then
+                child.Visible = not child.Visible
+                return
+            end
+        end
+    end)
+
+    local ElectronicsSubMenu = Instance.new("Frame")
+    ElectronicsSubMenu.Name = "ElectronicsSubMenu"
+    ElectronicsSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    ElectronicsSubMenu.BackgroundTransparency = 1
+    ElectronicsSubMenu.Visible = false
+    ElectronicsSubMenu.LayoutOrder = 12
+    ElectronicsSubMenu.Parent = nightsTabContents["Bring"]
+
+    local ElectronicsLayout = Instance.new("UIListLayout")
+    ElectronicsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ElectronicsLayout.Padding = UDim.new(0, 5)
+    ElectronicsLayout.Parent = ElectronicsSubMenu
+
+    local electronicsItems = {"Broken Microwave", "Old Radio"}
+    for _, itemName in pairs(electronicsItems) do
+        CreateButton(ElectronicsSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Подменю для еды и медицины
+    local FoodMedButton = CreateButton(nightsTabContents["Bring"], "Food & Medical", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "FoodMedSubMenu" then
+                child.Visible = not child.Visible
+                return
+            end
+        end
+    end)
+
+    local FoodMedSubMenu = Instance.new("Frame")
+    FoodMedSubMenu.Name = "FoodMedSubMenu"
+    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    FoodMedSubMenu.BackgroundTransparency = 1
+    FoodMedSubMenu.Visible = false
+    FoodMedSubMenu.LayoutOrder = 13
+    FoodMedSubMenu.Parent = nightsTabContents["Bring"]
+
+    local FoodMedLayout = Instance.new("UIListLayout")
+    FoodMedLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    FoodMedLayout.Padding = UDim.new(0, 5)
+    FoodMedLayout.Parent = FoodMedSubMenu
+
+    local foodMedItems = {"Carrot", "Bandage"}
+    for _, itemName in pairs(foodMedItems) do
+        CreateButton(FoodMedSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
         end)
     end
 
@@ -1713,39 +1707,32 @@ local function createGUI()
             end
         end)
     end
+end
 
-    -- Mode Switching
-    GunButton.MouseButton1Click:Connect(function()
-        currentMenu = "Gun"
-        GunMenu.Visible = true
-        NightsMenu.Visible = false
-        GunButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
-        NightsButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-    end)
-
-    NightsButton.MouseButton1Click:Connect(function()
-        currentMenu = "Nights"
-        GunMenu.Visible = false
-        NightsMenu.Visible = true
-        GunButton.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
-        NightsButton.BackgroundColor3 = Color3.fromRGB(120, 0, 0)
-    end)
-
-    -- Auto-resize for mobile
-    local function updateSize()
-        local viewportSize = workspace.CurrentCamera.ViewportSize
-        MainFrame.Size = UDim2.new(0, math.min(300, viewportSize.X - 20), 0, math.min(450, viewportSize.Y - 20))
-        
-        updateFOVCircle()
-        
-        if espCountText then
-            espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
-        end
+-- Функция создания GUI
+local function createGUI()
+    if ScreenGui then
+        savedPosition = MainMenu.Position
+        ScreenGui:Destroy()
+        ScreenGui = nil
+        MainMenu = nil
+        GunMenu = nil
+        NightsMenu = nil
+        OpenCloseButton = nil
     end
 
-    updateSize()
-    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateSize)
+    -- Create GUI
+    ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "SANSTRO_GUI"
+    ScreenGui.Parent = player.PlayerGui
+    ScreenGui.ResetOnSpawn = false
+
+    -- Создаем все меню
+    createMainMenu()
+    createGunMenu()
+    createNightsMenu()
     
+    -- Создаем кнопку открытия/закрытия
     createOpenCloseButton()
 end
 
