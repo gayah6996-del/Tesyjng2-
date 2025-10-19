@@ -1566,18 +1566,24 @@ local function createNightsMenu()
 
     -- Переменные для отслеживания открытых подменю
     local openSubMenus = {}
+    local subMenuPositions = {}
 
-    -- Функция для обновления позиций подменю
-    local function updateSubMenuPositions()
-        local currentYOffset = 0
+    -- Функция для обновления позиций всех элементов
+    local function updateAllPositions()
+        local currentY = 0
+        local padding = 5
         
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child:IsA("Frame") and child.Name:find("SubMenu") then
-                if openSubMenus[child.Name] then
-                    child.Position = UDim2.new(0, 0, 0, child.LayoutOrder * 45 + currentYOffset)
-                    currentYOffset = currentYOffset + child.AbsoluteSize.Y + 10
-                else
-                    child.Position = UDim2.new(0, 0, 0, child.LayoutOrder * 45)
+            if child:IsA("Frame") or child:IsA("TextButton") then
+                if child:FindFirstChild("LayoutOrder") then
+                    child.Position = UDim2.new(0, 0, 0, currentY)
+                    
+                    -- Если это подменю и оно открыто, добавляем его высоту
+                    if child.Name:find("SubMenu") and openSubMenus[child.Name] then
+                        currentY = currentY + child.AbsoluteSize.Y + padding
+                    else
+                        currentY = currentY + child.AbsoluteSize.Y + padding
+                    end
                 end
             end
         end
@@ -1589,7 +1595,7 @@ local function createNightsMenu()
             if child.Name == "ResourcesSubMenu" then
                 openSubMenus["ResourcesSubMenu"] = not openSubMenus["ResourcesSubMenu"]
                 child.Visible = openSubMenus["ResourcesSubMenu"]
-                updateSubMenuPositions()
+                updateAllPositions()
                 return
             end
         end
@@ -1597,11 +1603,10 @@ local function createNightsMenu()
 
     local ResourcesSubMenu = Instance.new("Frame")
     ResourcesSubMenu.Name = "ResourcesSubMenu"
-    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 200)
     ResourcesSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     ResourcesSubMenu.BackgroundTransparency = 0.5
     ResourcesSubMenu.Visible = false
-    ResourcesSubMenu.LayoutOrder = 10
     ResourcesSubMenu.Parent = nightsTabContents["Bring"]
 
     local ResourcesLayout = Instance.new("UIListLayout")
@@ -1609,20 +1614,20 @@ local function createNightsMenu()
     ResourcesLayout.Padding = UDim.new(0, 5)
     ResourcesLayout.Parent = ResourcesSubMenu
 
-    local resourcesItems = {"Coal", "Fuel Can", "Oil Barrel"}
+    local resourcesItems = {"Logs", "Coal", "Chair", "Fuel Canister", "Oil Barrel"}
     for _, itemName in pairs(resourcesItems) do
         CreateButton(ResourcesSubMenu, "Bring " .. itemName, function()
             BringItems(itemName)
         end)
     end
 
-    -- Подменю для металлов (добавлены Sheet Metal и Old Radio)
+    -- Подменю для металлов
     local MetalsButton = CreateButton(nightsTabContents["Bring"], "Metals", function()
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "MetalsSubMenu" then
                 openSubMenus["MetalsSubMenu"] = not openSubMenus["MetalsSubMenu"]
                 child.Visible = openSubMenus["MetalsSubMenu"]
-                updateSubMenuPositions()
+                updateAllPositions()
                 return
             end
         end
@@ -1630,11 +1635,10 @@ local function createNightsMenu()
 
     local MetalsSubMenu = Instance.new("Frame")
     MetalsSubMenu.Name = "MetalsSubMenu"
-    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 240)
     MetalsSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     MetalsSubMenu.BackgroundTransparency = 0.5
     MetalsSubMenu.Visible = false
-    MetalsSubMenu.LayoutOrder = 11
     MetalsSubMenu.Parent = nightsTabContents["Bring"]
 
     local MetalsLayout = Instance.new("UIListLayout")
@@ -1642,7 +1646,6 @@ local function createNightsMenu()
     MetalsLayout.Padding = UDim.new(0, 5)
     MetalsLayout.Parent = MetalsSubMenu
 
-    -- Добавлены Sheet Metal и Old Radio в Metals
     local metalsItems = {"Bolt", "Sheet Metal", "Old Radio", "Scrap Metal", "UFO Scrap", "Broken Microwave"}
     for _, itemName in pairs(metalsItems) do
         CreateButton(MetalsSubMenu, "Bring " .. itemName, function()
@@ -1656,7 +1659,7 @@ local function createNightsMenu()
             if child.Name == "FoodMedSubMenu" then
                 openSubMenus["FoodMedSubMenu"] = not openSubMenus["FoodMedSubMenu"]
                 child.Visible = openSubMenus["FoodMedSubMenu"]
-                updateSubMenuPositions()
+                updateAllPositions()
                 return
             end
         end
@@ -1664,11 +1667,10 @@ local function createNightsMenu()
 
     local FoodMedSubMenu = Instance.new("Frame")
     FoodMedSubMenu.Name = "FoodMedSubMenu"
-    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 0)
+    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 200)
     FoodMedSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     FoodMedSubMenu.BackgroundTransparency = 0.5
     FoodMedSubMenu.Visible = false
-    FoodMedSubMenu.LayoutOrder = 12
     FoodMedSubMenu.Parent = nightsTabContents["Bring"]
 
     local FoodMedLayout = Instance.new("UIListLayout")
@@ -1676,9 +1678,41 @@ local function createNightsMenu()
     FoodMedLayout.Padding = UDim.new(0, 5)
     FoodMedLayout.Parent = FoodMedSubMenu
 
-    local foodMedItems = {"Carrot", "Bandage"}
+    local foodMedItems = {"Carrot", "Morsel", "Steak", "MedKit", "Bandage"}
     for _, itemName in pairs(foodMedItems) do
         CreateButton(FoodMedSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- НОВОЕ ПОДМЕНЮ ДЛЯ ОРУЖИЯ
+    local WeaponsButton = CreateButton(nightsTabContents["Bring"], "Weapons", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "WeaponsSubMenu" then
+                openSubMenus["WeaponsSubMenu"] = not openSubMenus["WeaponsSubMenu"]
+                child.Visible = openSubMenus["WeaponsSubMenu"]
+                updateAllPositions()
+                return
+            end
+        end
+    end)
+
+    local WeaponsSubMenu = Instance.new("Frame")
+    WeaponsSubMenu.Name = "WeaponsSubMenu"
+    WeaponsSubMenu.Size = UDim2.new(1, 0, 0, 160)
+    WeaponsSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    WeaponsSubMenu.BackgroundTransparency = 0.5
+    WeaponsSubMenu.Visible = false
+    WeaponsSubMenu.Parent = nightsTabContents["Bring"]
+
+    local WeaponsLayout = Instance.new("UIListLayout")
+    WeaponsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    WeaponsLayout.Padding = UDim.new(0, 5)
+    WeaponsLayout.Parent = WeaponsSubMenu
+
+    local weaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo"}
+    for _, itemName in pairs(weaponsItems) do
+        CreateButton(WeaponsSubMenu, "Bring " .. itemName, function()
             BringItems(itemName)
         end)
     end
@@ -1687,6 +1721,24 @@ local function createNightsMenu()
     openSubMenus["ResourcesSubMenu"] = false
     openSubMenus["MetalsSubMenu"] = false
     openSubMenus["FoodMedSubMenu"] = false
+    openSubMenus["WeaponsSubMenu"] = false
+
+    -- Установка LayoutOrder для правильного порядка
+    local layoutOrder = 1
+    for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+        if child:IsA("Frame") or child:IsA("TextButton") then
+            if not child:FindFirstChild("LayoutOrder") then
+                local layoutOrderValue = Instance.new("IntValue")
+                layoutOrderValue.Name = "LayoutOrder"
+                layoutOrderValue.Value = layoutOrder
+                layoutOrderValue.Parent = child
+                layoutOrder = layoutOrder + 1
+            end
+        end
+    end
+
+    -- Первоначальное обновление позиций
+    updateAllPositions()
 
     -- Tab Switching для Nights Menu
     for tabName, tabButton in pairs(nightsTabButtons) do
