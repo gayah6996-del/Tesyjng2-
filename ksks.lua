@@ -5,6 +5,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
@@ -34,17 +35,6 @@ local BringCount = 5
 local BringDelay = 200
 local CampfirePosition = Vector3.new(0, 10, 0)
 
--- Настройки файла
-local SETTINGS_FILE = "astralcheat_settings.txt"
-local Settings = {
-    ActiveKillAura = false,
-    ActiveAutoChopTree = false,
-    DistanceForKillAura = 25,
-    DistanceForAutoChopTree = 25,
-    BringCount = 5,
-    BringDelay = 200
-}
-
 -- ESP объекты
 local espObjects = {}
 local espConnections = {}
@@ -55,36 +45,32 @@ local fovCircle = nil
 -- Функции сохранения настроек
 local function SaveSettings()
     pcall(function()
-        Settings.ActiveKillAura = ActiveKillAura
-        Settings.ActiveAutoChopTree = ActiveAutoChopTree
-        Settings.DistanceForKillAura = DistanceForKillAura
-        Settings.DistanceForAutoChopTree = DistanceForAutoChopTree
-        Settings.BringCount = BringCount
-        Settings.BringDelay = BringDelay
+        local Settings = {
+            ActiveKillAura = ActiveKillAura,
+            ActiveAutoChopTree = ActiveAutoChopTree,
+            DistanceForKillAura = DistanceForKillAura,
+            DistanceForAutoChopTree = DistanceForAutoChopTree,
+            BringCount = BringCount,
+            BringDelay = BringDelay
+        }
         
         local data = HttpService:JSONEncode(Settings)
-        writefile(SETTINGS_FILE, data)
+        writefile("astralcheat_settings.txt", data)
     end)
 end
 
 local function LoadSettings()
     pcall(function()
-        if isfile(SETTINGS_FILE) then
-            local data = readfile(SETTINGS_FILE)
+        if isfile("astralcheat_settings.txt") then
+            local data = readfile("astralcheat_settings.txt")
             local loadedSettings = HttpService:JSONDecode(data)
-            for key, value in pairs(loadedSettings) do
-                if Settings[key] ~= nil then 
-                    Settings[key] = value 
-                end
-            end
             
-            -- Применяем загруженные настройки
-            ActiveKillAura = Settings.ActiveKillAura
-            ActiveAutoChopTree = Settings.ActiveAutoChopTree
-            DistanceForKillAura = Settings.DistanceForKillAura
-            DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
-            BringCount = Settings.BringCount
-            BringDelay = Settings.BringDelay
+            ActiveKillAura = loadedSettings.ActiveKillAura or false
+            ActiveAutoChopTree = loadedSettings.ActiveAutoChopTree or false
+            DistanceForKillAura = loadedSettings.DistanceForKillAura or 25
+            DistanceForAutoChopTree = loadedSettings.DistanceForAutoChopTree or 25
+            BringCount = loadedSettings.BringCount or 5
+            BringDelay = loadedSettings.BringDelay or 200
         end
     end)
 end
@@ -155,7 +141,6 @@ local function createESP(otherPlayer)
     local function updateESP()
         if not espObjects[otherPlayer] then return end
         
-        -- Check if player is dead or doesn't exist
         if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
             if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
             if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
@@ -170,7 +155,6 @@ local function createESP(otherPlayer)
         
         if not head then return end
         
-        -- Check if player is dead
         if humanoid.Health <= 0 then
             if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
             if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
@@ -264,10 +248,8 @@ local function createESP(otherPlayer)
         end
     end
     
-    -- Update ESP continuously
     espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
     
-    -- Clean up when player leaves
     otherPlayer.AncestryChanged:Connect(function()
         if not otherPlayer.Parent then
             cleanupESP(otherPlayer)
@@ -300,7 +282,6 @@ local function isPlayerVisible(targetPlayer)
     local camera = workspace.CurrentCamera
     local origin = camera.CFrame.Position
     
-    -- Raycast to target
     local direction = (targetRoot.Position - origin).Unit
     local ray = Ray.new(origin, direction * 1000)
     
@@ -308,7 +289,6 @@ local function isPlayerVisible(targetPlayer)
     local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
     
     if hit then
-        -- Check if we hit the target player
         local hitModel = hit:FindFirstAncestorOfClass("Model")
         if hitModel and hitModel == targetPlayer.Character then
             return true
@@ -336,20 +316,22 @@ end
 -- Kill Aura функция
 local function RunKillAura()
     while ActiveKillAura do
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
-        
-        if hrp and weapon then
-            for _, enemy in pairs(workspace.Characters:GetChildren()) do
-                if enemy:IsA("Model") and enemy.PrimaryPart then
-                    local dist = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
-                    if dist <= DistanceForKillAura then
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+        pcall(function()
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
+            
+            if hrp and weapon then
+                for _, enemy in pairs(workspace.Characters:GetChildren()) do
+                    if enemy:IsA("Model") and enemy.PrimaryPart then
+                        local dist = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                        if dist <= DistanceForKillAura then
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                        end
                     end
                 end
             end
-        end
+        end)
         wait(0.1)
     end
 end
@@ -357,57 +339,61 @@ end
 -- Auto Chop функция
 local function RunAutoChop()
     while ActiveAutoChopTree do
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
-        
-        if hrp and weapon then
-            for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                    local dist = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                    if dist <= DistanceForAutoChopTree then
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+        pcall(function()
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
+            
+            if hrp and weapon then
+                for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                    if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                        local dist = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                        if dist <= DistanceForAutoChopTree then
+                            game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                        end
                     end
                 end
             end
-        end
+        end)
         wait(0.1)
     end
 end
 
 -- Bring Items функция
 local function BringItems(itemName)
-    local targetPos = CampfirePosition
-    local items = {}
-    
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item:IsA("Model") then
-            local itemLower = item.Name:lower()
-            local searchLower = itemName:lower()
-            
-            if itemLower:find(searchLower) then
-                local part = item:FindFirstChildWhichIsA("BasePart")
-                if part then table.insert(items, part) end
+    pcall(function()
+        local targetPos = CampfirePosition
+        local items = {}
+        
+        for _, item in pairs(workspace.Items:GetChildren()) do
+            if item:IsA("Model") then
+                local itemLower = item.Name:lower()
+                local searchLower = itemName:lower()
+                
+                if itemLower:find(searchLower) then
+                    local part = item:FindFirstChildWhichIsA("BasePart")
+                    if part then table.insert(items, part) end
+                end
             end
         end
-    end
-    
-    local teleported = 0
-    for i = 1, math.min(BringCount, #items) do
-        local item = items[i]
-        item.CFrame = CFrame.new(
-            targetPos.X + math.random(-3,3),
-            targetPos.Y + 3,
-            targetPos.Z + math.random(-3,3)
-        )
-        item.Anchored = false
-        item.AssemblyLinearVelocity = Vector3.new(0,0,0)
-        teleported = teleported + 1
         
-        if BringDelay > 0 then
-            wait(BringDelay / 1000)
+        local teleported = 0
+        for i = 1, math.min(BringCount, #items) do
+            local item = items[i]
+            item.CFrame = CFrame.new(
+                targetPos.X + math.random(-3,3),
+                targetPos.Y + 3,
+                targetPos.Z + math.random(-3,3)
+            )
+            item.Anchored = false
+            item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+            teleported = teleported + 1
+            
+            if BringDelay > 0 then
+                wait(BringDelay / 1000)
+            end
         end
-    end
+    end)
 end
 
 -- Запускаем функции геймплея
@@ -432,12 +418,12 @@ end)
 -- Создание Rayfield Window
 local Window = Rayfield:CreateWindow({
     Name = "SANSTRO Menu | 99 Nights",
-    LoadingTitle = "SANSTRO Menu",
+    LoadingTitle = "SANSTRO Menu Loading...",
     LoadingSubtitle = "by SANSTRO",
     ConfigurationSaving = {
         Enabled = true,
-        FolderName = "SANSTRO",
-        FileName = "Config"
+        FolderName = "SANSTRO_Config",
+        FileName = "Settings"
     },
     Discord = {
         Enabled = false,
@@ -450,10 +436,10 @@ local Window = Rayfield:CreateWindow({
 -- Вкладка Movement
 local MovementTab = Window:CreateTab("Movement", "rbxassetid://4483345998")
 
-MovementTab:CreateToggle({
+local SpeedToggle = MovementTab:CreateToggle({
     Name = "Speed Hack",
     CurrentValue = speedHackEnabled,
-    Flag = "SpeedHack",
+    Flag = "SpeedToggle",
     Callback = function(Value)
         speedHackEnabled = Value
         if speedHackEnabled then
@@ -476,7 +462,7 @@ MovementTab:CreateSlider({
     Increment = 1,
     Suffix = "Speed",
     CurrentValue = currentSpeed,
-    Flag = "SpeedValue",
+    Flag = "SpeedSlider",
     Callback = function(Value)
         currentSpeed = Value
         if speedHackEnabled then
@@ -491,7 +477,7 @@ MovementTab:CreateSlider({
 MovementTab:CreateToggle({
     Name = "Jump Hack",
     CurrentValue = jumpHackEnabled,
-    Flag = "JumpHack",
+    Flag = "JumpToggle",
     Callback = function(Value)
         jumpHackEnabled = Value
     end,
@@ -500,7 +486,7 @@ MovementTab:CreateToggle({
 MovementTab:CreateToggle({
     Name = "NoClip",
     CurrentValue = noclipEnabled,
-    Flag = "NoClip",
+    Flag = "NoClipToggle",
     Callback = function(Value)
         noclipEnabled = Value
         
@@ -540,7 +526,7 @@ local VisualTab = Window:CreateTab("Visual", "rbxassetid://4483345998")
 VisualTab:CreateToggle({
     Name = "ESP Tracers",
     CurrentValue = espTracersEnabled,
-    Flag = "ESPTracers",
+    Flag = "TracersToggle",
     Callback = function(Value)
         espTracersEnabled = Value
     end,
@@ -549,7 +535,7 @@ VisualTab:CreateToggle({
 VisualTab:CreateToggle({
     Name = "ESP Box",
     CurrentValue = espBoxEnabled,
-    Flag = "ESPBox",
+    Flag = "BoxToggle",
     Callback = function(Value)
         espBoxEnabled = Value
     end,
@@ -558,7 +544,7 @@ VisualTab:CreateToggle({
 VisualTab:CreateToggle({
     Name = "ESP Health",
     CurrentValue = espHealthEnabled,
-    Flag = "ESPHealth",
+    Flag = "HealthToggle",
     Callback = function(Value)
         espHealthEnabled = Value
     end,
@@ -567,7 +553,7 @@ VisualTab:CreateToggle({
 VisualTab:CreateToggle({
     Name = "ESP Distance",
     CurrentValue = espDistanceEnabled,
-    Flag = "ESPDistance",
+    Flag = "DistanceToggle",
     Callback = function(Value)
         espDistanceEnabled = Value
     end,
@@ -576,7 +562,7 @@ VisualTab:CreateToggle({
 VisualTab:CreateToggle({
     Name = "ESP Count",
     CurrentValue = espCountEnabled,
-    Flag = "ESPCount",
+    Flag = "CountToggle",
     Callback = function(Value)
         espCountEnabled = Value
         
@@ -604,7 +590,7 @@ local AimBotTab = Window:CreateTab("AimBot", "rbxassetid://4483345998")
 AimBotTab:CreateToggle({
     Name = "AimBot",
     CurrentValue = aimBotEnabled,
-    Flag = "AimBot",
+    Flag = "AimBotToggle",
     Callback = function(Value)
         aimBotEnabled = Value
         
@@ -636,7 +622,7 @@ local NightsTab = Window:CreateTab("99 Nights", "rbxassetid://4483345998")
 NightsTab:CreateToggle({
     Name = "Kill Aura",
     CurrentValue = ActiveKillAura,
-    Flag = "KillAura",
+    Flag = "KillAuraToggle",
     Callback = function(Value)
         ActiveKillAura = Value
         SaveSettings()
@@ -659,7 +645,7 @@ NightsTab:CreateSlider({
 NightsTab:CreateToggle({
     Name = "Auto Chop Trees",
     CurrentValue = ActiveAutoChopTree,
-    Flag = "AutoChop",
+    Flag = "AutoChopToggle",
     Callback = function(Value)
         ActiveAutoChopTree = Value
         SaveSettings()
@@ -716,9 +702,8 @@ NightsTab:CreateButton({
 })
 
 -- Секция Bring Items
-local BringSection = NightsTab:CreateSection("Bring Items")
+NightsTab:CreateSection("Bring Resources")
 
-local ResourcesSection = NightsTab:CreateSection("Resources")
 local resourcesItems = {"Logs", "Coal", "Chair", "Fuel Canister", "Oil Barrel"}
 for _, itemName in pairs(resourcesItems) do
     NightsTab:CreateButton({
@@ -729,7 +714,8 @@ for _, itemName in pairs(resourcesItems) do
     })
 end
 
-local MetalsSection = NightsTab:CreateSection("Metals")
+NightsTab:CreateSection("Bring Metals")
+
 local metalsItems = {"Bolt", "Sheet Metal", "Old Radio", "Scrap Metal", "UFO Scrap", "Broken Microwave"}
 for _, itemName in pairs(metalsItems) do
     NightsTab:CreateButton({
@@ -740,7 +726,8 @@ for _, itemName in pairs(metalsItems) do
     })
 end
 
-local FoodMedSection = NightsTab:CreateSection("Food & Medical")
+NightsTab:CreateSection("Bring Food & Medical")
+
 local foodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage"}
 for _, itemName in pairs(foodMedItems) do
     NightsTab:CreateButton({
@@ -751,7 +738,8 @@ for _, itemName in pairs(foodMedItems) do
     })
 end
 
-local WeaponsSection = NightsTab:CreateSection("Weapons")
+NightsTab:CreateSection("Bring Weapons")
+
 local weaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo"}
 for _, itemName in pairs(weaponsItems) do
     NightsTab:CreateButton({
@@ -762,7 +750,8 @@ for _, itemName in pairs(weaponsItems) do
     })
 end
 
-local AxeSection = NightsTab:CreateSection("Axes")
+NightsTab:CreateSection("Bring Axes")
+
 local axeItems = {"Good Axe", "Strong Axe", "Chainsaw"}
 for _, itemName in pairs(axeItems) do
     NightsTab:CreateButton({
@@ -833,33 +822,15 @@ end)
 -- Создаем FOV Circle при запуске
 createFOVCircle()
 
--- Clean up when player leaves
-game:GetService("CoreGui").ChildRemoved:Connect(function(child)
-    if child.Name == "Rayfield" then
-        if fovCircle then
-            fovCircle:Remove()
-            fovCircle = nil
-        end
-        if espCountText then
-            espCountText:Remove()
-            espCountText = nil
-        end
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-        for _, espData in pairs(espObjects) do
-            if espData.tracer then espData.tracer:Remove() end
-            if espData.box then espData.box:Remove() end
-            if espData.health then espData.health:Remove() end
-            if espData.distance then espData.distance:Remove() end
-        end
-        espObjects = {}
-        for _, connection in pairs(espConnections) do
-            connection:Disconnect()
-        end
-        espConnections = {}
-    end
-end)
+-- Notify user
+Rayfield:Notify({
+    Title = "SANSTRO Menu Loaded",
+    Content = "99 Nights menu successfully loaded!",
+    Duration = 5,
+    Image = "rbxassetid://4483345998",
+})
 
+-- Загружаем конфигурацию Rayfield
 Rayfield:LoadConfiguration()
+
+print("SANSTRO Menu for 99 Nights successfully loaded!")
