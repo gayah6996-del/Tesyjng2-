@@ -105,7 +105,7 @@ LoadSettings()
 -- Функции для UI элементов
 local function CreateToggle(parent, text, callback, isActive)
     local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, 0, 0, 50)
+    toggleFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     toggleFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     toggleFrame.BackgroundTransparency = 0.3
     toggleFrame.BorderSizePixel = 0
@@ -113,37 +113,37 @@ local function CreateToggle(parent, text, callback, isActive)
     toggleFrame.Parent = parent
     
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     Corner.Parent = toggleFrame
     
     local toggleLabel = Instance.new("TextLabel")
     toggleLabel.Name = "ToggleLabel"
     toggleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    toggleLabel.Position = UDim2.new(0, 15, 0, 0)
+    toggleLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     toggleLabel.BackgroundTransparency = 1
     toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleLabel.Text = text
     toggleLabel.Font = Enum.Font.Gotham
-    toggleLabel.TextSize = 16
+    toggleLabel.TextSize = 16 -- Увеличен размер текста
     toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
     toggleLabel.ZIndex = 3
     toggleLabel.Parent = toggleFrame
     
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "ToggleButton"
-    toggleButton.Size = UDim2.new(0.3, 0, 0, 35)
+    toggleButton.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     toggleButton.Position = UDim2.new(0.7, 0, 0.15, 0)
     toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     toggleButton.BackgroundTransparency = 0.2
     toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleButton.Text = isActive and "ON" or "OFF"
     toggleButton.Font = Enum.Font.Gotham
-    toggleButton.TextSize = 14
+    toggleButton.TextSize = 14 -- Увеличен размер текста
     toggleButton.ZIndex = 3
     toggleButton.Parent = toggleFrame
     
     local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 6)
+    toggleCorner.CornerRadius = UDim.new(0, 6) -- Увеличен радиус
     toggleCorner.Parent = toggleButton
     
     toggleButton.MouseButton1Click:Connect(function()
@@ -165,7 +165,7 @@ end
 
 local function CreateSlider(parent, text, min, max, default, callback)
     local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, 0, 0, 70)
+    sliderFrame.Size = UDim2.new(1, 0, 0, 70) -- Увеличена высота
     sliderFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     sliderFrame.BackgroundTransparency = 0.3
     sliderFrame.BorderSizePixel = 0
@@ -173,30 +173,30 @@ local function CreateSlider(parent, text, min, max, default, callback)
     sliderFrame.Parent = parent
     
     local sliderCorner = Instance.new("UICorner")
-    sliderCorner.CornerRadius = UDim.new(0, 8)
+    sliderCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     sliderCorner.Parent = sliderFrame
     
     local sliderText = Instance.new("TextLabel")
-    sliderText.Size = UDim2.new(1, 0, 0, 30)
+    sliderText.Size = UDim2.new(1, 0, 0, 30) -- Увеличена высота
     sliderText.BackgroundTransparency = 1
     sliderText.Text = text .. ": " .. default
     sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sliderText.TextSize = 14
+    sliderText.TextSize = 14 -- Увеличен размер текста
     sliderText.TextXAlignment = Enum.TextXAlignment.Left
-    sliderText.Position = UDim2.new(0, 15, 0, 5)
+    sliderText.Position = UDim2.new(0, 15, 0, 5) -- Увеличен отступ
     sliderText.Font = Enum.Font.Gotham
     sliderText.ZIndex = 3
     sliderText.Parent = sliderFrame
     
     local sliderBar = Instance.new("Frame")
-    sliderBar.Size = UDim2.new(1, -30, 0, 15)
+    sliderBar.Size = UDim2.new(1, -30, 0, 15) -- Увеличены размеры и отступы
     sliderBar.Position = UDim2.new(0, 15, 0, 40)
     sliderBar.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     sliderBar.ZIndex = 3
     sliderBar.Parent = sliderFrame
     
     local barCorner = Instance.new("UICorner")
-    barCorner.CornerRadius = UDim.new(0, 8)
+    barCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     barCorner.Parent = sliderBar
     
     local sliderFill = Instance.new("Frame")
@@ -206,7 +206,7 @@ local function CreateSlider(parent, text, min, max, default, callback)
     sliderFill.Parent = sliderBar
     
     local fillCorner = Instance.new("UICorner")
-    fillCorner.CornerRadius = UDim.new(0, 8)
+    fillCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     fillCorner.Parent = sliderFill
     
     local isDragging = false
@@ -247,18 +247,18 @@ end
 
 local function CreateButton(parent, text, callback)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 50)
+    button.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     button.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     button.BackgroundTransparency = 0.3
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
+    button.TextSize = 14 -- Увеличен размер текста
     button.Font = Enum.Font.Gotham
     button.ZIndex = 2
     button.Parent = parent
     
     local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 8)
+    buttonCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     buttonCorner.Parent = button
     
     button.MouseButton1Click:Connect(callback)
@@ -297,20 +297,20 @@ local function createOpenCloseButton()
 
     OpenCloseButton = Instance.new("TextButton")
     OpenCloseButton.Name = "OpenCloseButton"
-    OpenCloseButton.Size = UDim2.new(0, 70, 0, 70)
+    OpenCloseButton.Size = UDim2.new(0, 70, 0, 70) -- Увеличен размер
     OpenCloseButton.Position = savedButtonPosition
     OpenCloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
     OpenCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     OpenCloseButton.Text = "≡"
     OpenCloseButton.Font = Enum.Font.GothamBold
-    OpenCloseButton.TextSize = 28
+    OpenCloseButton.TextSize = 28 -- Увеличен размер текста
     OpenCloseButton.ZIndex = 10
     OpenCloseButton.Active = true
     OpenCloseButton.Draggable = true
     OpenCloseButton.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.CornerRadius = UDim.new(0, 10) -- Увеличен радиус
     Corner.Parent = OpenCloseButton
 
     local Stroke = Instance.new("UIStroke")
@@ -671,7 +671,7 @@ end)
 local function createMainMenu()
     MainMenu = Instance.new("Frame")
     MainMenu.Name = "MainMenu"
-    MainMenu.Size = UDim2.new(0, 400, 0, 220) -- Уменьшена ширина
+    MainMenu.Size = UDim2.new(0, 500, 0, 160) -- Увеличена ширина и высота
     MainMenu.Position = savedPosition
     MainMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     MainMenu.BackgroundTransparency = 0.3
@@ -682,19 +682,19 @@ local function createMainMenu()
     MainMenu.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.CornerRadius = UDim.new(0, 10) -- Увеличен радиус
     Corner.Parent = MainMenu
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
-    Title.Size = UDim2.new(1, 0, 0, 50)
+    Title.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     Title.BackgroundTransparency = 0.2
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Text = "SELECT GAME"
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 18
+    Title.TextSize = 18 -- Увеличен размер текста
     Title.ZIndex = 2
     Title.Parent = MainMenu
 
@@ -703,16 +703,16 @@ local function createMainMenu()
         GunMenu.Visible = true
         currentActiveMenu = GunMenu
     end)
-    GunButton.Position = UDim2.new(0, 15, 0, 60)
-    GunButton.Size = UDim2.new(1, -30, 0, 70)
+    GunButton.Position = UDim2.new(0, 15, 0, 60) -- Увеличен отступ
+    GunButton.Size = UDim2.new(1, -30, 0, 50) -- Увеличена высота и отступы
 
     local NightsButton = CreateButton(MainMenu, "99 NIGHTS", function()
         MainMenu.Visible = false
         NightsMenu.Visible = true
         currentActiveMenu = NightsMenu
     end)
-    NightsButton.Position = UDim2.new(0, 15, 0, 140)
-    NightsButton.Size = UDim2.new(1, -30, 0, 70)
+    NightsButton.Position = UDim2.new(0, 15, 0, 140) -- Увеличен отступ
+    NightsButton.Size = UDim2.new(1, -30, 0, 50) -- Увеличена высота и отступы
     
     currentActiveMenu = MainMenu
 end
@@ -721,7 +721,7 @@ end
 local function createGunMenu()
     GunMenu = Instance.new("Frame")
     GunMenu.Name = "GunMenu"
-    GunMenu.Size = UDim2.new(0, 400, 0, 350) -- Уменьшена ширина
+    GunMenu.Size = UDim2.new(0, 500, 0, 290) -- Увеличена ширина и высота
     GunMenu.Position = savedPosition
     GunMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     GunMenu.BackgroundTransparency = 0.3
@@ -732,26 +732,26 @@ local function createGunMenu()
     GunMenu.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.CornerRadius = UDim.new(0, 10) -- Увеличен радиус
     Corner.Parent = GunMenu
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
-    Title.Size = UDim2.new(1, 0, 0, 50)
+    Title.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     Title.BackgroundTransparency = 0.2
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Text = "GUNGAME MENU"
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 18
+    Title.TextSize = 18 -- Увеличен размер текста
     Title.ZIndex = 2
     Title.Parent = GunMenu
 
     -- Вертикальные вкладки
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
-    TabButtons.Size = UDim2.new(0, 100, 1, -50) -- Уменьшена ширина
+    TabButtons.Size = UDim2.new(0, 120, 1, -50) -- Увеличена ширина
     TabButtons.Position = UDim2.new(0, 0, 0, 50)
     TabButtons.BackgroundTransparency = 0.2
     TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
@@ -774,23 +774,23 @@ local function createGunMenu()
     for i, tab in ipairs(gunTabs) do
         local tabButton = Instance.new("TextButton")
         tabButton.Name = tab.name .. "Tab"
-        tabButton.Size = UDim2.new(1, 0, 0, 50)
+        tabButton.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
         tabButton.LayoutOrder = i
         tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
         tabButton.BackgroundTransparency = 0.2
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         tabButton.Text = tab.name
         tabButton.Font = Enum.Font.Gotham
-        tabButton.TextSize = 14
+        tabButton.TextSize = 14 -- Увеличен размер текста
         tabButton.ZIndex = 3
         tabButton.Parent = TabButtons
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -110, 1, -110) -- Уменьшена ширина
-        ContentFrame.Position = UDim2.new(0, 110, 0, 110) -- Сдвиг для вкладок
+        ContentFrame.Size = UDim2.new(1, -130, 1, -110) -- Учитываем ширину вкладок
+        ContentFrame.Position = UDim2.new(0, 130, 0, 110) -- Сдвиг для вкладок
         ContentFrame.BackgroundTransparency = 1
-        ContentFrame.ScrollBarThickness = 6
+        ContentFrame.ScrollBarThickness = 6 -- Увеличена толщина
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
         ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
         ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
@@ -800,7 +800,7 @@ local function createGunMenu()
 
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentLayout.Padding = UDim.new(0, 12)
+        ContentLayout.Padding = UDim.new(0, 12) -- Увеличен отступ
         ContentLayout.Parent = ContentFrame
 
         gunTabButtons[tab.name] = tabButton
@@ -810,7 +810,7 @@ local function createGunMenu()
     -- Movement Tab Content
     local SpeedHackFrame = Instance.new("Frame")
     SpeedHackFrame.Name = "SpeedHackFrame"
-    SpeedHackFrame.Size = UDim2.new(1, 0, 0, 90)
+    SpeedHackFrame.Size = UDim2.new(1, 0, 0, 90) -- Увеличена высота
     SpeedHackFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     SpeedHackFrame.BackgroundTransparency = 0.3
     SpeedHackFrame.BorderSizePixel = 0
@@ -819,38 +819,38 @@ local function createGunMenu()
     SpeedHackFrame.Parent = gunTabContents["Movement"]
 
     local SpeedHackCorner = Instance.new("UICorner")
-    SpeedHackCorner.CornerRadius = UDim.new(0, 8)
+    SpeedHackCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     SpeedHackCorner.Parent = SpeedHackFrame
 
     local SpeedHackLabel = Instance.new("TextLabel")
     SpeedHackLabel.Name = "SpeedHackLabel"
-    SpeedHackLabel.Size = UDim2.new(0.6, 0, 0, 35)
-    SpeedHackLabel.Position = UDim2.new(0, 15, 0, 10)
+    SpeedHackLabel.Size = UDim2.new(0.6, 0, 0, 35) -- Увеличена высота
+    SpeedHackLabel.Position = UDim2.new(0, 15, 0, 10) -- Увеличен отступ
     SpeedHackLabel.BackgroundTransparency = 1
     SpeedHackLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     SpeedHackLabel.Text = "Speed Hack"
     SpeedHackLabel.Font = Enum.Font.Gotham
-    SpeedHackLabel.TextSize = 16
+    SpeedHackLabel.TextSize = 16 -- Увеличен размер текста
     SpeedHackLabel.TextXAlignment = Enum.TextXAlignment.Left
     SpeedHackLabel.ZIndex = 3
     SpeedHackLabel.Parent = SpeedHackFrame
 
     local SpeedHackToggle = Instance.new("TextButton")
     SpeedHackToggle.Name = "SpeedHackToggle"
-    SpeedHackToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    SpeedHackToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     SpeedHackToggle.Position = UDim2.new(0.7, 0, 0, 10)
     SpeedHackToggle.BackgroundColor3 = speedHackEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     SpeedHackToggle.BackgroundTransparency = 0.2
     SpeedHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     SpeedHackToggle.Text = speedHackEnabled and "ON" or "OFF"
     SpeedHackToggle.Font = Enum.Font.Gotham
-    SpeedHackToggle.TextSize = 14
+    SpeedHackToggle.TextSize = 14 -- Увеличен размер текста
     SpeedHackToggle.ZIndex = 3
     SpeedHackToggle.Parent = SpeedHackFrame
 
     local SpeedHackSlider = Instance.new("Frame")
     SpeedHackSlider.Name = "SpeedHackSlider"
-    SpeedHackSlider.Size = UDim2.new(1, -30, 0, 35)
+    SpeedHackSlider.Size = UDim2.new(1, -30, 0, 35) -- Увеличены размеры и отступы
     SpeedHackSlider.Position = UDim2.new(0, 15, 0, 50)
     SpeedHackSlider.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
     SpeedHackSlider.BackgroundTransparency = 0.3
@@ -860,7 +860,7 @@ local function createGunMenu()
     SpeedHackSlider.Parent = SpeedHackFrame
 
     local SpeedHackSliderCorner = Instance.new("UICorner")
-    SpeedHackSliderCorner.CornerRadius = UDim.new(0, 6)
+    SpeedHackSliderCorner.CornerRadius = UDim.new(0, 6) -- Увеличен радиус
     SpeedHackSliderCorner.Parent = SpeedHackSlider
 
     local SpeedValue = Instance.new("TextLabel")
@@ -870,14 +870,14 @@ local function createGunMenu()
     SpeedValue.TextColor3 = Color3.fromRGB(255, 255, 255)
     SpeedValue.Text = "Speed: " .. currentSpeed
     SpeedValue.Font = Enum.Font.Gotham
-    SpeedValue.TextSize = 14
+    SpeedValue.TextSize = 14 -- Увеличен размер текста
     SpeedValue.ZIndex = 4
     SpeedValue.Parent = SpeedHackSlider
 
     -- Jump Hack
     local JumpHackFrame = Instance.new("Frame")
     JumpHackFrame.Name = "JumpHackFrame"
-    JumpHackFrame.Size = UDim2.new(1, 0, 0, 50)
+    JumpHackFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     JumpHackFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     JumpHackFrame.BackgroundTransparency = 0.3
     JumpHackFrame.BorderSizePixel = 0
@@ -886,39 +886,39 @@ local function createGunMenu()
     JumpHackFrame.Parent = gunTabContents["Movement"]
 
     local JumpHackCorner = Instance.new("UICorner")
-    JumpHackCorner.CornerRadius = UDim.new(0, 8)
+    JumpHackCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     JumpHackCorner.Parent = JumpHackFrame
 
     local JumpHackLabel = Instance.new("TextLabel")
     JumpHackLabel.Name = "JumpHackLabel"
     JumpHackLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    JumpHackLabel.Position = UDim2.new(0, 15, 0, 0)
+    JumpHackLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     JumpHackLabel.BackgroundTransparency = 1
     JumpHackLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     JumpHackLabel.Text = "Jump Hack"
     JumpHackLabel.Font = Enum.Font.Gotham
-    JumpHackLabel.TextSize = 16
+    JumpHackLabel.TextSize = 16 -- Увеличен размер текста
     JumpHackLabel.TextXAlignment = Enum.TextXAlignment.Left
     JumpHackLabel.ZIndex = 3
     JumpHackLabel.Parent = JumpHackFrame
 
     local JumpHackToggle = Instance.new("TextButton")
     JumpHackToggle.Name = "JumpHackToggle"
-    JumpHackToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    JumpHackToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     JumpHackToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
     JumpHackToggle.BackgroundColor3 = jumpHackEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     JumpHackToggle.BackgroundTransparency = 0.2
     JumpHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     JumpHackToggle.Text = jumpHackEnabled and "ON" or "OFF"
     JumpHackToggle.Font = Enum.Font.Gotham
-    JumpHackToggle.TextSize = 14
+    JumpHackToggle.TextSize = 14 -- Увеличен размер текста
     JumpHackToggle.ZIndex = 3
     JumpHackToggle.Parent = JumpHackFrame
 
     -- NoClip
     local NoClipFrame = Instance.new("Frame")
     NoClipFrame.Name = "NoClipFrame"
-    NoClipFrame.Size = UDim2.new(1, 0, 0, 50)
+    NoClipFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     NoClipFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     NoClipFrame.BackgroundTransparency = 0.3
     NoClipFrame.BorderSizePixel = 0
@@ -927,39 +927,39 @@ local function createGunMenu()
     NoClipFrame.Parent = gunTabContents["Movement"]
 
     local NoClipCorner = Instance.new("UICorner")
-    NoClipCorner.CornerRadius = UDim.new(0, 8)
+    NoClipCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     NoClipCorner.Parent = NoClipFrame
 
     local NoClipLabel = Instance.new("TextLabel")
     NoClipLabel.Name = "NoClipLabel"
     NoClipLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    NoClipLabel.Position = UDim2.new(0, 15, 0, 0)
+    NoClipLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     NoClipLabel.BackgroundTransparency = 1
     NoClipLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     NoClipLabel.Text = "NoClip"
     NoClipLabel.Font = Enum.Font.Gotham
-    NoClipLabel.TextSize = 16
+    NoClipLabel.TextSize = 16 -- Увеличен размер текста
     NoClipLabel.TextXAlignment = Enum.TextXAlignment.Left
     NoClipLabel.ZIndex = 3
     NoClipLabel.Parent = NoClipFrame
 
     local NoClipToggle = Instance.new("TextButton")
     NoClipToggle.Name = "NoClipToggle"
-    NoClipToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    NoClipToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     NoClipToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
     NoClipToggle.BackgroundColor3 = noclipEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     NoClipToggle.BackgroundTransparency = 0.2
     NoClipToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     NoClipToggle.Text = noclipEnabled and "ON" or "OFF"
     NoClipToggle.Font = Enum.Font.Gotham
-    NoClipToggle.TextSize = 14
+    NoClipToggle.TextSize = 14 -- Увеличен размер текста
     NoClipToggle.ZIndex = 3
     NoClipToggle.Parent = NoClipFrame
 
     -- Visual Tab Content
     local ESPTracersFrame = Instance.new("Frame")
     ESPTracersFrame.Name = "ESPTracersFrame"
-    ESPTracersFrame.Size = UDim2.new(1, 0, 0, 50)
+    ESPTracersFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     ESPTracersFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPTracersFrame.BackgroundTransparency = 0.3
     ESPTracersFrame.BorderSizePixel = 0
@@ -968,39 +968,39 @@ local function createGunMenu()
     ESPTracersFrame.Parent = gunTabContents["Visual"]
 
     local ESPTracersCorner = Instance.new("UICorner")
-    ESPTracersCorner.CornerRadius = UDim.new(0, 8)
+    ESPTracersCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     ESPTracersCorner.Parent = ESPTracersFrame
 
     local ESPTracersLabel = Instance.new("TextLabel")
     ESPTracersLabel.Name = "ESPTracersLabel"
     ESPTracersLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    ESPTracersLabel.Position = UDim2.new(0, 15, 0, 0)
+    ESPTracersLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     ESPTracersLabel.BackgroundTransparency = 1
     ESPTracersLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPTracersLabel.Text = "ESP Tracers"
     ESPTracersLabel.Font = Enum.Font.Gotham
-    ESPTracersLabel.TextSize = 16
+    ESPTracersLabel.TextSize = 16 -- Увеличен размер текста
     ESPTracersLabel.TextXAlignment = Enum.TextXAlignment.Left
     ESPTracersLabel.ZIndex = 3
     ESPTracersLabel.Parent = ESPTracersFrame
 
     local ESPTracersToggle = Instance.new("TextButton")
     ESPTracersToggle.Name = "ESPTracersToggle"
-    ESPTracersToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    ESPTracersToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     ESPTracersToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
     ESPTracersToggle.BackgroundColor3 = espTracersEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     ESPTracersToggle.BackgroundTransparency = 0.2
     ESPTracersToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPTracersToggle.Text = espTracersEnabled and "ON" or "OFF"
     ESPTracersToggle.Font = Enum.Font.Gotham
-    ESPTracersToggle.TextSize = 14
+    ESPTracersToggle.TextSize = 14 -- Увеличен размер текста
     ESPTracersToggle.ZIndex = 3
     ESPTracersToggle.Parent = ESPTracersFrame
 
     -- ESP Box
     local ESPBoxFrame = Instance.new("Frame")
     ESPBoxFrame.Name = "ESPBoxFrame"
-    ESPBoxFrame.Size = UDim2.new(1, 0, 0, 50)
+    ESPBoxFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     ESPBoxFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPBoxFrame.BackgroundTransparency = 0.3
     ESPBoxFrame.BorderSizePixel = 0
@@ -1009,39 +1009,39 @@ local function createGunMenu()
     ESPBoxFrame.Parent = gunTabContents["Visual"]
 
     local ESPBoxCorner = Instance.new("UICorner")
-    ESPBoxCorner.CornerRadius = UDim.new(0, 8)
+    ESPBoxCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     ESPBoxCorner.Parent = ESPBoxFrame
 
     local ESPBoxLabel = Instance.new("TextLabel")
     ESPBoxLabel.Name = "ESPBoxLabel"
     ESPBoxLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    ESPBoxLabel.Position = UDim2.new(0, 15, 0, 0)
+    ESPBoxLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     ESPBoxLabel.BackgroundTransparency = 1
     ESPBoxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPBoxLabel.Text = "ESP Box"
     ESPBoxLabel.Font = Enum.Font.Gotham
-    ESPBoxLabel.TextSize = 16
+    ESPBoxLabel.TextSize = 16 -- Увеличен размер текста
     ESPBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
     ESPBoxLabel.ZIndex = 3
     ESPBoxLabel.Parent = ESPBoxFrame
 
     local ESPBoxToggle = Instance.new("TextButton")
     ESPBoxToggle.Name = "ESPBoxToggle"
-    ESPBoxToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    ESPBoxToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     ESPBoxToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
     ESPBoxToggle.BackgroundColor3 = espBoxEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     ESPBoxToggle.BackgroundTransparency = 0.2
     ESPBoxToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPBoxToggle.Text = espBoxEnabled and "ON" or "OFF"
     ESPBoxToggle.Font = Enum.Font.Gotham
-    ESPBoxToggle.TextSize = 14
+    ESPBoxToggle.TextSize = 14 -- Увеличен размер текста
     ESPBoxToggle.ZIndex = 3
     ESPBoxToggle.Parent = ESPBoxFrame
 
     -- ESP Health
     local ESPHealthFrame = Instance.new("Frame")
     ESPHealthFrame.Name = "ESPHealthFrame"
-    ESPHealthFrame.Size = UDim2.new(1, 0, 0, 50)
+    ESPHealthFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     ESPHealthFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPHealthFrame.BackgroundTransparency = 0.3
     ESPHealthFrame.BorderSizePixel = 0
@@ -1050,39 +1050,39 @@ local function createGunMenu()
     ESPHealthFrame.Parent = gunTabContents["Visual"]
 
     local ESPHealthCorner = Instance.new("UICorner")
-    ESPHealthCorner.CornerRadius = UDim.new(0, 8)
+    ESPHealthCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     ESPHealthCorner.Parent = ESPHealthFrame
 
     local ESPHealthLabel = Instance.new("TextLabel")
     ESPHealthLabel.Name = "ESPHealthLabel"
     ESPHealthLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    ESPHealthLabel.Position = UDim2.new(0, 15, 0, 0)
+    ESPHealthLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     ESPHealthLabel.BackgroundTransparency = 1
     ESPHealthLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPHealthLabel.Text = "ESP Health"
     ESPHealthLabel.Font = Enum.Font.Gotham
-    ESPHealthLabel.TextSize = 16
+    ESPHealthLabel.TextSize = 16 -- Увеличен размер текста
     ESPHealthLabel.TextXAlignment = Enum.TextXAlignment.Left
     ESPHealthLabel.ZIndex = 3
     ESPHealthLabel.Parent = ESPHealthFrame
 
     local ESPHealthToggle = Instance.new("TextButton")
     ESPHealthToggle.Name = "ESPHealthToggle"
-    ESPHealthToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    ESPHealthToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     ESPHealthToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
     ESPHealthToggle.BackgroundColor3 = espHealthEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     ESPHealthToggle.BackgroundTransparency = 0.2
     ESPHealthToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPHealthToggle.Text = espHealthEnabled and "ON" or "OFF"
     ESPHealthToggle.Font = Enum.Font.Gotham
-    ESPHealthToggle.TextSize = 14
+    ESPHealthToggle.TextSize = 14 -- Увеличен размер текста
     ESPHealthToggle.ZIndex = 3
     ESPHealthToggle.Parent = ESPHealthFrame
 
     -- ESP Distance
     local ESPDistanceFrame = Instance.new("Frame")
     ESPDistanceFrame.Name = "ESPDistanceFrame"
-    ESPDistanceFrame.Size = UDim2.new(1, 0, 0, 50)
+    ESPDistanceFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     ESPDistanceFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPDistanceFrame.BackgroundTransparency = 0.3
     ESPDistanceFrame.BorderSizePixel = 0
@@ -1091,39 +1091,39 @@ local function createGunMenu()
     ESPDistanceFrame.Parent = gunTabContents["Visual"]
 
     local ESPDistanceCorner = Instance.new("UICorner")
-    ESPDistanceCorner.CornerRadius = UDim.new(0, 8)
+    ESPDistanceCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     ESPDistanceCorner.Parent = ESPDistanceFrame
 
     local ESPDistanceLabel = Instance.new("TextLabel")
     ESPDistanceLabel.Name = "ESPDistanceLabel"
     ESPDistanceLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    ESPDistanceLabel.Position = UDim2.new(0, 15, 0, 0)
+    ESPDistanceLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     ESPDistanceLabel.BackgroundTransparency = 1
     ESPDistanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPDistanceLabel.Text = "ESP Distance"
     ESPDistanceLabel.Font = Enum.Font.Gotham
-    ESPDistanceLabel.TextSize = 16
+    ESPDistanceLabel.TextSize = 16 -- Увеличен размер текста
     ESPDistanceLabel.TextXAlignment = Enum.TextXAlignment.Left
     ESPDistanceLabel.ZIndex = 3
     ESPDistanceLabel.Parent = ESPDistanceFrame
 
     local ESPDistanceToggle = Instance.new("TextButton")
     ESPDistanceToggle.Name = "ESPDistanceToggle"
-    ESPDistanceToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    ESPDistanceToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     ESPDistanceToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
     ESPDistanceToggle.BackgroundColor3 = espDistanceEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     ESPDistanceToggle.BackgroundTransparency = 0.2
     ESPDistanceToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPDistanceToggle.Text = espDistanceEnabled and "ON" or "OFF"
     ESPDistanceToggle.Font = Enum.Font.Gotham
-    ESPDistanceToggle.TextSize = 14
+    ESPDistanceToggle.TextSize = 14 -- Увеличен размер текста
     ESPDistanceToggle.ZIndex = 3
     ESPDistanceToggle.Parent = ESPDistanceFrame
 
     -- ESP Count
     local ESPCountFrame = Instance.new("Frame")
     ESPCountFrame.Name = "ESPCountFrame"
-    ESPCountFrame.Size = UDim2.new(1, 0, 0, 50)
+    ESPCountFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     ESPCountFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     ESPCountFrame.BackgroundTransparency = 0.3
     ESPCountFrame.BorderSizePixel = 0
@@ -1132,39 +1132,39 @@ local function createGunMenu()
     ESPCountFrame.Parent = gunTabContents["Visual"]
 
     local ESPCountCorner = Instance.new("UICorner")
-    ESPCountCorner.CornerRadius = UDim.new(0, 8)
+    ESPCountCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     ESPCountCorner.Parent = ESPCountFrame
 
     local ESPCountLabel = Instance.new("TextLabel")
     ESPCountLabel.Name = "ESPCountLabel"
     ESPCountLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    ESPCountLabel.Position = UDim2.new(0, 15, 0, 0)
+    ESPCountLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     ESPCountLabel.BackgroundTransparency = 1
     ESPCountLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPCountLabel.Text = "ESP Count"
     ESPCountLabel.Font = Enum.Font.Gotham
-    ESPCountLabel.TextSize = 16
+    ESPCountLabel.TextSize = 16 -- Увеличен размер текста
     ESPCountLabel.TextXAlignment = Enum.TextXAlignment.Left
     ESPCountLabel.ZIndex = 3
     ESPCountLabel.Parent = ESPCountFrame
 
     local ESPCountToggle = Instance.new("TextButton")
     ESPCountToggle.Name = "ESPCountToggle"
-    ESPCountToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    ESPCountToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     ESPCountToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
     ESPCountToggle.BackgroundColor3 = espCountEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     ESPCountToggle.BackgroundTransparency = 0.2
     ESPCountToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     ESPCountToggle.Text = espCountEnabled and "ON" or "OFF"
     ESPCountToggle.Font = Enum.Font.Gotham
-    ESPCountToggle.TextSize = 14
+    ESPCountToggle.TextSize = 14 -- Увеличен размер текста
     ESPCountToggle.ZIndex = 3
     ESPCountToggle.Parent = ESPCountFrame
 
     -- AimBot Tab Content
     local AimBotFrame = Instance.new("Frame")
     AimBotFrame.Name = "AimBotFrame"
-    AimBotFrame.Size = UDim2.new(1, 0, 0, 50)
+    AimBotFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     AimBotFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     AimBotFrame.BackgroundTransparency = 0.3
     AimBotFrame.BorderSizePixel = 0
@@ -1173,39 +1173,39 @@ local function createGunMenu()
     AimBotFrame.Parent = gunTabContents["AimBot"]
 
     local AimBotCorner = Instance.new("UICorner")
-    AimBotCorner.CornerRadius = UDim.new(0, 8)
+    AimBotCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     AimBotCorner.Parent = AimBotFrame
 
     local AimBotLabel = Instance.new("TextLabel")
     AimBotLabel.Name = "AimBotLabel"
     AimBotLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    AimBotLabel.Position = UDim2.new(0, 15, 0, 0)
+    AimBotLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
     AimBotLabel.BackgroundTransparency = 1
     AimBotLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     AimBotLabel.Text = "AimBot"
     AimBotLabel.Font = Enum.Font.Gotham
-    AimBotLabel.TextSize = 16
+    AimBotLabel.TextSize = 16 -- Увеличен размер текста
     AimBotLabel.TextXAlignment = Enum.TextXAlignment.Left
     AimBotLabel.ZIndex = 3
     AimBotLabel.Parent = AimBotFrame
 
     local AimBotToggle = Instance.new("TextButton")
     AimBotToggle.Name = "AimBotToggle"
-    AimBotToggle.Size = UDim2.new(0.3, 0, 0, 35)
+    AimBotToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
     AimBotToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
     AimBotToggle.BackgroundColor3 = aimBotEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
     AimBotToggle.BackgroundTransparency = 0.2
     AimBotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     AimBotToggle.Text = aimBotEnabled and "ON" or "OFF"
     AimBotToggle.Font = Enum.Font.Gotham
-    AimBotToggle.TextSize = 14
+    AimBotToggle.TextSize = 14 -- Увеличен размер текста
     AimBotToggle.ZIndex = 3
     AimBotToggle.Parent = AimBotFrame
 
     -- AimBot FOV Slider
     local AimBotFOVFrame = Instance.new("Frame")
     AimBotFOVFrame.Name = "AimBotFOVFrame"
-    AimBotFOVFrame.Size = UDim2.new(1, 0, 0, 70)
+    AimBotFOVFrame.Size = UDim2.new(1, 0, 0, 70) -- Увеличена высота
     AimBotFOVFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     AimBotFOVFrame.BackgroundTransparency = 0.3
     AimBotFOVFrame.BorderSizePixel = 0
@@ -1215,18 +1215,18 @@ local function createGunMenu()
     AimBotFOVFrame.Parent = gunTabContents["AimBot"]
 
     local AimBotFOVCorner = Instance.new("UICorner")
-    AimBotFOVCorner.CornerRadius = UDim.new(0, 8)
+    AimBotFOVCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     AimBotFOVCorner.Parent = AimBotFOVFrame
 
     local AimBotFOVLabel = Instance.new("TextLabel")
     AimBotFOVLabel.Name = "AimBotFOVLabel"
-    AimBotFOVLabel.Size = UDim2.new(1, 0, 0, 35)
+    AimBotFOVLabel.Size = UDim2.new(1, 0, 0, 35) -- Увеличена высота
     AimBotFOVLabel.Position = UDim2.new(0, 0, 0, 0)
     AimBotFOVLabel.BackgroundTransparency = 1
     AimBotFOVLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
     AimBotFOVLabel.Font = Enum.Font.Gotham
-    AimBotFOVLabel.TextSize = 14
+    AimBotFOVLabel.TextSize = 14 -- Увеличен размер текста
     AimBotFOVLabel.ZIndex = 3
     AimBotFOVLabel.Parent = AimBotFOVFrame
 
@@ -1456,7 +1456,7 @@ end
 local function createNightsMenu()
     NightsMenu = Instance.new("Frame")
     NightsMenu.Name = "NightsMenu"
-    NightsMenu.Size = UDim2.new(0, 400, 0, 400) -- Уменьшена ширина и увеличена высота для прокрутки
+    NightsMenu.Size = UDim2.new(0, 500, 0, 290) -- Увеличена ширина и высота
     NightsMenu.Position = savedPosition
     NightsMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     NightsMenu.BackgroundTransparency = 0.3
@@ -1467,26 +1467,26 @@ local function createNightsMenu()
     NightsMenu.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.CornerRadius = UDim.new(0, 10) -- Увеличен радиус
     Corner.Parent = NightsMenu
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
-    Title.Size = UDim2.new(1, 0, 0, 50)
+    Title.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
     Title.BackgroundTransparency = 0.2
     Title.TextColor3 = Color3.fromRGB(255, 255, 255)
     Title.Text = "99 NIGHTS MENU"
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 18
+    Title.TextSize = 18 -- Увеличен размер текста
     Title.ZIndex = 2
     Title.Parent = NightsMenu
 
     -- Вертикальные вкладки
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
-    TabButtons.Size = UDim2.new(0, 100, 1, -50) -- Уменьшена ширина
+    TabButtons.Size = UDim2.new(0, 120, 1, -50) -- Увеличена ширина
     TabButtons.Position = UDim2.new(0, 0, 0, 50)
     TabButtons.BackgroundTransparency = 0.2
     TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
@@ -1508,23 +1508,23 @@ local function createNightsMenu()
     for i, tab in ipairs(nightsTabs) do
         local tabButton = Instance.new("TextButton")
         tabButton.Name = tab.name .. "Tab"
-        tabButton.Size = UDim2.new(1, 0, 0, 50)
+        tabButton.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
         tabButton.LayoutOrder = i
         tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
         tabButton.BackgroundTransparency = 0.2
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         tabButton.Text = tab.name
         tabButton.Font = Enum.Font.Gotham
-        tabButton.TextSize = 14
+        tabButton.TextSize = 14 -- Увеличен размер текста
         tabButton.ZIndex = 3
         tabButton.Parent = TabButtons
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -110, 1, -110) -- Уменьшена ширина
-        ContentFrame.Position = UDim2.new(0, 110, 0, 110) -- Сдвиг для вкладок
+        ContentFrame.Size = UDim2.new(1, -130, 1, -110) -- Учитываем ширину вкладок
+        ContentFrame.Position = UDim2.new(0, 130, 0, 110) -- Сдвиг для вкладок
         ContentFrame.BackgroundTransparency = 1
-        ContentFrame.ScrollBarThickness = 6
+        ContentFrame.ScrollBarThickness = 6 -- Увеличена толщина
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
         ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
         ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
@@ -1534,7 +1534,7 @@ local function createNightsMenu()
 
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentLayout.Padding = UDim.new(0, 12)
+        ContentLayout.Padding = UDim.new(0, 12) -- Увеличен отступ
         ContentLayout.Parent = ContentFrame
 
         nightsTabButtons[tab.name] = tabButton
@@ -1576,6 +1576,28 @@ local function createNightsMenu()
 
     -- Переменные для отслеживания открытых подменю
     local openSubMenus = {}
+    local subMenuPositions = {}
+
+    -- Функция для обновления позиций всех элементов
+    local function updateAllPositions()
+        local currentY = 0
+        local padding = 10 -- Увеличен отступ
+        
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("TextButton") then
+                if child:FindFirstChild("LayoutOrder") then
+                    child.Position = UDim2.new(0, 0, 0, currentY)
+                    
+                    -- Если это подменю и оно открыто, добавляем его высоту + дополнительный отступ (примерно 2 см = 56 пикселей)
+                    if child.Name:find("SubMenu") and openSubMenus[child.Name] then
+                        currentY = currentY + child.AbsoluteSize.Y + 56 -- Дополнительный отступ 2 см
+                    else
+                        currentY = currentY + child.AbsoluteSize.Y + padding
+                    end
+                end
+            end
+        end
+    end
 
     -- Подменю для ресурсов
     local ResourcesButton = CreateButton(nightsTabContents["Bring"], "Resources", function()
@@ -1583,6 +1605,7 @@ local function createNightsMenu()
             if child.Name == "ResourcesSubMenu" then
                 openSubMenus["ResourcesSubMenu"] = not openSubMenus["ResourcesSubMenu"]
                 child.Visible = openSubMenus["ResourcesSubMenu"]
+                updateAllPositions()
                 return
             end
         end
@@ -1590,16 +1613,15 @@ local function createNightsMenu()
 
     local ResourcesSubMenu = Instance.new("Frame")
     ResourcesSubMenu.Name = "ResourcesSubMenu"
-    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 220)
+    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 210) -- Увеличена высота
     ResourcesSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     ResourcesSubMenu.BackgroundTransparency = 0.5
     ResourcesSubMenu.Visible = false
-    ResourcesSubMenu.LayoutOrder = 7
     ResourcesSubMenu.Parent = nightsTabContents["Bring"]
 
     local ResourcesLayout = Instance.new("UIListLayout")
     ResourcesLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ResourcesLayout.Padding = UDim.new(0, 8)
+    ResourcesLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
     ResourcesLayout.Parent = ResourcesSubMenu
 
     local resourcesItems = {"Logs", "Coal", "Chair", "Fuel Canister", "Oil Barrel"}
@@ -1615,6 +1637,7 @@ local function createNightsMenu()
             if child.Name == "MetalsSubMenu" then
                 openSubMenus["MetalsSubMenu"] = not openSubMenus["MetalsSubMenu"]
                 child.Visible = openSubMenus["MetalsSubMenu"]
+                updateAllPositions()
                 return
             end
         end
@@ -1622,16 +1645,15 @@ local function createNightsMenu()
 
     local MetalsSubMenu = Instance.new("Frame")
     MetalsSubMenu.Name = "MetalsSubMenu"
-    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 260)
+    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 250) -- Увеличена высота
     MetalsSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     MetalsSubMenu.BackgroundTransparency = 0.5
     MetalsSubMenu.Visible = false
-    MetalsSubMenu.LayoutOrder = 9
     MetalsSubMenu.Parent = nightsTabContents["Bring"]
 
     local MetalsLayout = Instance.new("UIListLayout")
     MetalsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    MetalsLayout.Padding = UDim.new(0, 8)
+    MetalsLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
     MetalsLayout.Parent = MetalsSubMenu
 
     local metalsItems = {"Bolt", "Sheet Metal", "Old Radio", "Scrap Metal", "UFO Scrap", "Broken Microwave"}
@@ -1647,6 +1669,7 @@ local function createNightsMenu()
             if child.Name == "FoodMedSubMenu" then
                 openSubMenus["FoodMedSubMenu"] = not openSubMenus["FoodMedSubMenu"]
                 child.Visible = openSubMenus["FoodMedSubMenu"]
+                updateAllPositions()
                 return
             end
         end
@@ -1654,16 +1677,15 @@ local function createNightsMenu()
 
     local FoodMedSubMenu = Instance.new("Frame")
     FoodMedSubMenu.Name = "FoodMedSubMenu"
-    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 220)
+    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 210) -- Увеличена высота
     FoodMedSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     FoodMedSubMenu.BackgroundTransparency = 0.5
     FoodMedSubMenu.Visible = false
-    FoodMedSubMenu.LayoutOrder = 11
     FoodMedSubMenu.Parent = nightsTabContents["Bring"]
 
     local FoodMedLayout = Instance.new("UIListLayout")
     FoodMedLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    FoodMedLayout.Padding = UDim.new(0, 8)
+    FoodMedLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
     FoodMedLayout.Parent = FoodMedSubMenu
 
     local foodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage"}
@@ -1679,6 +1701,7 @@ local function createNightsMenu()
             if child.Name == "WeaponsSubMenu" then
                 openSubMenus["WeaponsSubMenu"] = not openSubMenus["WeaponsSubMenu"]
                 child.Visible = openSubMenus["WeaponsSubMenu"]
+                updateAllPositions()
                 return
             end
         end
@@ -1686,16 +1709,15 @@ local function createNightsMenu()
 
     local WeaponsSubMenu = Instance.new("Frame")
     WeaponsSubMenu.Name = "WeaponsSubMenu"
-    WeaponsSubMenu.Size = UDim2.new(1, 0, 0, 180)
+    WeaponsSubMenu.Size = UDim2.new(1, 0, 0, 170) -- Увеличена высота
     WeaponsSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     WeaponsSubMenu.BackgroundTransparency = 0.5
     WeaponsSubMenu.Visible = false
-    WeaponsSubMenu.LayoutOrder = 13
     WeaponsSubMenu.Parent = nightsTabContents["Bring"]
 
     local WeaponsLayout = Instance.new("UIListLayout")
     WeaponsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    WeaponsLayout.Padding = UDim.new(0, 8)
+    WeaponsLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
     WeaponsLayout.Parent = WeaponsSubMenu
 
     local weaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo"}
@@ -1705,12 +1727,13 @@ local function createNightsMenu()
         end)
     end
 
-    -- Подменю для топоров
+    -- НОВОЕ ПОДМЕНЮ ДЛЯ ТОПОРОВ
     local AxeButton = CreateButton(nightsTabContents["Bring"], "Axe", function()
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "AxeSubMenu" then
                 openSubMenus["AxeSubMenu"] = not openSubMenus["AxeSubMenu"]
                 child.Visible = openSubMenus["AxeSubMenu"]
+                updateAllPositions()
                 return
             end
         end
@@ -1718,16 +1741,15 @@ local function createNightsMenu()
 
     local AxeSubMenu = Instance.new("Frame")
     AxeSubMenu.Name = "AxeSubMenu"
-    AxeSubMenu.Size = UDim2.new(1, 0, 0, 180)
+    AxeSubMenu.Size = UDim2.new(1, 0, 0, 170) -- Увеличена высота
     AxeSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     AxeSubMenu.BackgroundTransparency = 0.5
     AxeSubMenu.Visible = false
-    AxeSubMenu.LayoutOrder = 15
     AxeSubMenu.Parent = nightsTabContents["Bring"]
 
     local AxeLayout = Instance.new("UIListLayout")
     AxeLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    AxeLayout.Padding = UDim.new(0, 8)
+    AxeLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
     AxeLayout.Parent = AxeSubMenu
 
     local axeItems = {"Good Axe", "Strong Axe", "Chainsaw"}
@@ -1757,6 +1779,9 @@ local function createNightsMenu()
             end
         end
     end
+
+    -- Первоначальное обновление позиций
+    updateAllPositions()
 
     -- Tab Switching для Nights Menu
     for tabName, tabButton in pairs(nightsTabButtons) do
