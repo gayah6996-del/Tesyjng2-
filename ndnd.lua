@@ -1,613 +1,264 @@
--- Создание основного GUI
+-- SANSTRO Menu for Mobile
 local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local PlayerGui = Player:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local HttpService = game:GetService("HttpService")
 
--- Название файла для сохранения настроек
+local player = Players.LocalPlayer
+local mouse = player:GetMouse()
+
+-- Глобальные переменные для сохранения состояний
+local speedHackEnabled = false
+local jumpHackEnabled = false
+local noclipEnabled = false
+local espTracersEnabled = false
+local espBoxEnabled = false
+local espHealthEnabled = false
+local espDistanceEnabled = false
+local espCountEnabled = false
+local aimBotEnabled = false
+local currentSpeed = 16
+local aimBotFOV = 50
+
+-- Новые переменные из второго скрипта
+local ActiveKillAura = false
+local ActiveAutoChopTree = false
+local DistanceForKillAura = 25
+local DistanceForAutoChopTree = 25
+local BringCount = 5
+local BringDelay = 200
+local CampfirePosition = Vector3.new(0, 10, 0)
+
+-- Настройки файла
 local SETTINGS_FILE = "astralcheat_settings.txt"
-
--- Таблица для хранения текущих настроек
 local Settings = {
     ActiveKillAura = false,
     ActiveAutoChopTree = false,
     DistanceForKillAura = 25,
     DistanceForAutoChopTree = 25,
-    BringCount = 2,
-    BringDelay = 600,
-    TeleportTarget = "Костёр",
-    MenuPosition = {X = 0.5, Y = 0.5, OffsetX = -160, OffsetY = -200},
-    MenuSize = {Width = 320, Height = 400},
-    ToggleButtonPosition = {X = 0, Y = 0, OffsetX = 10, OffsetY = 10}
+    BringCount = 5,
+    BringDelay = 200
 }
 
--- Функция для сохранения настроек в файл
+local ScreenGui = nil
+local MainMenu = nil
+local GunMenu = nil
+local NightsMenu = nil
+local minimized = false
+local fovCircle = nil
+local savedPosition = UDim2.new(0, 10, 0, 10)
+local savedButtonPosition = UDim2.new(0, 10, 0, 10)
+local isGuiOpen = false
+local OpenCloseButton = nil
+
+-- ESP объекты
+local espObjects = {}
+local espConnections = {}
+local espCountText = nil
+local noclipConnection = nil
+
+-- Текущее активное меню
+local currentActiveMenu = nil
+
+-- Функции сохранения настроек
 local function SaveSettings()
-    local success, err = pcall(function()
-        local data = game:GetService("HttpService"):JSONEncode(Settings)
+    pcall(function()
+        Settings.ActiveKillAura = ActiveKillAura
+        Settings.ActiveAutoChopTree = ActiveAutoChopTree
+        Settings.DistanceForKillAura = DistanceForKillAura
+        Settings.DistanceForAutoChopTree = DistanceForAutoChopTree
+        Settings.BringCount = BringCount
+        Settings.BringDelay = BringDelay
+        
+        local data = HttpService:JSONEncode(Settings)
         writefile(SETTINGS_FILE, data)
     end)
-    
-    if not success then
-        warn("Не удалось сохранить настройки: " .. tostring(err))
-    else
-        print("Настройки сохранены!")
-    end
 end
 
--- Функция для загрузки настроек из файла
 local function LoadSettings()
-    local success, err = pcall(function()
+    pcall(function()
         if isfile(SETTINGS_FILE) then
             local data = readfile(SETTINGS_FILE)
-            local loadedSettings = game:GetService("HttpService"):JSONDecode(data)
-            
-            -- Обновляем настройки из загруженных данных
+            local loadedSettings = HttpService:JSONDecode(data)
             for key, value in pairs(loadedSettings) do
-                if Settings[key] ~= nil then
-                    Settings[key] = value
+                if Settings[key] ~= nil then 
+                    Settings[key] = value 
                 end
             end
-            return true
+            
+            -- Применяем загруженные настройки
+            ActiveKillAura = Settings.ActiveKillAura
+            ActiveAutoChopTree = Settings.ActiveAutoChopTree
+            DistanceForKillAura = Settings.DistanceForKillAura
+            DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
+            BringCount = Settings.BringCount
+            BringDelay = Settings.BringDelay
         end
-        return false
     end)
-    
-    if not success then
-        warn("Не удалось загрузить настройки: " .. tostring(err))
-        return false
-    end
-    return true
 end
 
 -- Загружаем настройки при запуске
 LoadSettings()
 
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "GameMenu"
-ScreenGui.Parent = PlayerGui
-
--- Создаем систему уведомлений
-local NotificationFrame = Instance.new("Frame")
-NotificationFrame.Size = UDim2.new(0, 200, 0, 50)
-NotificationFrame.Position = UDim2.new(1, -210, 1, -60)
-NotificationFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-NotificationFrame.BorderSizePixel = 0
-NotificationFrame.Visible = false
-NotificationFrame.ZIndex = 20
-NotificationFrame.Parent = ScreenGui
-
-local NotificationCorner = Instance.new("UICorner")
-NotificationCorner.CornerRadius = UDim.new(0, 8)
-NotificationCorner.Parent = NotificationFrame
-
-local NotificationLabel = Instance.new("TextLabel")
-NotificationLabel.Size = UDim2.new(1, -10, 1, -10)
-NotificationLabel.Position = UDim2.new(0, 5, 0, 5)
-NotificationLabel.BackgroundTransparency = 1
-NotificationLabel.Text = "Notification"
-NotificationLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-NotificationLabel.TextSize = 14
-NotificationLabel.Font = Enum.Font.GothamBold
-NotificationLabel.Parent = NotificationFrame
-
-local function ShowNotification(message, duration)
-    duration = duration or 3
-    NotificationLabel.Text = message
-    NotificationFrame.Visible = true
-    
-    -- Анимация появления
-    NotificationFrame.Position = UDim2.new(1, -210, 1, -60)
-    
-    wait(duration)
-    
-    -- Анимация исчезновения
-    NotificationFrame.Visible = false
-end
-
--- Кнопка показа меню (всегда видна)
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Size = UDim2.new(0, 60, 0, 60)
-ToggleButton.Position = UDim2.new(Settings.ToggleButtonPosition.X, Settings.ToggleButtonPosition.OffsetX, Settings.ToggleButtonPosition.Y, Settings.ToggleButtonPosition.OffsetY)
-ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-ToggleButton.Text = "ASTRAL"
-ToggleButton.TextSize = 7
-ToggleButton.ZIndex = 10
-ToggleButton.Parent = ScreenGui
-
-local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0, 10)
-ToggleCorner.Parent = ToggleButton
-
--- Переменные для перемещения кнопки ASTRAL
-local ToggleDragging = false
-local ToggleDragStartPos = nil
-local ToggleStartPos = nil
-
--- Функции для перемещения кнопки ASTRAL
-local function startToggleDragging(input)
-    ToggleDragging = true
-    ToggleDragStartPos = Vector2.new(input.Position.X, input.Position.Y)
-    ToggleStartPos = UDim2.new(ToggleButton.Position.X.Scale, ToggleButton.Position.X.Offset, ToggleButton.Position.Y.Scale, ToggleButton.Position.Y.Offset)
-    
-    -- Визуальная обратная связь
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-end
-
-local function stopToggleDragging()
-    ToggleDragging = false
-    ToggleDragStartPos = nil
-    ToggleStartPos = nil
-    ToggleButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    
-    -- Сохраняем позицию кнопки
-    Settings.ToggleButtonPosition = {
-        X = ToggleButton.Position.X.Scale,
-        Y = ToggleButton.Position.Y.Scale,
-        OffsetX = ToggleButton.Position.X.Offset,
-        OffsetY = ToggleButton.Position.Y.Offset
-    }
-    SaveSettings()
-end
-
-local function updateToggleDrag(input)
-    if ToggleDragging and ToggleDragStartPos and ToggleStartPos then
-        local delta = Vector2.new(input.Position.X, input.Position.Y) - ToggleDragStartPos
-        local newX = ToggleStartPos.X.Offset + delta.X
-        local newY = ToggleStartPos.Y.Offset + delta.Y
-        
-        -- Ограничение, чтобы кнопка не выходила за экран
-        local screenSize = PlayerGui.AbsoluteSize
-        newX = math.clamp(newX, 0, screenSize.X - ToggleButton.AbsoluteSize.X)
-        newY = math.clamp(newY, 0, screenSize.Y - ToggleButton.AbsoluteSize.Y)
-        
-        ToggleButton.Position = UDim2.new(0, newX, 0, newY)
-    end
-end
-
--- Обработчики для перемещения кнопки ASTRAL
-ToggleButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        startToggleDragging(input)
-    end
-end)
-
-ToggleButton.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        stopToggleDragging()
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if ToggleDragging then
-        updateToggleDrag(input)
-    elseif Dragging then
-        updateDrag(input)
-    elseif Resizing then
-        updateResize(input)
-    end
-end)
-
--- Основное окно меню
-local MainFrame = Instance.new("Frame")
-MainFrame.Size = UDim2.new(0, Settings.MenuSize.Width, 0, Settings.MenuSize.Height)
-MainFrame.Position = UDim2.new(Settings.MenuPosition.X, Settings.MenuPosition.OffsetX, Settings.MenuPosition.Y, Settings.MenuPosition.OffsetY)
-MainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
-MainFrame.Visible = false
-MainFrame.Parent = ScreenGui
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 8)
-UICorner.Parent = MainFrame
-
--- Элемент для изменения размера (правый нижний угол)
-local ResizeHandle = Instance.new("Frame")
-ResizeHandle.Size = UDim2.new(0, 30, 0, 30)
-ResizeHandle.Position = UDim2.new(1, -30, 1, -30)
-ResizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-ResizeHandle.BorderSizePixel = 0
-ResizeHandle.ZIndex = 5
-ResizeHandle.Active = true
-ResizeHandle.Parent = MainFrame
-
-local ResizeCorner = Instance.new("UICorner")
-ResizeCorner.CornerRadius = UDim.new(0, 4)
-ResizeCorner.Parent = ResizeHandle
-
--- Заголовок для перемещения
-local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1, 0, 0, 40)
-Title.Position = UDim2.new(0, 0, 0, 0)
-Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-Title.Text = "ASTRALCHEAT BETA"
-Title.TextColor3 = Color3.fromRGB(255, 255, 255)
-Title.TextSize = 16
-Title.Font = Enum.Font.GothamBold
-Title.Active = true
-Title.Parent = MainFrame
-
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 8)
-TitleCorner.Parent = Title
-
--- Кнопка сворачивания в заголовке
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
-MinimizeButton.Position = UDim2.new(1, -70, 0, 5)
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 180, 0)
-MinimizeButton.Text = "-"
-MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-MinimizeButton.TextSize = 16
-MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.Parent = Title
-
-local MinimizeCorner = Instance.new("UICorner")
-MinimizeCorner.CornerRadius = UDim.new(0, 6)
-MinimizeCorner.Parent = MinimizeButton
-
--- Кнопка закрытия в заголовке
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -35, 0, 5)
-CloseButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-CloseButton.Text = "✕"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 16
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Parent = Title
-
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 6)
-CloseCorner.Parent = CloseButton
-
--- Кнопки вкладок
-local TabsFrame = Instance.new("Frame")
-TabsFrame.Size = UDim2.new(1, 0, 0, 30)
-TabsFrame.Position = UDim2.new(0, 0, 0, 40)
-TabsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-TabsFrame.BorderSizePixel = 0
-TabsFrame.Parent = MainFrame
-
-local InfoTabButton = Instance.new("TextButton")
-InfoTabButton.Size = UDim2.new(0.33, 0, 1, 0)
-InfoTabButton.Position = UDim2.new(0, 0, 0, 0)
-InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-InfoTabButton.Text = "Info"
-InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-InfoTabButton.TextSize = 14
-InfoTabButton.Font = Enum.Font.GothamBold
-InfoTabButton.Parent = TabsFrame
-
-local GameTabButton = Instance.new("TextButton")
-GameTabButton.Size = UDim2.new(0.33, 0, 1, 0)
-GameTabButton.Position = UDim2.new(0.33, 0, 0, 0)
-GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-GameTabButton.Text = "Main"
-GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-GameTabButton.TextSize = 14
-GameTabButton.Font = Enum.Font.GothamBold
-GameTabButton.Parent = TabsFrame
-
-local KeksTabButton = Instance.new("TextButton")
-KeksTabButton.Size = UDim2.new(0.34, 0, 1, 0)
-KeksTabButton.Position = UDim2.new(0.66, 0, 0, 0)
-KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-KeksTabButton.Text = "Bring"
-KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-KeksTabButton.TextSize = 14
-KeksTabButton.Font = Enum.Font.GothamBold
-KeksTabButton.Parent = TabsFrame
-
--- Основной контейнер с прокруткой
-local ScrollContainer = Instance.new("ScrollingFrame")
-ScrollContainer.Size = UDim2.new(1, -10, 1, -80)
-ScrollContainer.Position = UDim2.new(0, 5, 0, 75)
-ScrollContainer.BackgroundTransparency = 1
-ScrollContainer.BorderSizePixel = 0
-ScrollContainer.ScrollBarThickness = 8
-ScrollContainer.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-ScrollContainer.VerticalScrollBarInset = Enum.ScrollBarInset.Always
-ScrollContainer.AutomaticCanvasSize = Enum.AutomaticSize.Y
-ScrollContainer.Parent = MainFrame
-
--- Content frames
-local ContentFrame = Instance.new("Frame")
-ContentFrame.Size = UDim2.new(1, 0, 0, 0)
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.AutomaticSize = Enum.AutomaticSize.Y
-ContentFrame.Parent = ScrollContainer
-
--- Info Tab Content
-local InfoTab = Instance.new("Frame")
-InfoTab.Size = UDim2.new(1, 0, 0, 0)
-InfoTab.BackgroundTransparency = 1
-InfoTab.BorderSizePixel = 0
-InfoTab.AutomaticSize = Enum.AutomaticSize.Y
-InfoTab.Visible = true
-InfoTab.Parent = ContentFrame
-
-local InfoListLayout = Instance.new("UIListLayout")
-InfoListLayout.Padding = UDim.new(0, 8)
-InfoListLayout.Parent = InfoTab
-
--- Game Tab Content
-local GameTab = Instance.new("Frame")
-GameTab.Size = UDim2.new(1, 0, 0, 0)
-GameTab.BackgroundTransparency = 1
-GameTab.BorderSizePixel = 0
-GameTab.AutomaticSize = Enum.AutomaticSize.Y
-GameTab.Visible = false
-GameTab.Parent = ContentFrame
-
-local GameListLayout = Instance.new("UIListLayout")
-GameListLayout.Padding = UDim.new(0, 8)
-GameListLayout.Parent = GameTab
-
--- Keks Tab Content
-local KeksTab = Instance.new("Frame")
-KeksTab.Size = UDim2.new(1, 0, 0, 0)
-KeksTab.BackgroundTransparency = 1
-KeksTab.BorderSizePixel = 0
-KeksTab.AutomaticSize = Enum.AutomaticSize.Y
-KeksTab.Visible = false
-KeksTab.Parent = ContentFrame
-
-local KeksListLayout = Instance.new("UIListLayout")
-KeksListLayout.Padding = UDim.new(0, 8)
-KeksListLayout.Parent = KeksTab
-
--- Переменные для сохранения позиции прокрутки
-local LastScrollPositions = {
-    Info = Vector2.new(0, 0),
-    Game = Vector2.new(0, 0),
-    Keks = Vector2.new(0, 0)
-}
-local CurrentTab = "Info"
-
--- Переменные для функций (будут обновляться из настроек)
-local ActiveKillAura = Settings.ActiveKillAura
-local ActiveAutoChopTree = Settings.ActiveAutoChopTree
-local DistanceForKillAura = Settings.DistanceForKillAura
-local DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
-
--- Переменные для изменения размера
-local Resizing = false
-local ResizeStart = nil
-local StartSize = nil
-
--- Переменные для перемещения меню
-local Dragging = false
-local DragStartPos = nil
-local MenuStartPos = nil
-
--- Координаты костра
-local CampfirePosition = Vector3.new(0, 10, 0)
-
--- Новые переменные для телепортации предметов (будут обновляться из настроек)
-local BringCount = Settings.BringCount
-local BringDelay = Settings.BringDelay
-
--- Новая переменная для выбора цели телепортации (будет обновляться из настроек)
-local TeleportTarget = Settings.TeleportTarget
-
--- Функция создания элементов UI
-local function CreateSection(parent, title)
-    local section = Instance.new("Frame")
-    section.Size = UDim2.new(1, 0, 0, 0)
-    section.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    section.BorderSizePixel = 0
-    section.AutomaticSize = Enum.AutomaticSize.Y
-    section.Parent = parent
-    
-    local sectionCorner = Instance.new("UICorner")
-    sectionCorner.CornerRadius = UDim.new(0, 6)
-    sectionCorner.Parent = section
-    
-    local sectionTitle = Instance.new("TextLabel")
-    sectionTitle.Size = UDim2.new(1, -10, 0, 25)
-    sectionTitle.Position = UDim2.new(0, 5, 0, 0)
-    sectionTitle.BackgroundTransparency = 1
-    sectionTitle.Text = title
-    sectionTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sectionTitle.TextSize = 14
-    sectionTitle.TextXAlignment = Enum.TextXAlignment.Left
-    sectionTitle.Font = Enum.Font.GothamBold
-    sectionTitle.Parent = section
-    
-    local content = Instance.new("Frame")
-    content.Size = UDim2.new(1, -10, 0, 0)
-    content.Position = UDim2.new(0, 5, 0, 25)
-    content.BackgroundTransparency = 1
-    content.AutomaticSize = Enum.AutomaticSize.Y
-    content.Parent = section
-    
-    local contentLayout = Instance.new("UIListLayout")
-    contentLayout.Padding = UDim.new(0, 5)
-    contentLayout.Parent = content
-    
-    -- Автоматическое обновление размера секции
-    contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        section.Size = UDim2.new(1, 0, 0, 25 + contentLayout.AbsoluteContentSize.Y)
-    end)
-    
-    return section, content
-end
-
-local function CreateToggle(parent, text, callback)
+-- Функции для UI элементов
+local function CreateToggle(parent, text, callback, isActive)
     local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, 0, 0, 30)
-    toggleFrame.BackgroundTransparency = 1
+    toggleFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    toggleFrame.BackgroundTransparency = 0.3
+    toggleFrame.BorderSizePixel = 0
+    toggleFrame.ZIndex = 2
     toggleFrame.Parent = parent
     
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    Corner.Parent = toggleFrame
+    
+    local toggleLabel = Instance.new("TextLabel")
+    toggleLabel.Name = "ToggleLabel"
+    toggleLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    toggleLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    toggleLabel.BackgroundTransparency = 1
+    toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleLabel.Text = text
+    toggleLabel.Font = Enum.Font.Gotham
+    toggleLabel.TextSize = 16 -- Увеличен размер текста
+    toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    toggleLabel.ZIndex = 3
+    toggleLabel.Parent = toggleFrame
+    
     local toggleButton = Instance.new("TextButton")
-    toggleButton.Size = UDim2.new(1, 0, 1, 0)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    toggleButton.Text = ""
+    toggleButton.Name = "ToggleButton"
+    toggleButton.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    toggleButton.Position = UDim2.new(0.7, 0, 0.15, 0)
+    toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    toggleButton.BackgroundTransparency = 0.2
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Text = isActive and "ON" or "OFF"
+    toggleButton.Font = Enum.Font.Gotham
+    toggleButton.TextSize = 14 -- Увеличен размер текста
+    toggleButton.ZIndex = 3
     toggleButton.Parent = toggleFrame
     
     local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 4)
+    toggleCorner.CornerRadius = UDim.new(0, 6) -- Увеличен радиус
     toggleCorner.Parent = toggleButton
     
-    local toggleText = Instance.new("TextLabel")
-    toggleText.Size = UDim2.new(0.7, 0, 1, 0)
-    toggleText.Position = UDim2.new(0, 8, 0, 0)
-    toggleText.BackgroundTransparency = 1
-    toggleText.Text = text
-    toggleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleText.TextSize = 12
-    toggleText.TextXAlignment = Enum.TextXAlignment.Left
-    toggleText.Font = Enum.Font.Gotham
-    toggleText.Parent = toggleButton
-    
-    local toggleStatus = Instance.new("Frame")
-    toggleStatus.Size = UDim2.new(0, 20, 0, 20)
-    toggleStatus.Position = UDim2.new(1, -25, 0.5, -10)
-    toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-    toggleStatus.Parent = toggleButton
-    
-    local toggleStatusCorner = Instance.new("UICorner")
-    toggleStatusCorner.CornerRadius = UDim.new(0, 10)
-    toggleStatusCorner.Parent = toggleStatus
-    
-    local isToggled = false
-    
-    local function updateToggle()
-        if isToggled then
-            toggleStatus.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-        else
-            toggleStatus.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-        end
-    end
-    
     toggleButton.MouseButton1Click:Connect(function()
-        isToggled = not isToggled
-        updateToggle()
-        callback(isToggled)
+        isActive = not isActive
+        toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+        toggleButton.Text = isActive and "ON" or "OFF"
+        callback(isActive)
         SaveSettings()
     end)
     
-    updateToggle()
-    
     return {
         Set = function(value)
-            isToggled = value
-            updateToggle()
-            callback(value)
+            isActive = value
+            toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+            toggleButton.Text = isActive and "ON" or "OFF"
         end
     }
 end
 
-local function CreateSlider(parent, text, min, max, defaultValue, callback)
+local function CreateSlider(parent, text, min, max, default, callback)
     local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, 0, 0, 50)
-    sliderFrame.BackgroundTransparency = 1
+    sliderFrame.Size = UDim2.new(1, 0, 0, 70) -- Увеличена высота
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    sliderFrame.BackgroundTransparency = 0.3
+    sliderFrame.BorderSizePixel = 0
+    sliderFrame.ZIndex = 2
     sliderFrame.Parent = parent
     
+    local sliderCorner = Instance.new("UICorner")
+    sliderCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    sliderCorner.Parent = sliderFrame
+    
     local sliderText = Instance.new("TextLabel")
-    sliderText.Size = UDim2.new(1, 0, 0, 20)
+    sliderText.Size = UDim2.new(1, 0, 0, 30) -- Увеличена высота
     sliderText.BackgroundTransparency = 1
-    sliderText.Text = text .. ": " .. defaultValue
+    sliderText.Text = text .. ": " .. default
     sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sliderText.TextSize = 12
+    sliderText.TextSize = 14 -- Увеличен размер текста
     sliderText.TextXAlignment = Enum.TextXAlignment.Left
+    sliderText.Position = UDim2.new(0, 15, 0, 5) -- Увеличен отступ
     sliderText.Font = Enum.Font.Gotham
+    sliderText.ZIndex = 3
     sliderText.Parent = sliderFrame
     
     local sliderBar = Instance.new("Frame")
-    sliderBar.Size = UDim2.new(1, 0, 0, 15)
-    sliderBar.Position = UDim2.new(0, 0, 0, 20)
-    sliderBar.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    sliderBar.Size = UDim2.new(1, -30, 0, 15) -- Увеличены размеры и отступы
+    sliderBar.Position = UDim2.new(0, 15, 0, 40)
+    sliderBar.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+    sliderBar.ZIndex = 3
     sliderBar.Parent = sliderFrame
     
-    local sliderBarCorner = Instance.new("UICorner")
-    sliderBarCorner.CornerRadius = UDim.new(0, 7)
-    sliderBarCorner.Parent = sliderBar
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    barCorner.Parent = sliderBar
     
     local sliderFill = Instance.new("Frame")
-    sliderFill.Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    sliderFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    sliderFill.ZIndex = 4
     sliderFill.Parent = sliderBar
     
-    local sliderFillCorner = Instance.new("UICorner")
-    sliderFillCorner.CornerRadius = UDim.new(0, 7)
-    sliderFillCorner.Parent = sliderFill
-    
-    local sliderButton = Instance.new("TextButton")
-    sliderButton.Size = UDim2.new(1, 0, 1, 0)
-    sliderButton.BackgroundTransparency = 1
-    sliderButton.Text = ""
-    sliderButton.Parent = sliderBar
+    local fillCorner = Instance.new("UICorner")
+    fillCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    fillCorner.Parent = sliderFill
     
     local isDragging = false
+    local connection = nil
     
     local function updateSlider(value)
-        local normalized = math.clamp((value - min) / (max - min), 0, 1)
-        sliderFill.Size = UDim2.new(normalized, 0, 1, 0)
+        local norm = math.clamp((value - min) / (max - min), 0, 1)
+        sliderFill.Size = UDim2.new(norm, 0, 1, 0)
         sliderText.Text = text .. ": " .. math.floor(value)
         callback(value)
     end
     
-    sliderButton.InputBegan:Connect(function(input)
-        isDragging = true
+    sliderBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+            connection = RunService.Heartbeat:Connect(function()
+                local mouseLocation = UserInputService:GetMouseLocation()
+                local relativeX = math.clamp((mouseLocation.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X, 0, 1)
+                local value = min + relativeX * (max - min)
+                updateSlider(value)
+            end)
+        end
     end)
     
-    sliderButton.InputEnded:Connect(function(input)
-        isDragging = false
-        SaveSettings() -- Сохраняем настройки после изменения слайдера
+    sliderBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = false
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+            SaveSettings()
+        end
     end)
     
-    local function onInputChanged(input)
-        if isDragging then
-            local relativeX = input.Position.X - sliderBar.AbsolutePosition.X
-            local normalized = math.clamp(relativeX / sliderBar.AbsoluteSize.X, 0, 1)
-            local value = min + normalized * (max - min)
-            updateSlider(value)
-        end
-    end
-    
-    UserInputService.InputChanged:Connect(onInputChanged)
-    
-    updateSlider(defaultValue)
-    
-    return {
-        Update = function(value)
-            updateSlider(value)
-        end
-    }
-end
-
-local function CreateLabel(parent, text)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 0)
-    label.BackgroundTransparency = 1
-    label.Text = text
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
-    label.TextSize = 12
-    label.TextWrapped = true
-    label.Font = Enum.Font.Gotham
-    label.Parent = parent
-    label.AutomaticSize = Enum.AutomaticSize.Y
-    return label
+    updateSlider(default)
 end
 
 local function CreateButton(parent, text, callback)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 35)
-    button.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
+    button.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    button.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    button.BackgroundTransparency = 0.3
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 14
+    button.TextSize = 14 -- Увеличен размер текста
     button.Font = Enum.Font.Gotham
+    button.ZIndex = 2
     button.Parent = parent
     
     local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
     buttonCorner.Parent = button
     
     button.MouseButton1Click:Connect(callback)
@@ -615,971 +266,1599 @@ local function CreateButton(parent, text, callback)
     return button
 end
 
--- Функция для создания текстового поля ввода
-local function CreateTextBox(parent, text, defaultValue, callback)
-    local textBoxFrame = Instance.new("Frame")
-    textBoxFrame.Size = UDim2.new(1, 0, 0, 40)
-    textBoxFrame.BackgroundTransparency = 1
-    textBoxFrame.Parent = parent
+-- Функция создания FOV Circle
+local function createFOVCircle()
+    if fovCircle then
+        fovCircle:Remove()
+    end
     
-    local textBoxLabel = Instance.new("TextLabel")
-    textBoxLabel.Size = UDim2.new(0.5, -5, 0, 20)
-    textBoxLabel.Position = UDim2.new(0, 0, 0, 0)
-    textBoxLabel.BackgroundTransparency = 1
-    textBoxLabel.Text = text
-    textBoxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textBoxLabel.TextSize = 12
-    textBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textBoxLabel.Font = Enum.Font.Gotham
-    textBoxLabel.Parent = textBoxFrame
-    
-    local textBox = Instance.new("TextBox")
-    textBox.Size = UDim2.new(0.5, -5, 0, 30)
-    textBox.Position = UDim2.new(0.5, 5, 0, 0)
-    textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textBox.Text = tostring(defaultValue)
-    textBox.TextSize = 14
-    textBox.Font = Enum.Font.Gotham
-    textBox.Parent = textBoxFrame
-    
-    local textBoxCorner = Instance.new("UICorner")
-    textBoxCorner.CornerRadius = UDim.new(0, 6)
-    textBoxCorner.Parent = textBox
-    
-    textBox.FocusLost:Connect(function()
-        local value = tonumber(textBox.Text)
-        if value then
-            callback(value)
-            SaveSettings() -- Сохраняем настройки после изменения текстового поля
-        else
-            textBox.Text = tostring(defaultValue)
-            ShowNotification("Please enter a valid number!", 2)
-        end
-    end)
-    
-    return textBox
+    fovCircle = Drawing.new("Circle")
+    fovCircle.Visible = false
+    fovCircle.Color = Color3.fromRGB(255, 0, 0)
+    fovCircle.Thickness = 1
+    fovCircle.Filled = false
+    fovCircle.Radius = aimBotFOV
+    fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
 end
 
--- Функция для создания выпадающего списка
-local function CreateDropdown(parent, options, defaultOption, callback)
-    local dropdownFrame = Instance.new("Frame")
-    dropdownFrame.Size = UDim2.new(1, 0, 0, 35)
-    dropdownFrame.BackgroundTransparency = 1
-    dropdownFrame.Parent = parent
-    
-    local dropdownButton = Instance.new("TextButton")
-    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
-    dropdownButton.BackgroundColor3 = Color3.fromRGB(65, 65, 65)
-    dropdownButton.Text = defaultOption or options[1]
-    dropdownButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dropdownButton.TextSize = 14
-    dropdownButton.Font = Enum.Font.Gotham
-    dropdownButton.Parent = dropdownFrame
-    
-    local dropdownCorner = Instance.new("UICorner")
-    dropdownCorner.CornerRadius = UDim.new(0, 6)
-    dropdownCorner.Parent = dropdownButton
-    
-    local dropdownList = Instance.new("ScrollingFrame")
-    dropdownList.Size = UDim2.new(1, 0, 0, 0)
-    dropdownList.Position = UDim2.new(0, 0, 1, 5)
-    dropdownList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-    dropdownList.BorderSizePixel = 0
-    dropdownList.ScrollBarThickness = 6
-    dropdownList.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    dropdownList.Visible = false
-    dropdownList.ZIndex = 5
-    dropdownList.Parent = ScreenGui  -- Делаем дочерним элементом ScreenGui чтобы был поверх всего
-    
-    local listLayout = Instance.new("UIListLayout")
-    listLayout.Parent = dropdownList
-    
-    local isOpen = false
-    local selectedOption = defaultOption or options[1]
-    
-    local function updateDropdownPosition()
-        if dropdownButton:IsDescendantOf(game) then
-            local buttonAbsolutePos = dropdownButton.AbsolutePosition
-            local buttonAbsoluteSize = dropdownButton.AbsoluteSize
-            
-            dropdownList.Position = UDim2.new(0, buttonAbsolutePos.X, 0, buttonAbsolutePos.Y + buttonAbsoluteSize.Y + 5)
-            dropdownList.Size = UDim2.new(0, buttonAbsoluteSize.X, 0, math.min(#options * 35, 140))
-        end
+-- Функция обновления FOV Circle
+local function updateFOVCircle()
+    if fovCircle then
+        fovCircle.Radius = aimBotFOV
+        fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
     end
-    
-    local function toggleDropdown()
-        isOpen = not isOpen
-        if isOpen then
-            updateDropdownPosition()
-            dropdownList.Visible = true
+end
+
+-- Функция создания кнопки открытия/закрытия
+local function createOpenCloseButton()
+    if OpenCloseButton then
+        OpenCloseButton:Destroy()
+    end
+
+    OpenCloseButton = Instance.new("TextButton")
+    OpenCloseButton.Name = "OpenCloseButton"
+    OpenCloseButton.Size = UDim2.new(0, 70, 0, 70) -- Увеличен размер
+    OpenCloseButton.Position = savedButtonPosition
+    OpenCloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+    OpenCloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    OpenCloseButton.Text = "≡"
+    OpenCloseButton.Font = Enum.Font.GothamBold
+    OpenCloseButton.TextSize = 28 -- Увеличен размер текста
+    OpenCloseButton.ZIndex = 10
+    OpenCloseButton.Active = true
+    OpenCloseButton.Draggable = true
+    OpenCloseButton.Parent = ScreenGui
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10) -- Увеличен радиус
+    Corner.Parent = OpenCloseButton
+
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(255, 255, 255)
+    Stroke.Thickness = 2
+    Stroke.Parent = OpenCloseButton
+
+    -- Обработчик нажатия
+    OpenCloseButton.MouseButton1Click:Connect(function()
+        isGuiOpen = not isGuiOpen
+        
+        -- Закрываем/открываем текущее активное меню
+        if currentActiveMenu then
+            currentActiveMenu.Visible = isGuiOpen
+        end
+        
+        if isGuiOpen then
+            OpenCloseButton.Text = "≡"
+            OpenCloseButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
         else
-            dropdownList.Visible = false
-        end
-    end
-    
-    dropdownButton.MouseButton1Click:Connect(toggleDropdown)
-    
-    -- Обновляем позицию при изменении размера экрана
-    game:GetService("RunService").Heartbeat:Connect(function()
-        if isOpen then
-            updateDropdownPosition()
+            OpenCloseButton.Text = "≡"
+            OpenCloseButton.BackgroundColor3 = Color3.fromRGB(150, 0, 0)
         end
     end)
+
+    -- Сохраняем позицию кнопки при перетаскивании
+    OpenCloseButton.DragStopped:Connect(function()
+        savedButtonPosition = OpenCloseButton.Position
+    end)
+end
+
+-- Функция для переключения кнопок
+local function toggleButton(button, enabled)
+    if enabled then
+        button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        button.Text = "ON"
+    else
+        button.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+        button.Text = "OFF"
+    end
+end
+
+-- Функция очистки ESP
+local function cleanupESP(otherPlayer)
+    if espObjects[otherPlayer] then
+        if espObjects[otherPlayer].tracer then
+            espObjects[otherPlayer].tracer:Remove()
+        end
+        if espObjects[otherPlayer].box then
+            espObjects[otherPlayer].box:Remove()
+        end
+        if espObjects[otherPlayer].health then
+            espObjects[otherPlayer].health:Remove()
+        end
+        if espObjects[otherPlayer].distance then
+            espObjects[otherPlayer].distance:Remove()
+        end
+        espObjects[otherPlayer] = nil
+    end
     
-    for _, option in ipairs(options) do
-        local optionButton = Instance.new("TextButton")
-        optionButton.Size = UDim2.new(1, 0, 0, 35)
-        optionButton.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
-        optionButton.Text = option
-        optionButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        optionButton.TextSize = 14
-        optionButton.Font = Enum.Font.Gotham
-        optionButton.ZIndex = 6
-        optionButton.Parent = dropdownList
+    if espConnections[otherPlayer] then
+        espConnections[otherPlayer]:Disconnect()
+        espConnections[otherPlayer] = nil
+    end
+end
+
+-- ESP Functions
+local function createESP(otherPlayer)
+    if otherPlayer == player then return end
+    
+    cleanupESP(otherPlayer)
+    
+    espObjects[otherPlayer] = {
+        tracer = nil,
+        box = nil,
+        health = nil,
+        distance = nil
+    }
+    
+    local function updateESP()
+        if not espObjects[otherPlayer] then return end
         
-        local optionCorner = Instance.new("UICorner")
-        optionCorner.CornerRadius = UDim.new(0, 6)
-        optionCorner.Parent = optionButton
+        -- Check if player is dead or doesn't exist
+        if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
+            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
+            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
+            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+            return
+        end
         
-        optionButton.MouseButton1Click:Connect(function()
-            selectedOption = option
-            dropdownButton.Text = option
-            toggleDropdown()
-            if callback then
-                callback(option)
-                SaveSettings() -- Сохраняем настройки после изменения выпадающего списка
+        local rootPart = otherPlayer.Character.HumanoidRootPart
+        local humanoid = otherPlayer.Character.Humanoid
+        local head = otherPlayer.Character:FindFirstChild("Head")
+        
+        if not head then return end
+        
+        -- Check if player is dead
+        if humanoid.Health <= 0 then
+            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
+            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
+            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+            return
+        end
+        
+        local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+        
+        if onScreen then
+            -- Tracer
+            if espTracersEnabled then
+                if not espObjects[otherPlayer].tracer then
+                    espObjects[otherPlayer].tracer = Drawing.new("Line")
+                    espObjects[otherPlayer].tracer.Thickness = 1
+                    espObjects[otherPlayer].tracer.Color = Color3.fromRGB(255, 0, 0)
+                end
+                
+                local screenCenter = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
+                espObjects[otherPlayer].tracer.From = screenCenter
+                espObjects[otherPlayer].tracer.To = Vector2.new(vector.X, vector.Y)
+                espObjects[otherPlayer].tracer.Visible = true
+            elseif espObjects[otherPlayer].tracer then
+                espObjects[otherPlayer].tracer.Visible = false
+            end
+            
+            -- Box ESP
+            if espBoxEnabled then
+                if not espObjects[otherPlayer].box then
+                    espObjects[otherPlayer].box = Drawing.new("Square")
+                    espObjects[otherPlayer].box.Thickness = 1
+                    espObjects[otherPlayer].box.Color = Color3.fromRGB(255, 0, 0)
+                    espObjects[otherPlayer].box.Filled = false
+                end
+                
+                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                local rootPos = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
+                
+                local size = Vector2.new(2000 / rootPos.Z, 3000 / rootPos.Z)
+                local position = Vector2.new(headPos.X - size.X / 2, headPos.Y - size.Y / 2)
+                
+                espObjects[otherPlayer].box.Size = size
+                espObjects[otherPlayer].box.Position = position
+                espObjects[otherPlayer].box.Visible = true
+            elseif espObjects[otherPlayer].box then
+                espObjects[otherPlayer].box.Visible = false
+            end
+            
+            -- Health ESP
+            if espHealthEnabled then
+                if not espObjects[otherPlayer].health then
+                    espObjects[otherPlayer].health = Drawing.new("Text")
+                    espObjects[otherPlayer].health.Size = 14
+                    espObjects[otherPlayer].health.Center = true
+                    espObjects[otherPlayer].health.Outline = true
+                    espObjects[otherPlayer].health.Color = Color3.fromRGB(255, 0, 0)
+                end
+                
+                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                espObjects[otherPlayer].health.Position = Vector2.new(headPos.X, headPos.Y - 40)
+                espObjects[otherPlayer].health.Text = "HP: " .. math.floor(humanoid.Health)
+                espObjects[otherPlayer].health.Visible = true
+            elseif espObjects[otherPlayer].health then
+                espObjects[otherPlayer].health.Visible = false
+            end
+            
+            -- Distance ESP
+            if espDistanceEnabled then
+                if not espObjects[otherPlayer].distance then
+                    espObjects[otherPlayer].distance = Drawing.new("Text")
+                    espObjects[otherPlayer].distance.Size = 14
+                    espObjects[otherPlayer].distance.Center = true
+                    espObjects[otherPlayer].distance.Outline = true
+                    espObjects[otherPlayer].distance.Color = Color3.fromRGB(255, 0, 0)
+                end
+                
+                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+                local distance = (player.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
+                espObjects[otherPlayer].distance.Position = Vector2.new(headPos.X, headPos.Y - 60)
+                espObjects[otherPlayer].distance.Text = "Distance: " .. math.floor(distance)
+                espObjects[otherPlayer].distance.Visible = true
+            elseif espObjects[otherPlayer].distance then
+                espObjects[otherPlayer].distance.Visible = false
+            end
+        else
+            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
+            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
+            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
+            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+        end
+    end
+    
+    -- Update ESP continuously
+    espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
+    
+    -- Clean up when player leaves
+    otherPlayer.AncestryChanged:Connect(function()
+        if not otherPlayer.Parent then
+            cleanupESP(otherPlayer)
+        end
+    end)
+end
+
+-- ESP Count Function
+local function updateESPCount()
+    if not espCountEnabled or not espCountText then return end
+    
+    local aliveCount = 0
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
+            aliveCount = aliveCount + 1
+        end
+    end
+    
+    espCountText.Text = "Players: " .. aliveCount
+    espCountText.Visible = true
+end
+
+-- Improved AimBot with wall check and FOV
+local function isPlayerVisible(targetPlayer)
+    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        return false
+    end
+    
+    local targetRoot = targetPlayer.Character.HumanoidRootPart
+    local camera = workspace.CurrentCamera
+    local origin = camera.CFrame.Position
+    
+    -- Raycast to target
+    local direction = (targetRoot.Position - origin).Unit
+    local ray = Ray.new(origin, direction * 1000)
+    
+    local ignoreList = {player.Character, camera}
+    local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
+    
+    if hit then
+        -- Check if we hit the target player
+        local hitModel = hit:FindFirstAncestorOfClass("Model")
+        if hitModel and hitModel == targetPlayer.Character then
+            return true
+        end
+    end
+    
+    return false
+end
+
+-- Check if target is within FOV circle
+local function isInFOV(targetPosition)
+    local camera = workspace.CurrentCamera
+    local screenPoint, onScreen = camera:WorldToViewportPoint(targetPosition)
+    
+    if not onScreen then return false end
+    
+    local center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    local targetPoint = Vector2.new(screenPoint.X, screenPoint.Y)
+    local distance = (targetPoint - center).Magnitude
+    
+    return distance <= aimBotFOV
+end
+
+-- Функции из второго скрипта
+-- Kill Aura функция
+local function RunKillAura()
+    while ActiveKillAura do
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
+        
+        if hrp and weapon then
+            for _, enemy in pairs(workspace.Characters:GetChildren()) do
+                if enemy:IsA("Model") and enemy.PrimaryPart then
+                    local dist = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                    if dist <= DistanceForKillAura then
+                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                    end
+                end
+            end
+        end
+        wait(0.1)
+    end
+end
+
+-- Auto Chop функция
+local function RunAutoChop()
+    while ActiveAutoChopTree do
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
+        
+        if hrp and weapon then
+            for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                    local dist = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                    if dist <= DistanceForAutoChopTree then
+                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                    end
+                end
+            end
+        end
+        wait(0.1)
+    end
+end
+
+-- Bring Items функция
+local function BringItems(itemName)
+    local targetPos = CampfirePosition
+    local items = {}
+    
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemLower = item.Name:lower()
+            local searchLower = itemName:lower()
+            
+            if itemLower:find(searchLower) then
+                local part = item:FindFirstChildWhichIsA("BasePart")
+                if part then table.insert(items, part) end
+            end
+        end
+    end
+    
+    local teleported = 0
+    for i = 1, math.min(BringCount, #items) do
+        local item = items[i]
+        item.CFrame = CFrame.new(
+            targetPos.X + math.random(-3,3),
+            targetPos.Y + 3,
+            targetPos.Z + math.random(-3,3)
+        )
+        item.Anchored = false
+        item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+        teleported = teleported + 1
+        
+        if BringDelay > 0 then
+            wait(BringDelay / 1000)
+        end
+    end
+end
+
+-- Запускаем функции геймплея
+task.spawn(function()
+    while true do
+        if ActiveKillAura then
+            RunKillAura()
+        end
+        wait(1)
+    end
+end)
+
+task.spawn(function()
+    while true do
+        if ActiveAutoChopTree then
+            RunAutoChop()
+        end
+        wait(1)
+    end
+end)
+
+-- Функция создания главного меню выбора
+local function createMainMenu()
+    MainMenu = Instance.new("Frame")
+    MainMenu.Name = "MainMenu"
+    MainMenu.Size = UDim2.new(0, 400, 0, 220) -- Увеличена ширина и высота
+    MainMenu.Position = savedPosition
+    MainMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+    MainMenu.BackgroundTransparency = 0.3
+    MainMenu.BorderSizePixel = 0
+    MainMenu.Active = true
+    MainMenu.Draggable = true
+    MainMenu.Visible = isGuiOpen
+    MainMenu.Parent = ScreenGui
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10) -- Увеличен радиус
+    Corner.Parent = MainMenu
+
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    Title.Position = UDim2.new(0, 0, 0, 0)
+    Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    Title.BackgroundTransparency = 0.2
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = "SELECT GAME"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 18 -- Увеличен размер текста
+    Title.ZIndex = 2
+    Title.Parent = MainMenu
+
+    local GunButton = CreateButton(MainMenu, "GUNGAME", function()
+        MainMenu.Visible = false
+        GunMenu.Visible = true
+        currentActiveMenu = GunMenu
+    end)
+    GunButton.Position = UDim2.new(0, 15, 0, 60) -- Увеличен отступ
+    GunButton.Size = UDim2.new(1, -30, 0, 70) -- Увеличена высота и отступы
+
+    local NightsButton = CreateButton(MainMenu, "99 NIGHTS", function()
+        MainMenu.Visible = false
+        NightsMenu.Visible = true
+        currentActiveMenu = NightsMenu
+    end)
+    NightsButton.Position = UDim2.new(0, 15, 0, 140) -- Увеличен отступ
+    NightsButton.Size = UDim2.new(1, -30, 0, 70) -- Увеличена высота и отступы
+    
+    currentActiveMenu = MainMenu
+end
+
+-- Функция создания Gun Menu
+local function createGunMenu()
+    GunMenu = Instance.new("Frame")
+    GunMenu.Name = "GunMenu"
+    GunMenu.Size = UDim2.new(0, 400, 0, 550) -- Увеличена ширина и высота
+    GunMenu.Position = savedPosition
+    GunMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+    GunMenu.BackgroundTransparency = 0.3
+    GunMenu.BorderSizePixel = 0
+    GunMenu.Active = true
+    GunMenu.Draggable = true
+    GunMenu.Visible = false
+    GunMenu.Parent = ScreenGui
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10) -- Увеличен радиус
+    Corner.Parent = GunMenu
+
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    Title.Position = UDim2.new(0, 0, 0, 0)
+    Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    Title.BackgroundTransparency = 0.2
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = "GUNGAME MENU"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 18 -- Увеличен размер текста
+    Title.ZIndex = 2
+    Title.Parent = GunMenu
+
+    -- Вертикальные вкладки
+    local TabButtons = Instance.new("Frame")
+    TabButtons.Name = "TabButtons"
+    TabButtons.Size = UDim2.new(0, 120, 1, -50) -- Увеличена ширина
+    TabButtons.Position = UDim2.new(0, 0, 0, 50)
+    TabButtons.BackgroundTransparency = 0.2
+    TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    TabButtons.ZIndex = 2
+    TabButtons.Parent = GunMenu
+
+    local TabLayout = Instance.new("UIListLayout")
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Parent = TabButtons
+
+    local gunTabs = {
+        {name = "Movement", defaultActive = true},
+        {name = "Visual", defaultActive = false},
+        {name = "AimBot", defaultActive = false}
+    }
+
+    local gunTabButtons = {}
+    local gunTabContents = {}
+
+    for i, tab in ipairs(gunTabs) do
+        local tabButton = Instance.new("TextButton")
+        tabButton.Name = tab.name .. "Tab"
+        tabButton.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+        tabButton.LayoutOrder = i
+        tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
+        tabButton.BackgroundTransparency = 0.2
+        tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tabButton.Text = tab.name
+        tabButton.Font = Enum.Font.Gotham
+        tabButton.TextSize = 14 -- Увеличен размер текста
+        tabButton.ZIndex = 3
+        tabButton.Parent = TabButtons
+
+        local ContentFrame = Instance.new("ScrollingFrame")
+        ContentFrame.Name = tab.name .. "Content"
+        ContentFrame.Size = UDim2.new(1, -130, 1, -110) -- Учитываем ширину вкладок
+        ContentFrame.Position = UDim2.new(0, 130, 0, 110) -- Сдвиг для вкладок
+        ContentFrame.BackgroundTransparency = 1
+        ContentFrame.ScrollBarThickness = 6 -- Увеличена толщина
+        ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+        ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+        ContentFrame.Visible = tab.defaultActive
+        ContentFrame.ZIndex = 2
+        ContentFrame.Parent = GunMenu
+
+        local ContentLayout = Instance.new("UIListLayout")
+        ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        ContentLayout.Padding = UDim.new(0, 12) -- Увеличен отступ
+        ContentLayout.Parent = ContentFrame
+
+        gunTabButtons[tab.name] = tabButton
+        gunTabContents[tab.name] = ContentFrame
+    end
+
+    -- Movement Tab Content
+    local SpeedHackFrame = Instance.new("Frame")
+    SpeedHackFrame.Name = "SpeedHackFrame"
+    SpeedHackFrame.Size = UDim2.new(1, 0, 0, 90) -- Увеличена высота
+    SpeedHackFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    SpeedHackFrame.BackgroundTransparency = 0.3
+    SpeedHackFrame.BorderSizePixel = 0
+    SpeedHackFrame.ZIndex = 2
+    SpeedHackFrame.LayoutOrder = 1
+    SpeedHackFrame.Parent = gunTabContents["Movement"]
+
+    local SpeedHackCorner = Instance.new("UICorner")
+    SpeedHackCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    SpeedHackCorner.Parent = SpeedHackFrame
+
+    local SpeedHackLabel = Instance.new("TextLabel")
+    SpeedHackLabel.Name = "SpeedHackLabel"
+    SpeedHackLabel.Size = UDim2.new(0.6, 0, 0, 35) -- Увеличена высота
+    SpeedHackLabel.Position = UDim2.new(0, 15, 0, 10) -- Увеличен отступ
+    SpeedHackLabel.BackgroundTransparency = 1
+    SpeedHackLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SpeedHackLabel.Text = "Speed Hack"
+    SpeedHackLabel.Font = Enum.Font.Gotham
+    SpeedHackLabel.TextSize = 16 -- Увеличен размер текста
+    SpeedHackLabel.TextXAlignment = Enum.TextXAlignment.Left
+    SpeedHackLabel.ZIndex = 3
+    SpeedHackLabel.Parent = SpeedHackFrame
+
+    local SpeedHackToggle = Instance.new("TextButton")
+    SpeedHackToggle.Name = "SpeedHackToggle"
+    SpeedHackToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    SpeedHackToggle.Position = UDim2.new(0.7, 0, 0, 10)
+    SpeedHackToggle.BackgroundColor3 = speedHackEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    SpeedHackToggle.BackgroundTransparency = 0.2
+    SpeedHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SpeedHackToggle.Text = speedHackEnabled and "ON" or "OFF"
+    SpeedHackToggle.Font = Enum.Font.Gotham
+    SpeedHackToggle.TextSize = 14 -- Увеличен размер текста
+    SpeedHackToggle.ZIndex = 3
+    SpeedHackToggle.Parent = SpeedHackFrame
+
+    local SpeedHackSlider = Instance.new("Frame")
+    SpeedHackSlider.Name = "SpeedHackSlider"
+    SpeedHackSlider.Size = UDim2.new(1, -30, 0, 35) -- Увеличены размеры и отступы
+    SpeedHackSlider.Position = UDim2.new(0, 15, 0, 50)
+    SpeedHackSlider.BackgroundColor3 = Color3.fromRGB(80, 0, 0)
+    SpeedHackSlider.BackgroundTransparency = 0.3
+    SpeedHackSlider.BorderSizePixel = 0
+    SpeedHackSlider.Visible = speedHackEnabled
+    SpeedHackSlider.ZIndex = 3
+    SpeedHackSlider.Parent = SpeedHackFrame
+
+    local SpeedHackSliderCorner = Instance.new("UICorner")
+    SpeedHackSliderCorner.CornerRadius = UDim.new(0, 6) -- Увеличен радиус
+    SpeedHackSliderCorner.Parent = SpeedHackSlider
+
+    local SpeedValue = Instance.new("TextLabel")
+    SpeedValue.Name = "SpeedValue"
+    SpeedValue.Size = UDim2.new(1, 0, 1, 0)
+    SpeedValue.BackgroundTransparency = 1
+    SpeedValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SpeedValue.Text = "Speed: " .. currentSpeed
+    SpeedValue.Font = Enum.Font.Gotham
+    SpeedValue.TextSize = 14 -- Увеличен размер текста
+    SpeedValue.ZIndex = 4
+    SpeedValue.Parent = SpeedHackSlider
+
+    -- Jump Hack
+    local JumpHackFrame = Instance.new("Frame")
+    JumpHackFrame.Name = "JumpHackFrame"
+    JumpHackFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    JumpHackFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    JumpHackFrame.BackgroundTransparency = 0.3
+    JumpHackFrame.BorderSizePixel = 0
+    JumpHackFrame.ZIndex = 2
+    JumpHackFrame.LayoutOrder = 2
+    JumpHackFrame.Parent = gunTabContents["Movement"]
+
+    local JumpHackCorner = Instance.new("UICorner")
+    JumpHackCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    JumpHackCorner.Parent = JumpHackFrame
+
+    local JumpHackLabel = Instance.new("TextLabel")
+    JumpHackLabel.Name = "JumpHackLabel"
+    JumpHackLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    JumpHackLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    JumpHackLabel.BackgroundTransparency = 1
+    JumpHackLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    JumpHackLabel.Text = "Jump Hack"
+    JumpHackLabel.Font = Enum.Font.Gotham
+    JumpHackLabel.TextSize = 16 -- Увеличен размер текста
+    JumpHackLabel.TextXAlignment = Enum.TextXAlignment.Left
+    JumpHackLabel.ZIndex = 3
+    JumpHackLabel.Parent = JumpHackFrame
+
+    local JumpHackToggle = Instance.new("TextButton")
+    JumpHackToggle.Name = "JumpHackToggle"
+    JumpHackToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    JumpHackToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
+    JumpHackToggle.BackgroundColor3 = jumpHackEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    JumpHackToggle.BackgroundTransparency = 0.2
+    JumpHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    JumpHackToggle.Text = jumpHackEnabled and "ON" or "OFF"
+    JumpHackToggle.Font = Enum.Font.Gotham
+    JumpHackToggle.TextSize = 14 -- Увеличен размер текста
+    JumpHackToggle.ZIndex = 3
+    JumpHackToggle.Parent = JumpHackFrame
+
+    -- NoClip
+    local NoClipFrame = Instance.new("Frame")
+    NoClipFrame.Name = "NoClipFrame"
+    NoClipFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    NoClipFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    NoClipFrame.BackgroundTransparency = 0.3
+    NoClipFrame.BorderSizePixel = 0
+    NoClipFrame.ZIndex = 2
+    NoClipFrame.LayoutOrder = 3
+    NoClipFrame.Parent = gunTabContents["Movement"]
+
+    local NoClipCorner = Instance.new("UICorner")
+    NoClipCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    NoClipCorner.Parent = NoClipFrame
+
+    local NoClipLabel = Instance.new("TextLabel")
+    NoClipLabel.Name = "NoClipLabel"
+    NoClipLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    NoClipLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    NoClipLabel.BackgroundTransparency = 1
+    NoClipLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NoClipLabel.Text = "NoClip"
+    NoClipLabel.Font = Enum.Font.Gotham
+    NoClipLabel.TextSize = 16 -- Увеличен размер текста
+    NoClipLabel.TextXAlignment = Enum.TextXAlignment.Left
+    NoClipLabel.ZIndex = 3
+    NoClipLabel.Parent = NoClipFrame
+
+    local NoClipToggle = Instance.new("TextButton")
+    NoClipToggle.Name = "NoClipToggle"
+    NoClipToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    NoClipToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
+    NoClipToggle.BackgroundColor3 = noclipEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    NoClipToggle.BackgroundTransparency = 0.2
+    NoClipToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    NoClipToggle.Text = noclipEnabled and "ON" or "OFF"
+    NoClipToggle.Font = Enum.Font.Gotham
+    NoClipToggle.TextSize = 14 -- Увеличен размер текста
+    NoClipToggle.ZIndex = 3
+    NoClipToggle.Parent = NoClipFrame
+
+    -- Visual Tab Content
+    local ESPTracersFrame = Instance.new("Frame")
+    ESPTracersFrame.Name = "ESPTracersFrame"
+    ESPTracersFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    ESPTracersFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    ESPTracersFrame.BackgroundTransparency = 0.3
+    ESPTracersFrame.BorderSizePixel = 0
+    ESPTracersFrame.ZIndex = 2
+    ESPTracersFrame.LayoutOrder = 1
+    ESPTracersFrame.Parent = gunTabContents["Visual"]
+
+    local ESPTracersCorner = Instance.new("UICorner")
+    ESPTracersCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    ESPTracersCorner.Parent = ESPTracersFrame
+
+    local ESPTracersLabel = Instance.new("TextLabel")
+    ESPTracersLabel.Name = "ESPTracersLabel"
+    ESPTracersLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    ESPTracersLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    ESPTracersLabel.BackgroundTransparency = 1
+    ESPTracersLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPTracersLabel.Text = "ESP Tracers"
+    ESPTracersLabel.Font = Enum.Font.Gotham
+    ESPTracersLabel.TextSize = 16 -- Увеличен размер текста
+    ESPTracersLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPTracersLabel.ZIndex = 3
+    ESPTracersLabel.Parent = ESPTracersFrame
+
+    local ESPTracersToggle = Instance.new("TextButton")
+    ESPTracersToggle.Name = "ESPTracersToggle"
+    ESPTracersToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    ESPTracersToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
+    ESPTracersToggle.BackgroundColor3 = espTracersEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    ESPTracersToggle.BackgroundTransparency = 0.2
+    ESPTracersToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPTracersToggle.Text = espTracersEnabled and "ON" or "OFF"
+    ESPTracersToggle.Font = Enum.Font.Gotham
+    ESPTracersToggle.TextSize = 14 -- Увеличен размер текста
+    ESPTracersToggle.ZIndex = 3
+    ESPTracersToggle.Parent = ESPTracersFrame
+
+    -- ESP Box
+    local ESPBoxFrame = Instance.new("Frame")
+    ESPBoxFrame.Name = "ESPBoxFrame"
+    ESPBoxFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    ESPBoxFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    ESPBoxFrame.BackgroundTransparency = 0.3
+    ESPBoxFrame.BorderSizePixel = 0
+    ESPBoxFrame.ZIndex = 2
+    ESPBoxFrame.LayoutOrder = 2
+    ESPBoxFrame.Parent = gunTabContents["Visual"]
+
+    local ESPBoxCorner = Instance.new("UICorner")
+    ESPBoxCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    ESPBoxCorner.Parent = ESPBoxFrame
+
+    local ESPBoxLabel = Instance.new("TextLabel")
+    ESPBoxLabel.Name = "ESPBoxLabel"
+    ESPBoxLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    ESPBoxLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    ESPBoxLabel.BackgroundTransparency = 1
+    ESPBoxLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPBoxLabel.Text = "ESP Box"
+    ESPBoxLabel.Font = Enum.Font.Gotham
+    ESPBoxLabel.TextSize = 16 -- Увеличен размер текста
+    ESPBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPBoxLabel.ZIndex = 3
+    ESPBoxLabel.Parent = ESPBoxFrame
+
+    local ESPBoxToggle = Instance.new("TextButton")
+    ESPBoxToggle.Name = "ESPBoxToggle"
+    ESPBoxToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    ESPBoxToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
+    ESPBoxToggle.BackgroundColor3 = espBoxEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    ESPBoxToggle.BackgroundTransparency = 0.2
+    ESPBoxToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPBoxToggle.Text = espBoxEnabled and "ON" or "OFF"
+    ESPBoxToggle.Font = Enum.Font.Gotham
+    ESPBoxToggle.TextSize = 14 -- Увеличен размер текста
+    ESPBoxToggle.ZIndex = 3
+    ESPBoxToggle.Parent = ESPBoxFrame
+
+    -- ESP Health
+    local ESPHealthFrame = Instance.new("Frame")
+    ESPHealthFrame.Name = "ESPHealthFrame"
+    ESPHealthFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    ESPHealthFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    ESPHealthFrame.BackgroundTransparency = 0.3
+    ESPHealthFrame.BorderSizePixel = 0
+    ESPHealthFrame.ZIndex = 2
+    ESPHealthFrame.LayoutOrder = 3
+    ESPHealthFrame.Parent = gunTabContents["Visual"]
+
+    local ESPHealthCorner = Instance.new("UICorner")
+    ESPHealthCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    ESPHealthCorner.Parent = ESPHealthFrame
+
+    local ESPHealthLabel = Instance.new("TextLabel")
+    ESPHealthLabel.Name = "ESPHealthLabel"
+    ESPHealthLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    ESPHealthLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    ESPHealthLabel.BackgroundTransparency = 1
+    ESPHealthLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPHealthLabel.Text = "ESP Health"
+    ESPHealthLabel.Font = Enum.Font.Gotham
+    ESPHealthLabel.TextSize = 16 -- Увеличен размер текста
+    ESPHealthLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPHealthLabel.ZIndex = 3
+    ESPHealthLabel.Parent = ESPHealthFrame
+
+    local ESPHealthToggle = Instance.new("TextButton")
+    ESPHealthToggle.Name = "ESPHealthToggle"
+    ESPHealthToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    ESPHealthToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
+    ESPHealthToggle.BackgroundColor3 = espHealthEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    ESPHealthToggle.BackgroundTransparency = 0.2
+    ESPHealthToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPHealthToggle.Text = espHealthEnabled and "ON" or "OFF"
+    ESPHealthToggle.Font = Enum.Font.Gotham
+    ESPHealthToggle.TextSize = 14 -- Увеличен размер текста
+    ESPHealthToggle.ZIndex = 3
+    ESPHealthToggle.Parent = ESPHealthFrame
+
+    -- ESP Distance
+    local ESPDistanceFrame = Instance.new("Frame")
+    ESPDistanceFrame.Name = "ESPDistanceFrame"
+    ESPDistanceFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    ESPDistanceFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    ESPDistanceFrame.BackgroundTransparency = 0.3
+    ESPDistanceFrame.BorderSizePixel = 0
+    ESPDistanceFrame.ZIndex = 2
+    ESPDistanceFrame.LayoutOrder = 4
+    ESPDistanceFrame.Parent = gunTabContents["Visual"]
+
+    local ESPDistanceCorner = Instance.new("UICorner")
+    ESPDistanceCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    ESPDistanceCorner.Parent = ESPDistanceFrame
+
+    local ESPDistanceLabel = Instance.new("TextLabel")
+    ESPDistanceLabel.Name = "ESPDistanceLabel"
+    ESPDistanceLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    ESPDistanceLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    ESPDistanceLabel.BackgroundTransparency = 1
+    ESPDistanceLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPDistanceLabel.Text = "ESP Distance"
+    ESPDistanceLabel.Font = Enum.Font.Gotham
+    ESPDistanceLabel.TextSize = 16 -- Увеличен размер текста
+    ESPDistanceLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPDistanceLabel.ZIndex = 3
+    ESPDistanceLabel.Parent = ESPDistanceFrame
+
+    local ESPDistanceToggle = Instance.new("TextButton")
+    ESPDistanceToggle.Name = "ESPDistanceToggle"
+    ESPDistanceToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    ESPDistanceToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
+    ESPDistanceToggle.BackgroundColor3 = espDistanceEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    ESPDistanceToggle.BackgroundTransparency = 0.2
+    ESPDistanceToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPDistanceToggle.Text = espDistanceEnabled and "ON" or "OFF"
+    ESPDistanceToggle.Font = Enum.Font.Gotham
+    ESPDistanceToggle.TextSize = 14 -- Увеличен размер текста
+    ESPDistanceToggle.ZIndex = 3
+    ESPDistanceToggle.Parent = ESPDistanceFrame
+
+    -- ESP Count
+    local ESPCountFrame = Instance.new("Frame")
+    ESPCountFrame.Name = "ESPCountFrame"
+    ESPCountFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    ESPCountFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    ESPCountFrame.BackgroundTransparency = 0.3
+    ESPCountFrame.BorderSizePixel = 0
+    ESPCountFrame.ZIndex = 2
+    ESPCountFrame.LayoutOrder = 5
+    ESPCountFrame.Parent = gunTabContents["Visual"]
+
+    local ESPCountCorner = Instance.new("UICorner")
+    ESPCountCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    ESPCountCorner.Parent = ESPCountFrame
+
+    local ESPCountLabel = Instance.new("TextLabel")
+    ESPCountLabel.Name = "ESPCountLabel"
+    ESPCountLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    ESPCountLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    ESPCountLabel.BackgroundTransparency = 1
+    ESPCountLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPCountLabel.Text = "ESP Count"
+    ESPCountLabel.Font = Enum.Font.Gotham
+    ESPCountLabel.TextSize = 16 -- Увеличен размер текста
+    ESPCountLabel.TextXAlignment = Enum.TextXAlignment.Left
+    ESPCountLabel.ZIndex = 3
+    ESPCountLabel.Parent = ESPCountFrame
+
+    local ESPCountToggle = Instance.new("TextButton")
+    ESPCountToggle.Name = "ESPCountToggle"
+    ESPCountToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    ESPCountToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
+    ESPCountToggle.BackgroundColor3 = espCountEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    ESPCountToggle.BackgroundTransparency = 0.2
+    ESPCountToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ESPCountToggle.Text = espCountEnabled and "ON" or "OFF"
+    ESPCountToggle.Font = Enum.Font.Gotham
+    ESPCountToggle.TextSize = 14 -- Увеличен размер текста
+    ESPCountToggle.ZIndex = 3
+    ESPCountToggle.Parent = ESPCountFrame
+
+    -- AimBot Tab Content
+    local AimBotFrame = Instance.new("Frame")
+    AimBotFrame.Name = "AimBotFrame"
+    AimBotFrame.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    AimBotFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    AimBotFrame.BackgroundTransparency = 0.3
+    AimBotFrame.BorderSizePixel = 0
+    AimBotFrame.ZIndex = 2
+    AimBotFrame.LayoutOrder = 1
+    AimBotFrame.Parent = gunTabContents["AimBot"]
+
+    local AimBotCorner = Instance.new("UICorner")
+    AimBotCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    AimBotCorner.Parent = AimBotFrame
+
+    local AimBotLabel = Instance.new("TextLabel")
+    AimBotLabel.Name = "AimBotLabel"
+    AimBotLabel.Size = UDim2.new(0.6, 0, 1, 0)
+    AimBotLabel.Position = UDim2.new(0, 15, 0, 0) -- Увеличен отступ
+    AimBotLabel.BackgroundTransparency = 1
+    AimBotLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AimBotLabel.Text = "AimBot"
+    AimBotLabel.Font = Enum.Font.Gotham
+    AimBotLabel.TextSize = 16 -- Увеличен размер текста
+    AimBotLabel.TextXAlignment = Enum.TextXAlignment.Left
+    AimBotLabel.ZIndex = 3
+    AimBotLabel.Parent = AimBotFrame
+
+    local AimBotToggle = Instance.new("TextButton")
+    AimBotToggle.Name = "AimBotToggle"
+    AimBotToggle.Size = UDim2.new(0.3, 0, 0, 35) -- Увеличен размер
+    AimBotToggle.Position = UDim2.new(0.7, 0, 0.15, 0)
+    AimBotToggle.BackgroundColor3 = aimBotEnabled and Color3.fromRGB(255, 0, 0) or Color3.fromRGB(100, 0, 0)
+    AimBotToggle.BackgroundTransparency = 0.2
+    AimBotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AimBotToggle.Text = aimBotEnabled and "ON" or "OFF"
+    AimBotToggle.Font = Enum.Font.Gotham
+    AimBotToggle.TextSize = 14 -- Увеличен размер текста
+    AimBotToggle.ZIndex = 3
+    AimBotToggle.Parent = AimBotFrame
+
+    -- AimBot FOV Slider
+    local AimBotFOVFrame = Instance.new("Frame")
+    AimBotFOVFrame.Name = "AimBotFOVFrame"
+    AimBotFOVFrame.Size = UDim2.new(1, 0, 0, 70) -- Увеличена высота
+    AimBotFOVFrame.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    AimBotFOVFrame.BackgroundTransparency = 0.3
+    AimBotFOVFrame.BorderSizePixel = 0
+    AimBotFOVFrame.Visible = aimBotEnabled
+    AimBotFOVFrame.ZIndex = 2
+    AimBotFOVFrame.LayoutOrder = 2
+    AimBotFOVFrame.Parent = gunTabContents["AimBot"]
+
+    local AimBotFOVCorner = Instance.new("UICorner")
+    AimBotFOVCorner.CornerRadius = UDim.new(0, 8) -- Увеличен радиус
+    AimBotFOVCorner.Parent = AimBotFOVFrame
+
+    local AimBotFOVLabel = Instance.new("TextLabel")
+    AimBotFOVLabel.Name = "AimBotFOVLabel"
+    AimBotFOVLabel.Size = UDim2.new(1, 0, 0, 35) -- Увеличена высота
+    AimBotFOVLabel.Position = UDim2.new(0, 0, 0, 0)
+    AimBotFOVLabel.BackgroundTransparency = 1
+    AimBotFOVLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
+    AimBotFOVLabel.Font = Enum.Font.Gotham
+    AimBotFOVLabel.TextSize = 14 -- Увеличен размер текста
+    AimBotFOVLabel.ZIndex = 3
+    AimBotFOVLabel.Parent = AimBotFOVFrame
+
+    -- Обработчики для Gun Menu
+    SpeedHackToggle.MouseButton1Click:Connect(function()
+        speedHackEnabled = not speedHackEnabled
+        toggleButton(SpeedHackToggle, speedHackEnabled)
+        SpeedHackSlider.Visible = speedHackEnabled
+        
+        if speedHackEnabled then
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = currentSpeed
+            end
+        else
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = 16
+            end
+        end
+    end)
+
+    local speedSliderConnection
+    SpeedHackSlider.InputBegan:Connect(function()
+        speedSliderConnection = RunService.Heartbeat:Connect(function()
+            local mouseLocation = UserInputService:GetMouseLocation()
+            local relativeX = math.clamp((mouseLocation.X - SpeedHackSlider.AbsolutePosition.X) / SpeedHackSlider.AbsoluteSize.X, 0, 1)
+            currentSpeed = math.floor(16 + (relativeX * 84))
+            SpeedValue.Text = "Speed: " .. currentSpeed
+            
+            if speedHackEnabled then
+                local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = currentSpeed
+                end
+            end
+        end)
+    end)
+
+    SpeedHackSlider.InputEnded:Connect(function()
+        if speedSliderConnection then
+            speedSliderConnection:Disconnect()
+            speedSliderConnection = nil
+        end
+    end)
+
+    JumpHackToggle.MouseButton1Click:Connect(function()
+        jumpHackEnabled = not jumpHackEnabled
+        toggleButton(JumpHackToggle, jumpHackEnabled)
+    end)
+
+    UserInputService.JumpRequest:Connect(function()
+        if jumpHackEnabled and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end)
+
+    NoClipToggle.MouseButton1Click:Connect(function()
+        noclipEnabled = not noclipEnabled
+        toggleButton(NoClipToggle, noclipEnabled)
+        
+        if noclipEnabled then
+            if noclipConnection then
+                noclipConnection:Disconnect()
+            end
+            noclipConnection = RunService.Stepped:Connect(function()
+                if player.Character then
+                    for _, part in pairs(player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+            
+            if player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end)
+
+    ESPTracersToggle.MouseButton1Click:Connect(function()
+        espTracersEnabled = not espTracersEnabled
+        toggleButton(ESPTracersToggle, espTracersEnabled)
+    end)
+
+    ESPBoxToggle.MouseButton1Click:Connect(function()
+        espBoxEnabled = not espBoxEnabled
+        toggleButton(ESPBoxToggle, espBoxEnabled)
+    end)
+
+    ESPHealthToggle.MouseButton1Click:Connect(function()
+        espHealthEnabled = not espHealthEnabled
+        toggleButton(ESPHealthToggle, espHealthEnabled)
+    end)
+
+    ESPDistanceToggle.MouseButton1Click:Connect(function()
+        espDistanceEnabled = not espDistanceEnabled
+        toggleButton(ESPDistanceToggle, espDistanceEnabled)
+    end)
+
+    ESPCountToggle.MouseButton1Click:Connect(function()
+        espCountEnabled = not espCountEnabled
+        toggleButton(ESPCountToggle, espCountEnabled)
+        
+        if espCountEnabled then
+            if not espCountText then
+                espCountText = Drawing.new("Text")
+                espCountText.Size = 20
+                espCountText.Center = true
+                espCountText.Outline = true
+                espCountText.Color = Color3.fromRGB(255, 0, 0)
+                espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
+            end
+            espCountText.Visible = true
+        else
+            if espCountText then
+                espCountText.Visible = false
+            end
+        end
+    end)
+
+    AimBotToggle.MouseButton1Click:Connect(function()
+        aimBotEnabled = not aimBotEnabled
+        toggleButton(AimBotToggle, aimBotEnabled)
+        AimBotFOVFrame.Visible = aimBotEnabled
+        
+        if fovCircle then
+            fovCircle.Visible = aimBotEnabled
+        else
+            createFOVCircle()
+            fovCircle.Visible = aimBotEnabled
+        end
+    end)
+
+    local aimbotSliderConnection
+    AimBotFOVFrame.InputBegan:Connect(function()
+        aimbotSliderConnection = RunService.Heartbeat:Connect(function()
+            local mouseLocation = UserInputService:GetMouseLocation()
+            local relativeX = math.clamp((mouseLocation.X - AimBotFOVFrame.AbsolutePosition.X) / AimBotFOVFrame.AbsoluteSize.X, 0, 1)
+            aimBotFOV = math.floor(10 + (relativeX * 190))
+            AimBotFOVLabel.Text = "AimBot FOV: " .. aimBotFOV
+            updateFOVCircle()
+        end)
+    end)
+
+    AimBotFOVFrame.InputEnded:Connect(function()
+        if aimbotSliderConnection then
+            aimbotSliderConnection:Disconnect()
+            aimbotSliderConnection = nil
+        end
+    end)
+
+    -- Tab Switching для Gun Menu
+    for tabName, tabButton in pairs(gunTabButtons) do
+        tabButton.MouseButton1Click:Connect(function()
+            for contentName, contentFrame in pairs(gunTabContents) do
+                contentFrame.Visible = (contentName == tabName)
+            end
+            
+            for btnName, btn in pairs(gunTabButtons) do
+                btn.BackgroundColor3 = (btnName == tabName) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
             end
         end)
     end
-    
-    -- Закрывать выпадающий список при клике вне его
-    local function onInputBegan(input)
-        if isOpen then
-            local touchPos = input.Position
-            local listAbsolutePos = dropdownList.AbsolutePosition
-            local listAbsoluteSize = dropdownList.AbsoluteSize
+
+    -- Initialize ESP for existing players
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        createESP(otherPlayer)
+    end
+
+    Players.PlayerAdded:Connect(function(newPlayer)
+        createESP(newPlayer)
+    end)
+
+    Players.PlayerRemoving:Connect(function(leftPlayer)
+        cleanupESP(leftPlayer)
+    end)
+
+    RunService.Heartbeat:Connect(updateESPCount)
+
+    workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
+        if espCountText then
+            espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 100)
+        end
+    end)
+
+    RunService.Heartbeat:Connect(function()
+        if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local closestPlayer = nil
+            local closestDistance = 1000
             
-            -- Проверяем, был ли клик вне выпадающего списка и кнопки
-            if not (touchPos.X >= listAbsolutePos.X and touchPos.X <= listAbsolutePos.X + listAbsoluteSize.X and
-                   touchPos.Y >= listAbsolutePos.Y and touchPos.Y <= listAbsolutePos.Y + listAbsoluteSize.Y) and
-               not (touchPos.X >= dropdownButton.AbsolutePosition.X and touchPos.X <= dropdownButton.AbsolutePosition.X + dropdownButton.AbsoluteSize.X and
-                   touchPos.Y >= dropdownButton.AbsolutePosition.Y and touchPos.Y <= dropdownButton.AbsolutePosition.Y + dropdownButton.AbsoluteSize.Y) then
-                toggleDropdown()
-            end
-        end
-    end
-    
-    UserInputService.InputBegan:Connect(onInputBegan)
-    
-    return {
-        GetValue = function()
-            return selectedOption
-        end,
-        SetValue = function(value)
-            selectedOption = value
-            dropdownButton.Text = value
-        end
-    }
-end
-
--- Функция для получения целевой позиции телепортации (ИСПРАВЛЕНА)
-local function GetTargetPosition()
-    if TeleportTarget == "Игрок" then
-        local character = Player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            return character.HumanoidRootPart.Position
-        else
-            ShowNotification("Character not found! Using campfire.", 2)
-            return CampfirePosition
-        end
-    else
-        return CampfirePosition
-    end
-end
-
--- Создание элементов Info tab
-local infoSection, infoContent = CreateSection(InfoTab, "📋 Script Information")
-CreateLabel(infoContent, "99 Nights in the forest\n\nVersion:Beta\n\nTelegram Channel:SCRIPTTYTA\n\nTelegram Owner:@SFXCL\n")
-
--- Создание элементов Game tab
-local killAuraSection, killAuraContent = CreateSection(GameTab, "Автоубийство")
-local killAuraSlider = CreateSlider(killAuraContent, "Дистанция", 25, 300, Settings.DistanceForKillAura, function(value)
-    DistanceForKillAura = value
-    Settings.DistanceForKillAura = value
-end)
-
-local killAuraToggle = CreateToggle(killAuraContent, "Kill Aura", function(value)
-    ActiveKillAura = value
-    Settings.ActiveKillAura = value
-end)
-
-local autoChopSection, autoChopContent = CreateSection(GameTab, "АвтоРубка")
-local autoChopSlider = CreateSlider(autoChopContent, "Дистанция", 0, 200, Settings.DistanceForAutoChopTree, function(value)
-    DistanceForAutoChopTree = value
-    Settings.DistanceForAutoChopTree = value
-end)
-
-local autoChopToggle = CreateToggle(autoChopContent, "Auto Tree", function(value)
-    ActiveAutoChopTree = value
-    Settings.ActiveAutoChopTree = value
-end)
-
--- Создание элементов Keks tab
--- НАСТРОЙКИ BRING В САМОМ НАЧАЛЕ
-local bringSettingsSection, bringSettingsContent = CreateSection(KeksTab, "Настройки телепорта")
-
--- Добавляем настройки количества и скорости телепортации В САМОЕ НАЧАЛО
-CreateTextBox(bringSettingsContent, "Макс число (1-200):", Settings.BringCount, function(value)
-    if value >= 1 and value <= 200 then
-        BringCount = math.floor(value)
-        Settings.BringCount = BringCount
-        ShowNotification("Bring Count set to: " .. BringCount, 2)
-    else
-        ShowNotification("Bring Count must be between 1 and 200!", 2)
-    end
-end)
-
-local bringDelaySlider = CreateSlider(bringSettingsContent, "Скорость телепорта вещей(МилиСек)", 600, 0, Settings.BringDelay, function(value)
-    BringDelay = math.floor(value)
-    Settings.BringDelay = BringDelay
-end)
-
--- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЦЕЛИ ТЕЛЕПОРТАЦИИ (ИСПРАВЛЕНО)
-local teleportTargetSection, teleportTargetContent = CreateSection(KeksTab, "Цель телепортации")
-
--- Создаем выпадающий список для выбора цели телепортации
-local teleportTargetOptions = {"Игрок", "Костёр"}
-local teleportTargetDropdown = CreateDropdown(teleportTargetContent, teleportTargetOptions, Settings.TeleportTarget, function(selected)
-    TeleportTarget = selected
-    Settings.TeleportTarget = selected
-    ShowNotification("Цель телепортации: " .. selected, 2)
-end)
-
-local teleportSection, teleportContent = CreateSection(KeksTab, "Телепорт")
--- Переименовали кнопку с "Teleport to Base" на "Teleport Campfire"
-CreateButton(teleportContent, "Телепорт к костру", function()
-    local character = Player.Character
-    if character and character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
-        ShowNotification("Teleported to campfire!", 2)
-    else
-        ShowNotification("Character not found!", 2)
-    end
-end)
-
--- МИНИ-МЕНЮ ДЛЯ ТЕЛЕПОРТАЦИИ К ДЕТЯМ
-local childTeleportSection, childTeleportContent = CreateSection(KeksTab, "Телепорт К детям")
-
--- Создаем выпадающий список для выбора ребенка
-local childOptions = {"Дино Малыш", "Кракен малыш", "Ребенчик", "Малыш Коала"}
-local childDropdown = CreateDropdown(childTeleportContent, childOptions, "Дино Малыш")
-
--- Кнопка для телепортации к выбранному ребенку
-CreateButton(childTeleportContent, "Teleport", function()
-    local root = Player.Character and Player.Character:FindFirstChild("HumanoidRootPart")
-    if not root then 
-        ShowNotification("Character not found!", 2)
-        return 
-    end
-    
-    local selectedChild = childDropdown.GetValue()
-    local childName = ""
-    
-    -- Определяем имя ребенка в зависимости от выбора
-    if selectedChild == "Дино Малыш" then
-        childName = "lost child"
-    elseif selectedChild == "Кракен малыш" then
-        childName = "lost child2"
-    elseif selectedChild == "Ребенчик" then
-        childName = "lost child3"
-    elseif selectedChild == "Малыш Коала" then
-        childName = "lost child4"
-    end
-    
-    local found = false
-    for _, item in pairs(workspace.Characters:GetChildren()) do
-        if item.Name:lower():find(childName) and item:IsA("Model") then
-            local main = item:FindFirstChildWhichIsA("BasePart")
-            if main then
-                root.CFrame = main.CFrame + Vector3.new(0, 2, 0) -- Немного выше ребенка
-                ShowNotification("Teleported to " .. selectedChild, 2)
-                found = true
-                break
-            end
-        end
-    end
-    
-    if not found then
-        ShowNotification(selectedChild .. " not found on map", 2)
-    end
-end)
-
--- МИНИ-МЕНЮ ДЛЯ BRING ITEMS
-local bringItemsSection, bringItemsContent = CreateSection(KeksTab, " Телепорт заправки")
-
--- Создаем выпадающий список для выбора предметов
-local bringOptions = {"Дерево", "Уголь", "Канистра", "Топливная бочка"}
-local bringDropdown = CreateDropdown(bringItemsContent, bringOptions, "Дерево")
-
--- Кнопка для телепортации выбранных предметов к выбранной цели
-CreateButton(bringItemsContent, "Телепорт выбранных", function()
-    local selectedItem = bringDropdown.GetValue()
-    local targetPos = GetTargetPosition()
-    local found = false
-    
-    if selectedItem == "Дерево" then
-        local logs = {}
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item.Name:lower():find("log") and item:IsA("Model") then
-                local main = item:FindFirstChildWhichIsA("BasePart")
-                if main then
-                    table.insert(logs, main)
-                end
-            end
-        end
-        
-        -- Телепортируем только указанное количество с задержкой
-        local teleported = 0
-        for i = 1, math.min(BringCount, #logs) do
-            local log = logs[i]
-            log.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-            log.Anchored = false
-            log.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            teleported = teleported + 1
-            
-            if BringDelay > 0 then
-                wait(BringDelay / 1000)  -- Конвертируем миллисекунды в секунды
-            end
-        end
-        
-        if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #logs .. " Logs to " .. TeleportTarget .. "!", 2)
-        else
-            ShowNotification("No Logs found on map", 2)
-        end
-    elseif selectedItem == "Уголь" then
-        local coals = {}
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item.Name:lower():find("coal") and item:IsA("Model") then
-                local main = item:FindFirstChildWhichIsA("BasePart")
-                if main then
-                    table.insert(coals, main)
-                end
-            end
-        end
-        
-        local teleported = 0
-        for i = 1, math.min(BringCount, #coals) do
-            local coal = coals[i]
-            coal.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-            coal.Anchored = false
-            coal.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            teleported = teleported + 1
-            
-            if BringDelay > 0 then
-                wait(BringDelay / 1000)
-            end
-        end
-        
-        if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #coals .. " Coal to " .. TeleportTarget .. "!", 2)
-        else
-            ShowNotification("No Coal found on map", 2)
-        end
-    elseif selectedItem == "Канистра" then
-        local fuels = {}
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item.Name:lower():find("fuel canister") and item:IsA("Model") then
-                local main = item:FindFirstChildWhichIsA("BasePart")
-                if main then
-                    table.insert(fuels, main)
-                end
-            end
-        end
-        
-        local teleported = 0
-        for i = 1, math.min(BringCount, #fuels) do
-            local fuel = fuels[i]
-            -- Топливо телепортируем прямо к цели без высоты
-            fuel.CFrame = CFrame.new(targetPos) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
-            fuel.Anchored = false
-            fuel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            teleported = teleported + 1
-            
-            if BringDelay > 0 then
-                wait(BringDelay / 1000)
-            end
-        end
-        
-        if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #fuels .. " Fuel Canister to " .. TeleportTarget .. "!", 2)
-        else
-            ShowNotification("No Fuel Canister found on map", 2)
-        end
-    elseif selectedItem == "Топливная бочка" then
-        local barrels = {}
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item.Name:lower():find("oil barrel") and item:IsA("Model") then
-                local main = item:FindFirstChildWhichIsA("BasePart")
-                if main then
-                    table.insert(barrels, main)
-                end
-            end
-        end
-        
-        local teleported = 0
-        for i = 1, math.min(BringCount, #barrels) do
-            local barrel = barrels[i]
-            -- Бочки с маслом телепортируем прямо к цели без высоты
-            barrel.CFrame = CFrame.new(targetPos) + Vector3.new(math.random(-2,2), 0.5, math.random(-2,2))
-            barrel.Anchored = false
-            barrel.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-            teleported = teleported + 1
-            
-            if BringDelay > 0 then
-                wait(BringDelay / 1000)
-            end
-        end
-        
-        if teleported > 0 then
-            ShowNotification("Brought " .. teleported .. "/" .. #barrels .. " Oil Barrel to " .. TeleportTarget .. "!", 2)
-        else
-            ShowNotification("No Oil Barrel found on map", 2)
-        end
-    end
-end)
-
--- МИНИ-МЕНЮ ДЛЯ ВЫБОРА СКРАПОВ
-local scrapSection, scrapContent = CreateSection(KeksTab, "Выбор скрапа")
-
--- Создаем выпадающий список для выбора скрапов
-local scrapOptions = {"All", "sheet metal", "broken fan", "bolt", "old radio", "ufo junk", "ufo scrap", "broken microwave"}
-local scrapDropdown = CreateDropdown(scrapContent, scrapOptions, "All")
-
--- Кнопка для телепортации выбранного скрапа к выбранной цели
-CreateButton(scrapContent, "Телепортировать скрапы", function()
-    local targetPos = GetTargetPosition()
-    local selectedScrap = scrapDropdown.GetValue()
-    local scrapNames = {
-        ["sheet metal"] = true, 
-        ["broken fan"] = true, 
-        ["bolt"] = true, 
-        ["old radio"] = true, 
-        ["ufo junk"] = true, 
-        ["ufo scrap"] = true, 
-        ["broken microwave"] = true,
-    }
-    
-    local scraps = {}
-    
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item:IsA("Model") then
-            local itemName = item.Name:lower()
-            
-            if selectedScrap == "All" then
-                for scrapName, _ in pairs(scrapNames) do
-                    if itemName:find(scrapName) then
-                        local main = item:FindFirstChildWhichIsA("BasePart")
-                        if main then
-                            table.insert(scraps, main)
+            for _, otherPlayer in pairs(Players:GetPlayers()) do
+                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
+                    local targetRoot = otherPlayer.Character.HumanoidRootPart
+                    local distance = (player.Character.HumanoidRootPart.Position - targetRoot.Position).Magnitude
+                    
+                    if isInFOV(targetRoot.Position) and isPlayerVisible(otherPlayer) then
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestPlayer = otherPlayer
                         end
-                        break
-                    end
-                end
-            else
-                if itemName:find(selectedScrap) then
-                    local main = item:FindFirstChildWhichIsA("BasePart")
-                    if main then
-                        table.insert(scraps, main)
                     end
                 end
             end
-        end
-    end
-    
-    -- Телепортируем только указанное количество с задержкой
-    local teleported = 0
-    for i = 1, math.min(BringCount, #scraps) do
-        local scrap = scraps[i]
-        scrap.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-        scrap.Anchored = false
-        scrap.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        teleported = teleported + 1
-        
-        if BringDelay > 0 then
-            wait(BringDelay / 1000)
-        end
-    end
-    
-    if teleported > 0 then
-        ShowNotification("Teleported " .. teleported .. "/" .. #scraps .. " " .. selectedScrap .. " to " .. TeleportTarget, 2)
-    else
-        ShowNotification("No " .. selectedScrap .. " found on map", 2)
-    end
-end)
-
--- МИНИ-МЕНЮ ДЛЯ ВЫБОРА ЕДЫ
-local BandageSection, BandageContent = CreateSection(KeksTab, "Выбор Еды")
-
--- Создаем выпадающий список для выбора еды
-local BandageOptions = {"All", "Морсель", "Морковь", "Бандаж", "Аптечка"}
-local BandageDropdown = CreateDropdown(BandageContent, BandageOptions, "All")
-
--- Кнопка для телепортации выбранной еды к выбранной цели
-CreateButton(BandageContent, "Телепортировать Еду", function()
-    local targetPos = GetTargetPosition()
-    local selectedBandage = BandageDropdown.GetValue()
-    local BandageNames = {
-        ["morsel"] = "Morsel", 
-        ["carrot"] = "Carrot", 
-        ["bandage"] = "Bandage", 
-        ["medkit"] = "Medkit", 
-    }
-    
-    local foods = {}
-    
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item:IsA("Model") then
-            local itemName = item.Name:lower()
             
-            if selectedBandage == "All" then
-                for bandageKey, bandageValue in pairs(BandageNames) do
-                    if itemName:find(bandageKey) then
-                        local main = item:FindFirstChildWhichIsA("BasePart")
-                        if main then
-                            table.insert(foods, main)
-                        end
-                        break
-                    end
-                end
-            else
-                local searchTerm = selectedBandage:lower()
-                if itemName:find(searchTerm) then
-                    local main = item:FindFirstChildWhichIsA("BasePart")
-                    if main then
-                        table.insert(foods, main)
-                    end
-                end
+            if closestPlayer then
+                workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, closestPlayer.Character.HumanoidRootPart.Position)
             end
         end
-    end
-    
-    -- Телепортируем только указанное количество с задержкой
-    local teleported = 0
-    for i = 1, math.min(BringCount, #foods) do
-        local food = foods[i]
-        food.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-        food.Anchored = false
-        food.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        teleported = teleported + 1
-        
-        if BringDelay > 0 then
-            wait(BringDelay / 1000)
-        end
-    end
-    
-    if teleported > 0 then
-        ShowNotification("Teleported " .. teleported .. "/" .. #foods .. " " .. selectedBandage .. " to " .. TeleportTarget, 2)
-    else
-        ShowNotification("No " .. selectedBandage .. " found on map", 2)
-    end
-end)
+    end)
+end
 
--- НОВОЕ МИНИ-МЕНЮ ДЛЯ ВЫБОРА ОРУЖИЯ И ПАТРОНОВ
-local WeaponSection, WeaponContent = CreateSection(KeksTab, "Выбор Оружия и Патронов")
+-- Функция создания Nights Menu
+local function createNightsMenu()
+    NightsMenu = Instance.new("Frame")
+    NightsMenu.Name = "NightsMenu"
+    NightsMenu.Size = UDim2.new(0, 400, 0, 550) -- Увеличена ширина и высота
+    NightsMenu.Position = savedPosition
+    NightsMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
+    NightsMenu.BackgroundTransparency = 0.3
+    NightsMenu.BorderSizePixel = 0
+    NightsMenu.Active = true
+    NightsMenu.Draggable = true
+    NightsMenu.Visible = false
+    NightsMenu.Parent = ScreenGui
 
--- Создаем выпадающий список для выбора оружия и патронов
-local WeaponOptions = {"Rifle ammo", "Rifle"}
-local WeaponDropdown = CreateDropdown(WeaponContent, WeaponOptions, "Rifle ammo")
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10) -- Увеличен радиус
+    Corner.Parent = NightsMenu
 
--- Кнопка для телепортации выбранного оружия/патронов к выбранной цели
-CreateButton(WeaponContent, "Телепортировать Оружие/Патроны", function()
-    local targetPos = GetTargetPosition()
-    local selectedWeapon = WeaponDropdown.GetValue()
-    local weaponNames = {
-        ["rifle ammo"] = "Rifle ammo", 
-        ["rifle"] = "Rifle", 
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+    Title.Position = UDim2.new(0, 0, 0, 0)
+    Title.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+    Title.BackgroundTransparency = 0.2
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Text = "99 NIGHTS MENU"
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 18 -- Увеличен размер текста
+    Title.ZIndex = 2
+    Title.Parent = NightsMenu
+
+    -- Вертикальные вкладки
+    local TabButtons = Instance.new("Frame")
+    TabButtons.Name = "TabButtons"
+    TabButtons.Size = UDim2.new(0, 120, 1, -50) -- Увеличена ширина
+    TabButtons.Position = UDim2.new(0, 0, 0, 50)
+    TabButtons.BackgroundTransparency = 0.2
+    TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    TabButtons.ZIndex = 2
+    TabButtons.Parent = NightsMenu
+
+    local TabLayout = Instance.new("UIListLayout")
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Parent = TabButtons
+
+    local nightsTabs = {
+        {name = "Main", defaultActive = true},
+        {name = "Bring", defaultActive = false}
     }
-    
-    local weapons = {}
-    
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item:IsA("Model") then
-            local itemName = item.Name:lower()
-            
-            if selectedWeapon == "Rifle ammo" then
-                if itemName:find("rifle") and itemName:find("ammo") then
-                    local main = item:FindFirstChildWhichIsA("BasePart")
-                    if main then
-                        table.insert(weapons, main)
-                    end
-                end
-            elseif selectedWeapon == "Rifle" then
-                if itemName:find("rifle") and not itemName:find("ammo") then
-                    local main = item:FindFirstChildWhichIsA("BasePart")
-                    if main then
-                        table.insert(weapons, main)
-                    end
-                end
-            end
-        end
+
+    local nightsTabButtons = {}
+    local nightsTabContents = {}
+
+    for i, tab in ipairs(nightsTabs) do
+        local tabButton = Instance.new("TextButton")
+        tabButton.Name = tab.name .. "Tab"
+        tabButton.Size = UDim2.new(1, 0, 0, 50) -- Увеличена высота
+        tabButton.LayoutOrder = i
+        tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
+        tabButton.BackgroundTransparency = 0.2
+        tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        tabButton.Text = tab.name
+        tabButton.Font = Enum.Font.Gotham
+        tabButton.TextSize = 14 -- Увеличен размер текста
+        tabButton.ZIndex = 3
+        tabButton.Parent = TabButtons
+
+        local ContentFrame = Instance.new("ScrollingFrame")
+        ContentFrame.Name = tab.name .. "Content"
+        ContentFrame.Size = UDim2.new(1, -130, 1, -110) -- Учитываем ширину вкладок
+        ContentFrame.Position = UDim2.new(0, 130, 0, 110) -- Сдвиг для вкладок
+        ContentFrame.BackgroundTransparency = 1
+        ContentFrame.ScrollBarThickness = 6 -- Увеличена толщина
+        ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
+        ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+        ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
+        ContentFrame.Visible = tab.defaultActive
+        ContentFrame.ZIndex = 2
+        ContentFrame.Parent = NightsMenu
+
+        local ContentLayout = Instance.new("UIListLayout")
+        ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        ContentLayout.Padding = UDim.new(0, 12) -- Увеличен отступ
+        ContentLayout.Parent = ContentFrame
+
+        nightsTabButtons[tab.name] = tabButton
+        nightsTabContents[tab.name] = ContentFrame
     end
-    
-    -- Телепортируем только указанное количество с задержкой
-    local teleported = 0
-    for i = 1, math.min(BringCount, #weapons) do
-        local weapon = weapons[i]
-        weapon.CFrame = CFrame.new(targetPos.X, targetPos.Y + 5, targetPos.Z) + Vector3.new(math.random(-5,5), 0, math.random(-5,5))
-        weapon.Anchored = false
-        weapon.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        teleported = teleported + 1
+
+    -- Main Tab Content
+    local KillAuraToggle = CreateToggle(nightsTabContents["Main"], "Kill Aura", function(v)
+        ActiveKillAura = v
+    end, ActiveKillAura)
+
+    CreateSlider(nightsTabContents["Main"], "Kill Distance", 10, 150, DistanceForKillAura, function(v)
+        DistanceForKillAura = v
+    end)
+
+    local AutoChopToggle = CreateToggle(nightsTabContents["Main"], "Auto Chop", function(v)
+        ActiveAutoChopTree = v
+    end, ActiveAutoChopTree)
+
+    CreateSlider(nightsTabContents["Main"], "Chop Distance", 10, 150, DistanceForAutoChopTree, function(v)
+        DistanceForAutoChopTree = v
+    end)
+
+    -- Bring Tab Content
+    CreateSlider(nightsTabContents["Bring"], "Bring Count", 1, 20, BringCount, function(v)
+        BringCount = math.floor(v)
+    end)
+
+    CreateSlider(nightsTabContents["Bring"], "Bring Speed", 50, 500, BringDelay, function(v)
+        BringDelay = math.floor(v)
+    end)
+
+    CreateButton(nightsTabContents["Bring"], "Teleport to Campfire", function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
+        end
+    end)
+
+    -- Переменные для отслеживания открытых подменю
+    local openSubMenus = {}
+    local subMenuPositions = {}
+
+    -- Функция для обновления позиций всех элементов
+    local function updateAllPositions()
+        local currentY = 0
+        local padding = 10 -- Увеличен отступ
         
-        if BringDelay > 0 then
-            wait(BringDelay / 1000)
-        end
-    end
-    
-    if teleported > 0 then
-        ShowNotification("Teleported " .. teleported .. "/" .. #weapons .. " " .. selectedWeapon .. " to " .. TeleportTarget, 2)
-    else
-        ShowNotification("No " .. selectedWeapon .. " found on map", 2)
-    end
-end)
-
--- УВЕЛИЧЕННЫЙ ОГРАНИЧИТЕЛЬ ПРОКРУТКИ ДЛЯ ВКЛАДКИ KEKS
-local ScrollLimiter = Instance.new("Frame")
-ScrollLimiter.Size = UDim2.new(1, 0, 0, 50)  -- Увеличили с 20 до 50 пикселей
-ScrollLimiter.BackgroundTransparency = 1
-ScrollLimiter.Parent = KeksTab
-
--- Функции из оригинального скрипта
--- Kill Aura функция
-task.spawn(function()
-    while true do
-        if ActiveKillAura then 
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
-
-            for _, bunny in pairs(workspace.Characters:GetChildren()) do
-                if bunny:IsA("Model") and bunny.PrimaryPart then
-                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForKillAura then
-                        task.spawn(function()	
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                        end)	
-                    end
-                end
-            end
-        end
-        wait(0.01)
-    end
-end)
-
--- Auto Chop Tree функция
-task.spawn(function()
-    while true do
-        if ActiveAutoChopTree then 
-            local player = game.Players.LocalPlayer
-            local character = player.Character or player.CharacterAdded:Wait()
-            local hrp = character:WaitForChild("HumanoidRootPart")
-            local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
-            
-            for _, bunny in pairs(workspace.Map.Foliage:GetChildren()) do
-                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2")  and bunny.PrimaryPart then
-                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForAutoChopTree then
-                        task.spawn(function()		
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                        end)		
-                    end
-                end
-            end 
-            
-            for _, bunny in pairs(workspace.Map.Landmarks:GetChildren()) do
-                if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2")  and bunny.PrimaryPart then
-                    local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                    if distance <= DistanceForAutoChopTree then
-                        task.spawn(function()	
-                            local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                        end)			
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child:IsA("Frame") or child:IsA("TextButton") then
+                if child:FindFirstChild("LayoutOrder") then
+                    child.Position = UDim2.new(0, 0, 0, currentY)
+                    
+                    -- Если это подменю и оно открыто, добавляем его высоту + дополнительный отступ (примерно 2 см = 56 пикселей)
+                    if child.Name:find("SubMenu") and openSubMenus[child.Name] then
+                        currentY = currentY + child.AbsoluteSize.Y + 56 -- Дополнительный отступ 2 см
+                    else
+                        currentY = currentY + child.AbsoluteSize.Y + padding
                     end
                 end
             end
         end
-        wait(0.01)
     end
-end)
 
--- Функционал переключения вкладок
-local function switchToTab(tabName)
-    InfoTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    GameTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    KeksTabButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    
-    InfoTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    GameTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    KeksTabButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-    
-    InfoTab.Visible = false
-    GameTab.Visible = false
-    KeksTab.Visible = false
-    
-    if tabName == "Info" then
-        InfoTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        InfoTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        InfoTab.Visible = true
-        CurrentTab = "Info"
-    elseif tabName == "Main" then
-        GameTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        GameTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        GameTab.Visible = true
-        CurrentTab = "Game"
-    elseif tabName == "Bring" then
-        KeksTabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-        KeksTabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        KeksTab.Visible = true
-        CurrentTab = "Keks"
-        
-        -- Устанавливаем ограничение прокрутки для вкладки Keks с дополнительными 50 пикселями
-        wait(0.1) -- Ждем обновления макета
-        local contentSize = KeksTab.AbsoluteSize.Y
-        local containerSize = ScrollContainer.AbsoluteWindowSize.Y
-        local maxScroll = math.max(0, contentSize - containerSize + 50)  -- Увеличили с 10 до 50 пикселей
-        
-        -- Ограничиваем текущую позицию прокрутки
-        if ScrollContainer.CanvasPosition.Y > maxScroll then
-            ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
+    -- Подменю для ресурсов
+    local ResourcesButton = CreateButton(nightsTabContents["Bring"], "Resources", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "ResourcesSubMenu" then
+                openSubMenus["ResourcesSubMenu"] = not openSubMenus["ResourcesSubMenu"]
+                child.Visible = openSubMenus["ResourcesSubMenu"]
+                updateAllPositions()
+                return
+            end
+        end
+    end)
+
+    local ResourcesSubMenu = Instance.new("Frame")
+    ResourcesSubMenu.Name = "ResourcesSubMenu"
+    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 220) -- Увеличена высота
+    ResourcesSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    ResourcesSubMenu.BackgroundTransparency = 0.5
+    ResourcesSubMenu.Visible = false
+    ResourcesSubMenu.Parent = nightsTabContents["Bring"]
+
+    local ResourcesLayout = Instance.new("UIListLayout")
+    ResourcesLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ResourcesLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
+    ResourcesLayout.Parent = ResourcesSubMenu
+
+    local resourcesItems = {"Logs", "Coal", "Chair", "Fuel Canister", "Oil Barrel"}
+    for _, itemName in pairs(resourcesItems) do
+        CreateButton(ResourcesSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Подменю для металлов
+    local MetalsButton = CreateButton(nightsTabContents["Bring"], "Metals", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "MetalsSubMenu" then
+                openSubMenus["MetalsSubMenu"] = not openSubMenus["MetalsSubMenu"]
+                child.Visible = openSubMenus["MetalsSubMenu"]
+                updateAllPositions()
+                return
+            end
+        end
+    end)
+
+    local MetalsSubMenu = Instance.new("Frame")
+    MetalsSubMenu.Name = "MetalsSubMenu"
+    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 260) -- Увеличена высота
+    MetalsSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    MetalsSubMenu.BackgroundTransparency = 0.5
+    MetalsSubMenu.Visible = false
+    MetalsSubMenu.Parent = nightsTabContents["Bring"]
+
+    local MetalsLayout = Instance.new("UIListLayout")
+    MetalsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    MetalsLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
+    MetalsLayout.Parent = MetalsSubMenu
+
+    local metalsItems = {"Bolt", "Sheet Metal", "Old Radio", "Scrap Metal", "UFO Scrap", "Broken Microwave"}
+    for _, itemName in pairs(metalsItems) do
+        CreateButton(MetalsSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Подменю для еды и медицины
+    local FoodMedButton = CreateButton(nightsTabContents["Bring"], "Food & Medical", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "FoodMedSubMenu" then
+                openSubMenus["FoodMedSubMenu"] = not openSubMenus["FoodMedSubMenu"]
+                child.Visible = openSubMenus["FoodMedSubMenu"]
+                updateAllPositions()
+                return
+            end
+        end
+    end)
+
+    local FoodMedSubMenu = Instance.new("Frame")
+    FoodMedSubMenu.Name = "FoodMedSubMenu"
+    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 220) -- Увеличена высота
+    FoodMedSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    FoodMedSubMenu.BackgroundTransparency = 0.5
+    FoodMedSubMenu.Visible = false
+    FoodMedSubMenu.Parent = nightsTabContents["Bring"]
+
+    local FoodMedLayout = Instance.new("UIListLayout")
+    FoodMedLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    FoodMedLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
+    FoodMedLayout.Parent = FoodMedSubMenu
+
+    local foodMedItems = {"Carrot", "Ribs", "Morsel", "Steak", "MedKit", "Bandage"}
+    for _, itemName in pairs(foodMedItems) do
+        CreateButton(FoodMedSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Подменю для оружия
+    local WeaponsButton = CreateButton(nightsTabContents["Bring"], "Weapons", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "WeaponsSubMenu" then
+                openSubMenus["WeaponsSubMenu"] = not openSubMenus["WeaponsSubMenu"]
+                child.Visible = openSubMenus["WeaponsSubMenu"]
+                updateAllPositions()
+                return
+            end
+        end
+    end)
+
+    local WeaponsSubMenu = Instance.new("Frame")
+    WeaponsSubMenu.Name = "WeaponsSubMenu"
+    WeaponsSubMenu.Size = UDim2.new(1, 0, 0, 180) -- Увеличена высота
+    WeaponsSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    WeaponsSubMenu.BackgroundTransparency = 0.5
+    WeaponsSubMenu.Visible = false
+    WeaponsSubMenu.Parent = nightsTabContents["Bring"]
+
+    local WeaponsLayout = Instance.new("UIListLayout")
+    WeaponsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    WeaponsLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
+    WeaponsLayout.Parent = WeaponsSubMenu
+
+    local weaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo"}
+    for _, itemName in pairs(weaponsItems) do
+        CreateButton(WeaponsSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- НОВОЕ ПОДМЕНЮ ДЛЯ ТОПОРОВ
+    local AxeButton = CreateButton(nightsTabContents["Bring"], "Axe", function()
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "AxeSubMenu" then
+                openSubMenus["AxeSubMenu"] = not openSubMenus["AxeSubMenu"]
+                child.Visible = openSubMenus["AxeSubMenu"]
+                updateAllPositions()
+                return
+            end
+        end
+    end)
+
+    local AxeSubMenu = Instance.new("Frame")
+    AxeSubMenu.Name = "AxeSubMenu"
+    AxeSubMenu.Size = UDim2.new(1, 0, 0, 180) -- Увеличена высота
+    AxeSubMenu.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
+    AxeSubMenu.BackgroundTransparency = 0.5
+    AxeSubMenu.Visible = false
+    AxeSubMenu.Parent = nightsTabContents["Bring"]
+
+    local AxeLayout = Instance.new("UIListLayout")
+    AxeLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    AxeLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
+    AxeLayout.Parent = AxeSubMenu
+
+    local axeItems = {"Good Axe", "Strong Axe", "Chainsaw"}
+    for _, itemName in pairs(axeItems) do
+        CreateButton(AxeSubMenu, "Bring " .. itemName, function()
+            BringItems(itemName)
+        end)
+    end
+
+    -- Инициализация таблицы открытых подменю
+    openSubMenus["ResourcesSubMenu"] = false
+    openSubMenus["MetalsSubMenu"] = false
+    openSubMenus["FoodMedSubMenu"] = false
+    openSubMenus["WeaponsSubMenu"] = false
+    openSubMenus["AxeSubMenu"] = false
+
+    -- Установка LayoutOrder для правильного порядка
+    local layoutOrder = 1
+    for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+        if child:IsA("Frame") or child:IsA("TextButton") then
+            if not child:FindFirstChild("LayoutOrder") then
+                local layoutOrderValue = Instance.new("IntValue")
+                layoutOrderValue.Name = "LayoutOrder"
+                layoutOrderValue.Value = layoutOrder
+                layoutOrderValue.Parent = child
+                layoutOrder = layoutOrder + 1
+            end
         end
     end
-    
-    -- Восстанавливаем позицию прокрутки для выбранной вкладки
-    ScrollContainer.CanvasPosition = LastScrollPositions[CurrentTab]
-end
 
-InfoTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Info")
-end)
+    -- Первоначальное обновление позиций
+    updateAllPositions()
 
-GameTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Main")
-end)
-
-KeksTabButton.MouseButton1Click:Connect(function()
-    switchToTab("Bring")
-end)
-
--- Система перемещения меню для мобильных устройств и PC
-local function startDragging(input)
-    Dragging = true
-    DragStartPos = Vector2.new(input.Position.X, input.Position.Y)
-    MenuStartPos = UDim2.new(MainFrame.Position.X.Scale, MainFrame.Position.X.Offset, MainFrame.Position.Y.Scale, MainFrame.Position.Y.Offset)
-    
-    -- Визуальная обратная связь
-    Title.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-end
-
-local function stopDragging()
-    Dragging = false
-    DragStartPos = nil
-    MenuStartPos = nil
-    Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-    
-    -- Сохраняем позицию меню
-    Settings.MenuPosition = {
-        X = MainFrame.Position.X.Scale,
-        Y = MainFrame.Position.Y.Scale,
-        OffsetX = MainFrame.Position.X.Offset,
-        OffsetY = MainFrame.Position.Y.Offset
-    }
-    SaveSettings()
-end
-
-local function updateDrag(input)
-    if Dragging and DragStartPos and MenuStartPos then
-        local delta = Vector2.new(input.Position.X, input.Position.Y) - DragStartPos
-        local newX = MenuStartPos.X.Offset + delta.X
-        local newY = MenuStartPos.Y.Offset + delta.Y
-        
-        -- Ограничение, чтобы меню не выходило за экран
-        local screenSize = PlayerGui.AbsoluteSize
-        newX = math.clamp(newX, 0, screenSize.X - MainFrame.AbsoluteSize.X)
-        newY = math.clamp(newY, 0, screenSize.Y - MainFrame.AbsoluteSize.Y)
-        
-        MainFrame.Position = UDim2.new(0, newX, 0, newY)
+    -- Tab Switching для Nights Menu
+    for tabName, tabButton in pairs(nightsTabButtons) do
+        tabButton.MouseButton1Click:Connect(function()
+            for contentName, contentFrame in pairs(nightsTabContents) do
+                contentFrame.Visible = (contentName == tabName)
+            end
+            
+            for btnName, btn in pairs(nightsTabButtons) do
+                btn.BackgroundColor3 = (btnName == tabName) and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
+            end
+        end)
     end
 end
 
--- Система изменения размера меню
-local function startResize(input)
-    Resizing = true
-    ResizeStart = Vector2.new(input.Position.X, input.Position.Y)
-    StartSize = UDim2.new(MainFrame.Size.X.Scale, MainFrame.Size.X.Offset, MainFrame.Size.Y.Scale, MainFrame.Size.Y.Offset)
+-- Функция создания GUI
+local function createGUI()
+    if ScreenGui then
+        savedPosition = currentActiveMenu and currentActiveMenu.Position or savedPosition
+        ScreenGui:Destroy()
+        ScreenGui = nil
+        MainMenu = nil
+        GunMenu = nil
+        NightsMenu = nil
+        OpenCloseButton = nil
+    end
+
+    -- Create GUI
+    ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "SANSTRO_GUI"
+    ScreenGui.Parent = player.PlayerGui
+    ScreenGui.ResetOnSpawn = false
+
+    -- Создаем все меню
+    createMainMenu()
+    createGunMenu()
+    createNightsMenu()
     
-    -- Визуальная обратная связь
-    ResizeHandle.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+    -- Создаем кнопку открытия/закрытия
+    createOpenCloseButton()
 end
 
-local function stopResize()
-    Resizing = false
-    ResizeStart = nil
-    StartSize = nil
-    ResizeHandle.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    
-    -- Сохраняем размер меню
-    Settings.MenuSize = {
-        Width = MainFrame.Size.X.Offset,
-        Height = MainFrame.Size.Y.Offset
-    }
-    SaveSettings()
-end
+-- Создаем GUI при запуске
+createGUI()
+createFOVCircle()
 
-local function updateResize(input)
-    if Resizing and ResizeStart and StartSize then
-        local delta = Vector2.new(input.Position.X, input.Position.Y) - ResizeStart
-        
-        -- Минимальный размер меню
-        local minWidth = 250
-        local minHeight = 300
-        
-        local newWidth = math.max(minWidth, StartSize.X.Offset + delta.X)
-        local newHeight = math.max(minHeight, StartSize.Y.Offset + delta.Y)
-        
-        MainFrame.Size = UDim2.new(0, newWidth, 0, newHeight)
-    end
-end
-
--- Обработчики для перемещения меню
-Title.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        startDragging(input)
-    end
+-- Восстанавливаем GUI после смерти
+player.CharacterAdded:Connect(function()
+    wait(2)
+    createGUI()
 end)
 
-Title.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        stopDragging()
+-- Clean up when player leaves
+game:GetService("CoreGui").ChildRemoved:Connect(function(child)
+    if child == ScreenGui then
+        if fovCircle then
+            fovCircle:Remove()
+            fovCircle = nil
+        end
+        if espCountText then
+            espCountText:Remove()
+            espCountText = nil
+        end
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        for _, espData in pairs(espObjects) do
+            if espData.tracer then espData.tracer:Remove() end
+            if espData.box then espData.box:Remove() end
+            if espData.health then espData.health:Remove() end
+            if espData.distance then espData.distance:Remove() end
+        end
+        espObjects = {}
+        for _, connection in pairs(espConnections) do
+            connection:Disconnect()
+        end
+        espConnections = {}
     end
 end)
-
--- Обработчики для изменения размера
-ResizeHandle.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        startResize(input)
-    end
-end)
-
-ResizeHandle.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-        stopResize()
-    end
-end)
-
--- Закрытие меню полностью
-CloseButton.MouseButton1Click:Connect(function()
-    -- Сохраняем позицию прокрутки перед закрытием
-    LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
-    MainFrame.Visible = false
-    ToggleButton.Visible = false
-    ShowNotification("Menu closed completely", 2)
-end)
-
--- Сворачивание меню
-MinimizeButton.MouseButton1Click:Connect(function()
-    -- Сохраняем позицию прокрутки перед сворачиванием
-    LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
-    MainFrame.Visible = false
-    ShowNotification("Menu minimized", 2)
-end)
-
--- Переключение видимости меню
-ToggleButton.MouseButton1Click:Connect(function()
-    if MainFrame.Visible then
-        -- Сохраняем позицию прокрутки перед закрытием
-        LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
-        MainFrame.Visible = false
-    else
-        -- Восстанавливаем позицию прокрутки при открытии
-        ScrollContainer.CanvasPosition = LastScrollPositions[CurrentTab]
-        MainFrame.Visible = true
-        ToggleButton.Visible = true
-    end
-end)
-
--- Сохраняем позицию прокрутки при изменении
-ScrollContainer:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
-    if MainFrame.Visible then
-        LastScrollPositions[CurrentTab] = ScrollContainer.CanvasPosition
-    end
-end)
-
--- Функция для ограничения прокрутки в мини-меню
-local function SetupScrollLimits()
-    -- Ждем обновления макета
-    wait(0.1)
-    
-    -- Получаем общий размер контента
-    local contentSize = ContentFrame.AbsoluteSize.Y
-    local containerSize = ScrollContainer.AbsoluteWindowSize.Y
-    
-    -- Устанавливаем максимальную прокрутку
-    local maxScroll = math.max(0, contentSize - containerSize)
-    
-    -- Для вкладки Keks добавляем дополнительные 50 пикселей
-    if CurrentTab == "Keks" then
-        maxScroll = maxScroll + 50  -- Увеличили с 10 до 50 пикселей
-    end
-    
-    -- Ограничиваем текущую позицию прокрутки
-    if ScrollContainer.CanvasPosition.Y > maxScroll then
-        ScrollContainer.CanvasPosition = Vector2.new(0, maxScroll)
-    end
-end
-
--- Вызываем функцию ограничения прокрутки при изменении размера контента
-ContentFrame:GetPropertyChangedSignal("AbsoluteSize"):Connect(SetupScrollLimits)
-
--- Функция применения сохраненных настроек к UI
-local function ApplySavedSettings()
-    -- Применяем настройки Kill Aura
-    if killAuraToggle then
-        killAuraToggle.Set(Settings.ActiveKillAura)
-    end
-    
-    -- Применяем настройки Auto Chop Tree
-    if autoChopToggle then
-        autoChopToggle.Set(Settings.ActiveAutoChopTree)
-    end
-    
-    -- Применяем настройки телепорта
-    if teleportTargetDropdown then
-        teleportTargetDropdown.SetValue(Settings.TeleportTarget)
-    end
-    
-    -- Обновляем глобальные переменные
-    ActiveKillAura = Settings.ActiveKillAura
-    ActiveAutoChopTree = Settings.ActiveAutoChopTree
-    DistanceForKillAura = Settings.DistanceForKillAura
-    DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
-    BringCount = Settings.BringCount
-    BringDelay = Settings.BringDelay
-    TeleportTarget = Settings.TeleportTarget
-    
-    print("Saved settings applied successfully!")
-end
-
--- Применяем сохраненные настройки после создания UI
-wait(1) -- Даем время для создания всех элементов UI
-ApplySavedSettings()
-
--- По умолчанию открываем вкладку Info
-switchToTab("Info")
-
--- Устанавливаем ограничения прокрутки после загрузки
-wait(0.5)
-SetupScrollLimits()
-
-print("Mobile ASTRALCHEAT with SAVE SYSTEM loaded successfully!")
-print("All settings will be saved automatically!")
