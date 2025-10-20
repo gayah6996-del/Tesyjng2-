@@ -671,7 +671,7 @@ end)
 local function createMainMenu()
     MainMenu = Instance.new("Frame")
     MainMenu.Name = "MainMenu"
-    MainMenu.Size = UDim2.new(0, 300, 0, 200)
+    MainMenu.Size = UDim2.new(0, 350, 0, 200) -- Увеличена ширина
     MainMenu.Position = savedPosition
     MainMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     MainMenu.BackgroundTransparency = 0.3
@@ -721,7 +721,7 @@ end
 local function createGunMenu()
     GunMenu = Instance.new("Frame")
     GunMenu.Name = "GunMenu"
-    GunMenu.Size = UDim2.new(0, 300, 0, 450)
+    GunMenu.Size = UDim2.new(0, 350, 0, 500) -- Увеличена ширина и высота
     GunMenu.Position = savedPosition
     GunMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     GunMenu.BackgroundTransparency = 0.3
@@ -748,14 +748,19 @@ local function createGunMenu()
     Title.ZIndex = 2
     Title.Parent = GunMenu
 
+    -- Вертикальные вкладки
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
-    TabButtons.Size = UDim2.new(1, 0, 0, 40)
-    TabButtons.Position = UDim2.new(0, 0, 0, 50)
+    TabButtons.Size = UDim2.new(0, 100, 1, -40) -- Вертикальное расположение
+    TabButtons.Position = UDim2.new(0, 0, 0, 40)
     TabButtons.BackgroundTransparency = 0.2
     TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     TabButtons.ZIndex = 2
     TabButtons.Parent = GunMenu
+
+    local TabLayout = Instance.new("UIListLayout")
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Parent = TabButtons
 
     local gunTabs = {
         {name = "Movement", defaultActive = true},
@@ -769,8 +774,8 @@ local function createGunMenu()
     for i, tab in ipairs(gunTabs) do
         local tabButton = Instance.new("TextButton")
         tabButton.Name = tab.name .. "Tab"
-        tabButton.Size = UDim2.new(0.33, 0, 1, 0)
-        tabButton.Position = UDim2.new(0.33 * (i-1), 0, 0, 0)
+        tabButton.Size = UDim2.new(1, 0, 0, 40) -- Вертикальные кнопки
+        tabButton.LayoutOrder = i
         tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
         tabButton.BackgroundTransparency = 0.2
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -782,8 +787,8 @@ local function createGunMenu()
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -20, 1, -100)
-        ContentFrame.Position = UDim2.new(0, 10, 0, 100)
+        ContentFrame.Size = UDim2.new(1, -110, 1, -100) -- Учитываем ширину вкладок
+        ContentFrame.Position = UDim2.new(0, 110, 0, 100) -- Сдвиг для вкладок
         ContentFrame.BackgroundTransparency = 1
         ContentFrame.ScrollBarThickness = 4
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
@@ -1451,7 +1456,7 @@ end
 local function createNightsMenu()
     NightsMenu = Instance.new("Frame")
     NightsMenu.Name = "NightsMenu"
-    NightsMenu.Size = UDim2.new(0, 300, 0, 450)
+    NightsMenu.Size = UDim2.new(0, 350, 0, 500) -- Увеличена ширина и высота
     NightsMenu.Position = savedPosition
     NightsMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     NightsMenu.BackgroundTransparency = 0.3
@@ -1478,14 +1483,19 @@ local function createNightsMenu()
     Title.ZIndex = 2
     Title.Parent = NightsMenu
 
+    -- Вертикальные вкладки
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
-    TabButtons.Size = UDim2.new(1, 0, 0, 40)
-    TabButtons.Position = UDim2.new(0, 0, 0, 50)
+    TabButtons.Size = UDim2.new(0, 100, 1, -40) -- Вертикальное расположение
+    TabButtons.Position = UDim2.new(0, 0, 0, 40)
     TabButtons.BackgroundTransparency = 0.2
     TabButtons.BackgroundColor3 = Color3.fromRGB(50, 0, 0)
     TabButtons.ZIndex = 2
     TabButtons.Parent = NightsMenu
+
+    local TabLayout = Instance.new("UIListLayout")
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Parent = TabButtons
 
     local nightsTabs = {
         {name = "Main", defaultActive = true},
@@ -1498,8 +1508,8 @@ local function createNightsMenu()
     for i, tab in ipairs(nightsTabs) do
         local tabButton = Instance.new("TextButton")
         tabButton.Name = tab.name .. "Tab"
-        tabButton.Size = UDim2.new(0.5, 0, 1, 0)
-        tabButton.Position = UDim2.new(0.5 * (i-1), 0, 0, 0)
+        tabButton.Size = UDim2.new(1, 0, 0, 40) -- Вертикальные кнопки
+        tabButton.LayoutOrder = i
         tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(120, 0, 0) or Color3.fromRGB(80, 0, 0)
         tabButton.BackgroundTransparency = 0.2
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1511,8 +1521,8 @@ local function createNightsMenu()
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -20, 1, -100)
-        ContentFrame.Position = UDim2.new(0, 10, 0, 100)
+        ContentFrame.Size = UDim2.new(1, -110, 1, -100) -- Учитываем ширину вкладок
+        ContentFrame.Position = UDim2.new(0, 110, 0, 100) -- Сдвиг для вкладок
         ContentFrame.BackgroundTransparency = 1
         ContentFrame.ScrollBarThickness = 4
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(255, 0, 0)
