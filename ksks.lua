@@ -5,6 +5,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local HttpService = game:GetService("HttpService")
+local SoundService = game:GetService("SoundService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
@@ -61,6 +62,66 @@ local noclipConnection = nil
 
 -- Текущее активное меню
 local currentActiveMenu = nil
+
+-- Фиолетовый цвет
+local PURPLE_COLOR = Color3.fromRGB(170, 0, 255)
+local PURPLE_DARK = Color3.fromRGB(100, 0, 150)
+local PURPLE_LIGHT = Color3.fromRGB(200, 100, 255)
+
+-- Функция для показа уведомлений
+local function ShowNotification(message)
+    local notification = Instance.new("TextLabel")
+    notification.Name = "Notification"
+    notification.Text = message
+    notification.TextColor3 = Color3.fromRGB(255, 255, 255)
+    notification.TextSize = 16
+    notification.Font = Enum.Font.GothamBold
+    notification.BackgroundColor3 = PURPLE_COLOR
+    notification.BackgroundTransparency = 0.2
+    notification.Size = UDim2.new(0, 0, 0, 40)
+    notification.Position = UDim2.new(1, -10, 0.9, 0)
+    notification.AnchorPoint = Vector2.new(1, 0)
+    notification.ZIndex = 100
+    notification.Parent = ScreenGui
+    
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = notification
+    
+    local stroke = Instance.new("UIStroke")
+    stroke.Color = PURPLE_LIGHT
+    stroke.Thickness = 2
+    stroke.Parent = notification
+    
+    -- Анимация появления
+    local tweenIn = TweenService:Create(notification, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+        Size = UDim2.new(0, 250, 0, 40)
+    })
+    tweenIn:Play()
+    
+    -- Звук уведомления
+    pcall(function()
+        local sound = Instance.new("Sound")
+        sound.SoundId = "rbxassetid://9046782152" -- Тыдынь звук
+        sound.Volume = 0.5
+        sound.Parent = notification
+        sound:Play()
+        game:GetService("Debris"):AddItem(sound, 2)
+    end)
+    
+    -- Автоматическое скрытие через 3 секунды
+    delay(3, function()
+        if notification then
+            local tweenOut = TweenService:Create(notification, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                Size = UDim2.new(0, 0, 0, 40)
+            })
+            tweenOut:Play()
+            tweenOut.Completed:Connect(function()
+                notification:Destroy()
+            end)
+        end
+    end)
+end
 
 -- Функции сохранения настроек
 local function SaveSettings()
@@ -138,7 +199,7 @@ local function CreateToggle(parent, text, callback, isActive)
     toggleButton.Name = "ToggleButton"
     toggleButton.Size = UDim2.new(0.3, 0, 0, 30)
     toggleButton.Position = UDim2.new(0.65, 0, 0.15, 0)
-    toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(80, 80, 80)
+    toggleButton.BackgroundColor3 = isActive and PURPLE_COLOR or Color3.fromRGB(80, 80, 80)
     toggleButton.BackgroundTransparency = 0.1
     toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleButton.Text = isActive and "ON" or "OFF"
@@ -158,8 +219,12 @@ local function CreateToggle(parent, text, callback, isActive)
     
     toggleButton.MouseButton1Click:Connect(function()
         isActive = not isActive
-        toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(80, 80, 80)
+        toggleButton.BackgroundColor3 = isActive and PURPLE_COLOR or Color3.fromRGB(80, 80, 80)
         toggleButton.Text = isActive and "ON" or "OFF"
+        
+        -- Показываем уведомление
+        ShowNotification(text .. ": " .. (isActive and "ON" or "OFF"))
+        
         callback(isActive)
         SaveSettings()
     end)
@@ -167,7 +232,7 @@ local function CreateToggle(parent, text, callback, isActive)
     return {
         Set = function(value)
             isActive = value
-            toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(80, 80, 80)
+            toggleButton.BackgroundColor3 = isActive and PURPLE_COLOR or Color3.fromRGB(80, 80, 80)
             toggleButton.Text = isActive and "ON" or "OFF"
         end
     }
@@ -221,7 +286,7 @@ local function CreateSlider(parent, text, min, max, default, callback)
     
     local sliderFill = Instance.new("Frame")
     sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+    sliderFill.BackgroundColor3 = PURPLE_COLOR
     sliderFill.ZIndex = 4
     sliderFill.Parent = sliderBar
     
@@ -286,7 +351,9 @@ local function CreateButton(parent, text, callback)
     buttonStroke.Thickness = 1
     buttonStroke.Parent = button
     
-    button.MouseButton1Click:Connect(callback)
+    button.MouseButton1Click:Connect(function()
+        callback()
+    end)
     
     return button
 end
@@ -299,7 +366,7 @@ local function createFOVCircle()
     
     fovCircle = Drawing.new("Circle")
     fovCircle.Visible = false
-    fovCircle.Color = Color3.fromRGB(0, 170, 255)
+    fovCircle.Color = PURPLE_COLOR
     fovCircle.Thickness = 2
     fovCircle.Filled = false
     fovCircle.Radius = aimBotFOV
@@ -326,7 +393,7 @@ local function createOpenCloseButton()
     OpenCloseButton.Position = savedButtonPosition
     OpenCloseButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
     OpenCloseButton.BackgroundTransparency = 0.1
-    OpenCloseButton.TextColor3 = Color3.fromRGB(0, 170, 255)
+    OpenCloseButton.TextColor3 = PURPLE_COLOR
     OpenCloseButton.Text = "⚙️"
     OpenCloseButton.Font = Enum.Font.GothamBold
     OpenCloseButton.TextSize = 24
@@ -340,7 +407,7 @@ local function createOpenCloseButton()
     Corner.Parent = OpenCloseButton
 
     local Stroke = Instance.new("UIStroke")
-    Stroke.Color = Color3.fromRGB(0, 170, 255)
+    Stroke.Color = PURPLE_COLOR
     Stroke.Thickness = 2
     Stroke.Parent = OpenCloseButton
 
@@ -369,9 +436,11 @@ local function createOpenCloseButton()
         if isGuiOpen then
             OpenCloseButton.Text = "✕"
             OpenCloseButton.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+            ShowNotification("Menu: ON")
         else
             OpenCloseButton.Text = "⚙️"
             OpenCloseButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+            ShowNotification("Menu: OFF")
         end
     end)
 
@@ -384,7 +453,7 @@ end
 -- Функция для переключения кнопок
 local function toggleButton(button, enabled)
     if enabled then
-        button.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+        button.BackgroundColor3 = PURPLE_COLOR
         button.Text = "ON"
     else
         button.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
@@ -464,7 +533,7 @@ local function createESP(otherPlayer)
                 if not espObjects[otherPlayer].tracer then
                     espObjects[otherPlayer].tracer = Drawing.new("Line")
                     espObjects[otherPlayer].tracer.Thickness = 1
-                    espObjects[otherPlayer].tracer.Color = Color3.fromRGB(0, 170, 255)
+                    espObjects[otherPlayer].tracer.Color = PURPLE_COLOR
                 end
                 
                 local screenCenter = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
@@ -480,7 +549,7 @@ local function createESP(otherPlayer)
                 if not espObjects[otherPlayer].box then
                     espObjects[otherPlayer].box = Drawing.new("Square")
                     espObjects[otherPlayer].box.Thickness = 1
-                    espObjects[otherPlayer].box.Color = Color3.fromRGB(0, 170, 255)
+                    espObjects[otherPlayer].box.Color = PURPLE_COLOR
                     espObjects[otherPlayer].box.Filled = false
                 end
                 
@@ -504,7 +573,7 @@ local function createESP(otherPlayer)
                     espObjects[otherPlayer].health.Size = 14
                     espObjects[otherPlayer].health.Center = true
                     espObjects[otherPlayer].health.Outline = true
-                    espObjects[otherPlayer].health.Color = Color3.fromRGB(0, 170, 255)
+                    espObjects[otherPlayer].health.Color = PURPLE_COLOR
                 end
                 
                 local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
@@ -522,7 +591,7 @@ local function createESP(otherPlayer)
                     espObjects[otherPlayer].distance.Size = 14
                     espObjects[otherPlayer].distance.Center = true
                     espObjects[otherPlayer].distance.Outline = true
-                    espObjects[otherPlayer].distance.Color = Color3.fromRGB(0, 170, 255)
+                    espObjects[otherPlayer].distance.Color = PURPLE_COLOR
                 end
                 
                 local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
@@ -685,6 +754,9 @@ local function BringItems(itemName)
             wait(BringDelay / 1000)
         end
     end
+    
+    -- Показываем уведомление о приносе предметов
+    ShowNotification("Bring " .. itemName .. ": " .. teleported .. " items")
 end
 
 -- Запускаем функции геймплея
@@ -748,7 +820,7 @@ local function createMainMenu()
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     Title.BackgroundTransparency = 0.1
-    Title.TextColor3 = Color3.fromRGB(0, 170, 255)
+    Title.TextColor3 = PURPLE_COLOR
     Title.Text = "SANSTRO MENU"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 18
@@ -768,6 +840,7 @@ local function createMainMenu()
         MainMenu.Visible = false
         GunMenu.Visible = true
         currentActiveMenu = GunMenu
+        ShowNotification("GunGame Menu: ON")
     end)
     GunButton.Position = UDim2.new(0, 20, 0, 60)
     GunButton.Size = UDim2.new(1, -40, 0, 50)
@@ -776,6 +849,7 @@ local function createMainMenu()
         MainMenu.Visible = false
         NightsMenu.Visible = true
         currentActiveMenu = NightsMenu
+        ShowNotification("99 Nights Menu: ON")
     end)
     NightsButton.Position = UDim2.new(0, 20, 0, 125)
     NightsButton.Size = UDim2.new(1, -40, 0, 50)
@@ -825,7 +899,7 @@ local function createGunMenu()
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     Title.BackgroundTransparency = 0.1
-    Title.TextColor3 = Color3.fromRGB(0, 170, 255)
+    Title.TextColor3 = PURPLE_COLOR
     Title.Text = "GUNGAME MENU"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 18
@@ -874,7 +948,7 @@ local function createGunMenu()
         tabButton.Name = tab.name .. "Tab"
         tabButton.Size = UDim2.new(1, -10, 0, 50)
         tabButton.Position = UDim2.new(0, 5, 0, 5 + (i-1)*55)
-        tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(40, 40, 40)
+        tabButton.BackgroundColor3 = tab.defaultActive and PURPLE_COLOR or Color3.fromRGB(40, 40, 40)
         tabButton.BackgroundTransparency = 0.1
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         tabButton.Text = tab.name
@@ -898,7 +972,7 @@ local function createGunMenu()
         ContentFrame.Position = UDim2.new(0, 110, 0, 55)
         ContentFrame.BackgroundTransparency = 1
         ContentFrame.ScrollBarThickness = 6
-        ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 170, 255)
+        ContentFrame.ScrollBarImageColor3 = PURPLE_COLOR
         ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
         ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
         ContentFrame.Visible = tab.defaultActive
@@ -951,7 +1025,7 @@ local function createGunMenu()
     SpeedHackToggle.Name = "SpeedHackToggle"
     SpeedHackToggle.Size = UDim2.new(0.3, 0, 0, 30)
     SpeedHackToggle.Position = UDim2.new(0.65, 0, 0, 5)
-    SpeedHackToggle.BackgroundColor3 = speedHackEnabled and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(80, 80, 80)
+    SpeedHackToggle.BackgroundColor3 = speedHackEnabled and PURPLE_COLOR or Color3.fromRGB(80, 80, 80)
     SpeedHackToggle.BackgroundTransparency = 0.1
     SpeedHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     SpeedHackToggle.Text = speedHackEnabled and "ON" or "OFF"
@@ -1003,11 +1077,13 @@ local function createGunMenu()
     -- Jump Hack
     local JumpHackToggle = CreateToggle(gunTabContents["Movement"], "Jump Hack", function(v)
         jumpHackEnabled = v
+        ShowNotification("Jump Hack: " .. (v and "ON" or "OFF"))
     end, jumpHackEnabled)
 
     -- NoClip
     local NoClipToggle = CreateToggle(gunTabContents["Movement"], "NoClip", function(v)
         noclipEnabled = v
+        ShowNotification("NoClip: " .. (v and "ON" or "OFF"))
         
         if noclipEnabled then
             if noclipConnection then
@@ -1041,22 +1117,27 @@ local function createGunMenu()
     -- Visual Tab Content
     local ESPTracersToggle = CreateToggle(gunTabContents["Visual"], "ESP Tracers", function(v)
         espTracersEnabled = v
+        ShowNotification("ESP Tracers: " .. (v and "ON" or "OFF"))
     end, espTracersEnabled)
 
     local ESPBoxToggle = CreateToggle(gunTabContents["Visual"], "ESP Box", function(v)
         espBoxEnabled = v
+        ShowNotification("ESP Box: " .. (v and "ON" or "OFF"))
     end, espBoxEnabled)
 
     local ESPHealthToggle = CreateToggle(gunTabContents["Visual"], "ESP Health", function(v)
         espHealthEnabled = v
+        ShowNotification("ESP Health: " .. (v and "ON" or "OFF"))
     end, espHealthEnabled)
 
     local ESPDistanceToggle = CreateToggle(gunTabContents["Visual"], "ESP Distance", function(v)
         espDistanceEnabled = v
+        ShowNotification("ESP Distance: " .. (v and "ON" or "OFF"))
     end, espDistanceEnabled)
 
     local ESPCountToggle = CreateToggle(gunTabContents["Visual"], "ESP Count", function(v)
         espCountEnabled = v
+        ShowNotification("ESP Count: " .. (v and "ON" or "OFF"))
         
         if espCountEnabled then
             if not espCountText then
@@ -1064,7 +1145,7 @@ local function createGunMenu()
                 espCountText.Size = 16
                 espCountText.Center = true
                 espCountText.Outline = true
-                espCountText.Color = Color3.fromRGB(0, 170, 255)
+                espCountText.Color = PURPLE_COLOR
                 espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 80)
             end
             espCountText.Visible = true
@@ -1078,6 +1159,7 @@ local function createGunMenu()
     -- AimBot Tab Content
     local AimBotToggle = CreateToggle(gunTabContents["AimBot"], "AimBot", function(v)
         aimBotEnabled = v
+        ShowNotification("AimBot: " .. (v and "ON" or "OFF"))
         
         if fovCircle then
             fovCircle.Visible = aimBotEnabled
@@ -1097,6 +1179,7 @@ local function createGunMenu()
         speedHackEnabled = not speedHackEnabled
         toggleButton(SpeedHackToggle, speedHackEnabled)
         SpeedHackSlider.Visible = speedHackEnabled
+        ShowNotification("Speed Hack: " .. (speedHackEnabled and "ON" or "OFF"))
         
         if speedHackEnabled then
             local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -1152,7 +1235,7 @@ local function createGunMenu()
             end
             
             for btnName, btn in pairs(gunTabButtons) do
-                btn.BackgroundColor3 = (btnName == tabName) and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(40, 40, 40)
+                btn.BackgroundColor3 = (btnName == tabName) and PURPLE_COLOR or Color3.fromRGB(40, 40, 40)
             end
         end)
     end
@@ -1246,7 +1329,7 @@ local function createNightsMenu()
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
     Title.BackgroundTransparency = 0.1
-    Title.TextColor3 = Color3.fromRGB(0, 170, 255)
+    Title.TextColor3 = PURPLE_COLOR
     Title.Text = "99 NIGHTS MENU"
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 18
@@ -1294,7 +1377,7 @@ local function createNightsMenu()
         tabButton.Name = tab.name .. "Tab"
         tabButton.Size = UDim2.new(1, -10, 0, 50)
         tabButton.Position = UDim2.new(0, 5, 0, 5 + (i-1)*55)
-        tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(40, 40, 40)
+        tabButton.BackgroundColor3 = tab.defaultActive and PURPLE_COLOR or Color3.fromRGB(40, 40, 40)
         tabButton.BackgroundTransparency = 0.1
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         tabButton.Text = tab.name
@@ -1318,7 +1401,7 @@ local function createNightsMenu()
         ContentFrame.Position = UDim2.new(0, 110, 0, 55)
         ContentFrame.BackgroundTransparency = 1
         ContentFrame.ScrollBarThickness = 6
-        ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(0, 170, 255)
+        ContentFrame.ScrollBarImageColor3 = PURPLE_COLOR
         ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
         ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
         ContentFrame.Visible = tab.defaultActive
@@ -1337,6 +1420,7 @@ local function createNightsMenu()
     -- Main Tab Content
     local KillAuraToggle = CreateToggle(nightsTabContents["Main"], "Kill Aura", function(v)
         ActiveKillAura = v
+        ShowNotification("Kill Aura: " .. (v and "ON" or "OFF"))
     end, ActiveKillAura)
 
     CreateSlider(nightsTabContents["Main"], "Kill Distance", 10, 150, DistanceForKillAura, function(v)
@@ -1345,6 +1429,7 @@ local function createNightsMenu()
 
     local AutoChopToggle = CreateToggle(nightsTabContents["Main"], "Auto Chop", function(v)
         ActiveAutoChopTree = v
+        ShowNotification("Auto Chop: " .. (v and "ON" or "OFF"))
     end, ActiveAutoChopTree)
 
     CreateSlider(nightsTabContents["Main"], "Chop Distance", 10, 150, DistanceForAutoChopTree, function(v)
@@ -1364,6 +1449,7 @@ local function createNightsMenu()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
+            ShowNotification("Teleported to Campfire")
         end
     end)
 
@@ -1625,7 +1711,7 @@ local function createNightsMenu()
             end
             
             for btnName, btn in pairs(nightsTabButtons) do
-                btn.BackgroundColor3 = (btnName == tabName) and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(40, 40, 40)
+                btn.BackgroundColor3 = (btnName == tabName) and PURPLE_COLOR or Color3.fromRGB(40, 40, 40)
             end
             
             if tabName == "Bring" then
