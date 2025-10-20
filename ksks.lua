@@ -671,7 +671,7 @@ end)
 local function createMainMenu()
     MainMenu = Instance.new("Frame")
     MainMenu.Name = "MainMenu"
-    MainMenu.Size = UDim2.new(0, 300, 0, 220) -- Увеличена ширина и высота
+    MainMenu.Size = UDim2.new(0, 500, 0, 220) -- Увеличена ширина и высота
     MainMenu.Position = savedPosition
     MainMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     MainMenu.BackgroundTransparency = 0.3
@@ -721,7 +721,7 @@ end
 local function createGunMenu()
     GunMenu = Instance.new("Frame")
     GunMenu.Name = "GunMenu"
-    GunMenu.Size = UDim2.new(0, 300, 0, 500) -- Увеличена ширина и высота
+    GunMenu.Size = UDim2.new(0, 500, 0, 350) -- Увеличена ширина и высота
     GunMenu.Position = savedPosition
     GunMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     GunMenu.BackgroundTransparency = 0.3
@@ -1456,7 +1456,7 @@ end
 local function createNightsMenu()
     NightsMenu = Instance.new("Frame")
     NightsMenu.Name = "NightsMenu"
-    NightsMenu.Size = UDim2.new(0, 300, 0, 500) -- Увеличена ширина и высота
+    NightsMenu.Size = UDim2.new(0, 500, 0, 350) -- Увеличена ширина и высота
     NightsMenu.Position = savedPosition
     NightsMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     NightsMenu.BackgroundTransparency = 0.3
