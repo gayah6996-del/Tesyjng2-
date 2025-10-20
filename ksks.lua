@@ -671,7 +671,7 @@ end)
 local function createMainMenu()
     MainMenu = Instance.new("Frame")
     MainMenu.Name = "MainMenu"
-    MainMenu.Size = UDim2.new(0, 250, 0, 120)
+    MainMenu.Size = UDim2.new(0, 250, 0, 200)
     MainMenu.Position = savedPosition
     MainMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     MainMenu.BackgroundTransparency = 0.3
@@ -1082,7 +1082,7 @@ end
 local function createNightsMenu()
     NightsMenu = Instance.new("Frame")
     NightsMenu.Name = "NightsMenu"
-    NightsMenu.Size = UDim2.new(0, 250, 0, 220)
+    NightsMenu.Size = UDim2.new(0, 300, 0, 300)
     NightsMenu.Position = savedPosition
     NightsMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     NightsMenu.BackgroundTransparency = 0.3
@@ -1216,7 +1216,7 @@ local function createNightsMenu()
                 
                 -- Если это подменю и оно открыто, добавляем его высоту + дополнительный отступ
                 if child.Name:find("SubMenu") and openSubMenus[child.Name] then
-                    currentY = currentY + child.AbsoluteSize.Y + padding + 12 -- Дополнительный отступ
+                    currentY = currentY + child.AbsoluteSize.Y + padding + 8 -- Дополнительный отступ
                 else
                     currentY = currentY + child.AbsoluteSize.Y + padding
                 end
