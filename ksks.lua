@@ -671,7 +671,7 @@ end)
 local function createMainMenu()
     MainMenu = Instance.new("Frame")
     MainMenu.Name = "MainMenu"
-    MainMenu.Size = UDim2.new(0, 400, 0, 220) -- Увеличена ширина и высота
+    MainMenu.Size = UDim2.new(0, 300, 0, 220) -- Увеличена ширина и высота
     MainMenu.Position = savedPosition
     MainMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     MainMenu.BackgroundTransparency = 0.3
@@ -721,7 +721,7 @@ end
 local function createGunMenu()
     GunMenu = Instance.new("Frame")
     GunMenu.Name = "GunMenu"
-    GunMenu.Size = UDim2.new(0, 400, 0, 550) -- Увеличена ширина и высота
+    GunMenu.Size = UDim2.new(0, 300, 0, 500) -- Увеличена ширина и высота
     GunMenu.Position = savedPosition
     GunMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     GunMenu.BackgroundTransparency = 0.3
@@ -1456,7 +1456,7 @@ end
 local function createNightsMenu()
     NightsMenu = Instance.new("Frame")
     NightsMenu.Name = "NightsMenu"
-    NightsMenu.Size = UDim2.new(0, 400, 0, 550) -- Увеличена ширина и высота
+    NightsMenu.Size = UDim2.new(0, 300, 0, 500) -- Увеличена ширина и высота
     NightsMenu.Position = savedPosition
     NightsMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 0)
     NightsMenu.BackgroundTransparency = 0.3
@@ -1688,7 +1688,7 @@ local function createNightsMenu()
     FoodMedLayout.Padding = UDim.new(0, 8) -- Увеличен отступ
     FoodMedLayout.Parent = FoodMedSubMenu
 
-    local foodMedItems = {"Carrot", "Ribs", "Morsel", "Steak", "MedKit", "Bandage"}
+    local foodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage"}
     for _, itemName in pairs(foodMedItems) do
         CreateButton(FoodMedSubMenu, "Bring " .. itemName, function()
             BringItems(itemName)
