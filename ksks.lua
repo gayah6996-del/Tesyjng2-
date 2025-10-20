@@ -2,14 +2,12 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
-local mouse = player:GetMouse()
 
--- Глобальные переменные для сохранения состояний
+-- Глобальные переменные
 local speedHackEnabled = false
 local jumpHackEnabled = false
 local noclipEnabled = false
@@ -22,7 +20,7 @@ local aimBotEnabled = false
 local currentSpeed = 16
 local aimBotFOV = 50
 
--- Новые переменные из второго скрипта
+-- 99 Nights переменные
 local ActiveKillAura = false
 local ActiveAutoChopTree = false
 local DistanceForKillAura = 25
@@ -30,17 +28,6 @@ local DistanceForAutoChopTree = 25
 local BringCount = 5
 local BringDelay = 200
 local CampfirePosition = Vector3.new(0, 10, 0)
-
--- Настройки файла
-local SETTINGS_FILE = "astralcheat_settings.txt"
-local Settings = {
-    ActiveKillAura = false,
-    ActiveAutoChopTree = false,
-    DistanceForKillAura = 25,
-    DistanceForAutoChopTree = 25,
-    BringCount = 5,
-    BringDelay = 200
-}
 
 -- ESP объекты
 local espObjects = {}
@@ -50,17 +37,17 @@ local noclipConnection = nil
 local fovCircle = nil
 
 -- Загрузка Rayfield
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/shlexware/Rayfield/main/source'))()
 
 -- Создание основного окна
 local Window = Rayfield:CreateWindow({
    Name = "SANSTRO Menu",
-   LoadingTitle = "SANSTRO Menu",
+   LoadingTitle = "SANSTRO Menu Loading...",
    LoadingSubtitle = "by SANSTRO",
    ConfigurationSaving = {
       Enabled = true,
       FolderName = "SANSTRO",
-      FileName = "Settings"
+      FileName = "Config"
    },
    Discord = {
       Enabled = false,
@@ -70,115 +57,531 @@ local Window = Rayfield:CreateWindow({
    KeySystem = false,
 })
 
--- Функции сохранения настроек
-local function SaveSettings()
-    pcall(function()
-        Settings.ActiveKillAura = ActiveKillAura
-        Settings.ActiveAutoChopTree = ActiveAutoChopTree
-        Settings.DistanceForKillAura = DistanceForKillAura
-        Settings.DistanceForAutoChopTree = DistanceForAutoChopTree
-        Settings.BringCount = BringCount
-        Settings.BringDelay = BringDelay
-        
-        local data = HttpService:JSONEncode(Settings)
-        writefile(SETTINGS_FILE, data)
-    end)
-end
+-- Gun Game Tab
+local GunGameTab = Window:CreateTab("Gun Game", "rbxassetid://4483345998")
 
-local function LoadSettings()
-    pcall(function()
-        if isfile(SETTINGS_FILE) then
-            local data = readfile(SETTINGS_FILE)
-            local loadedSettings = HttpService:JSONDecode(data)
-            for key, value in pairs(loadedSettings) do
-                if Settings[key] ~= nil then 
-                    Settings[key] = value 
+-- Movement Section
+local MovementSection = GunGameTab:CreateSection("Movement")
+
+local SpeedToggle = MovementSection:CreateToggle({
+    Name = "Speed Hack",
+    CurrentValue = false,
+    Callback = function(Value)
+        speedHackEnabled = Value
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            if Value then
+                player.Character.Humanoid.WalkSpeed = currentSpeed
+            else
+                player.Character.Humanoid.WalkSpeed = 16
+            end
+        end
+    end,
+})
+
+local SpeedSlider = MovementSection:CreateSlider({
+    Name = "Speed Value",
+    Range = {16, 100},
+    Increment = 1,
+    Suffix = "studs",
+    CurrentValue = 16,
+    Callback = function(Value)
+        currentSpeed = Value
+        if speedHackEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = Value
+        end
+    end,
+})
+
+local JumpToggle = MovementSection:CreateToggle({
+    Name = "Jump Hack",
+    CurrentValue = false,
+    Callback = function(Value)
+        jumpHackEnabled = Value
+    end,
+})
+
+local NoClipToggle = MovementSection:CreateToggle({
+    Name = "NoClip",
+    CurrentValue = false,
+    Callback = function(Value)
+        noclipEnabled = Value
+        if Value then
+            if noclipConnection then noclipConnection:Disconnect() end
+            noclipConnection = RunService.Stepped:Connect(function()
+                if player.Character then
+                    for _, part in pairs(player.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if noclipConnection then
+                noclipConnection:Disconnect()
+                noclipConnection = nil
+            end
+        end
+    end,
+})
+
+-- Visual Section
+local VisualSection = GunGameTab:CreateSection("Visual")
+
+local TracerToggle = VisualSection:CreateToggle({
+    Name = "ESP Tracers",
+    CurrentValue = false,
+    Callback = function(Value)
+        espTracersEnabled = Value
+        if not Value then
+            for _, espData in pairs(espObjects) do
+                if espData.tracer then
+                    espData.tracer.Visible = false
+                end
+            end
+        end
+    end,
+})
+
+local BoxToggle = VisualSection:CreateToggle({
+    Name = "ESP Box",
+    CurrentValue = false,
+    Callback = function(Value)
+        espBoxEnabled = Value
+        if not Value then
+            for _, espData in pairs(espObjects) do
+                if espData.box then
+                    espData.box.Visible = false
+                end
+            end
+        end
+    end,
+})
+
+local HealthToggle = VisualSection:CreateToggle({
+    Name = "ESP Health",
+    CurrentValue = false,
+    Callback = function(Value)
+        espHealthEnabled = Value
+        if not Value then
+            for _, espData in pairs(espObjects) do
+                if espData.health then
+                    espData.health.Visible = false
+                end
+            end
+        end
+    end,
+})
+
+local DistanceToggle = VisualSection:CreateToggle({
+    Name = "ESP Distance",
+    CurrentValue = false,
+    Callback = function(Value)
+        espDistanceEnabled = Value
+        if not Value then
+            for _, espData in pairs(espObjects) do
+                if espData.distance then
+                    espData.distance.Visible = false
+                end
+            end
+        end
+    end,
+})
+
+local CountToggle = VisualSection:CreateToggle({
+    Name = "ESP Count",
+    CurrentValue = false,
+    Callback = function(Value)
+        espCountEnabled = Value
+        if Value then
+            if not espCountText then
+                espCountText = Drawing.new("Text")
+                espCountText.Size = 16
+                espCountText.Center = true
+                espCountText.Outline = true
+                espCountText.Color = Color3.fromRGB(255, 0, 0)
+                espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 80)
+            end
+            espCountText.Visible = true
+        elseif espCountText then
+            espCountText.Visible = false
+        end
+    end,
+})
+
+-- AimBot Section
+local AimBotSection = GunGameTab:CreateSection("AimBot")
+
+local AimBotToggle = AimBotSection:CreateToggle({
+    Name = "AimBot",
+    CurrentValue = false,
+    Callback = function(Value)
+        aimBotEnabled = Value
+        if Value then
+            if not fovCircle then
+                fovCircle = Drawing.new("Circle")
+                fovCircle.Visible = true
+                fovCircle.Color = Color3.fromRGB(255, 0, 0)
+                fovCircle.Thickness = 1
+                fovCircle.Filled = false
+                fovCircle.Radius = aimBotFOV
+                fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+            else
+                fovCircle.Visible = true
+            end
+        elseif fovCircle then
+            fovCircle.Visible = false
+        end
+    end,
+})
+
+local FOVSlider = AimBotSection:CreateSlider({
+    Name = "AimBot FOV",
+    Range = {10, 200},
+    Increment = 1,
+    Suffix = "radius",
+    CurrentValue = 50,
+    Callback = function(Value)
+        aimBotFOV = Value
+        if fovCircle then
+            fovCircle.Radius = Value
+        end
+    end,
+})
+
+-- 99 Nights Tab
+local NightsTab = Window:CreateTab("99 Nights", "rbxassetid://4483345998")
+
+-- Main Features Section
+local MainSection = NightsTab:CreateSection("Main Features")
+
+local KillAuraToggle = MainSection:CreateToggle({
+    Name = "Kill Aura",
+    CurrentValue = false,
+    Callback = function(Value)
+        ActiveKillAura = Value
+    end,
+})
+
+local KillDistanceSlider = MainSection:CreateSlider({
+    Name = "Kill Distance",
+    Range = {10, 150},
+    Increment = 1,
+    Suffix = "studs",
+    CurrentValue = 25,
+    Callback = function(Value)
+        DistanceForKillAura = Value
+    end,
+})
+
+local AutoChopToggle = MainSection:CreateToggle({
+    Name = "Auto Chop",
+    CurrentValue = false,
+    Callback = function(Value)
+        ActiveAutoChopTree = Value
+    end,
+})
+
+local ChopDistanceSlider = MainSection:CreateSlider({
+    Name = "Chop Distance",
+    Range = {10, 150},
+    Increment = 1,
+    Suffix = "studs",
+    CurrentValue = 25,
+    Callback = function(Value)
+        DistanceForAutoChopTree = Value
+    end,
+})
+
+-- Bring Items Section
+local BringSection = NightsTab:CreateSection("Bring Items")
+
+local BringCountSlider = BringSection:CreateSlider({
+    Name = "Bring Count",
+    Range = {1, 20},
+    Increment = 1,
+    Suffix = "items",
+    CurrentValue = 5,
+    Callback = function(Value)
+        BringCount = Value
+    end,
+})
+
+local BringSpeedSlider = BringSection:CreateSlider({
+    Name = "Bring Speed",
+    Range = {50, 500},
+    Increment = 10,
+    Suffix = "ms",
+    CurrentValue = 200,
+    Callback = function(Value)
+        BringDelay = Value
+    end,
+})
+
+local TeleportButton = BringSection:CreateButton({
+    Name = "Teleport to Campfire",
+    Callback = function()
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
+        end
+    end,
+})
+
+-- Resources Section
+local ResourcesSection = NightsTab:CreateSection("Resources")
+
+local resourcesItems = {"Logs", "Coal", "Chair", "Fuel Canister", "Oil Barrel"}
+for _, itemName in pairs(resourcesItems) do
+    ResourcesSection:CreateButton({
+        Name = "Bring " .. itemName,
+        Callback = function()
+            -- Bring Items функция
+            local targetPos = CampfirePosition
+            local items = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    local itemLower = item.Name:lower()
+                    local searchLower = itemName:lower()
+                    
+                    if itemLower:find(searchLower) then
+                        local part = item:FindFirstChildWhichIsA("BasePart")
+                        if part then table.insert(items, part) end
+                    end
                 end
             end
             
-            -- Применяем загруженные настройки
-            ActiveKillAura = Settings.ActiveKillAura
-            ActiveAutoChopTree = Settings.ActiveAutoChopTree
-            DistanceForKillAura = Settings.DistanceForKillAura
-            DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
-            BringCount = Settings.BringCount
-            BringDelay = Settings.BringDelay
-        end
-    end)
+            local teleported = 0
+            for i = 1, math.min(BringCount, #items) do
+                local item = items[i]
+                item.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3,3),
+                    targetPos.Y + 3,
+                    targetPos.Z + math.random(-3,3)
+                )
+                item.Anchored = false
+                item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
+        end,
+    })
 end
 
--- Загружаем настройки при запуске
-LoadSettings()
+-- Metals Section
+local MetalsSection = NightsTab:CreateSection("Metals")
 
--- Функция создания FOV Circle
-local function createFOVCircle()
-    if fovCircle then
-        fovCircle:Remove()
-    end
-    
-    fovCircle = Drawing.new("Circle")
-    fovCircle.Visible = false
-    fovCircle.Color = Color3.fromRGB(255, 0, 0)
-    fovCircle.Thickness = 1
-    fovCircle.Filled = false
-    fovCircle.Radius = aimBotFOV
-    fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+local metalsItems = {"Bolt", "Sheet Metal", "Old Radio", "Scrap Metal", "UFO Scrap", "Broken Microwave"}
+for _, itemName in pairs(metalsItems) do
+    MetalsSection:CreateButton({
+        Name = "Bring " .. itemName,
+        Callback = function()
+            -- Bring Items функция
+            local targetPos = CampfirePosition
+            local items = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    local itemLower = item.Name:lower()
+                    local searchLower = itemName:lower()
+                    
+                    if itemLower:find(searchLower) then
+                        local part = item:FindFirstChildWhichIsA("BasePart")
+                        if part then table.insert(items, part) end
+                    end
+                end
+            end
+            
+            local teleported = 0
+            for i = 1, math.min(BringCount, #items) do
+                local item = items[i]
+                item.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3,3),
+                    targetPos.Y + 3,
+                    targetPos.Z + math.random(-3,3)
+                )
+                item.Anchored = false
+                item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
+        end,
+    })
 end
 
--- Функция обновления FOV Circle
-local function updateFOVCircle()
-    if fovCircle then
-        fovCircle.Radius = aimBotFOV
-        fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
-    end
+-- Food & Medical Section
+local FoodMedSection = NightsTab:CreateSection("Food & Medical")
+
+local foodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage"}
+for _, itemName in pairs(foodMedItems) do
+    FoodMedSection:CreateButton({
+        Name = "Bring " .. itemName,
+        Callback = function()
+            -- Bring Items функция
+            local targetPos = CampfirePosition
+            local items = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    local itemLower = item.Name:lower()
+                    local searchLower = itemName:lower()
+                    
+                    if itemLower:find(searchLower) then
+                        local part = item:FindFirstChildWhichIsA("BasePart")
+                        if part then table.insert(items, part) end
+                    end
+                end
+            end
+            
+            local teleported = 0
+            for i = 1, math.min(BringCount, #items) do
+                local item = items[i]
+                item.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3,3),
+                    targetPos.Y + 3,
+                    targetPos.Z + math.random(-3,3)
+                )
+                item.Anchored = false
+                item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
+        end,
+    })
 end
 
--- Функция очистки ESP
-local function cleanupESP(otherPlayer)
-    if espObjects[otherPlayer] then
-        if espObjects[otherPlayer].tracer then
-            espObjects[otherPlayer].tracer:Remove()
-        end
-        if espObjects[otherPlayer].box then
-            espObjects[otherPlayer].box:Remove()
-        end
-        if espObjects[otherPlayer].health then
-            espObjects[otherPlayer].health:Remove()
-        end
-        if espObjects[otherPlayer].distance then
-            espObjects[otherPlayer].distance:Remove()
-        end
-        espObjects[otherPlayer] = nil
-    end
-    
-    if espConnections[otherPlayer] then
-        espConnections[otherPlayer]:Disconnect()
-        espConnections[otherPlayer] = nil
-    end
+-- Weapons Section
+local WeaponsSection = NightsTab:CreateSection("Weapons")
+
+local weaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo"}
+for _, itemName in pairs(weaponsItems) do
+    WeaponsSection:CreateButton({
+        Name = "Bring " .. itemName,
+        Callback = function()
+            -- Bring Items функция
+            local targetPos = CampfirePosition
+            local items = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    local itemLower = item.Name:lower()
+                    local searchLower = itemName:lower()
+                    
+                    if itemLower:find(searchLower) then
+                        local part = item:FindFirstChildWhichIsA("BasePart")
+                        if part then table.insert(items, part) end
+                    end
+                end
+            end
+            
+            local teleported = 0
+            for i = 1, math.min(BringCount, #items) do
+                local item = items[i]
+                item.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3,3),
+                    targetPos.Y + 3,
+                    targetPos.Z + math.random(-3,3)
+                )
+                item.Anchored = false
+                item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
+        end,
+    })
+end
+
+-- Axes Section
+local AxeSection = NightsTab:CreateSection("Axes")
+
+local axeItems = {"Good Axe", "Strong Axe", "Chainsaw"}
+for _, itemName in pairs(axeItems) do
+    AxeSection:CreateButton({
+        Name = "Bring " .. itemName,
+        Callback = function()
+            -- Bring Items функция
+            local targetPos = CampfirePosition
+            local items = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    local itemLower = item.Name:lower()
+                    local searchLower = itemName:lower()
+                    
+                    if itemLower:find(searchLower) then
+                        local part = item:FindFirstChildWhichIsA("BasePart")
+                        if part then table.insert(items, part) end
+                    end
+                end
+            end
+            
+            local teleported = 0
+            for i = 1, math.min(BringCount, #items) do
+                local item = items[i]
+                item.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3,3),
+                    targetPos.Y + 3,
+                    targetPos.Z + math.random(-3,3)
+                )
+                item.Anchored = false
+                item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                teleported = teleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
+        end,
+    })
 end
 
 -- ESP Functions
 local function createESP(otherPlayer)
     if otherPlayer == player then return end
     
-    cleanupESP(otherPlayer)
-    
     espObjects[otherPlayer] = {
-        tracer = nil,
-        box = nil,
-        health = nil,
-        distance = nil
+        tracer = Drawing.new("Line"),
+        box = Drawing.new("Square"),
+        health = Drawing.new("Text"),
+        distance = Drawing.new("Text")
     }
     
-    local function updateESP()
-        if not espObjects[otherPlayer] then return end
-        
-        -- Check if player is dead or doesn't exist
+    espObjects[otherPlayer].tracer.Thickness = 1
+    espObjects[otherPlayer].tracer.Color = Color3.fromRGB(255, 0, 0)
+    
+    espObjects[otherPlayer].box.Thickness = 1
+    espObjects[otherPlayer].box.Color = Color3.fromRGB(255, 0, 0)
+    espObjects[otherPlayer].box.Filled = false
+    
+    espObjects[otherPlayer].health.Size = 14
+    espObjects[otherPlayer].health.Center = true
+    espObjects[otherPlayer].health.Outline = true
+    espObjects[otherPlayer].health.Color = Color3.fromRGB(255, 0, 0)
+    
+    espObjects[otherPlayer].distance.Size = 14
+    espObjects[otherPlayer].distance.Center = true
+    espObjects[otherPlayer].distance.Outline = true
+    espObjects[otherPlayer].distance.Color = Color3.fromRGB(255, 0, 0)
+    
+    espConnections[otherPlayer] = RunService.Heartbeat:Connect(function()
         if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
-            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+            espObjects[otherPlayer].tracer.Visible = false
+            espObjects[otherPlayer].box.Visible = false
+            espObjects[otherPlayer].health.Visible = false
+            espObjects[otherPlayer].distance.Visible = false
             return
         end
         
@@ -186,14 +589,11 @@ local function createESP(otherPlayer)
         local humanoid = otherPlayer.Character.Humanoid
         local head = otherPlayer.Character:FindFirstChild("Head")
         
-        if not head then return end
-        
-        -- Check if player is dead
-        if humanoid.Health <= 0 then
-            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
+        if not head or humanoid.Health <= 0 then
+            espObjects[otherPlayer].tracer.Visible = false
+            espObjects[otherPlayer].box.Visible = false
+            espObjects[otherPlayer].health.Visible = false
+            espObjects[otherPlayer].distance.Visible = false
             return
         end
         
@@ -202,155 +602,104 @@ local function createESP(otherPlayer)
         if onScreen then
             -- Tracer
             if espTracersEnabled then
-                if not espObjects[otherPlayer].tracer then
-                    espObjects[otherPlayer].tracer = Drawing.new("Line")
-                    espObjects[otherPlayer].tracer.Thickness = 1
-                    espObjects[otherPlayer].tracer.Color = Color3.fromRGB(255, 0, 0)
-                end
-                
                 local screenCenter = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
                 espObjects[otherPlayer].tracer.From = screenCenter
                 espObjects[otherPlayer].tracer.To = Vector2.new(vector.X, vector.Y)
                 espObjects[otherPlayer].tracer.Visible = true
-            elseif espObjects[otherPlayer].tracer then
+            else
                 espObjects[otherPlayer].tracer.Visible = false
             end
             
             -- Box ESP
             if espBoxEnabled then
-                if not espObjects[otherPlayer].box then
-                    espObjects[otherPlayer].box = Drawing.new("Square")
-                    espObjects[otherPlayer].box.Thickness = 1
-                    espObjects[otherPlayer].box.Color = Color3.fromRGB(255, 0, 0)
-                    espObjects[otherPlayer].box.Filled = false
-                end
-                
                 local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                local rootPos = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
-                
-                local size = Vector2.new(2000 / rootPos.Z, 3000 / rootPos.Z)
+                local size = Vector2.new(2000 / vector.Z, 3000 / vector.Z)
                 local position = Vector2.new(headPos.X - size.X / 2, headPos.Y - size.Y / 2)
                 
                 espObjects[otherPlayer].box.Size = size
                 espObjects[otherPlayer].box.Position = position
                 espObjects[otherPlayer].box.Visible = true
-            elseif espObjects[otherPlayer].box then
+            else
                 espObjects[otherPlayer].box.Visible = false
             end
             
             -- Health ESP
             if espHealthEnabled then
-                if not espObjects[otherPlayer].health then
-                    espObjects[otherPlayer].health = Drawing.new("Text")
-                    espObjects[otherPlayer].health.Size = 14
-                    espObjects[otherPlayer].health.Center = true
-                    espObjects[otherPlayer].health.Outline = true
-                    espObjects[otherPlayer].health.Color = Color3.fromRGB(255, 0, 0)
-                end
-                
                 local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
                 espObjects[otherPlayer].health.Position = Vector2.new(headPos.X, headPos.Y - 40)
                 espObjects[otherPlayer].health.Text = "HP: " .. math.floor(humanoid.Health)
                 espObjects[otherPlayer].health.Visible = true
-            elseif espObjects[otherPlayer].health then
+            else
                 espObjects[otherPlayer].health.Visible = false
             end
             
             -- Distance ESP
             if espDistanceEnabled then
-                if not espObjects[otherPlayer].distance then
-                    espObjects[otherPlayer].distance = Drawing.new("Text")
-                    espObjects[otherPlayer].distance.Size = 14
-                    espObjects[otherPlayer].distance.Center = true
-                    espObjects[otherPlayer].distance.Outline = true
-                    espObjects[otherPlayer].distance.Color = Color3.fromRGB(255, 0, 0)
-                end
-                
                 local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
                 local distance = (player.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
                 espObjects[otherPlayer].distance.Position = Vector2.new(headPos.X, headPos.Y - 60)
-                espObjects[otherPlayer].distance.Text = "Distance: " .. math.floor(distance)
+                espObjects[otherPlayer].distance.Text = "Dist: " .. math.floor(distance)
                 espObjects[otherPlayer].distance.Visible = true
-            elseif espObjects[otherPlayer].distance then
+            else
                 espObjects[otherPlayer].distance.Visible = false
             end
         else
-            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
-        end
-    end
-    
-    -- Update ESP continuously
-    espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
-    
-    -- Clean up when player leaves
-    otherPlayer.AncestryChanged:Connect(function()
-        if not otherPlayer.Parent then
-            cleanupESP(otherPlayer)
+            espObjects[otherPlayer].tracer.Visible = false
+            espObjects[otherPlayer].box.Visible = false
+            espObjects[otherPlayer].health.Visible = false
+            espObjects[otherPlayer].distance.Visible = false
         end
     end)
 end
 
--- ESP Count Function
-local function updateESPCount()
-    if not espCountEnabled or not espCountText then return end
-    
-    local aliveCount = 0
-    for _, otherPlayer in pairs(Players:GetPlayers()) do
-        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
-            aliveCount = aliveCount + 1
+-- Initialize ESP
+for _, otherPlayer in pairs(Players:GetPlayers()) do
+    if otherPlayer ~= player then
+        createESP(otherPlayer)
+    end
+end
+
+Players.PlayerAdded:Connect(function(newPlayer)
+    createESP(newPlayer)
+end)
+
+Players.PlayerRemoving:Connect(function(leftPlayer)
+    if espObjects[leftPlayer] then
+        espObjects[leftPlayer].tracer:Remove()
+        espObjects[leftPlayer].box:Remove()
+        espObjects[leftPlayer].health:Remove()
+        espObjects[leftPlayer].distance:Remove()
+        espObjects[leftPlayer] = nil
+    end
+    if espConnections[leftPlayer] then
+        espConnections[leftPlayer]:Disconnect()
+        espConnections[leftPlayer] = nil
+    end
+end)
+
+-- ESP Count Update
+RunService.Heartbeat:Connect(function()
+    if espCountEnabled and espCountText then
+        local aliveCount = 0
+        for _, otherPlayer in pairs(Players:GetPlayers()) do
+            if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
+                aliveCount = aliveCount + 1
+            end
+        end
+        espCountText.Text = "Players: " .. aliveCount
+    end
+end)
+
+-- Jump Hack
+UserInputService.JumpRequest:Connect(function()
+    if jumpHackEnabled and player.Character then
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
         end
     end
-    
-    espCountText.Text = "Players: " .. aliveCount
-    espCountText.Visible = true
-end
+end)
 
--- Improved AimBot with wall check and FOV
-local function isPlayerVisible(targetPlayer)
-    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        return false
-    end
-    
-    local targetRoot = targetPlayer.Character.HumanoidRootPart
-    local camera = workspace.CurrentCamera
-    local origin = camera.CFrame.Position
-    
-    -- Raycast to target
-    local direction = (targetRoot.Position - origin).Unit
-    local ray = Ray.new(origin, direction * 1000)
-    
-    local ignoreList = {player.Character, camera}
-    local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
-    
-    if hit then
-        -- Check if we hit the target player
-        local hitModel = hit:FindFirstAncestorOfClass("Model")
-        if hitModel and hitModel == targetPlayer.Character then
-            return true
-        end
-    end
-    
-    return false
-end
-
--- Check if target is within FOV circle
-local function isInFOV(targetPosition)
-    local camera = workspace.CurrentCamera
-    local screenPoint, onScreen = camera:WorldToViewportPoint(targetPosition)
-    
-    if not onScreen then return false end
-    
-    local center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
-    local targetPoint = Vector2.new(screenPoint.X, screenPoint.Y)
-    local distance = (targetPoint - center).Magnitude
-    
-    return distance <= aimBotFOV
-end
-
--- Функции из второго скрипта
 -- Kill Aura функция
 local function RunKillAura()
     while ActiveKillAura do
@@ -393,41 +742,6 @@ local function RunAutoChop()
     end
 end
 
--- Bring Items функция
-local function BringItems(itemName)
-    local targetPos = CampfirePosition
-    local items = {}
-    
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item:IsA("Model") then
-            local itemLower = item.Name:lower()
-            local searchLower = itemName:lower()
-            
-            if itemLower:find(searchLower) then
-                local part = item:FindFirstChildWhichIsA("BasePart")
-                if part then table.insert(items, part) end
-            end
-        end
-    end
-    
-    local teleported = 0
-    for i = 1, math.min(BringCount, #items) do
-        local item = items[i]
-        item.CFrame = CFrame.new(
-            targetPos.X + math.random(-3,3),
-            targetPos.Y + 3,
-            targetPos.Z + math.random(-3,3)
-        )
-        item.Anchored = false
-        item.AssemblyLinearVelocity = Vector3.new(0,0,0)
-        teleported = teleported + 1
-        
-        if BringDelay > 0 then
-            wait(BringDelay / 1000)
-        end
-    end
-end
-
 -- Запускаем функции геймплея
 task.spawn(function()
     while true do
@@ -447,372 +761,45 @@ task.spawn(function()
     end
 end)
 
--- Создание вкладок
-local GunGameTab = Window:CreateTab("Gun Game", "rbxassetid://4483345998")
-local NightsTab = Window:CreateTab("99 Nights", "rbxassetid://4483345998")
-
--- Gun Game Tab
-local MovementSection = GunGameTab:CreateSection("Movement")
-local VisualSection = GunGameTab:CreateSection("Visual")
-local AimBotSection = GunGameTab:CreateSection("AimBot")
-
--- Movement Toggles
-local SpeedToggle = MovementSection:CreateToggle({
-    Name = "Speed Hack",
-    CurrentValue = speedHackEnabled,
-    Flag = "SpeedHack",
-    Callback = function(Value)
-        speedHackEnabled = Value
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
-            end
-        else
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = 16
-            end
-        end
-    end,
-})
-
-local SpeedSlider = MovementSection:CreateSlider({
-    Name = "Speed Value",
-    Range = {16, 100},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = currentSpeed,
-    Flag = "SpeedValue",
-    Callback = function(Value)
-        currentSpeed = Value
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
-            end
-        end
-    end,
-})
-
-local JumpToggle = MovementSection:CreateToggle({
-    Name = "Jump Hack",
-    CurrentValue = jumpHackEnabled,
-    Flag = "JumpHack",
-    Callback = function(Value)
-        jumpHackEnabled = Value
-    end,
-})
-
-local NoClipToggle = MovementSection:CreateToggle({
-    Name = "NoClip",
-    CurrentValue = noclipEnabled,
-    Flag = "NoClip",
-    Callback = function(Value)
-        noclipEnabled = Value
-        
-        if noclipEnabled then
-            if noclipConnection then
-                noclipConnection:Disconnect()
-            end
-            noclipConnection = RunService.Stepped:Connect(function()
-                if player.Character then
-                    for _, part in pairs(player.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                end
-            end)
-        else
-            if noclipConnection then
-                noclipConnection:Disconnect()
-                noclipConnection = nil
-            end
-            
-            if player.Character then
-                for _, part in pairs(player.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-            end
-        end
-    end,
-})
-
--- Visual Toggles
-local TracerToggle = VisualSection:CreateToggle({
-    Name = "ESP Tracers",
-    CurrentValue = espTracersEnabled,
-    Flag = "ESPTracers",
-    Callback = function(Value)
-        espTracersEnabled = Value
-    end,
-})
-
-local BoxToggle = VisualSection:CreateToggle({
-    Name = "ESP Box",
-    CurrentValue = espBoxEnabled,
-    Flag = "ESPBox",
-    Callback = function(Value)
-        espBoxEnabled = Value
-    end,
-})
-
-local HealthToggle = VisualSection:CreateToggle({
-    Name = "ESP Health",
-    CurrentValue = espHealthEnabled,
-    Flag = "ESPHealth",
-    Callback = function(Value)
-        espHealthEnabled = Value
-    end,
-})
-
-local DistanceToggle = VisualSection:CreateToggle({
-    Name = "ESP Distance",
-    CurrentValue = espDistanceEnabled,
-    Flag = "ESPDistance",
-    Callback = function(Value)
-        espDistanceEnabled = Value
-    end,
-})
-
-local CountToggle = VisualSection:CreateToggle({
-    Name = "ESP Count",
-    CurrentValue = espCountEnabled,
-    Flag = "ESPCount",
-    Callback = function(Value)
-        espCountEnabled = Value
-        
-        if espCountEnabled then
-            if not espCountText then
-                espCountText = Drawing.new("Text")
-                espCountText.Size = 16
-                espCountText.Center = true
-                espCountText.Outline = true
-                espCountText.Color = Color3.fromRGB(255, 0, 0)
-                espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 80)
-            end
-            espCountText.Visible = true
-        else
-            if espCountText then
-                espCountText.Visible = false
-            end
-        end
-    end,
-})
-
--- AimBot Toggles
-local AimBotToggle = AimBotSection:CreateToggle({
-    Name = "AimBot",
-    CurrentValue = aimBotEnabled,
-    Flag = "AimBot",
-    Callback = function(Value)
-        aimBotEnabled = Value
-        
-        if fovCircle then
-            fovCircle.Visible = aimBotEnabled
-        else
-            createFOVCircle()
-            fovCircle.Visible = aimBotEnabled
-        end
-    end,
-})
-
-local FOVSlider = AimBotSection:CreateSlider({
-    Name = "AimBot FOV",
-    Range = {10, 200},
-    Increment = 1,
-    Suffix = "radius",
-    CurrentValue = aimBotFOV,
-    Flag = "AimBotFOV",
-    Callback = function(Value)
-        aimBotFOV = Value
-        updateFOVCircle()
-    end,
-})
-
--- 99 Nights Tab
-local MainSection = NightsTab:CreateSection("Main Features")
-local BringSection = NightsTab:CreateSection("Bring Items")
-
--- Main Features
-local KillAuraToggle = MainSection:CreateToggle({
-    Name = "Kill Aura",
-    CurrentValue = ActiveKillAura,
-    Flag = "KillAura",
-    Callback = function(Value)
-        ActiveKillAura = Value
-        SaveSettings()
-    end,
-})
-
-local KillDistanceSlider = MainSection:CreateSlider({
-    Name = "Kill Distance",
-    Range = {10, 150},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = DistanceForKillAura,
-    Flag = "KillDistance",
-    Callback = function(Value)
-        DistanceForKillAura = Value
-        SaveSettings()
-    end,
-})
-
-local AutoChopToggle = MainSection:CreateToggle({
-    Name = "Auto Chop",
-    CurrentValue = ActiveAutoChopTree,
-    Flag = "AutoChop",
-    Callback = function(Value)
-        ActiveAutoChopTree = Value
-        SaveSettings()
-    end,
-})
-
-local ChopDistanceSlider = MainSection:CreateSlider({
-    Name = "Chop Distance",
-    Range = {10, 150},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = DistanceForAutoChopTree,
-    Flag = "ChopDistance",
-    Callback = function(Value)
-        DistanceForAutoChopTree = Value
-        SaveSettings()
-    end,
-})
-
--- Bring Items
-local BringCountSlider = BringSection:CreateSlider({
-    Name = "Bring Count",
-    Range = {1, 20},
-    Increment = 1,
-    Suffix = "items",
-    CurrentValue = BringCount,
-    Flag = "BringCount",
-    Callback = function(Value)
-        BringCount = Value
-        SaveSettings()
-    end,
-})
-
-local BringSpeedSlider = BringSection:CreateSlider({
-    Name = "Bring Speed",
-    Range = {50, 500},
-    Increment = 10,
-    Suffix = "ms",
-    CurrentValue = BringDelay,
-    Flag = "BringSpeed",
-    Callback = function(Value)
-        BringDelay = Value
-        SaveSettings()
-    end,
-})
-
-local TeleportButton = BringSection:CreateButton({
-    Name = "Teleport to Campfire",
-    Callback = function()
-        local char = player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
-        end
-    end,
-})
-
--- Resources Buttons
-local ResourcesSection = NightsTab:CreateSection("Resources")
-local resourcesItems = {"Logs", "Coal", "Chair", "Fuel Canister", "Oil Barrel"}
-for _, itemName in pairs(resourcesItems) do
-    local btn = ResourcesSection:CreateButton({
-        Name = "Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName)
-        end,
-    })
-end
-
--- Metals Buttons
-local MetalsSection = NightsTab:CreateSection("Metals")
-local metalsItems = {"Bolt", "Sheet Metal", "Old Radio", "Scrap Metal", "UFO Scrap", "Broken Microwave"}
-for _, itemName in pairs(metalsItems) do
-    local btn = MetalsSection:CreateButton({
-        Name = "Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName)
-        end,
-    })
-end
-
--- Food & Medical Buttons
-local FoodMedSection = NightsTab:CreateSection("Food & Medical")
-local foodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage"}
-for _, itemName in pairs(foodMedItems) do
-    local btn = FoodMedSection:CreateButton({
-        Name = "Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName)
-        end,
-    })
-end
-
--- Weapons Buttons
-local WeaponsSection = NightsTab:CreateSection("Weapons")
-local weaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo"}
-for _, itemName in pairs(weaponsItems) do
-    local btn = WeaponsSection:CreateButton({
-        Name = "Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName)
-        end,
-    })
-end
-
--- Axe Buttons
-local AxeSection = NightsTab:CreateSection("Axes")
-local axeItems = {"Good Axe", "Strong Axe", "Chainsaw"}
-for _, itemName in pairs(axeItems) do
-    local btn = AxeSection:CreateButton({
-        Name = "Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName)
-        end,
-    })
-end
-
--- Jump Hack Handler
-UserInputService.JumpRequest:Connect(function()
-    if jumpHackEnabled and player.Character then
-        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end
-end)
-
--- Initialize ESP for existing players
-for _, otherPlayer in pairs(Players:GetPlayers()) do
-    createESP(otherPlayer)
-end
-
-Players.PlayerAdded:Connect(function(newPlayer)
-    createESP(newPlayer)
-end)
-
-Players.PlayerRemoving:Connect(function(leftPlayer)
-    cleanupESP(leftPlayer)
-end)
-
-RunService.Heartbeat:Connect(updateESPCount)
-
-workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-    if espCountText then
-        espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 80)
-    end
-end)
-
 -- AimBot functionality
+local function isPlayerVisible(targetPlayer)
+    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        return false
+    end
+    
+    local targetRoot = targetPlayer.Character.HumanoidRootPart
+    local camera = workspace.CurrentCamera
+    local origin = camera.CFrame.Position
+    
+    local direction = (targetRoot.Position - origin).Unit
+    local ray = Ray.new(origin, direction * 1000)
+    
+    local ignoreList = {player.Character, camera}
+    local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
+    
+    if hit then
+        local hitModel = hit:FindFirstAncestorOfClass("Model")
+        if hitModel and hitModel == targetPlayer.Character then
+            return true
+        end
+    end
+    
+    return false
+end
+
+local function isInFOV(targetPosition)
+    local camera = workspace.CurrentCamera
+    local screenPoint, onScreen = camera:WorldToViewportPoint(targetPosition)
+    
+    if not onScreen then return false end
+    
+    local center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    local targetPoint = Vector2.new(screenPoint.X, screenPoint.Y)
+    local distance = (targetPoint - center).Magnitude
+    
+    return distance <= aimBotFOV
+end
+
 RunService.Heartbeat:Connect(function()
     if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
         local closestPlayer = nil
@@ -838,34 +825,4 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- Create FOV Circle on start
-createFOVCircle()
-
--- Clean up when script ends
-game:GetService("CoreGui").ChildRemoved:Connect(function(child)
-    if child.Name == "Rayfield" then
-        if fovCircle then
-            fovCircle:Remove()
-            fovCircle = nil
-        end
-        if espCountText then
-            espCountText:Remove()
-            espCountText = nil
-        end
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-        for _, espData in pairs(espObjects) do
-            if espData.tracer then espData.tracer:Remove() end
-            if espData.box then espData.box:Remove() end
-            if espData.health then espData.health:Remove() end
-            if espData.distance then espData.distance:Remove() end
-        end
-        espObjects = {}
-        for _, connection in pairs(espConnections) do
-            connection:Disconnect()
-        end
-        espConnections = {}
-    end
-end)
+Rayfield:LoadConfiguration()
