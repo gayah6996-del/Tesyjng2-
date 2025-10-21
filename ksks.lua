@@ -4,6 +4,7 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
+local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
@@ -33,11 +34,25 @@ local CampfirePosition = Vector3.new(0, 10, 0)
 -- Переменная для цели телепортации предметов
 local BringTarget = "Campfire" -- "Campfire" или "Player"
 
--- Новые переменные для компактного меню
-local AntiAFKEnabled = false
-local InfinityJumpEnabled = false
-local SpeedHackNightsEnabled = false
-local currentSpeedNights = 16
+-- Новые переменные для функций в разделе More
+local antiAFKEnabled = false
+local antiAFKConnection = nil
+
+-- Настройки файла
+local SETTINGS_FILE = "astralcheat_settings.txt"
+local Settings = {
+    ActiveKillAura = false,
+    ActiveAutoChopTree = false,
+    DistanceForKillAura = 150,
+    DistanceForAutoChopTree = 150,
+    BringCount = 10,
+    BringDelay = 60,
+    BringTarget = "Campfire",
+    speedHackEnabled = false,
+    jumpHackEnabled = false,
+    currentSpeed = 16,
+    antiAFKEnabled = false
+}
 
 local ScreenGui = nil
 local MainMenu = nil
@@ -63,39 +78,39 @@ local currentActiveMenu = nil
 local notification = nil
 local notificationTimer = nil
 
--- Anti-AFK соединение
-local antiAFKConnection = nil
-
 -- Функция для показа уведомлений
 local function showNotification(text)
     if not ScreenGui then return end
     
+    -- Удаляем предыдущее уведомление если есть
     if notification then
         notification:Destroy()
         notification = nil
     end
     
+    -- Останавливаем предыдущий таймер
     if notificationTimer then
         notificationTimer:Disconnect()
         notificationTimer = nil
     end
     
+    -- Создаем уведомление
     notification = Instance.new("TextLabel")
     notification.Name = "Notification"
-    notification.Size = UDim2.new(0, 200, 0, 35)
-    notification.Position = UDim2.new(1, -210, 1, -45)
+    notification.Size = UDim2.new(0, 250, 0, 40)
+    notification.Position = UDim2.new(1, -270, 1, -50)
     notification.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     notification.BackgroundTransparency = 0.2
     notification.TextColor3 = Color3.fromRGB(255, 255, 255)
     notification.Text = text
     notification.Font = Enum.Font.Gotham
-    notification.TextSize = 12
+    notification.TextSize = 14
     notification.TextWrapped = true
     notification.ZIndex = 100
     notification.Parent = ScreenGui
     
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
+    corner.CornerRadius = UDim.new(0, 8)
     corner.Parent = notification
     
     local stroke = Instance.new("UIStroke")
@@ -103,6 +118,7 @@ local function showNotification(text)
     stroke.Thickness = 2
     stroke.Parent = notification
     
+    -- Автоматическое удаление через 3 секунды
     notificationTimer = delay(3, function()
         if notification then
             notification:Destroy()
@@ -115,7 +131,7 @@ end
 local function playClickSound()
     pcall(function()
         local sound = Instance.new("Sound")
-        sound.SoundId = "rbxassetid://3578328117"
+        sound.SoundId = "rbxassetid://3578328117" -- ID звука "тыдынь"
         sound.Volume = 0.5
         sound.Parent = workspace
         sound:Play()
@@ -123,10 +139,60 @@ local function playClickSound()
     end)
 end
 
--- Функции для UI элементов (компактные версии)
+-- Функции сохранения настроек
+local function SaveSettings()
+    pcall(function()
+        Settings.ActiveKillAura = ActiveKillAura
+        Settings.ActiveAutoChopTree = ActiveAutoChopTree
+        Settings.DistanceForKillAura = DistanceForKillAura
+        Settings.DistanceForAutoChopTree = DistanceForAutoChopTree
+        Settings.BringCount = BringCount
+        Settings.BringDelay = BringDelay
+        Settings.BringTarget = BringTarget
+        Settings.speedHackEnabled = speedHackEnabled
+        Settings.jumpHackEnabled = jumpHackEnabled
+        Settings.currentSpeed = currentSpeed
+        Settings.antiAFKEnabled = antiAFKEnabled
+        
+        local data = HttpService:JSONEncode(Settings)
+        writefile(SETTINGS_FILE, data)
+    end)
+end
+
+local function LoadSettings()
+    pcall(function()
+        if isfile(SETTINGS_FILE) then
+            local data = readfile(SETTINGS_FILE)
+            local loadedSettings = HttpService:JSONDecode(data)
+            for key, value in pairs(loadedSettings) do
+                if Settings[key] ~= nil then 
+                    Settings[key] = value 
+                end
+            end
+            
+            -- Применяем загруженные настройки
+            ActiveKillAura = Settings.ActiveKillAura
+            ActiveAutoChopTree = Settings.ActiveAutoChopTree
+            DistanceForKillAura = Settings.DistanceForKillAura
+            DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
+            BringCount = Settings.BringCount
+            BringDelay = Settings.BringDelay
+            BringTarget = Settings.BringTarget or "Campfire"
+            speedHackEnabled = Settings.speedHackEnabled or false
+            jumpHackEnabled = Settings.jumpHackEnabled or false
+            currentSpeed = Settings.currentSpeed or 16
+            antiAFKEnabled = Settings.antiAFKEnabled or false
+        end
+    end)
+end
+
+-- Загружаем настройки при запуске
+LoadSettings()
+
+-- Функции для UI элементов
 local function CreateToggle(parent, text, callback, isActive)
     local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, 0, 0, 35)
+    toggleFrame.Size = UDim2.new(1, 0, 0, 45)
     toggleFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
     toggleFrame.BackgroundTransparency = 0.1
     toggleFrame.BorderSizePixel = 0
@@ -134,7 +200,7 @@ local function CreateToggle(parent, text, callback, isActive)
     toggleFrame.Parent = parent
     
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 6)
+    Corner.CornerRadius = UDim.new(0, 8)
     Corner.Parent = toggleFrame
     
     local Stroke = Instance.new("UIStroke")
@@ -145,31 +211,31 @@ local function CreateToggle(parent, text, callback, isActive)
     local toggleLabel = Instance.new("TextLabel")
     toggleLabel.Name = "ToggleLabel"
     toggleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    toggleLabel.Position = UDim2.new(0, 10, 0, 0)
+    toggleLabel.Position = UDim2.new(0, 15, 0, 0)
     toggleLabel.BackgroundTransparency = 1
     toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleLabel.Text = text
     toggleLabel.Font = Enum.Font.GothamSemibold
-    toggleLabel.TextSize = 12
+    toggleLabel.TextSize = 14
     toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
     toggleLabel.ZIndex = 3
     toggleLabel.Parent = toggleFrame
     
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "ToggleButton"
-    toggleButton.Size = UDim2.new(0.3, 0, 0, 25)
+    toggleButton.Size = UDim2.new(0.3, 0, 0, 30)
     toggleButton.Position = UDim2.new(0.65, 0, 0.15, 0)
     toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(170, 0, 170) or Color3.fromRGB(60, 0, 60)
     toggleButton.BackgroundTransparency = 0.1
     toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     toggleButton.Text = isActive and "ON" or "OFF"
     toggleButton.Font = Enum.Font.GothamBold
-    toggleButton.TextSize = 10
+    toggleButton.TextSize = 12
     toggleButton.ZIndex = 3
     toggleButton.Parent = toggleFrame
     
     local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 4)
+    toggleCorner.CornerRadius = UDim.new(0, 6)
     toggleCorner.Parent = toggleButton
     
     local toggleStroke = Instance.new("UIStroke")
@@ -184,6 +250,7 @@ local function CreateToggle(parent, text, callback, isActive)
         toggleButton.Text = isActive and "ON" or "OFF"
         showNotification(text .. " " .. (isActive and "ENABLED" or "DISABLED"))
         callback(isActive)
+        SaveSettings()
     end)
     
     return {
@@ -197,7 +264,7 @@ end
 
 local function CreateSlider(parent, text, min, max, default, callback)
     local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, 0, 0, 50)
+    sliderFrame.Size = UDim2.new(1, 0, 0, 65)
     sliderFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
     sliderFrame.BackgroundTransparency = 0.1
     sliderFrame.BorderSizePixel = 0
@@ -205,7 +272,7 @@ local function CreateSlider(parent, text, min, max, default, callback)
     sliderFrame.Parent = parent
     
     local sliderCorner = Instance.new("UICorner")
-    sliderCorner.CornerRadius = UDim.new(0, 6)
+    sliderCorner.CornerRadius = UDim.new(0, 8)
     sliderCorner.Parent = sliderFrame
     
     local sliderStroke = Instance.new("UIStroke")
@@ -214,26 +281,26 @@ local function CreateSlider(parent, text, min, max, default, callback)
     sliderStroke.Parent = sliderFrame
     
     local sliderText = Instance.new("TextLabel")
-    sliderText.Size = UDim2.new(1, 0, 0, 20)
+    sliderText.Size = UDim2.new(1, 0, 0, 25)
     sliderText.BackgroundTransparency = 1
     sliderText.Text = text .. ": " .. default
     sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sliderText.TextSize = 11
+    sliderText.TextSize = 14
     sliderText.TextXAlignment = Enum.TextXAlignment.Left
-    sliderText.Position = UDim2.new(0, 10, 0, 2)
+    sliderText.Position = UDim2.new(0, 15, 0, 5)
     sliderText.Font = Enum.Font.GothamSemibold
     sliderText.ZIndex = 3
     sliderText.Parent = sliderFrame
     
     local sliderBar = Instance.new("Frame")
-    sliderBar.Size = UDim2.new(1, -20, 0, 12)
-    sliderBar.Position = UDim2.new(0, 10, 0, 28)
+    sliderBar.Size = UDim2.new(1, -30, 0, 15)
+    sliderBar.Position = UDim2.new(0, 15, 0, 35)
     sliderBar.BackgroundColor3 = Color3.fromRGB(50, 0, 50)
     sliderBar.ZIndex = 3
     sliderBar.Parent = sliderFrame
     
     local barCorner = Instance.new("UICorner")
-    barCorner.CornerRadius = UDim.new(0, 6)
+    barCorner.CornerRadius = UDim.new(0, 8)
     barCorner.Parent = sliderBar
     
     local barStroke = Instance.new("UIStroke")
@@ -248,7 +315,7 @@ local function CreateSlider(parent, text, min, max, default, callback)
     sliderFill.Parent = sliderBar
     
     local fillCorner = Instance.new("UICorner")
-    fillCorner.CornerRadius = UDim.new(0, 6)
+    fillCorner.CornerRadius = UDim.new(0, 8)
     fillCorner.Parent = sliderFill
     
     local isDragging = false
@@ -281,27 +348,27 @@ local function CreateSlider(parent, text, min, max, default, callback)
                 connection:Disconnect()
                 connection = nil
             end
+            SaveSettings()
         end
     end)
     
     updateSlider(default)
-    return sliderFrame
 end
 
 local function CreateButton(parent, text, callback)
     local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 35)
+    button.Size = UDim2.new(1, 0, 0, 45)
     button.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
     button.BackgroundTransparency = 0.1
     button.Text = text
     button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 12
+    button.TextSize = 14
     button.Font = Enum.Font.GothamSemibold
     button.ZIndex = 2
     button.Parent = parent
     
     local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.CornerRadius = UDim.new(0, 8)
     buttonCorner.Parent = button
     
     local buttonStroke = Instance.new("UIStroke")
@@ -348,14 +415,14 @@ local function createOpenCloseButton()
 
     OpenCloseButton = Instance.new("TextButton")
     OpenCloseButton.Name = "OpenCloseButton"
-    OpenCloseButton.Size = UDim2.new(0, 50, 0, 50)
+    OpenCloseButton.Size = UDim2.new(0, 65, 0, 65)
     OpenCloseButton.Position = savedButtonPosition
     OpenCloseButton.BackgroundColor3 = Color3.fromRGB(20, 0, 20)
     OpenCloseButton.BackgroundTransparency = 0.1
     OpenCloseButton.TextColor3 = Color3.fromRGB(170, 0, 170)
     OpenCloseButton.Text = "⚙️"
     OpenCloseButton.Font = Enum.Font.GothamBold
-    OpenCloseButton.TextSize = 18
+    OpenCloseButton.TextSize = 24
     OpenCloseButton.ZIndex = 10
     OpenCloseButton.Active = true
     OpenCloseButton.Draggable = true
@@ -372,8 +439,8 @@ local function createOpenCloseButton()
 
     local Shadow = Instance.new("ImageLabel")
     Shadow.Name = "Shadow"
-    Shadow.Size = UDim2.new(1, 8, 1, 8)
-    Shadow.Position = UDim2.new(0, -4, 0, -4)
+    Shadow.Size = UDim2.new(1, 10, 1, 10)
+    Shadow.Position = UDim2.new(0, -5, 0, -5)
     Shadow.BackgroundTransparency = 1
     Shadow.Image = "rbxassetid://5554236805"
     Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
@@ -388,6 +455,7 @@ local function createOpenCloseButton()
         playClickSound()
         isGuiOpen = not isGuiOpen
         
+        -- Закрываем/открываем текущее активное меню
         if currentActiveMenu then
             currentActiveMenu.Visible = isGuiOpen
         end
@@ -401,6 +469,7 @@ local function createOpenCloseButton()
         end
     end)
 
+    -- Сохраняем позицию кнопки при перетаскивании
     OpenCloseButton.DragStopped:Connect(function()
         savedButtonPosition = OpenCloseButton.Position
     end)
@@ -457,6 +526,7 @@ local function createESP(otherPlayer)
     local function updateESP()
         if not espObjects[otherPlayer] then return end
         
+        -- Check if player is dead or doesn't exist
         if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
             if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
             if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
@@ -471,6 +541,7 @@ local function createESP(otherPlayer)
         
         if not head then return end
         
+        -- Check if player is dead
         if humanoid.Health <= 0 then
             if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
             if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
@@ -564,8 +635,10 @@ local function createESP(otherPlayer)
         end
     end
     
+    -- Update ESP continuously
     espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
     
+    -- Clean up when player leaves
     otherPlayer.AncestryChanged:Connect(function()
         if not otherPlayer.Parent then
             cleanupESP(otherPlayer)
@@ -598,6 +671,7 @@ local function isPlayerVisible(targetPlayer)
     local camera = workspace.CurrentCamera
     local origin = camera.CFrame.Position
     
+    -- Raycast to target
     local direction = (targetRoot.Position - origin).Unit
     local ray = Ray.new(origin, direction * 1000)
     
@@ -605,6 +679,7 @@ local function isPlayerVisible(targetPlayer)
     local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
     
     if hit then
+        -- Check if we hit the target player
         local hitModel = hit:FindFirstAncestorOfClass("Model")
         if hitModel and hitModel == targetPlayer.Character then
             return true
@@ -716,39 +791,31 @@ local function BringItems(itemName)
         end
     end
     
+    -- Показываем уведомление о количестве телепортированных предметов
     showNotification("Teleported " .. teleported .. " " .. itemName .. "(s)")
 end
 
--- Anti-AFK функция
-local function RunAntiAFK()
-    while AntiAFKEnabled do
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            -- Просто активируем прыжок каждые 30 секунд
-            player.Character.Humanoid.Jump = true
-        end
-        wait(30)
+-- Anti AFK функция
+local function EnableAntiAFK()
+    if antiAFKConnection then
+        antiAFKConnection:Disconnect()
+        antiAFKConnection = nil
     end
-end
-
--- Infinity Jump функция
-local function RunInfinityJump()
-    UserInputService.JumpRequest:Connect(function()
-        if InfinityJumpEnabled and player.Character then
-            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
+    
+    antiAFKConnection = RunService.Heartbeat:Connect(function()
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            -- Просто обновляем время последней активности
+            player.Character.Humanoid.Jump = true
+            wait(0.1)
+            player.Character.Humanoid.Jump = false
         end
     end)
 end
 
--- Speed Hack для Nights
-local function UpdateSpeedHackNights()
-    if SpeedHackNightsEnabled and player.Character then
-        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = currentSpeedNights
-        end
+local function DisableAntiAFK()
+    if antiAFKConnection then
+        antiAFKConnection:Disconnect()
+        antiAFKConnection = nil
     end
 end
 
@@ -771,32 +838,24 @@ task.spawn(function()
     end
 end)
 
--- Запускаем Anti-AFK
-task.spawn(function()
-    while true do
-        if AntiAFKEnabled then
-            RunAntiAFK()
-        end
-        wait(1)
+-- Применяем настройки SpeedHack при загрузке
+if speedHackEnabled then
+    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.WalkSpeed = currentSpeed
     end
-end)
+end
 
--- Запускаем Infinity Jump
-RunInfinityJump()
-
--- Обновляем скорость при изменении
-task.spawn(function()
-    while true do
-        UpdateSpeedHackNights()
-        wait(0.5)
-    end
-end)
+-- Применяем настройки AntiAFK при загрузке
+if antiAFKEnabled then
+    EnableAntiAFK()
+end
 
 -- Функция создания главного меню выбора
 local function createMainMenu()
     MainMenu = Instance.new("Frame")
     MainMenu.Name = "MainMenu"
-    MainMenu.Size = UDim2.new(0, 250, 0, 200)
+    MainMenu.Size = UDim2.new(0, 300, 0, 240)
     MainMenu.Position = savedPosition
     MainMenu.BackgroundColor3 = Color3.fromRGB(20, 0, 20)
     MainMenu.BackgroundTransparency = 0.1
@@ -807,7 +866,7 @@ local function createMainMenu()
     MainMenu.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.CornerRadius = UDim.new(0, 12)
     Corner.Parent = MainMenu
 
     local Stroke = Instance.new("UIStroke")
@@ -817,8 +876,8 @@ local function createMainMenu()
 
     local Shadow = Instance.new("ImageLabel")
     Shadow.Name = "Shadow"
-    Shadow.Size = UDim2.new(1, 10, 1, 10)
-    Shadow.Position = UDim2.new(0, -5, 0, -5)
+    Shadow.Size = UDim2.new(1, 12, 1, 12)
+    Shadow.Position = UDim2.new(0, -6, 0, -6)
     Shadow.BackgroundTransparency = 1
     Shadow.Image = "rbxassetid://5554236805"
     Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
@@ -830,19 +889,19 @@ local function createMainMenu()
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
-    Title.Size = UDim2.new(1, 0, 0, 35)
+    Title.Size = UDim2.new(1, 0, 0, 45)
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     Title.BackgroundTransparency = 0.1
     Title.TextColor3 = Color3.fromRGB(170, 0, 170)
     Title.Text = "SANSTRO MENU"
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 16
+    Title.TextSize = 18
     Title.ZIndex = 2
     Title.Parent = MainMenu
 
     local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 10)
+    TitleCorner.CornerRadius = UDim.new(0, 12)
     TitleCorner.Parent = Title
 
     local TitleStroke = Instance.new("UIStroke")
@@ -855,16 +914,16 @@ local function createMainMenu()
         GunMenu.Visible = true
         currentActiveMenu = GunMenu
     end)
-    GunButton.Position = UDim2.new(0, 15, 0, 50)
-    GunButton.Size = UDim2.new(1, -30, 0, 40)
+    GunButton.Position = UDim2.new(0, 20, 0, 60)
+    GunButton.Size = UDim2.new(1, -40, 0, 50)
 
     local NightsButton = CreateButton(MainMenu, "🌙 99 NIGHTS", function()
         MainMenu.Visible = false
         NightsMenu.Visible = true
         currentActiveMenu = NightsMenu
     end)
-    NightsButton.Position = UDim2.new(0, 15, 0, 105)
-    NightsButton.Size = UDim2.new(1, -30, 0, 40)
+    NightsButton.Position = UDim2.new(0, 20, 0, 125)
+    NightsButton.Size = UDim2.new(1, -40, 0, 50)
     
     currentActiveMenu = MainMenu
 end
@@ -873,7 +932,7 @@ end
 local function createGunMenu()
     GunMenu = Instance.new("Frame")
     GunMenu.Name = "GunMenu"
-    GunMenu.Size = UDim2.new(0, 280, 0, 400)
+    GunMenu.Size = UDim2.new(0, 320, 0, 450)
     GunMenu.Position = savedPosition
     GunMenu.BackgroundColor3 = Color3.fromRGB(20, 0, 20)
     GunMenu.BackgroundTransparency = 0.1
@@ -884,7 +943,7 @@ local function createGunMenu()
     GunMenu.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.CornerRadius = UDim.new(0, 12)
     Corner.Parent = GunMenu
 
     local Stroke = Instance.new("UIStroke")
@@ -894,8 +953,8 @@ local function createGunMenu()
 
     local Shadow = Instance.new("ImageLabel")
     Shadow.Name = "Shadow"
-    Shadow.Size = UDim2.new(1, 10, 1, 10)
-    Shadow.Position = UDim2.new(0, -5, 0, -5)
+    Shadow.Size = UDim2.new(1, 12, 1, 12)
+    Shadow.Position = UDim2.new(0, -6, 0, -6)
     Shadow.BackgroundTransparency = 1
     Shadow.Image = "rbxassetid://5554236805"
     Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
@@ -907,19 +966,19 @@ local function createGunMenu()
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
-    Title.Size = UDim2.new(1, 0, 0, 35)
+    Title.Size = UDim2.new(1, 0, 0, 45)
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     Title.BackgroundTransparency = 0.1
     Title.TextColor3 = Color3.fromRGB(170, 0, 170)
     Title.Text = "GUNGAME MENU"
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 16
+    Title.TextSize = 18
     Title.ZIndex = 2
     Title.Parent = GunMenu
 
     local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 10)
+    TitleCorner.CornerRadius = UDim.new(0, 12)
     TitleCorner.Parent = Title
 
     local TitleStroke = Instance.new("UIStroke")
@@ -930,20 +989,20 @@ local function createGunMenu()
     -- Вертикальные вкладки
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
-    TabButtons.Size = UDim2.new(0, 90, 1, -35)
-    TabButtons.Position = UDim2.new(0, 0, 0, 35)
+    TabButtons.Size = UDim2.new(0, 100, 1, -45)
+    TabButtons.Position = UDim2.new(0, 0, 0, 45)
     TabButtons.BackgroundTransparency = 0.1
     TabButtons.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
     TabButtons.ZIndex = 2
     TabButtons.Parent = GunMenu
 
     local TabCorner = Instance.new("UICorner")
-    TabCorner.CornerRadius = UDim.new(0, 10)
+    TabCorner.CornerRadius = UDim.new(0, 12)
     TabCorner.Parent = TabButtons
 
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabLayout.Padding = UDim.new(0, 4)
+    TabLayout.Padding = UDim.new(0, 5)
     TabLayout.Parent = TabButtons
 
     local gunTabs = {
@@ -958,19 +1017,19 @@ local function createGunMenu()
     for i, tab in ipairs(gunTabs) do
         local tabButton = Instance.new("TextButton")
         tabButton.Name = tab.name .. "Tab"
-        tabButton.Size = UDim2.new(1, -10, 0, 40)
-        tabButton.Position = UDim2.new(0, 5, 0, 5 + (i-1)*45)
+        tabButton.Size = UDim2.new(1, -10, 0, 50)
+        tabButton.Position = UDim2.new(0, 5, 0, 5 + (i-1)*55)
         tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(170, 0, 170) or Color3.fromRGB(50, 0, 50)
         tabButton.BackgroundTransparency = 0.1
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         tabButton.Text = tab.name
         tabButton.Font = Enum.Font.GothamSemibold
-        tabButton.TextSize = 12
+        tabButton.TextSize = 14
         tabButton.ZIndex = 3
         tabButton.Parent = TabButtons
 
         local tabCorner = Instance.new("UICorner")
-        tabCorner.CornerRadius = UDim.new(0, 6)
+        tabCorner.CornerRadius = UDim.new(0, 8)
         tabCorner.Parent = tabButton
 
         local tabStroke = Instance.new("UIStroke")
@@ -980,10 +1039,10 @@ local function createGunMenu()
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -100, 1, -45)
-        ContentFrame.Position = UDim2.new(0, 100, 0, 45)
+        ContentFrame.Size = UDim2.new(1, -110, 1, -55)
+        ContentFrame.Position = UDim2.new(0, 110, 0, 55)
         ContentFrame.BackgroundTransparency = 1
-        ContentFrame.ScrollBarThickness = 5
+        ContentFrame.ScrollBarThickness = 6
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
         ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
         ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
@@ -993,7 +1052,7 @@ local function createGunMenu()
 
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentLayout.Padding = UDim.new(0, 10)
+        ContentLayout.Padding = UDim.new(0, 12)
         ContentLayout.Parent = ContentFrame
 
         gunTabButtons[tab.name] = tabButton
@@ -1003,7 +1062,7 @@ local function createGunMenu()
     -- Movement Tab Content
     local SpeedHackFrame = Instance.new("Frame")
     SpeedHackFrame.Name = "SpeedHackFrame"
-    SpeedHackFrame.Size = UDim2.new(1, 0, 0, 35)
+    SpeedHackFrame.Size = UDim2.new(1, 0, 0, 85)
     SpeedHackFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     SpeedHackFrame.BackgroundTransparency = 0.1
     SpeedHackFrame.BorderSizePixel = 0
@@ -1012,7 +1071,7 @@ local function createGunMenu()
     SpeedHackFrame.Parent = gunTabContents["Movement"]
 
     local SpeedHackCorner = Instance.new("UICorner")
-    SpeedHackCorner.CornerRadius = UDim.new(0, 6)
+    SpeedHackCorner.CornerRadius = UDim.new(0, 8)
     SpeedHackCorner.Parent = SpeedHackFrame
 
     local SpeedHackStroke = Instance.new("UIStroke")
@@ -1022,32 +1081,32 @@ local function createGunMenu()
 
     local SpeedHackLabel = Instance.new("TextLabel")
     SpeedHackLabel.Name = "SpeedHackLabel"
-    SpeedHackLabel.Size = UDim2.new(0.6, 0, 0, 25)
-    SpeedHackLabel.Position = UDim2.new(0, 10, 0, 5)
+    SpeedHackLabel.Size = UDim2.new(0.6, 0, 0, 30)
+    SpeedHackLabel.Position = UDim2.new(0, 15, 0, 5)
     SpeedHackLabel.BackgroundTransparency = 1
     SpeedHackLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     SpeedHackLabel.Text = "Speed Hack"
     SpeedHackLabel.Font = Enum.Font.GothamSemibold
-    SpeedHackLabel.TextSize = 12
+    SpeedHackLabel.TextSize = 14
     SpeedHackLabel.TextXAlignment = Enum.TextXAlignment.Left
     SpeedHackLabel.ZIndex = 3
     SpeedHackLabel.Parent = SpeedHackFrame
 
     local SpeedHackToggle = Instance.new("TextButton")
     SpeedHackToggle.Name = "SpeedHackToggle"
-    SpeedHackToggle.Size = UDim2.new(0.3, 0, 0, 25)
+    SpeedHackToggle.Size = UDim2.new(0.3, 0, 0, 30)
     SpeedHackToggle.Position = UDim2.new(0.65, 0, 0, 5)
     SpeedHackToggle.BackgroundColor3 = speedHackEnabled and Color3.fromRGB(170, 0, 170) or Color3.fromRGB(60, 0, 60)
     SpeedHackToggle.BackgroundTransparency = 0.1
     SpeedHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
     SpeedHackToggle.Text = speedHackEnabled and "ON" or "OFF"
     SpeedHackToggle.Font = Enum.Font.GothamBold
-    SpeedHackToggle.TextSize = 10
+    SpeedHackToggle.TextSize = 12
     SpeedHackToggle.ZIndex = 3
     SpeedHackToggle.Parent = SpeedHackFrame
 
     local SpeedHackToggleCorner = Instance.new("UICorner")
-    SpeedHackToggleCorner.CornerRadius = UDim.new(0, 4)
+    SpeedHackToggleCorner.CornerRadius = UDim.new(0, 6)
     SpeedHackToggleCorner.Parent = SpeedHackToggle
 
     local SpeedHackToggleStroke = Instance.new("UIStroke")
@@ -1055,22 +1114,41 @@ local function createGunMenu()
     SpeedHackToggleStroke.Thickness = 1
     SpeedHackToggleStroke.Parent = SpeedHackToggle
 
-    -- Создаем слайдер отдельно и изначально скрываем его
-    local SpeedHackSlider = CreateSlider(gunTabContents["Movement"], "Speed Value", 16, 100, currentSpeed, function(v)
-        currentSpeed = math.floor(v)
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
-            end
-        end
-    end)
-    SpeedHackSlider.Position = UDim2.new(0, 0, 0, 40)
+    local SpeedHackSlider = Instance.new("Frame")
+    SpeedHackSlider.Name = "SpeedHackSlider"
+    SpeedHackSlider.Size = UDim2.new(1, -30, 0, 30)
+    SpeedHackSlider.Position = UDim2.new(0, 15, 0, 45)
+    SpeedHackSlider.BackgroundColor3 = Color3.fromRGB(50, 0, 50)
+    SpeedHackSlider.BackgroundTransparency = 0.3
+    SpeedHackSlider.BorderSizePixel = 0
     SpeedHackSlider.Visible = speedHackEnabled
+    SpeedHackSlider.ZIndex = 3
+    SpeedHackSlider.Parent = SpeedHackFrame
+
+    local SpeedHackSliderCorner = Instance.new("UICorner")
+    SpeedHackSliderCorner.CornerRadius = UDim.new(0, 6)
+    SpeedHackSliderCorner.Parent = SpeedHackSlider
+
+    local SpeedHackSliderStroke = Instance.new("UIStroke")
+    SpeedHackSliderStroke.Color = Color3.fromRGB(100, 0, 100)
+    SpeedHackSliderStroke.Thickness = 1
+    SpeedHackSliderStroke.Parent = SpeedHackSlider
+
+    local SpeedValue = Instance.new("TextLabel")
+    SpeedValue.Name = "SpeedValue"
+    SpeedValue.Size = UDim2.new(1, 0, 1, 0)
+    SpeedValue.BackgroundTransparency = 1
+    SpeedValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+    SpeedValue.Text = "Speed: " .. currentSpeed
+    SpeedValue.Font = Enum.Font.GothamSemibold
+    SpeedValue.TextSize = 12
+    SpeedValue.ZIndex = 4
+    SpeedValue.Parent = SpeedHackSlider
 
     -- Jump Hack
     local JumpHackToggle = CreateToggle(gunTabContents["Movement"], "Jump Hack", function(v)
         jumpHackEnabled = v
+        SaveSettings()
     end, jumpHackEnabled)
 
     -- NoClip
@@ -1177,6 +1255,32 @@ local function createGunMenu()
                 humanoid.WalkSpeed = 16
             end
         end
+        SaveSettings()
+    end)
+
+    local speedSliderConnection
+    SpeedHackSlider.InputBegan:Connect(function()
+        speedSliderConnection = RunService.Heartbeat:Connect(function()
+            local mouseLocation = UserInputService:GetMouseLocation()
+            local relativeX = math.clamp((mouseLocation.X - SpeedHackSlider.AbsolutePosition.X) / SpeedHackSlider.AbsoluteSize.X, 0, 1)
+            currentSpeed = math.floor(16 + (relativeX * 84))
+            SpeedValue.Text = "Speed: " .. currentSpeed
+            
+            if speedHackEnabled then
+                local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = currentSpeed
+                end
+            end
+        end)
+    end)
+
+    SpeedHackSlider.InputEnded:Connect(function()
+        if speedSliderConnection then
+            speedSliderConnection:Disconnect()
+            speedSliderConnection = nil
+        end
+        SaveSettings()
     end)
 
     UserInputService.JumpRequest:Connect(function()
@@ -1252,7 +1356,7 @@ end
 local function createNightsMenu()
     NightsMenu = Instance.new("Frame")
     NightsMenu.Name = "NightsMenu"
-    NightsMenu.Size = UDim2.new(0, 320, 0, 450)
+    NightsMenu.Size = UDim2.new(0, 370, 0, 550)
     NightsMenu.Position = savedPosition
     NightsMenu.BackgroundColor3 = Color3.fromRGB(20, 0, 20)
     NightsMenu.BackgroundTransparency = 0.1
@@ -1263,7 +1367,7 @@ local function createNightsMenu()
     NightsMenu.Parent = ScreenGui
 
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.CornerRadius = UDim.new(0, 12)
     Corner.Parent = NightsMenu
 
     local Stroke = Instance.new("UIStroke")
@@ -1273,8 +1377,8 @@ local function createNightsMenu()
 
     local Shadow = Instance.new("ImageLabel")
     Shadow.Name = "Shadow"
-    Shadow.Size = UDim2.new(1, 10, 1, 10)
-    Shadow.Position = UDim2.new(0, -5, 0, -5)
+    Shadow.Size = UDim2.new(1, 12, 1, 12)
+    Shadow.Position = UDim2.new(0, -6, 0, -6)
     Shadow.BackgroundTransparency = 1
     Shadow.Image = "rbxassetid://5554236805"
     Shadow.ImageColor3 = Color3.fromRGB(0, 0, 0)
@@ -1286,19 +1390,19 @@ local function createNightsMenu()
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
-    Title.Size = UDim2.new(1, 0, 0, 35)
+    Title.Size = UDim2.new(1, 0, 0, 45)
     Title.Position = UDim2.new(0, 0, 0, 0)
     Title.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     Title.BackgroundTransparency = 0.1
     Title.TextColor3 = Color3.fromRGB(170, 0, 170)
     Title.Text = "99 NIGHTS MENU"
     Title.Font = Enum.Font.GothamBold
-    Title.TextSize = 16
+    Title.TextSize = 18
     Title.ZIndex = 2
     Title.Parent = NightsMenu
 
     local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 10)
+    TitleCorner.CornerRadius = UDim.new(0, 12)
     TitleCorner.Parent = Title
 
     local TitleStroke = Instance.new("UIStroke")
@@ -1309,20 +1413,20 @@ local function createNightsMenu()
     -- Вертикальные вкладки
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
-    TabButtons.Size = UDim2.new(0, 90, 1, -35)
-    TabButtons.Position = UDim2.new(0, 0, 0, 35)
+    TabButtons.Size = UDim2.new(0, 100, 1, -45)
+    TabButtons.Position = UDim2.new(0, 0, 0, 45)
     TabButtons.BackgroundTransparency = 0.1
     TabButtons.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
     TabButtons.ZIndex = 2
     TabButtons.Parent = NightsMenu
 
     local TabCorner = Instance.new("UICorner")
-    TabCorner.CornerRadius = UDim.new(0, 10)
+    TabCorner.CornerRadius = UDim.new(0, 12)
     TabCorner.Parent = TabButtons
 
     local TabLayout = Instance.new("UIListLayout")
     TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabLayout.Padding = UDim.new(0, 4)
+    TabLayout.Padding = UDim.new(0, 5)
     TabLayout.Parent = TabButtons
 
     local nightsTabs = {
@@ -1337,19 +1441,19 @@ local function createNightsMenu()
     for i, tab in ipairs(nightsTabs) do
         local tabButton = Instance.new("TextButton")
         tabButton.Name = tab.name .. "Tab"
-        tabButton.Size = UDim2.new(1, -10, 0, 40)
-        tabButton.Position = UDim2.new(0, 5, 0, 5 + (i-1)*45)
+        tabButton.Size = UDim2.new(1, -10, 0, 45)
+        tabButton.Position = UDim2.new(0, 5, 0, 5 + (i-1)*50)
         tabButton.BackgroundColor3 = tab.defaultActive and Color3.fromRGB(170, 0, 170) or Color3.fromRGB(50, 0, 50)
         tabButton.BackgroundTransparency = 0.1
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         tabButton.Text = tab.name
         tabButton.Font = Enum.Font.GothamSemibold
-        tabButton.TextSize = 12
+        tabButton.TextSize = 14
         tabButton.ZIndex = 3
         tabButton.Parent = TabButtons
 
         local tabCorner = Instance.new("UICorner")
-        tabCorner.CornerRadius = UDim.new(0, 6)
+        tabCorner.CornerRadius = UDim.new(0, 8)
         tabCorner.Parent = tabButton
 
         local tabStroke = Instance.new("UIStroke")
@@ -1359,10 +1463,10 @@ local function createNightsMenu()
 
         local ContentFrame = Instance.new("ScrollingFrame")
         ContentFrame.Name = tab.name .. "Content"
-        ContentFrame.Size = UDim2.new(1, -100, 1, -45)
-        ContentFrame.Position = UDim2.new(0, 100, 0, 45)
+        ContentFrame.Size = UDim2.new(1, -110, 1, -55)
+        ContentFrame.Position = UDim2.new(0, 110, 0, 55)
         ContentFrame.BackgroundTransparency = 1
-        ContentFrame.ScrollBarThickness = 5
+        ContentFrame.ScrollBarThickness = 6
         ContentFrame.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
         ContentFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
         ContentFrame.VerticalScrollBarInset = Enum.ScrollBarInset.Always
@@ -1372,7 +1476,7 @@ local function createNightsMenu()
 
         local ContentLayout = Instance.new("UIListLayout")
         ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        ContentLayout.Padding = UDim.new(0, 12)
+        ContentLayout.Padding = UDim.new(0, 15)
         ContentLayout.Parent = ContentFrame
 
         nightsTabButtons[tab.name] = tabButton
@@ -1404,96 +1508,52 @@ local function createNightsMenu()
         end
     end)
 
-    -- Speed Hack для Nights Menu
-    local SpeedHackNightsFrame = Instance.new("Frame")
-    SpeedHackNightsFrame.Name = "SpeedHackNightsFrame"
-    SpeedHackNightsFrame.Size = UDim2.new(1, 0, 0, 35)
-    SpeedHackNightsFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
-    SpeedHackNightsFrame.BackgroundTransparency = 0.1
-    SpeedHackNightsFrame.BorderSizePixel = 0
-    SpeedHackNightsFrame.ZIndex = 2
-    SpeedHackNightsFrame.Parent = nightsTabContents["More"]
-
-    local SpeedHackNightsCorner = Instance.new("UICorner")
-    SpeedHackNightsCorner.CornerRadius = UDim.new(0, 6)
-    SpeedHackNightsCorner.Parent = SpeedHackNightsFrame
-
-    local SpeedHackNightsStroke = Instance.new("UIStroke")
-    SpeedHackNightsStroke.Color = Color3.fromRGB(80, 0, 80)
-    SpeedHackNightsStroke.Thickness = 1
-    SpeedHackNightsStroke.Parent = SpeedHackNightsFrame
-
-    local SpeedHackNightsLabel = Instance.new("TextLabel")
-    SpeedHackNightsLabel.Name = "SpeedHackNightsLabel"
-    SpeedHackNightsLabel.Size = UDim2.new(0.6, 0, 0, 25)
-    SpeedHackNightsLabel.Position = UDim2.new(0, 10, 0, 5)
-    SpeedHackNightsLabel.BackgroundTransparency = 1
-    SpeedHackNightsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SpeedHackNightsLabel.Text = "Speed Hack"
-    SpeedHackNightsLabel.Font = Enum.Font.GothamSemibold
-    SpeedHackNightsLabel.TextSize = 12
-    SpeedHackNightsLabel.TextXAlignment = Enum.TextXAlignment.Left
-    SpeedHackNightsLabel.ZIndex = 3
-    SpeedHackNightsLabel.Parent = SpeedHackNightsFrame
-
-    local SpeedHackNightsToggle = Instance.new("TextButton")
-    SpeedHackNightsToggle.Name = "SpeedHackNightsToggle"
-    SpeedHackNightsToggle.Size = UDim2.new(0.3, 0, 0, 25)
-    SpeedHackNightsToggle.Position = UDim2.new(0.65, 0, 0, 5)
-    SpeedHackNightsToggle.BackgroundColor3 = SpeedHackNightsEnabled and Color3.fromRGB(170, 0, 170) or Color3.fromRGB(60, 0, 60)
-    SpeedHackNightsToggle.BackgroundTransparency = 0.1
-    SpeedHackNightsToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SpeedHackNightsToggle.Text = SpeedHackNightsEnabled and "ON" or "OFF"
-    SpeedHackNightsToggle.Font = Enum.Font.GothamBold
-    SpeedHackNightsToggle.TextSize = 10
-    SpeedHackNightsToggle.ZIndex = 3
-    SpeedHackNightsToggle.Parent = SpeedHackNightsFrame
-
-    local SpeedHackNightsToggleCorner = Instance.new("UICorner")
-    SpeedHackNightsToggleCorner.CornerRadius = UDim.new(0, 4)
-    SpeedHackNightsToggleCorner.Parent = SpeedHackNightsToggle
-
-    local SpeedHackNightsToggleStroke = Instance.new("UIStroke")
-    SpeedHackNightsToggleStroke.Color = Color3.fromRGB(100, 0, 100)
-    SpeedHackNightsToggleStroke.Thickness = 1
-    SpeedHackNightsToggleStroke.Parent = SpeedHackNightsToggle
-
-    -- Создаем слайдер отдельно и изначально скрываем его
-    local SpeedHackNightsSlider = CreateSlider(nightsTabContents["More"], "Speed Value", 16, 100, currentSpeedNights, function(v)
-        currentSpeedNights = math.floor(v)
-        if SpeedHackNightsEnabled then
-            UpdateSpeedHackNights()
-        end
-    end)
-    SpeedHackNightsSlider.Position = UDim2.new(0, 0, 0, 40)
-    SpeedHackNightsSlider.Visible = SpeedHackNightsEnabled
-
-    -- Infinity Jump для Nights Menu
-    local InfinityJumpToggle = CreateToggle(nightsTabContents["More"], "Infinity Jump", function(v)
-        InfinityJumpEnabled = v
-    end, InfinityJumpEnabled)
-
-    -- Anti-AFK для Nights Menu
-    local AntiAFKToggle = CreateToggle(nightsTabContents["More"], "Anti-AFK", function(v)
-        AntiAFKEnabled = v
-        showNotification("Anti-AFK " .. (v and "ENABLED" or "DISABLED"))
-    end, AntiAFKEnabled)
-
-    -- Обработчик для Speed Hack Nights
-    SpeedHackNightsToggle.MouseButton1Click:Connect(function()
-        SpeedHackNightsEnabled = not SpeedHackNightsEnabled
-        toggleButton(SpeedHackNightsToggle, SpeedHackNightsEnabled)
-        SpeedHackNightsSlider.Visible = SpeedHackNightsEnabled
+    -- Добавляем кнопку SpeedHack в раздел More
+    local SpeedHackToggleMore = CreateToggle(nightsTabContents["More"], "Speed Hack", function(v)
+        speedHackEnabled = v
         
-        if SpeedHackNightsEnabled then
-            UpdateSpeedHackNights()
+        if speedHackEnabled then
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = currentSpeed
+            end
         else
             local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid.WalkSpeed = 16
             end
         end
+        SaveSettings()
+    end, speedHackEnabled)
+
+    -- Добавляем слайдер скорости в раздел More
+    CreateSlider(nightsTabContents["More"], "Speed Value", 16, 100, currentSpeed, function(v)
+        currentSpeed = math.floor(v)
+        if speedHackEnabled then
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = currentSpeed
+            end
+        end
+        SaveSettings()
     end)
+
+    -- Добавляем кнопку Infinity Jump в раздел More
+    local InfinityJumpToggle = CreateToggle(nightsTabContents["More"], "Infinity Jump", function(v)
+        jumpHackEnabled = v
+        SaveSettings()
+    end, jumpHackEnabled)
+
+    -- Добавляем кнопку Anti AFK в раздел More
+    local AntiAFKToggle = CreateToggle(nightsTabContents["More"], "Anti AFK", function(v)
+        antiAFKEnabled = v
+        if antiAFKEnabled then
+            EnableAntiAFK()
+        else
+            DisableAntiAFK()
+        end
+        SaveSettings()
+    end, antiAFKEnabled)
 
     -- Bring Tab Content
     CreateSlider(nightsTabContents["Bring"], "Bring Count", 1, 20, BringCount, function(v)
@@ -1507,65 +1567,50 @@ local function createNightsMenu()
     -- Переменные для отслеживания открытых подменю
     local openSubMenus = {}
 
-    -- Функция для закрытия всех подменю
-    local function closeAllSubMenus()
-        for subMenuName, _ in pairs(openSubMenus) do
-            openSubMenus[subMenuName] = false
-            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-                if child.Name == subMenuName then
-                    child.Visible = false
-                end
-            end
-        end
-    end
-
     -- Функция для обновления позиций всех элементов
     local function updateAllPositions()
         wait(0.1)
         
         local currentY = 0
-        local padding = 12
+        local padding = 15
         
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child:IsA("Frame") or child:IsA("TextButton") then
                 child.Position = UDim2.new(0, 0, 0, currentY)
                 
                 if child.Name:find("SubMenu") and openSubMenus[child.Name] then
-                    currentY = currentY + child.AbsoluteSize.Y + padding + 15
+                    currentY = currentY + child.AbsoluteSize.Y + padding + 20
                 else
                     currentY = currentY + child.AbsoluteSize.Y + padding
                 end
             end
         end
         
-        nightsTabContents["Bring"].CanvasSize = UDim2.new(0, 0, 0, currentY + 15)
+        nightsTabContents["Bring"].CanvasSize = UDim2.new(0, 0, 0, currentY + 20)
     end
 
-    -- Подменю выбора цели телепортации
+    -- Подменю выбора цели телепортации (В САМОМ НАЧАЛЕ)
     local TeleportTargetButton = CreateButton(nightsTabContents["Bring"], "🎯 Teleport Target", function()
-        local wasOpen = openSubMenus["TeleportTargetSubMenu"]
-        closeAllSubMenus()
-        if not wasOpen then
-            openSubMenus["TeleportTargetSubMenu"] = true
-            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-                if child.Name == "TeleportTargetSubMenu" then
-                    child.Visible = true
-                end
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "TeleportTargetSubMenu" then
+                openSubMenus["TeleportTargetSubMenu"] = not openSubMenus["TeleportTargetSubMenu"]
+                child.Visible = openSubMenus["TeleportTargetSubMenu"]
+                updateAllPositions()
+                return
             end
         end
-        updateAllPositions()
     end)
 
     local TeleportTargetSubMenu = Instance.new("Frame")
     TeleportTargetSubMenu.Name = "TeleportTargetSubMenu"
-    TeleportTargetSubMenu.Size = UDim2.new(1, 0, 0, 90)
+    TeleportTargetSubMenu.Size = UDim2.new(1, 0, 0, 100)
     TeleportTargetSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     TeleportTargetSubMenu.BackgroundTransparency = 0.1
     TeleportTargetSubMenu.Visible = false
     TeleportTargetSubMenu.Parent = nightsTabContents["Bring"]
 
     local TeleportTargetCorner = Instance.new("UICorner")
-    TeleportTargetCorner.CornerRadius = UDim.new(0, 6)
+    TeleportTargetCorner.CornerRadius = UDim.new(0, 8)
     TeleportTargetCorner.Parent = TeleportTargetSubMenu
 
     local TeleportTargetStroke = Instance.new("UIStroke")
@@ -1575,30 +1620,35 @@ local function createNightsMenu()
 
     local TeleportTargetLayout = Instance.new("UIListLayout")
     TeleportTargetLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TeleportTargetLayout.Padding = UDim.new(0, 6)
+    TeleportTargetLayout.Padding = UDim.new(0, 8)
     TeleportTargetLayout.Parent = TeleportTargetSubMenu
 
     -- Создаем кнопки для выбора цели
     local PlayerTargetButton = CreateButton(TeleportTargetSubMenu, "👤 Player", function()
         BringTarget = "Player"
-        showNotification("Teleport target: Player")
+        showNotification("Teleport target: PLAYER")
+        SaveSettings()
         
+        -- Обновляем цвета кнопок - Player подсвечивается фиолетовым, Campfire обычным
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
     end)
-    PlayerTargetButton.Size = UDim2.new(1, -10, 0, 35)
+    PlayerTargetButton.Size = UDim2.new(1, -10, 0, 40)
     PlayerTargetButton.Position = UDim2.new(0, 5, 0, 0)
 
     local CampfireTargetButton = CreateButton(TeleportTargetSubMenu, "🔥 Campfire", function()
         BringTarget = "Campfire"
-        showNotification("Teleport target: Campfire")
+        showNotification("Teleport target: CAMPFIRE")
+        SaveSettings()
         
+        -- Обновляем цвета кнопок - Campfire подсвечивается фиолетовым, Player обычным
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
     end)
-    CampfireTargetButton.Size = UDim2.new(1, -10, 0, 35)
+    CampfireTargetButton.Size = UDim2.new(1, -10, 0, 40)
     CampfireTargetButton.Position = UDim2.new(0, 5, 0, 0)
 
+    -- Устанавливаем начальные цвета кнопок в зависимости от текущей цели
     if BringTarget == "Player" then
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
@@ -1609,33 +1659,26 @@ local function createNightsMenu()
 
     -- Подменю для ресурсов
     local ResourcesButton = CreateButton(nightsTabContents["Bring"], "📦 Resources", function()
-        local wasOpen = openSubMenus["ResourcesSubMenu"]
-        closeAllSubMenus()
-        if not wasOpen then
-            openSubMenus["ResourcesSubMenu"] = true
-            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-                if child.Name == "ResourcesSubMenu" then
-                    child.Visible = true
-                end
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "ResourcesSubMenu" then
+                openSubMenus["ResourcesSubMenu"] = not openSubMenus["ResourcesSubMenu"]
+                child.Visible = openSubMenus["ResourcesSubMenu"]
+                updateAllPositions()
+                return
             end
         end
-        updateAllPositions()
     end)
 
-    local ResourcesSubMenu = Instance.new("ScrollingFrame")
+    local ResourcesSubMenu = Instance.new("Frame")
     ResourcesSubMenu.Name = "ResourcesSubMenu"
-    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 150)
+    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 260)
     ResourcesSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     ResourcesSubMenu.BackgroundTransparency = 0.1
-    ResourcesSubMenu.ScrollBarThickness = 5
-    ResourcesSubMenu.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
-    ResourcesSubMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    ResourcesSubMenu.VerticalScrollBarInset = Enum.ScrollBarInset.Always
     ResourcesSubMenu.Visible = false
     ResourcesSubMenu.Parent = nightsTabContents["Bring"]
 
     local ResourcesCorner = Instance.new("UICorner")
-    ResourcesCorner.CornerRadius = UDim.new(0, 6)
+    ResourcesCorner.CornerRadius = UDim.new(0, 8)
     ResourcesCorner.Parent = ResourcesSubMenu
 
     local ResourcesStroke = Instance.new("UIStroke")
@@ -1645,7 +1688,7 @@ local function createNightsMenu()
 
     local ResourcesLayout = Instance.new("UIListLayout")
     ResourcesLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ResourcesLayout.Padding = UDim.new(0, 6)
+    ResourcesLayout.Padding = UDim.new(0, 8)
     ResourcesLayout.Parent = ResourcesSubMenu
 
     local resourcesItems = {"Log", "Coal", "Chair", "Fuel Canister", "Oil Barrel", "Biofuel"}
@@ -1653,39 +1696,32 @@ local function createNightsMenu()
         local btn = CreateButton(ResourcesSubMenu, "Bring " .. itemName, function()
             BringItems(itemName)
         end)
-        btn.Size = UDim2.new(1, -10, 0, 35)
+        btn.Size = UDim2.new(1, -10, 0, 42)
         btn.Position = UDim2.new(0, 5, 0, 0)
     end
 
-    -- Подменю для металлов
+    -- Подменю для металлов (убрали Scrap Metal)
     local MetalsButton = CreateButton(nightsTabContents["Bring"], "🔩 Metals", function()
-        local wasOpen = openSubMenus["MetalsSubMenu"]
-        closeAllSubMenus()
-        if not wasOpen then
-            openSubMenus["MetalsSubMenu"] = true
-            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-                if child.Name == "MetalsSubMenu" then
-                    child.Visible = true
-                end
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "MetalsSubMenu" then
+                openSubMenus["MetalsSubMenu"] = not openSubMenus["MetalsSubMenu"]
+                child.Visible = openSubMenus["MetalsSubMenu"]
+                updateAllPositions()
+                return
             end
         end
-        updateAllPositions()
     end)
 
-    local MetalsSubMenu = Instance.new("ScrollingFrame")
+    local MetalsSubMenu = Instance.new("Frame")
     MetalsSubMenu.Name = "MetalsSubMenu"
-    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 150)
+    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 260)
     MetalsSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     MetalsSubMenu.BackgroundTransparency = 0.1
-    MetalsSubMenu.ScrollBarThickness = 5
-    MetalsSubMenu.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
-    MetalsSubMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    MetalsSubMenu.VerticalScrollBarInset = Enum.ScrollBarInset.Always
     MetalsSubMenu.Visible = false
     MetalsSubMenu.Parent = nightsTabContents["Bring"]
 
     local MetalsCorner = Instance.new("UICorner")
-    MetalsCorner.CornerRadius = UDim.new(0, 6)
+    MetalsCorner.CornerRadius = UDim.new(0, 8)
     MetalsCorner.Parent = MetalsSubMenu
 
     local MetalsStroke = Instance.new("UIStroke")
@@ -1695,47 +1731,41 @@ local function createNightsMenu()
 
     local MetalsLayout = Instance.new("UIListLayout")
     MetalsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    MetalsLayout.Padding = UDim.new(0, 6)
+    MetalsLayout.Padding = UDim.new(0, 8)
     MetalsLayout.Parent = MetalsSubMenu
 
+    -- Убрали Scrap Metal из списка
     local metalsItems = {"Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave", "Washing Machine", "Old Car Engine", "Cultist Gem"}
     for _, itemName in pairs(metalsItems) do
         local btn = CreateButton(MetalsSubMenu, "Bring " .. itemName, function()
             BringItems(itemName)
         end)
-        btn.Size = UDim2.new(1, -10, 0, 35)
+        btn.Size = UDim2.new(1, -10, 0, 42)
         btn.Position = UDim2.new(0, 5, 0, 0)
     end
 
     -- Подменю для еды и медицины
     local FoodMedButton = CreateButton(nightsTabContents["Bring"], "🍎 Food & Medical", function()
-        local wasOpen = openSubMenus["FoodMedSubMenu"]
-        closeAllSubMenus()
-        if not wasOpen then
-            openSubMenus["FoodMedSubMenu"] = true
-            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-                if child.Name == "FoodMedSubMenu" then
-                    child.Visible = true
-                end
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "FoodMedSubMenu" then
+                openSubMenus["FoodMedSubMenu"] = not openSubMenus["FoodMedSubMenu"]
+                child.Visible = openSubMenus["FoodMedSubMenu"]
+                updateAllPositions()
+                return
             end
         end
-        updateAllPositions()
     end)
 
-    local FoodMedSubMenu = Instance.new("ScrollingFrame")
+    local FoodMedSubMenu = Instance.new("Frame")
     FoodMedSubMenu.Name = "FoodMedSubMenu"
-    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 150)
+    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 310)
     FoodMedSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     FoodMedSubMenu.BackgroundTransparency = 0.1
-    FoodMedSubMenu.ScrollBarThickness = 5
-    FoodMedSubMenu.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
-    FoodMedSubMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    FoodMedSubMenu.VerticalScrollBarInset = Enum.ScrollBarInset.Always
     FoodMedSubMenu.Visible = false
     FoodMedSubMenu.Parent = nightsTabContents["Bring"]
 
     local FoodMedCorner = Instance.new("UICorner")
-    FoodMedCorner.CornerRadius = UDim.new(0, 6)
+    FoodMedCorner.CornerRadius = UDim.new(0, 8)
     FoodMedCorner.Parent = FoodMedSubMenu
 
     local FoodMedStroke = Instance.new("UIStroke")
@@ -1745,7 +1775,7 @@ local function createNightsMenu()
 
     local FoodMedLayout = Instance.new("UIListLayout")
     FoodMedLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    FoodMedLayout.Padding = UDim.new(0, 6)
+    FoodMedLayout.Padding = UDim.new(0, 8)
     FoodMedLayout.Parent = FoodMedSubMenu
 
     local foodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage", "Chili", "Apple", "Cake"}
@@ -1753,39 +1783,32 @@ local function createNightsMenu()
         local btn = CreateButton(FoodMedSubMenu, "Bring " .. itemName, function()
             BringItems(itemName)
         end)
-        btn.Size = UDim2.new(1, -10, 0, 35)
+        btn.Size = UDim2.new(1, -10, 0, 42)
         btn.Position = UDim2.new(0, 5, 0, 0)
     end
 
-    -- Подменю для оружия и инструментов
+    -- Подменю для оружия и инструментов (объединенное)
     local WeaponsButton = CreateButton(nightsTabContents["Bring"], "🔫 Weapons & Tools", function()
-        local wasOpen = openSubMenus["WeaponsSubMenu"]
-        closeAllSubMenus()
-        if not wasOpen then
-            openSubMenus["WeaponsSubMenu"] = true
-            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-                if child.Name == "WeaponsSubMenu" then
-                    child.Visible = true
-                end
+        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+            if child.Name == "WeaponsSubMenu" then
+                openSubMenus["WeaponsSubMenu"] = not openSubMenus["WeaponsSubMenu"]
+                child.Visible = openSubMenus["WeaponsSubMenu"]
+                updateAllPositions()
+                return
             end
         end
-        updateAllPositions()
     end)
 
-    local WeaponsSubMenu = Instance.new("ScrollingFrame")
+    local WeaponsSubMenu = Instance.new("Frame")
     WeaponsSubMenu.Name = "WeaponsSubMenu"
-    WeaponsSubMenu.Size = UDim2.new(1, 0, 0, 150)
+    WeaponsSubMenu.Size = UDim2.new(1, 0, 0, 350)
     WeaponsSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     WeaponsSubMenu.BackgroundTransparency = 0.1
-    WeaponsSubMenu.ScrollBarThickness = 5
-    WeaponsSubMenu.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
-    WeaponsSubMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
-    WeaponsSubMenu.VerticalScrollBarInset = Enum.ScrollBarInset.Always
     WeaponsSubMenu.Visible = false
     WeaponsSubMenu.Parent = nightsTabContents["Bring"]
 
     local WeaponsCorner = Instance.new("UICorner")
-    WeaponsCorner.CornerRadius = UDim.new(0, 6)
+    WeaponsCorner.CornerRadius = UDim.new(0, 8)
     WeaponsCorner.Parent = WeaponsSubMenu
 
     local WeaponsStroke = Instance.new("UIStroke")
@@ -1795,24 +1818,27 @@ local function createNightsMenu()
 
     local WeaponsLayout = Instance.new("UIListLayout")
     WeaponsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    WeaponsLayout.Padding = UDim.new(0, 6)
+    WeaponsLayout.Padding = UDim.new(0, 8)
     WeaponsLayout.Parent = WeaponsSubMenu
 
+    -- Объединенный список оружия и инструментов
     local weaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"}
     for _, itemName in pairs(weaponsItems) do
         local btn = CreateButton(WeaponsSubMenu, "Bring " .. itemName, function()
             BringItems(itemName)
         end)
-        btn.Size = UDim2.new(1, -10, 0, 35)
+        btn.Size = UDim2.new(1, -10, 0, 42)
         btn.Position = UDim2.new(0, 5, 0, 0)
     end
 
+    -- Инициализация таблицы открытых подменю
     openSubMenus["TeleportTargetSubMenu"] = false
     openSubMenus["ResourcesSubMenu"] = false
     openSubMenus["MetalsSubMenu"] = false
     openSubMenus["FoodMedSubMenu"] = false
     openSubMenus["WeaponsSubMenu"] = false
 
+    -- Первоначальное обновление позиций
     updateAllPositions()
 
     -- Tab Switching для Nights Menu
@@ -1827,7 +1853,6 @@ local function createNightsMenu()
             end
             
             if tabName == "Bring" then
-                closeAllSubMenus()
                 updateAllPositions()
             end
         end)
@@ -1847,26 +1872,41 @@ local function createGUI()
         notification = nil
     end
 
+    -- Create GUI
     ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "SANSTRO_GUI"
     ScreenGui.Parent = player.PlayerGui
     ScreenGui.ResetOnSpawn = false
 
+    -- Создаем все меню
     createMainMenu()
     createGunMenu()
     createNightsMenu()
     
+    -- Создаем кнопку открытия/закрытия
     createOpenCloseButton()
 end
 
+-- Создаем GUI при запуске
 createGUI()
 createFOVCircle()
 
+-- Восстанавливаем GUI после смерти
 player.CharacterAdded:Connect(function()
     wait(2)
     createGUI()
+    
+    -- Восстанавливаем настройки SpeedHack после смерти
+    if speedHackEnabled then
+        wait(1)
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = currentSpeed
+        end
+    end
 end)
 
+-- Clean up when player leaves
 game:GetService("CoreGui").ChildRemoved:Connect(function(child)
     if child == ScreenGui then
         if fovCircle then
@@ -1880,6 +1920,10 @@ game:GetService("CoreGui").ChildRemoved:Connect(function(child)
         if noclipConnection then
             noclipConnection:Disconnect()
             noclipConnection = nil
+        end
+        if antiAFKConnection then
+            antiAFKConnection:Disconnect()
+            antiAFKConnection = nil
         end
         for _, espData in pairs(espObjects) do
             if espData.tracer then espData.tracer:Remove() end
