@@ -1452,6 +1452,11 @@ local function createNightsMenu()
         end
     end)
 
+    -- Добавляем кнопку Telegram Link в раздел More
+    CreateButton(nightsTabContents["More"], "📢 Telegram Link", function()
+        game:GetService("StarterGui"):SetCore("OpenBrowserWindow", {Url = "https://t.me/SCRIPTTYTA"})
+    end)
+
     -- Bring Tab Content
     CreateSlider(nightsTabContents["Bring"], "Bring Count", 1, 20, BringCount, function(v)
         BringCount = math.floor(v)
@@ -1526,7 +1531,7 @@ local function createNightsMenu()
         showNotification("Teleport target: PLAYER")
         SaveSettings()
         
-        -- Обновляем цвета кнопок
+        -- Обновляем цвета кнопок - Player подсвечивается фиолетовым, Campfire обычным
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
     end)
@@ -1538,7 +1543,7 @@ local function createNightsMenu()
         showNotification("Teleport target: CAMPFIRE")
         SaveSettings()
         
-        -- Обновляем цвета кнопок
+        -- Обновляем цвета кнопок - Campfire подсвечивается фиолетовым, Player обычным
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
     end)
