@@ -1507,6 +1507,18 @@ local function createNightsMenu()
     -- Переменные для отслеживания открытых подменю
     local openSubMenus = {}
 
+    -- Функция для закрытия всех подменю
+    local function closeAllSubMenus()
+        for subMenuName, _ in pairs(openSubMenus) do
+            openSubMenus[subMenuName] = false
+            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+                if child.Name == subMenuName then
+                    child.Visible = false
+                end
+            end
+        end
+    end
+
     -- Функция для обновления позиций всех элементов
     local function updateAllPositions()
         wait(0.1)
@@ -1531,14 +1543,17 @@ local function createNightsMenu()
 
     -- Подменю выбора цели телепортации
     local TeleportTargetButton = CreateButton(nightsTabContents["Bring"], "🎯 Teleport Target", function()
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "TeleportTargetSubMenu" then
-                openSubMenus["TeleportTargetSubMenu"] = not openSubMenus["TeleportTargetSubMenu"]
-                child.Visible = openSubMenus["TeleportTargetSubMenu"]
-                updateAllPositions()
-                return
+        local wasOpen = openSubMenus["TeleportTargetSubMenu"]
+        closeAllSubMenus()
+        if not wasOpen then
+            openSubMenus["TeleportTargetSubMenu"] = true
+            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+                if child.Name == "TeleportTargetSubMenu" then
+                    child.Visible = true
+                end
             end
         end
+        updateAllPositions()
     end)
 
     local TeleportTargetSubMenu = Instance.new("Frame")
@@ -1594,14 +1609,17 @@ local function createNightsMenu()
 
     -- Подменю для ресурсов
     local ResourcesButton = CreateButton(nightsTabContents["Bring"], "📦 Resources", function()
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "ResourcesSubMenu" then
-                openSubMenus["ResourcesSubMenu"] = not openSubMenus["ResourcesSubMenu"]
-                child.Visible = openSubMenus["ResourcesSubMenu"]
-                updateAllPositions()
-                return
+        local wasOpen = openSubMenus["ResourcesSubMenu"]
+        closeAllSubMenus()
+        if not wasOpen then
+            openSubMenus["ResourcesSubMenu"] = true
+            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+                if child.Name == "ResourcesSubMenu" then
+                    child.Visible = true
+                end
             end
         end
+        updateAllPositions()
     end)
 
     local ResourcesSubMenu = Instance.new("Frame")
@@ -1637,14 +1655,17 @@ local function createNightsMenu()
 
     -- Подменю для металлов
     local MetalsButton = CreateButton(nightsTabContents["Bring"], "🔩 Metals", function()
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "MetalsSubMenu" then
-                openSubMenus["MetalsSubMenu"] = not openSubMenus["MetalsSubMenu"]
-                child.Visible = openSubMenus["MetalsSubMenu"]
-                updateAllPositions()
-                return
+        local wasOpen = openSubMenus["MetalsSubMenu"]
+        closeAllSubMenus()
+        if not wasOpen then
+            openSubMenus["MetalsSubMenu"] = true
+            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+                if child.Name == "MetalsSubMenu" then
+                    child.Visible = true
+                end
             end
         end
+        updateAllPositions()
     end)
 
     local MetalsSubMenu = Instance.new("Frame")
@@ -1680,14 +1701,17 @@ local function createNightsMenu()
 
     -- Подменю для еды и медицины
     local FoodMedButton = CreateButton(nightsTabContents["Bring"], "🍎 Food & Medical", function()
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "FoodMedSubMenu" then
-                openSubMenus["FoodMedSubMenu"] = not openSubMenus["FoodMedSubMenu"]
-                child.Visible = openSubMenus["FoodMedSubMenu"]
-                updateAllPositions()
-                return
+        local wasOpen = openSubMenus["FoodMedSubMenu"]
+        closeAllSubMenus()
+        if not wasOpen then
+            openSubMenus["FoodMedSubMenu"] = true
+            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+                if child.Name == "FoodMedSubMenu" then
+                    child.Visible = true
+                end
             end
         end
+        updateAllPositions()
     end)
 
     local FoodMedSubMenu = Instance.new("Frame")
@@ -1723,14 +1747,17 @@ local function createNightsMenu()
 
     -- Подменю для оружия и инструментов
     local WeaponsButton = CreateButton(nightsTabContents["Bring"], "🔫 Weapons & Tools", function()
-        for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
-            if child.Name == "WeaponsSubMenu" then
-                openSubMenus["WeaponsSubMenu"] = not openSubMenus["WeaponsSubMenu"]
-                child.Visible = openSubMenus["WeaponsSubMenu"]
-                updateAllPositions()
-                return
+        local wasOpen = openSubMenus["WeaponsSubMenu"]
+        closeAllSubMenus()
+        if not wasOpen then
+            openSubMenus["WeaponsSubMenu"] = true
+            for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
+                if child.Name == "WeaponsSubMenu" then
+                    child.Visible = true
+                end
             end
         end
+        updateAllPositions()
     end)
 
     local WeaponsSubMenu = Instance.new("Frame")
@@ -1784,6 +1811,7 @@ local function createNightsMenu()
             end
             
             if tabName == "Bring" then
+                closeAllSubMenus()
                 updateAllPositions()
             end
         end)
