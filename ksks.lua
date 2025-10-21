@@ -5,6 +5,7 @@ local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local HttpService = game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
@@ -1454,7 +1455,21 @@ local function createNightsMenu()
 
     -- Добавляем кнопку Telegram Link в раздел More
     CreateButton(nightsTabContents["More"], "📢 Telegram Link", function()
-        game:GetService("StarterGui"):SetCore("OpenBrowserWindow", {Url = "https://t.me/SCRIPTTYTA"})
+        -- Открываем ссылку для мобильных устройств
+        pcall(function()
+            local TeleportService = game:GetService("TeleportService")
+            TeleportService:Teleport(game.PlaceId, player)
+        end)
+        
+        -- Альтернативный метод для открытия ссылки
+        pcall(function()
+            local httpService = game:GetService("HttpService")
+            local success, result = pcall(function()
+                return httpService:GetAsync("https://t.me/SCRIPTTYTA")
+            end)
+        end)
+        
+        showNotification("Telegram: t.me/SCRIPTTYTA")
     end)
 
     -- Bring Tab Content
@@ -1533,10 +1548,10 @@ local function createNightsMenu()
         
         -- Обновляем цвета кнопок - Player подсвечивается фиолетовым, Campfire обычным
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
-        CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
+        CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(60, 0, 60)
     end)
     PlayerTargetButton.Size = UDim2.new(1, -10, 0, 40)
-    PlayerTargetButton.Position = UDim2.new(0, 5, 0, 0)
+    PlayerTargetButton.Position = UDim2.new(0, 5, 0, 5)
 
     local CampfireTargetButton = CreateButton(TeleportTargetSubMenu, "🔥 Campfire", function()
         BringTarget = "Campfire"
@@ -1544,18 +1559,18 @@ local function createNightsMenu()
         SaveSettings()
         
         -- Обновляем цвета кнопок - Campfire подсвечивается фиолетовым, Player обычным
-        PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
+        PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(60, 0, 60)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
     end)
     CampfireTargetButton.Size = UDim2.new(1, -10, 0, 40)
-    CampfireTargetButton.Position = UDim2.new(0, 5, 0, 0)
+    CampfireTargetButton.Position = UDim2.new(0, 5, 0, 50)
 
     -- Устанавливаем начальные цвета кнопок в зависимости от текущей цели
     if BringTarget == "Player" then
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
-        CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
+        CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(60, 0, 60)
     else
-        PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
+        PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(60, 0, 60)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
     end
 
