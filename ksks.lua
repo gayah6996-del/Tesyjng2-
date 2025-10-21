@@ -4,7 +4,6 @@ local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
-local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
 local mouse = player:GetMouse()
@@ -34,25 +33,10 @@ local CampfirePosition = Vector3.new(0, 10, 0)
 -- Переменная для цели телепортации предметов
 local BringTarget = "Campfire" -- "Campfire" или "Player"
 
--- Новые переменные для функций в разделе More
-local antiAFKEnabled = false
-local antiAFKConnection = nil
-
--- Настройки файла
-local SETTINGS_FILE = "astralcheat_settings.txt"
-local Settings = {
-    ActiveKillAura = false,
-    ActiveAutoChopTree = false,
-    DistanceForKillAura = 25,
-    DistanceForAutoChopTree = 25,
-    BringCount = 5,
-    BringDelay = 200,
-    BringTarget = "Campfire",
-    speedHackEnabled = false,
-    jumpHackEnabled = false,
-    currentSpeed = 16,
-    antiAFKEnabled = false
-}
+-- Новые переменные для авто-питания
+local AutoFeedEnabled = false
+local SelectedFood = "Carrot"
+local AutoFeedConnection = nil
 
 local ScreenGui = nil
 local MainMenu = nil
@@ -82,19 +66,16 @@ local notificationTimer = nil
 local function showNotification(text)
     if not ScreenGui then return end
     
-    -- Удаляем предыдущее уведомление если есть
     if notification then
         notification:Destroy()
         notification = nil
     end
     
-    -- Останавливаем предыдущий таймер
     if notificationTimer then
         notificationTimer:Disconnect()
         notificationTimer = nil
     end
     
-    -- Создаем уведомление
     notification = Instance.new("TextLabel")
     notification.Name = "Notification"
     notification.Size = UDim2.new(0, 250, 0, 40)
@@ -118,7 +99,6 @@ local function showNotification(text)
     stroke.Thickness = 2
     stroke.Parent = notification
     
-    -- Автоматическое удаление через 3 секунды
     notificationTimer = delay(3, function()
         if notification then
             notification:Destroy()
@@ -131,63 +111,13 @@ end
 local function playClickSound()
     pcall(function()
         local sound = Instance.new("Sound")
-        sound.SoundId = "rbxassetid://3578328117" -- ID звука "тыдынь"
+        sound.SoundId = "rbxassetid://3578328117"
         sound.Volume = 0.5
         sound.Parent = workspace
         sound:Play()
         game:GetService("Debris"):AddItem(sound, 2)
     end)
 end
-
--- Функции сохранения настроек
-local function SaveSettings()
-    pcall(function()
-        Settings.ActiveKillAura = ActiveKillAura
-        Settings.ActiveAutoChopTree = ActiveAutoChopTree
-        Settings.DistanceForKillAura = DistanceForKillAura
-        Settings.DistanceForAutoChopTree = DistanceForAutoChopTree
-        Settings.BringCount = BringCount
-        Settings.BringDelay = BringDelay
-        Settings.BringTarget = BringTarget
-        Settings.speedHackEnabled = speedHackEnabled
-        Settings.jumpHackEnabled = jumpHackEnabled
-        Settings.currentSpeed = currentSpeed
-        Settings.antiAFKEnabled = antiAFKEnabled
-        
-        local data = HttpService:JSONEncode(Settings)
-        writefile(SETTINGS_FILE, data)
-    end)
-end
-
-local function LoadSettings()
-    pcall(function()
-        if isfile(SETTINGS_FILE) then
-            local data = readfile(SETTINGS_FILE)
-            local loadedSettings = HttpService:JSONDecode(data)
-            for key, value in pairs(loadedSettings) do
-                if Settings[key] ~= nil then 
-                    Settings[key] = value 
-                end
-            end
-            
-            -- Применяем загруженные настройки
-            ActiveKillAura = Settings.ActiveKillAura
-            ActiveAutoChopTree = Settings.ActiveAutoChopTree
-            DistanceForKillAura = Settings.DistanceForKillAura
-            DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
-            BringCount = Settings.BringCount
-            BringDelay = Settings.BringDelay
-            BringTarget = Settings.BringTarget or "Campfire"
-            speedHackEnabled = Settings.speedHackEnabled or false
-            jumpHackEnabled = Settings.jumpHackEnabled or false
-            currentSpeed = Settings.currentSpeed or 16
-            antiAFKEnabled = Settings.antiAFKEnabled or false
-        end
-    end)
-end
-
--- Загружаем настройки при запуске
-LoadSettings()
 
 -- Функции для UI элементов
 local function CreateToggle(parent, text, callback, isActive)
@@ -250,7 +180,6 @@ local function CreateToggle(parent, text, callback, isActive)
         toggleButton.Text = isActive and "ON" or "OFF"
         showNotification(text .. " " .. (isActive and "ENABLED" or "DISABLED"))
         callback(isActive)
-        SaveSettings()
     end)
     
     return {
@@ -348,11 +277,11 @@ local function CreateSlider(parent, text, min, max, default, callback)
                 connection:Disconnect()
                 connection = nil
             end
-            SaveSettings()
         end
     end)
     
     updateSlider(default)
+    return sliderFrame
 end
 
 local function CreateButton(parent, text, callback)
@@ -455,7 +384,6 @@ local function createOpenCloseButton()
         playClickSound()
         isGuiOpen = not isGuiOpen
         
-        -- Закрываем/открываем текущее активное меню
         if currentActiveMenu then
             currentActiveMenu.Visible = isGuiOpen
         end
@@ -469,7 +397,6 @@ local function createOpenCloseButton()
         end
     end)
 
-    -- Сохраняем позицию кнопки при перетаскивании
     OpenCloseButton.DragStopped:Connect(function()
         savedButtonPosition = OpenCloseButton.Position
     end)
@@ -526,7 +453,6 @@ local function createESP(otherPlayer)
     local function updateESP()
         if not espObjects[otherPlayer] then return end
         
-        -- Check if player is dead or doesn't exist
         if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
             if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
             if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
@@ -541,7 +467,6 @@ local function createESP(otherPlayer)
         
         if not head then return end
         
-        -- Check if player is dead
         if humanoid.Health <= 0 then
             if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
             if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
@@ -635,10 +560,8 @@ local function createESP(otherPlayer)
         end
     end
     
-    -- Update ESP continuously
     espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
     
-    -- Clean up when player leaves
     otherPlayer.AncestryChanged:Connect(function()
         if not otherPlayer.Parent then
             cleanupESP(otherPlayer)
@@ -671,7 +594,6 @@ local function isPlayerVisible(targetPlayer)
     local camera = workspace.CurrentCamera
     local origin = camera.CFrame.Position
     
-    -- Raycast to target
     local direction = (targetRoot.Position - origin).Unit
     local ray = Ray.new(origin, direction * 1000)
     
@@ -679,7 +601,6 @@ local function isPlayerVisible(targetPlayer)
     local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
     
     if hit then
-        -- Check if we hit the target player
         local hitModel = hit:FindFirstAncestorOfClass("Model")
         if hitModel and hitModel == targetPlayer.Character then
             return true
@@ -791,31 +712,44 @@ local function BringItems(itemName)
         end
     end
     
-    -- Показываем уведомление о количестве телепортированных предметов
     showNotification("Teleported " .. teleported .. " " .. itemName .. "(s)")
 end
 
--- Anti AFK функция
-local function EnableAntiAFK()
-    if antiAFKConnection then
-        antiAFKConnection:Disconnect()
-        antiAFKConnection = nil
-    end
-    
-    antiAFKConnection = RunService.Heartbeat:Connect(function()
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            -- Просто обновляем время последней активности
-            player.Character.Humanoid.Jump = true
-            wait(0.1)
-            player.Character.Humanoid.Jump = false
+-- Функция для авто-питания
+local function RunAutoFeed()
+    while AutoFeedEnabled do
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        
+        if hrp then
+            -- Проверяем голод (предполагаем, что есть атрибут Hunger)
+            local hunger = 100
+            if char:FindFirstChild("Humanoid") then
+                hunger = char.Humanoid:GetAttribute("Hunger") or 100
+            end
+            
+            -- Если голод ниже 50%, ищем еду
+            if hunger < 50 then
+                for _, item in pairs(workspace.Items:GetChildren()) do
+                    if item:IsA("Model") and item.Name == SelectedFood then
+                        local part = item:FindFirstChildWhichIsA("BasePart")
+                        if part then
+                            local dist = (part.Position - hrp.Position).Magnitude
+                            if dist <= 10 then -- Дистанция для подбора еды
+                                -- Телепортируем еду к игроку
+                                part.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 2, 0))
+                                part.Anchored = false
+                                part.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                                showNotification("Auto eating: " .. SelectedFood)
+                                wait(2) -- Задержка перед следующей проверкой
+                                break
+                            end
+                        end
+                    end
+                end
+            end
         end
-    end)
-end
-
-local function DisableAntiAFK()
-    if antiAFKConnection then
-        antiAFKConnection:Disconnect()
-        antiAFKConnection = nil
+        wait(1)
     end
 end
 
@@ -838,18 +772,15 @@ task.spawn(function()
     end
 end)
 
--- Применяем настройки SpeedHack при загрузке
-if speedHackEnabled then
-    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.WalkSpeed = currentSpeed
+-- Запускаем авто-питание
+task.spawn(function()
+    while true do
+        if AutoFeedEnabled then
+            RunAutoFeed()
+        end
+        wait(1)
     end
-end
-
--- Применяем настройки AntiAFK при загрузке
-if antiAFKEnabled then
-    EnableAntiAFK()
-end
+end)
 
 -- Функция создания главного меню выбора
 local function createMainMenu()
@@ -1062,7 +993,7 @@ local function createGunMenu()
     -- Movement Tab Content
     local SpeedHackFrame = Instance.new("Frame")
     SpeedHackFrame.Name = "SpeedHackFrame"
-    SpeedHackFrame.Size = UDim2.new(1, 0, 0, 85)
+    SpeedHackFrame.Size = UDim2.new(1, 0, 0, 45)
     SpeedHackFrame.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     SpeedHackFrame.BackgroundTransparency = 0.1
     SpeedHackFrame.BorderSizePixel = 0
@@ -1114,41 +1045,22 @@ local function createGunMenu()
     SpeedHackToggleStroke.Thickness = 1
     SpeedHackToggleStroke.Parent = SpeedHackToggle
 
-    local SpeedHackSlider = Instance.new("Frame")
-    SpeedHackSlider.Name = "SpeedHackSlider"
-    SpeedHackSlider.Size = UDim2.new(1, -30, 0, 30)
-    SpeedHackSlider.Position = UDim2.new(0, 15, 0, 45)
-    SpeedHackSlider.BackgroundColor3 = Color3.fromRGB(50, 0, 50)
-    SpeedHackSlider.BackgroundTransparency = 0.3
-    SpeedHackSlider.BorderSizePixel = 0
+    -- Создаем слайдер отдельно и изначально скрываем его
+    local SpeedHackSlider = CreateSlider(gunTabContents["Movement"], "Speed Value", 16, 100, currentSpeed, function(v)
+        currentSpeed = math.floor(v)
+        if speedHackEnabled then
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = currentSpeed
+            end
+        end
+    end)
+    SpeedHackSlider.Position = UDim2.new(0, 0, 0, 50)
     SpeedHackSlider.Visible = speedHackEnabled
-    SpeedHackSlider.ZIndex = 3
-    SpeedHackSlider.Parent = SpeedHackFrame
-
-    local SpeedHackSliderCorner = Instance.new("UICorner")
-    SpeedHackSliderCorner.CornerRadius = UDim.new(0, 6)
-    SpeedHackSliderCorner.Parent = SpeedHackSlider
-
-    local SpeedHackSliderStroke = Instance.new("UIStroke")
-    SpeedHackSliderStroke.Color = Color3.fromRGB(100, 0, 100)
-    SpeedHackSliderStroke.Thickness = 1
-    SpeedHackSliderStroke.Parent = SpeedHackSlider
-
-    local SpeedValue = Instance.new("TextLabel")
-    SpeedValue.Name = "SpeedValue"
-    SpeedValue.Size = UDim2.new(1, 0, 1, 0)
-    SpeedValue.BackgroundTransparency = 1
-    SpeedValue.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SpeedValue.Text = "Speed: " .. currentSpeed
-    SpeedValue.Font = Enum.Font.GothamSemibold
-    SpeedValue.TextSize = 12
-    SpeedValue.ZIndex = 4
-    SpeedValue.Parent = SpeedHackSlider
 
     -- Jump Hack
     local JumpHackToggle = CreateToggle(gunTabContents["Movement"], "Jump Hack", function(v)
         jumpHackEnabled = v
-        SaveSettings()
     end, jumpHackEnabled)
 
     -- NoClip
@@ -1255,32 +1167,6 @@ local function createGunMenu()
                 humanoid.WalkSpeed = 16
             end
         end
-        SaveSettings()
-    end)
-
-    local speedSliderConnection
-    SpeedHackSlider.InputBegan:Connect(function()
-        speedSliderConnection = RunService.Heartbeat:Connect(function()
-            local mouseLocation = UserInputService:GetMouseLocation()
-            local relativeX = math.clamp((mouseLocation.X - SpeedHackSlider.AbsolutePosition.X) / SpeedHackSlider.AbsoluteSize.X, 0, 1)
-            currentSpeed = math.floor(16 + (relativeX * 84))
-            SpeedValue.Text = "Speed: " .. currentSpeed
-            
-            if speedHackEnabled then
-                local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-                if humanoid then
-                    humanoid.WalkSpeed = currentSpeed
-                end
-            end
-        end)
-    end)
-
-    SpeedHackSlider.InputEnded:Connect(function()
-        if speedSliderConnection then
-            speedSliderConnection:Disconnect()
-            speedSliderConnection = nil
-        end
-        SaveSettings()
     end)
 
     UserInputService.JumpRequest:Connect(function()
@@ -1508,52 +1394,57 @@ local function createNightsMenu()
         end
     end)
 
-    -- Добавляем кнопку SpeedHack в раздел More
-    local SpeedHackToggleMore = CreateToggle(nightsTabContents["More"], "Speed Hack", function(v)
-        speedHackEnabled = v
-        
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
-            end
-        else
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = 16
-            end
-        end
-        SaveSettings()
-    end, speedHackEnabled)
+    -- Добавляем мини-меню для авто-питания в раздел More
+    local AutoFeedToggle = CreateToggle(nightsTabContents["More"], "🍖 Auto Feed", function(v)
+        AutoFeedEnabled = v
+        showNotification("Auto Feed " .. (v and "ENABLED" or "DISABLED"))
+    end, AutoFeedEnabled)
 
-    -- Добавляем слайдер скорости в раздел More
-    CreateSlider(nightsTabContents["More"], "Speed Value", 16, 100, currentSpeed, function(v)
-        currentSpeed = math.floor(v)
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
+    -- Кнопка для выбора еды
+    local FoodSelectionButton = CreateButton(nightsTabContents["More"], "Select Food: " .. SelectedFood, function()
+        -- Открываем подменю выбора еды
+        for _, child in pairs(nightsTabContents["More"]:GetChildren()) do
+            if child.Name == "FoodSelectionSubMenu" then
+                child.Visible = not child.Visible
+                return
             end
         end
-        SaveSettings()
     end)
 
-    -- Добавляем кнопку Infinity Jump в раздел More
-    local InfinityJumpToggle = CreateToggle(nightsTabContents["More"], "Infinity Jump", function(v)
-        jumpHackEnabled = v
-        SaveSettings()
-    end, jumpHackEnabled)
+    local FoodSelectionSubMenu = Instance.new("Frame")
+    FoodSelectionSubMenu.Name = "FoodSelectionSubMenu"
+    FoodSelectionSubMenu.Size = UDim2.new(1, 0, 0, 200)
+    FoodSelectionSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
+    FoodSelectionSubMenu.BackgroundTransparency = 0.1
+    FoodSelectionSubMenu.Visible = false
+    FoodSelectionSubMenu.Parent = nightsTabContents["More"]
 
-    -- Добавляем кнопку Anti AFK в раздел More
-    local AntiAFKToggle = CreateToggle(nightsTabContents["More"], "Anti AFK", function(v)
-        antiAFKEnabled = v
-        if antiAFKEnabled then
-            EnableAntiAFK()
-        else
-            DisableAntiAFK()
-        end
-        SaveSettings()
-    end, antiAFKEnabled)
+    local FoodSelectionCorner = Instance.new("UICorner")
+    FoodSelectionCorner.CornerRadius = UDim.new(0, 8)
+    FoodSelectionCorner.Parent = FoodSelectionSubMenu
+
+    local FoodSelectionStroke = Instance.new("UIStroke")
+    FoodSelectionStroke.Color = Color3.fromRGB(100, 0, 100)
+    FoodSelectionStroke.Thickness = 1
+    FoodSelectionStroke.Parent = FoodSelectionSubMenu
+
+    local FoodSelectionLayout = Instance.new("UIListLayout")
+    FoodSelectionLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    FoodSelectionLayout.Padding = UDim.new(0, 8)
+    FoodSelectionLayout.Parent = FoodSelectionSubMenu
+
+    -- Список доступной еды
+    local foodItems = {"Carrot", "Pumpkin", "Morsel", "Steak"}
+    for _, foodName in pairs(foodItems) do
+        local btn = CreateButton(FoodSelectionSubMenu, foodName, function()
+            SelectedFood = foodName
+            FoodSelectionButton.Text = "Select Food: " .. SelectedFood
+            FoodSelectionSubMenu.Visible = false
+            showNotification("Selected food: " .. foodName)
+        end)
+        btn.Size = UDim2.new(1, -10, 0, 40)
+        btn.Position = UDim2.new(0, 5, 0, 0)
+    end
 
     -- Bring Tab Content
     CreateSlider(nightsTabContents["Bring"], "Bring Count", 1, 20, BringCount, function(v)
@@ -1589,7 +1480,7 @@ local function createNightsMenu()
         nightsTabContents["Bring"].CanvasSize = UDim2.new(0, 0, 0, currentY + 20)
     end
 
-    -- Подменю выбора цели телепортации (В САМОМ НАЧАЛЕ)
+    -- Подменю выбора цели телепортации
     local TeleportTargetButton = CreateButton(nightsTabContents["Bring"], "🎯 Teleport Target", function()
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "TeleportTargetSubMenu" then
@@ -1627,9 +1518,7 @@ local function createNightsMenu()
     local PlayerTargetButton = CreateButton(TeleportTargetSubMenu, "👤 Player", function()
         BringTarget = "Player"
         showNotification("Teleport target: PLAYER")
-        SaveSettings()
         
-        -- Обновляем цвета кнопок - Player подсвечивается фиолетовым, Campfire обычным
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
     end)
@@ -1639,16 +1528,13 @@ local function createNightsMenu()
     local CampfireTargetButton = CreateButton(TeleportTargetSubMenu, "🔥 Campfire", function()
         BringTarget = "Campfire"
         showNotification("Teleport target: CAMPFIRE")
-        SaveSettings()
         
-        -- Обновляем цвета кнопок - Campfire подсвечивается фиолетовым, Player обычным
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
     end)
     CampfireTargetButton.Size = UDim2.new(1, -10, 0, 40)
     CampfireTargetButton.Position = UDim2.new(0, 5, 0, 0)
 
-    -- Устанавливаем начальные цвета кнопок в зависимости от текущей цели
     if BringTarget == "Player" then
         PlayerTargetButton.BackgroundColor3 = Color3.fromRGB(170, 0, 170)
         CampfireTargetButton.BackgroundColor3 = Color3.fromRGB(30, 0, 30)
@@ -1700,7 +1586,7 @@ local function createNightsMenu()
         btn.Position = UDim2.new(0, 5, 0, 0)
     end
 
-    -- Подменю для металлов (убрали Scrap Metal)
+    -- Подменю для металлов
     local MetalsButton = CreateButton(nightsTabContents["Bring"], "🔩 Metals", function()
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "MetalsSubMenu" then
@@ -1734,7 +1620,6 @@ local function createNightsMenu()
     MetalsLayout.Padding = UDim.new(0, 8)
     MetalsLayout.Parent = MetalsSubMenu
 
-    -- Убрали Scrap Metal из списка
     local metalsItems = {"Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave"}
     for _, itemName in pairs(metalsItems) do
         local btn = CreateButton(MetalsSubMenu, "Bring " .. itemName, function()
@@ -1787,7 +1672,7 @@ local function createNightsMenu()
         btn.Position = UDim2.new(0, 5, 0, 0)
     end
 
-    -- Подменю для оружия и инструментов (объединенное)
+    -- Подменю для оружия и инструментов
     local WeaponsButton = CreateButton(nightsTabContents["Bring"], "🔫 Weapons & Tools", function()
         for _, child in pairs(nightsTabContents["Bring"]:GetChildren()) do
             if child.Name == "WeaponsSubMenu" then
@@ -1821,7 +1706,6 @@ local function createNightsMenu()
     WeaponsLayout.Padding = UDim.new(0, 8)
     WeaponsLayout.Parent = WeaponsSubMenu
 
-    -- Объединенный список оружия и инструментов
     local weaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"}
     for _, itemName in pairs(weaponsItems) do
         local btn = CreateButton(WeaponsSubMenu, "Bring " .. itemName, function()
@@ -1831,14 +1715,12 @@ local function createNightsMenu()
         btn.Position = UDim2.new(0, 5, 0, 0)
     end
 
-    -- Инициализация таблицы открытых подменю
     openSubMenus["TeleportTargetSubMenu"] = false
     openSubMenus["ResourcesSubMenu"] = false
     openSubMenus["MetalsSubMenu"] = false
     openSubMenus["FoodMedSubMenu"] = false
     openSubMenus["WeaponsSubMenu"] = false
 
-    -- Первоначальное обновление позиций
     updateAllPositions()
 
     -- Tab Switching для Nights Menu
@@ -1872,41 +1754,26 @@ local function createGUI()
         notification = nil
     end
 
-    -- Create GUI
     ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "SANSTRO_GUI"
     ScreenGui.Parent = player.PlayerGui
     ScreenGui.ResetOnSpawn = false
 
-    -- Создаем все меню
     createMainMenu()
     createGunMenu()
     createNightsMenu()
     
-    -- Создаем кнопку открытия/закрытия
     createOpenCloseButton()
 end
 
--- Создаем GUI при запуске
 createGUI()
 createFOVCircle()
 
--- Восстанавливаем GUI после смерти
 player.CharacterAdded:Connect(function()
     wait(2)
     createGUI()
-    
-    -- Восстанавливаем настройки SpeedHack после смерти
-    if speedHackEnabled then
-        wait(1)
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = currentSpeed
-        end
-    end
 end)
 
--- Clean up when player leaves
 game:GetService("CoreGui").ChildRemoved:Connect(function(child)
     if child == ScreenGui then
         if fovCircle then
@@ -1920,10 +1787,6 @@ game:GetService("CoreGui").ChildRemoved:Connect(function(child)
         if noclipConnection then
             noclipConnection:Disconnect()
             noclipConnection = nil
-        end
-        if antiAFKConnection then
-            antiAFKConnection:Disconnect()
-            antiAFKConnection = nil
         end
         for _, espData in pairs(espObjects) do
             if espData.tracer then espData.tracer:Remove() end
