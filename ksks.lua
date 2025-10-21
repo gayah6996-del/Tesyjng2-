@@ -67,32 +67,30 @@ local noclipConnection = nil
 local currentActiveMenu = nil
 
 -- Система уведомлений
-local notificationFrame = nil
+local notification = nil
+local notificationTimer = nil
 
 -- Функция для показа уведомлений
-local function showNotification(text, duration)
-    duration = duration or 3
-    
+local function showNotification(text)
     if not ScreenGui then return end
     
-    -- Создаем фрейм для уведомлений если его нет
-    if not notificationFrame then
-        notificationFrame = Instance.new("Frame")
-        notificationFrame.Name = "Notifications"
-        notificationFrame.Size = UDim2.new(0, 300, 0, 200)
-        notificationFrame.Position = UDim2.new(1, -320, 1, -210)
-        notificationFrame.BackgroundTransparency = 1
-        notificationFrame.ZIndex = 100
-        notificationFrame.Parent = ScreenGui
-        
-        local layout = Instance.new("UIListLayout")
-        layout.SortOrder = Enum.SortOrder.LayoutOrder
-        layout.Padding = UDim.new(0, 5)
-        layout.Parent = notificationFrame
+    -- Удаляем предыдущее уведомление если есть
+    if notification then
+        notification:Destroy()
+        notification = nil
     end
     
-    local notification = Instance.new("TextLabel")
-    notification.Size = UDim2.new(1, 0, 0, 40)
+    -- Останавливаем предыдущий таймер
+    if notificationTimer then
+        notificationTimer:Disconnect()
+        notificationTimer = nil
+    end
+    
+    -- Создаем уведомление
+    notification = Instance.new("TextLabel")
+    notification.Name = "Notification"
+    notification.Size = UDim2.new(0, 250, 0, 40)
+    notification.Position = UDim2.new(1, -270, 1, -50)
     notification.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     notification.BackgroundTransparency = 0.2
     notification.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -100,8 +98,8 @@ local function showNotification(text, duration)
     notification.Font = Enum.Font.Gotham
     notification.TextSize = 14
     notification.TextWrapped = true
-    notification.ZIndex = 101
-    notification.Parent = notificationFrame
+    notification.ZIndex = 100
+    notification.Parent = ScreenGui
     
     local corner = Instance.new("UICorner")
     corner.CornerRadius = UDim.new(0, 8)
@@ -112,10 +110,11 @@ local function showNotification(text, duration)
     stroke.Thickness = 2
     stroke.Parent = notification
     
-    -- Автоматическое удаление через указанное время
-    delay(duration, function()
-        if notification and notification.Parent then
+    -- Автоматическое удаление через 3 секунды
+    notificationTimer = delay(3, function()
+        if notification then
             notification:Destroy()
+            notification = nil
         end
     end)
 end
@@ -448,11 +447,9 @@ local function createOpenCloseButton()
         if isGuiOpen then
             OpenCloseButton.Text = "✕"
             OpenCloseButton.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
-            showNotification("Menu OPENED")
         else
             OpenCloseButton.Text = "⚙️"
             OpenCloseButton.BackgroundColor3 = Color3.fromRGB(20, 0, 20)
-            showNotification("Menu CLOSED")
         end
     end)
 
@@ -740,14 +737,11 @@ local function BringItems(itemName)
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             targetPos = char.HumanoidRootPart.Position
-            showNotification("Bringing " .. itemName .. " to PLAYER")
         else
             targetPos = CampfirePosition
-            showNotification("Bringing " .. itemName .. " to CAMPFIRE")
         end
     else
         targetPos = CampfirePosition
-        showNotification("Bringing " .. itemName .. " to CAMPFIRE")
     end
     
     local items = {}
@@ -780,6 +774,9 @@ local function BringItems(itemName)
             wait(BringDelay / 1000)
         end
     end
+    
+    -- Показываем уведомление о количестве телепортированных предметов
+    showNotification("Teleported " .. teleported .. " " .. itemName .. "(s)")
 end
 
 -- Запускаем функции геймплея
@@ -1452,7 +1449,6 @@ local function createNightsMenu()
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
-            showNotification("Teleported to CAMPFIRE")
         end
     end)
 
@@ -1769,7 +1765,7 @@ local function createGUI()
         GunMenu = nil
         NightsMenu = nil
         OpenCloseButton = nil
-        notificationFrame = nil
+        notification = nil
     end
 
     -- Create GUI
