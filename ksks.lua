@@ -1622,11 +1622,15 @@ local function createNightsMenu()
         updateAllPositions()
     end)
 
-    local ResourcesSubMenu = Instance.new("Frame")
+    local ResourcesSubMenu = Instance.new("ScrollingFrame")
     ResourcesSubMenu.Name = "ResourcesSubMenu"
-    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 220)
+    ResourcesSubMenu.Size = UDim2.new(1, 0, 0, 150)
     ResourcesSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     ResourcesSubMenu.BackgroundTransparency = 0.1
+    ResourcesSubMenu.ScrollBarThickness = 5
+    ResourcesSubMenu.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
+    ResourcesSubMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    ResourcesSubMenu.VerticalScrollBarInset = Enum.ScrollBarInset.Always
     ResourcesSubMenu.Visible = false
     ResourcesSubMenu.Parent = nightsTabContents["Bring"]
 
@@ -1668,11 +1672,15 @@ local function createNightsMenu()
         updateAllPositions()
     end)
 
-    local MetalsSubMenu = Instance.new("Frame")
+    local MetalsSubMenu = Instance.new("ScrollingFrame")
     MetalsSubMenu.Name = "MetalsSubMenu"
-    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 220)
+    MetalsSubMenu.Size = UDim2.new(1, 0, 0, 150)
     MetalsSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     MetalsSubMenu.BackgroundTransparency = 0.1
+    MetalsSubMenu.ScrollBarThickness = 5
+    MetalsSubMenu.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
+    MetalsSubMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    MetalsSubMenu.VerticalScrollBarInset = Enum.ScrollBarInset.Always
     MetalsSubMenu.Visible = false
     MetalsSubMenu.Parent = nightsTabContents["Bring"]
 
@@ -1714,11 +1722,15 @@ local function createNightsMenu()
         updateAllPositions()
     end)
 
-    local FoodMedSubMenu = Instance.new("Frame")
+    local FoodMedSubMenu = Instance.new("ScrollingFrame")
     FoodMedSubMenu.Name = "FoodMedSubMenu"
-    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 250)
+    FoodMedSubMenu.Size = UDim2.new(1, 0, 0, 150)
     FoodMedSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     FoodMedSubMenu.BackgroundTransparency = 0.1
+    FoodMedSubMenu.ScrollBarThickness = 5
+    FoodMedSubMenu.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
+    FoodMedSubMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    FoodMedSubMenu.VerticalScrollBarInset = Enum.ScrollBarInset.Always
     FoodMedSubMenu.Visible = false
     FoodMedSubMenu.Parent = nightsTabContents["Bring"]
 
@@ -1760,11 +1772,15 @@ local function createNightsMenu()
         updateAllPositions()
     end)
 
-    local WeaponsSubMenu = Instance.new("Frame")
+    local WeaponsSubMenu = Instance.new("ScrollingFrame")
     WeaponsSubMenu.Name = "WeaponsSubMenu"
-    WeaponsSubMenu.Size = UDim2.new(1, 0, 0, 280)
+    WeaponsSubMenu.Size = UDim2.new(1, 0, 0, 150)
     WeaponsSubMenu.BackgroundColor3 = Color3.fromRGB(40, 0, 40)
     WeaponsSubMenu.BackgroundTransparency = 0.1
+    WeaponsSubMenu.ScrollBarThickness = 5
+    WeaponsSubMenu.ScrollBarImageColor3 = Color3.fromRGB(170, 0, 170)
+    WeaponsSubMenu.AutomaticCanvasSize = Enum.AutomaticSize.Y
+    WeaponsSubMenu.VerticalScrollBarInset = Enum.ScrollBarInset.Always
     WeaponsSubMenu.Visible = false
     WeaponsSubMenu.Parent = nightsTabContents["Bring"]
 
