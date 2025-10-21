@@ -1,5 +1,3 @@
-[file name]: ksks.lua
-[file content begin]
 -- SANSTRO Menu for Mobile
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -1940,4 +1938,3 @@ game:GetService("CoreGui").ChildRemoved:Connect(function(child)
         espConnections = {}
     end
 end)
-[file content end]
