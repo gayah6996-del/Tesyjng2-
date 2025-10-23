@@ -1,4 +1,4 @@
--- SANSTRO Menu for Mobile - Rayfield Version
+-- SANSTRO Menu for Mobile - 99 Nights Only
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
@@ -14,14 +14,7 @@ local mouse = player:GetMouse()
 local speedHackEnabled = false
 local jumpHackEnabled = false
 local noclipEnabled = false
-local espTracersEnabled = false
-local espBoxEnabled = false
-local espHealthEnabled = false
-local espDistanceEnabled = false
-local espCountEnabled = false
-local aimBotEnabled = false
 local currentSpeed = 16
-local aimBotFOV = 50
 
 -- Новые переменные из второго скрипта
 local ActiveKillAura = false
@@ -55,23 +48,15 @@ local Settings = {
     antiAFKEnabled = false
 }
 
--- ESP объекты
-local espObjects = {}
-local espConnections = {}
-local espCountText = nil
 local noclipConnection = nil
-local fovCircle = nil
-
--- Rayfield UI
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Функция для показа уведомлений
 local function showNotification(text)
-    Rayfield:Notify({
-        Title = "SANSTRO Menu",
-        Content = text,
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "SANSTRO MENU",
+        Text = text,
         Duration = 3,
-        Image = 4483362458
+        Icon = "rbxassetid://4483362458"
     })
 end
 
@@ -124,246 +109,6 @@ end
 
 -- Загружаем настройки при запуске
 LoadSettings()
-
--- Функция создания FOV Circle
-local function createFOVCircle()
-    if fovCircle then
-        fovCircle:Remove()
-    end
-    
-    fovCircle = Drawing.new("Circle")
-    fovCircle.Visible = false
-    fovCircle.Color = Color3.fromRGB(170, 0, 170)
-    fovCircle.Thickness = 2
-    fovCircle.Filled = false
-    fovCircle.Radius = aimBotFOV
-    fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
-end
-
--- Функция обновления FOV Circle
-local function updateFOVCircle()
-    if fovCircle then
-        fovCircle.Radius = aimBotFOV
-        fovCircle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
-    end
-end
-
--- Функция очистки ESP
-local function cleanupESP(otherPlayer)
-    if espObjects[otherPlayer] then
-        if espObjects[otherPlayer].tracer then
-            espObjects[otherPlayer].tracer:Remove()
-        end
-        if espObjects[otherPlayer].box then
-            espObjects[otherPlayer].box:Remove()
-        end
-        if espObjects[otherPlayer].health then
-            espObjects[otherPlayer].health:Remove()
-        end
-        if espObjects[otherPlayer].distance then
-            espObjects[otherPlayer].distance:Remove()
-        end
-        espObjects[otherPlayer] = nil
-    end
-    
-    if espConnections[otherPlayer] then
-        espConnections[otherPlayer]:Disconnect()
-        espConnections[otherPlayer] = nil
-    end
-end
-
--- ESP Functions
-local function createESP(otherPlayer)
-    if otherPlayer == player then return end
-    
-    cleanupESP(otherPlayer)
-    
-    espObjects[otherPlayer] = {
-        tracer = nil,
-        box = nil,
-        health = nil,
-        distance = nil
-    }
-    
-    local function updateESP()
-        if not espObjects[otherPlayer] then return end
-        
-        -- Check if player is dead or doesn't exist
-        if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
-            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
-            return
-        end
-        
-        local rootPart = otherPlayer.Character.HumanoidRootPart
-        local humanoid = otherPlayer.Character.Humanoid
-        local head = otherPlayer.Character:FindFirstChild("Head")
-        
-        if not head then return end
-        
-        -- Check if player is dead
-        if humanoid.Health <= 0 then
-            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
-            return
-        end
-        
-        local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
-        
-        if onScreen then
-            -- Tracer
-            if espTracersEnabled then
-                if not espObjects[otherPlayer].tracer then
-                    espObjects[otherPlayer].tracer = Drawing.new("Line")
-                    espObjects[otherPlayer].tracer.Thickness = 1
-                    espObjects[otherPlayer].tracer.Color = Color3.fromRGB(170, 0, 170)
-                end
-                
-                local screenCenter = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-                espObjects[otherPlayer].tracer.From = screenCenter
-                espObjects[otherPlayer].tracer.To = Vector2.new(vector.X, vector.Y)
-                espObjects[otherPlayer].tracer.Visible = true
-            elseif espObjects[otherPlayer].tracer then
-                espObjects[otherPlayer].tracer.Visible = false
-            end
-            
-            -- Box ESP
-            if espBoxEnabled then
-                if not espObjects[otherPlayer].box then
-                    espObjects[otherPlayer].box = Drawing.new("Square")
-                    espObjects[otherPlayer].box.Thickness = 1
-                    espObjects[otherPlayer].box.Color = Color3.fromRGB(170, 0, 170)
-                    espObjects[otherPlayer].box.Filled = false
-                end
-                
-                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                local rootPos = workspace.CurrentCamera:WorldToViewportPoint(rootPart.Position)
-                
-                local size = Vector2.new(2000 / rootPos.Z, 3000 / rootPos.Z)
-                local position = Vector2.new(headPos.X - size.X / 2, headPos.Y - size.Y / 2)
-                
-                espObjects[otherPlayer].box.Size = size
-                espObjects[otherPlayer].box.Position = position
-                espObjects[otherPlayer].box.Visible = true
-            elseif espObjects[otherPlayer].box then
-                espObjects[otherPlayer].box.Visible = false
-            end
-            
-            -- Health ESP
-            if espHealthEnabled then
-                if not espObjects[otherPlayer].health then
-                    espObjects[otherPlayer].health = Drawing.new("Text")
-                    espObjects[otherPlayer].health.Size = 14
-                    espObjects[otherPlayer].health.Center = true
-                    espObjects[otherPlayer].health.Outline = true
-                    espObjects[otherPlayer].health.Color = Color3.fromRGB(170, 0, 170)
-                end
-                
-                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                espObjects[otherPlayer].health.Position = Vector2.new(headPos.X, headPos.Y - 40)
-                espObjects[otherPlayer].health.Text = "HP: " .. math.floor(humanoid.Health)
-                espObjects[otherPlayer].health.Visible = true
-            elseif espObjects[otherPlayer].health then
-                espObjects[otherPlayer].health.Visible = false
-            end
-            
-            -- Distance ESP
-            if espDistanceEnabled then
-                if not espObjects[otherPlayer].distance then
-                    espObjects[otherPlayer].distance = Drawing.new("Text")
-                    espObjects[otherPlayer].distance.Size = 14
-                    espObjects[otherPlayer].distance.Center = true
-                    espObjects[otherPlayer].distance.Outline = true
-                    espObjects[otherPlayer].distance.Color = Color3.fromRGB(170, 0, 170)
-                end
-                
-                local headPos = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-                local distance = (player.Character.HumanoidRootPart.Position - rootPart.Position).Magnitude
-                espObjects[otherPlayer].distance.Position = Vector2.new(headPos.X, headPos.Y - 60)
-                espObjects[otherPlayer].distance.Text = "Distance: " .. math.floor(distance)
-                espObjects[otherPlayer].distance.Visible = true
-            elseif espObjects[otherPlayer].distance then
-                espObjects[otherPlayer].distance.Visible = false
-            end
-        else
-            if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
-            if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
-            if espObjects[otherPlayer].health then espObjects[otherPlayer].health.Visible = false end
-            if espObjects[otherPlayer].distance then espObjects[otherPlayer].distance.Visible = false end
-        end
-    end
-    
-    -- Update ESP continuously
-    espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
-    
-    -- Clean up when player leaves
-    otherPlayer.AncestryChanged:Connect(function()
-        if not otherPlayer.Parent then
-            cleanupESP(otherPlayer)
-        end
-    end)
-end
-
--- ESP Count Function
-local function updateESPCount()
-    if not espCountEnabled or not espCountText then return end
-    
-    local aliveCount = 0
-    for _, otherPlayer in pairs(Players:GetPlayers()) do
-        if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
-            aliveCount = aliveCount + 1
-        end
-    end
-    
-    espCountText.Text = "Players: " .. aliveCount
-    espCountText.Visible = true
-end
-
--- Improved AimBot with wall check and FOV
-local function isPlayerVisible(targetPlayer)
-    if not targetPlayer.Character or not targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        return false
-    end
-    
-    local targetRoot = targetPlayer.Character.HumanoidRootPart
-    local camera = workspace.CurrentCamera
-    local origin = camera.CFrame.Position
-    
-    -- Raycast to target
-    local direction = (targetRoot.Position - origin).Unit
-    local ray = Ray.new(origin, direction * 1000)
-    
-    local ignoreList = {player.Character, camera}
-    local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
-    
-    if hit then
-        -- Check if we hit the target player
-        local hitModel = hit:FindFirstAncestorOfClass("Model")
-        if hitModel and hitModel == targetPlayer.Character then
-            return true
-        end
-    end
-    
-    return false
-end
-
--- Check if target is within FOV circle
-local function isInFOV(targetPosition)
-    local camera = workspace.CurrentCamera
-    local screenPoint, onScreen = camera:WorldToViewportPoint(targetPosition)
-    
-    if not onScreen then return false end
-    
-    local center = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
-    local targetPoint = Vector2.new(screenPoint.X, screenPoint.Y)
-    local distance = (targetPoint - center).Magnitude
-    
-    return distance <= aimBotFOV
-end
 
 -- Функции из второго скрипта
 -- Kill Aura функция
@@ -511,658 +256,507 @@ if antiAFKEnabled then
     EnableAntiAFK()
 end
 
--- Создаем Rayfield Window
-local Window = Rayfield:CreateWindow({
-    Name = "SANSTRO MENU | 99 Nights & GunGame",
-    LoadingTitle = "SANSTRO Menu",
-    LoadingSubtitle = "by SANSTRO",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "SANSTRO_Menu",
-        FileName = "Settings.json"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = true
-    },
-    KeySystem = false,
-    KeySettings = {
-        Title = "SANSTRO Menu",
-        Subtitle = "Key System",
-        Note = "No key required",
-        FileName = "SANSTROKey",
-        SaveKey = true,
-        GrabKeyFromSite = false,
-        Key = {"SANSTRO"}
-    }
-})
+-- Создаем простой GUI для телефона
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "SANSTRO_MENU"
+ScreenGui.Parent = game:GetService("CoreGui")
+ScreenGui.ResetOnSpawn = false
 
--- Создаем вкладки
-local GunGameTab = Window:CreateTab("🎮 GunGame", 4483362458)
-local NightsTab = Window:CreateTab("🌙 99 Nights", 4483362458)
-local PlayerTab = Window:CreateTab("👤 Player", 4483362458)
+-- Основная кнопка открытия меню
+local OpenButton = Instance.new("TextButton")
+OpenButton.Name = "OpenButton"
+OpenButton.Size = UDim2.new(0, 60, 0, 60)
+OpenButton.Position = UDim2.new(0, 10, 0, 10)
+OpenButton.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+OpenButton.BackgroundTransparency = 0.2
+OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenButton.Text = "☰"
+OpenButton.Font = Enum.Font.GothamBold
+OpenButton.TextSize = 20
+OpenButton.ZIndex = 10
+OpenButton.Parent = ScreenGui
 
--- GunGame Tab Content
-local MovementSection = GunGameTab:CreateSection("Movement")
-local SpeedHackToggle = MovementSection:CreateToggle({
-    Name = "Speed Hack",
-    CurrentValue = speedHackEnabled,
-    Flag = "SpeedHack",
-    Callback = function(Value)
-        speedHackEnabled = Value
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
-            end
-            showNotification("Speed Hack: ON")
-        else
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = 16
-            end
-            showNotification("Speed Hack: OFF")
-        end
+local Corner = Instance.new("UICorner")
+Corner.CornerRadius = UDim.new(0, 12)
+Corner.Parent = OpenButton
+
+local Stroke = Instance.new("UIStroke")
+Stroke.Color = Color3.fromRGB(100, 0, 200)
+Stroke.Thickness = 2
+Stroke.Parent = OpenButton
+
+-- Главное меню
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 350, 0, 500)
+MainFrame.Position = UDim2.new(0, 80, 0, 10)
+MainFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 40)
+MainFrame.BackgroundTransparency = 0.1
+MainFrame.Visible = false
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(100, 0, 200)
+MainStroke.Thickness = 2
+MainStroke.Parent = MainFrame
+
+-- Заголовок
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, 0, 0, 50)
+Title.Position = UDim2.new(0, 0, 0, 0)
+Title.BackgroundColor3 = Color3.fromRGB(40, 0, 80)
+Title.BackgroundTransparency = 0.1
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.Text = "SANSTRO MENU - 99 NIGHTS"
+Title.Font = Enum.Font.GothamBold
+Title.TextSize = 16
+Title.Parent = MainFrame
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = Title
+
+-- Прокручиваемая область
+local ScrollFrame = Instance.new("ScrollingFrame")
+ScrollFrame.Name = "ScrollFrame"
+ScrollFrame.Size = UDim2.new(1, 0, 1, -50)
+ScrollFrame.Position = UDim2.new(0, 0, 0, 50)
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.ScrollBarThickness = 6
+ScrollFrame.ScrollBarImageColor3 = Color3.fromRGB(100, 0, 200)
+ScrollFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+ScrollFrame.Parent = MainFrame
+
+local Layout = Instance.new("UIListLayout")
+Layout.SortOrder = Enum.SortOrder.LayoutOrder
+Layout.Padding = UDim.new(0, 10)
+Layout.Parent = ScrollFrame
+
+-- Функция создания переключателя
+local function CreateToggle(parent, text, callback, isActive)
+    local toggleFrame = Instance.new("Frame")
+    toggleFrame.Size = UDim2.new(1, -20, 0, 45)
+    toggleFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+    toggleFrame.BackgroundTransparency = 0.1
+    toggleFrame.LayoutOrder = #parent:GetChildren()
+    toggleFrame.Parent = parent
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 8)
+    toggleCorner.Parent = toggleFrame
+    
+    local toggleStroke = Instance.new("UIStroke")
+    toggleStroke.Color = Color3.fromRGB(80, 0, 160)
+    toggleStroke.Thickness = 1
+    toggleStroke.Parent = toggleFrame
+    
+    local toggleLabel = Instance.new("TextLabel")
+    toggleLabel.Name = "ToggleLabel"
+    toggleLabel.Size = UDim2.new(0.7, 0, 1, 0)
+    toggleLabel.Position = UDim2.new(0, 15, 0, 0)
+    toggleLabel.BackgroundTransparency = 1
+    toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleLabel.Text = text
+    toggleLabel.Font = Enum.Font.GothamSemibold
+    toggleLabel.TextSize = 14
+    toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    toggleLabel.Parent = toggleFrame
+    
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Name = "ToggleButton"
+    toggleButton.Size = UDim2.new(0.2, 0, 0, 30)
+    toggleButton.Position = UDim2.new(0.75, 0, 0.15, 0)
+    toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
+    toggleButton.BackgroundTransparency = 0.1
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.Text = isActive and "ON" or "OFF"
+    toggleButton.Font = Enum.Font.GothamBold
+    toggleButton.TextSize = 12
+    toggleButton.Parent = toggleFrame
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.Parent = toggleButton
+    
+    toggleButton.MouseButton1Click:Connect(function()
+        isActive = not isActive
+        toggleButton.BackgroundColor3 = isActive and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
+        toggleButton.Text = isActive and "ON" or "OFF"
+        showNotification(text .. " " .. (isActive and "ENABLED" or "DISABLED"))
+        callback(isActive)
         SaveSettings()
-    end,
-})
+    end)
+end
 
-local SpeedSlider = MovementSection:CreateSlider({
-    Name = "Speed Value",
-    Range = {16, 100},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = currentSpeed,
-    Flag = "SpeedValue",
-    Callback = function(Value)
-        currentSpeed = Value
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
-            end
-        end
-        SaveSettings()
-    end,
-})
-
-local JumpHackToggle = MovementSection:CreateToggle({
-    Name = "Infinity Jump",
-    CurrentValue = jumpHackEnabled,
-    Flag = "JumpHack",
-    Callback = function(Value)
-        jumpHackEnabled = Value
-        if Value then
-            showNotification("Infinity Jump: ON")
-        else
-            showNotification("Infinity Jump: OFF")
-        end
-        SaveSettings()
-    end,
-})
-
-local NoClipToggle = MovementSection:CreateToggle({
-    Name = "NoClip",
-    CurrentValue = noclipEnabled,
-    Flag = "NoClip",
-    Callback = function(Value)
-        noclipEnabled = Value
-        
-        if noclipEnabled then
-            if noclipConnection then
-                noclipConnection:Disconnect()
-            end
-            noclipConnection = RunService.Stepped:Connect(function()
-                if player.Character then
-                    for _, part in pairs(player.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                end
+-- Функция создания слайдера
+local function CreateSlider(parent, text, min, max, default, callback)
+    local sliderFrame = Instance.new("Frame")
+    sliderFrame.Size = UDim2.new(1, -20, 0, 70)
+    sliderFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+    sliderFrame.BackgroundTransparency = 0.1
+    sliderFrame.LayoutOrder = #parent:GetChildren()
+    sliderFrame.Parent = parent
+    
+    local sliderCorner = Instance.new("UICorner")
+    sliderCorner.CornerRadius = UDim.new(0, 8)
+    sliderCorner.Parent = sliderFrame
+    
+    local sliderStroke = Instance.new("UIStroke")
+    sliderStroke.Color = Color3.fromRGB(80, 0, 160)
+    sliderStroke.Thickness = 1
+    sliderStroke.Parent = sliderFrame
+    
+    local sliderText = Instance.new("TextLabel")
+    sliderText.Size = UDim2.new(1, 0, 0, 25)
+    sliderText.BackgroundTransparency = 1
+    sliderText.Text = text .. ": " .. default
+    sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    sliderText.TextSize = 14
+    sliderText.TextXAlignment = Enum.TextXAlignment.Left
+    sliderText.Position = UDim2.new(0, 15, 0, 5)
+    sliderText.Font = Enum.Font.GothamSemibold
+    sliderText.Parent = sliderFrame
+    
+    local sliderBar = Instance.new("Frame")
+    sliderBar.Size = UDim2.new(1, -30, 0, 20)
+    sliderBar.Position = UDim2.new(0, 15, 0, 35)
+    sliderBar.BackgroundColor3 = Color3.fromRGB(50, 0, 100)
+    sliderBar.Parent = sliderFrame
+    
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 8)
+    barCorner.Parent = sliderBar
+    
+    local sliderFill = Instance.new("Frame")
+    sliderFill.Size = UDim2.new((default - min) / (max - min), 0, 1, 0)
+    sliderFill.BackgroundColor3 = Color3.fromRGB(100, 0, 200)
+    sliderFill.Parent = sliderBar
+    
+    local fillCorner = Instance.new("UICorner")
+    fillCorner.CornerRadius = UDim.new(0, 8)
+    fillCorner.Parent = sliderFill
+    
+    local function updateSlider(value)
+        local norm = math.clamp((value - min) / (max - min), 0, 1)
+        sliderFill.Size = UDim2.new(norm, 0, 1, 0)
+        sliderText.Text = text .. ": " .. math.floor(value)
+        callback(value)
+    end
+    
+    sliderBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            local connection
+            connection = RunService.Heartbeat:Connect(function()
+                local mouseLocation = input.Position
+                local relativeX = math.clamp((mouseLocation.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X, 0, 1)
+                local value = min + relativeX * (max - min)
+                updateSlider(value)
             end)
-            showNotification("NoClip: ON")
-        else
-            if noclipConnection then
-                noclipConnection:Disconnect()
-                noclipConnection = nil
+            
+            local function endInput()
+                connection:Disconnect()
+                SaveSettings()
             end
             
+            input:GetPropertyChangedSignal("UserInputState"):Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    endInput()
+                end
+            end)
+        end
+    end)
+    
+    updateSlider(default)
+end
+
+-- Функция создания кнопки
+local function CreateButton(parent, text, callback)
+    local button = Instance.new("TextButton")
+    button.Size = UDim2.new(1, -20, 0, 45)
+    button.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+    button.BackgroundTransparency = 0.1
+    button.Text = text
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.TextSize = 14
+    button.Font = Enum.Font.GothamSemibold
+    button.LayoutOrder = #parent:GetChildren()
+    button.Parent = parent
+    
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 8)
+    buttonCorner.Parent = button
+    
+    local buttonStroke = Instance.new("UIStroke")
+    buttonStroke.Color = Color3.fromRGB(80, 0, 160)
+    buttonStroke.Thickness = 1
+    buttonStroke.Parent = button
+    
+    button.MouseButton1Click:Connect(function()
+        callback()
+    end)
+    
+    return button
+end
+
+-- Создаем разделы меню
+
+-- Основные функции
+CreateToggle(ScrollFrame, "Kill Aura", function(v)
+    ActiveKillAura = v
+end, ActiveKillAura)
+
+CreateSlider(ScrollFrame, "Kill Distance", 10, 150, DistanceForKillAura, function(v)
+    DistanceForKillAura = v
+end)
+
+CreateToggle(ScrollFrame, "Auto Chop Trees", function(v)
+    ActiveAutoChopTree = v
+end, ActiveAutoChopTree)
+
+CreateSlider(ScrollFrame, "Chop Distance", 10, 150, DistanceForAutoChopTree, function(v)
+    DistanceForAutoChopTree = v
+end)
+
+-- Настройки телепортации
+CreateSlider(ScrollFrame, "Bring Count", 1, 20, BringCount, function(v)
+    BringCount = math.floor(v)
+end)
+
+CreateSlider(ScrollFrame, "Bring Speed", 50, 500, BringDelay, function(v)
+    BringDelay = math.floor(v)
+end)
+
+-- Выбор цели телепортации
+local targetFrame = Instance.new("Frame")
+targetFrame.Size = UDim2.new(1, -20, 0, 50)
+targetFrame.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+targetFrame.BackgroundTransparency = 0.1
+targetFrame.LayoutOrder = #ScrollFrame:GetChildren()
+targetFrame.Parent = ScrollFrame
+
+local targetCorner = Instance.new("UICorner")
+targetCorner.CornerRadius = UDim.new(0, 8)
+targetCorner.Parent = targetFrame
+
+local targetStroke = Instance.new("UIStroke")
+targetStroke.Color = Color3.fromRGB(80, 0, 160)
+targetStroke.Thickness = 1
+targetStroke.Parent = targetFrame
+
+local targetLabel = Instance.new("TextLabel")
+targetLabel.Size = UDim2.new(0.5, 0, 1, 0)
+targetLabel.BackgroundTransparency = 1
+targetLabel.Text = "Teleport Target:"
+targetLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+targetLabel.TextSize = 14
+targetLabel.TextXAlignment = Enum.TextXAlignment.Left
+targetLabel.Position = UDim2.new(0, 15, 0, 0)
+targetLabel.Font = Enum.Font.GothamSemibold
+targetLabel.Parent = targetFrame
+
+local playerButton = Instance.new("TextButton")
+playerButton.Size = UDim2.new(0.2, 0, 0, 30)
+playerButton.Position = UDim2.new(0.55, 0, 0.2, 0)
+playerButton.BackgroundColor3 = BringTarget == "Player" and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 0, 60)
+playerButton.Text = "Player"
+playerButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerButton.TextSize = 12
+playerButton.Font = Enum.Font.GothamBold
+playerButton.Parent = targetFrame
+
+local campfireButton = Instance.new("TextButton")
+campfireButton.Size = UDim2.new(0.2, 0, 0, 30)
+campfireButton.Position = UDim2.new(0.8, 0, 0.2, 0)
+campfireButton.BackgroundColor3 = BringTarget == "Campfire" and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(60, 0, 60)
+campfireButton.Text = "Campfire"
+campfireButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+campfireButton.TextSize = 12
+campfireButton.Font = Enum.Font.GothamBold
+campfireButton.Parent = targetFrame
+
+playerButton.MouseButton1Click:Connect(function()
+    BringTarget = "Player"
+    playerButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    campfireButton.BackgroundColor3 = Color3.fromRGB(60, 0, 60)
+    showNotification("Teleport target: PLAYER")
+    SaveSettings()
+end)
+
+campfireButton.MouseButton1Click:Connect(function()
+    BringTarget = "Campfire"
+    playerButton.BackgroundColor3 = Color3.fromRGB(60, 0, 60)
+    campfireButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+    showNotification("Teleport target: CAMPFIRE")
+    SaveSettings()
+end)
+
+-- Кнопки телепорта ресурсов
+CreateButton(ScrollFrame, "📦 Bring Logs", function()
+    BringItems("Log")
+end)
+
+CreateButton(ScrollFrame, "⛏️ Bring Coal", function()
+    BringItems("Coal")
+end)
+
+CreateButton(ScrollFrame, "🪑 Bring Chairs", function()
+    BringItems("Chair")
+end)
+
+-- Топливо
+CreateButton(ScrollFrame, "⛽ Bring Fuel Canister", function()
+    BringItems("Fuel Canister")
+end)
+
+CreateButton(ScrollFrame, "🛢️ Bring Oil Barrel", function()
+    BringItems("Oil Barrel")
+end)
+
+CreateButton(ScrollFrame, "🔋 Bring Biofuel", function()
+    BringItems("Biofuel")
+end)
+
+-- Металлы
+CreateButton(ScrollFrame, "🔩 Bring Bolts", function()
+    BringItems("Bolt")
+end)
+
+CreateButton(ScrollFrame, "📄 Bring Sheet Metal", function()
+    BringItems("Sheet Metal")
+end)
+
+CreateButton(ScrollFrame, "👽 Bring UFO Scrap", function()
+    BringItems("UFO Scrap")
+end)
+
+-- Еда и медицина
+CreateButton(ScrollFrame, "🥕 Bring Carrots", function()
+    BringItems("Carrot")
+end)
+
+CreateButton(ScrollFrame, "🎃 Bring Pumpkins", function()
+    BringItems("Pumpkin")
+end)
+
+CreateButton(ScrollFrame, "🍖 Bring Steak", function()
+    BringItems("Steak")
+end)
+
+CreateButton(ScrollFrame, "💊 Bring MedKits", function()
+    BringItems("MedKit")
+end)
+
+-- Оружие и инструменты
+CreateButton(ScrollFrame, "🔫 Bring Rifles", function()
+    BringItems("Rifle")
+end)
+
+CreateButton(ScrollFrame, "🎯 Bring Revolvers", function()
+    BringItems("Revolver")
+end)
+
+CreateButton(ScrollFrame, "🪓 Bring Good Axe", function()
+    BringItems("Good Axe")
+end)
+
+-- Дополнительные функции
+CreateToggle(ScrollFrame, "Speed Hack", function(v)
+    speedHackEnabled = v
+    if speedHackEnabled then
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = currentSpeed
+        end
+    else
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 16
+        end
+    end
+end, speedHackEnabled)
+
+CreateSlider(ScrollFrame, "Speed Value", 16, 100, currentSpeed, function(v)
+    currentSpeed = math.floor(v)
+    if speedHackEnabled then
+        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = currentSpeed
+        end
+    end
+end)
+
+CreateToggle(ScrollFrame, "Infinity Jump", function(v)
+    jumpHackEnabled = v
+end, jumpHackEnabled)
+
+CreateToggle(ScrollFrame, "Anti AFK", function(v)
+    antiAFKEnabled = v
+    if antiAFKEnabled then
+        EnableAntiAFK()
+    else
+        DisableAntiAFK()
+    end
+end, antiAFKEnabled)
+
+CreateButton(ScrollFrame, "🔥 Teleport to Campfire", function()
+    local char = player.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
+        showNotification("Teleported to Campfire!")
+    end
+end)
+
+-- Обработчик открытия/закрытия меню
+OpenButton.MouseButton1Click:Connect(function()
+    MainFrame.Visible = not MainFrame.Visible
+    if MainFrame.Visible then
+        OpenButton.Text = "✕"
+        OpenButton.BackgroundColor3 = Color3.fromRGB(60, 0, 120)
+    else
+        OpenButton.Text = "☰"
+        OpenButton.BackgroundColor3 = Color3.fromRGB(30, 0, 60)
+    end
+end)
+
+-- NoClip функция
+CreateToggle(ScrollFrame, "NoClip", function(v)
+    noclipEnabled = v
+    
+    if noclipEnabled then
+        if noclipConnection then
+            noclipConnection:Disconnect()
+        end
+        noclipConnection = RunService.Stepped:Connect(function()
             if player.Character then
                 for _, part in pairs(player.Character:GetDescendants()) do
                     if part:IsA("BasePart") then
-                        part.CanCollide = true
+                        part.CanCollide = false
                     end
                 end
             end
-            showNotification("NoClip: OFF")
-        end
-    end,
-})
-
--- Visual Section
-local VisualSection = GunGameTab:CreateSection("Visual ESP")
-local ESPTracersToggle = VisualSection:CreateToggle({
-    Name = "ESP Tracers",
-    CurrentValue = espTracersEnabled,
-    Flag = "ESPTracers",
-    Callback = function(Value)
-        espTracersEnabled = Value
-        if Value then
-            showNotification("ESP Tracers: ON")
-        else
-            showNotification("ESP Tracers: OFF")
-        end
-    end,
-})
-
-local ESPBoxToggle = VisualSection:CreateToggle({
-    Name = "ESP Box",
-    CurrentValue = espBoxEnabled,
-    Flag = "ESPBox",
-    Callback = function(Value)
-        espBoxEnabled = Value
-        if Value then
-            showNotification("ESP Box: ON")
-        else
-            showNotification("ESP Box: OFF")
-        end
-    end,
-})
-
-local ESPHealthToggle = VisualSection:CreateToggle({
-    Name = "ESP Health",
-    CurrentValue = espHealthEnabled,
-    Flag = "ESPHealth",
-    Callback = function(Value)
-        espHealthEnabled = Value
-        if Value then
-            showNotification("ESP Health: ON")
-        else
-            showNotification("ESP Health: OFF")
-        end
-    end,
-})
-
-local ESPDistanceToggle = VisualSection:CreateToggle({
-    Name = "ESP Distance",
-    CurrentValue = espDistanceEnabled,
-    Flag = "ESPDistance",
-    Callback = function(Value)
-        espDistanceEnabled = Value
-        if Value then
-            showNotification("ESP Distance: ON")
-        else
-            showNotification("ESP Distance: OFF")
-        end
-    end,
-})
-
-local ESPCountToggle = VisualSection:CreateToggle({
-    Name = "ESP Player Count",
-    CurrentValue = espCountEnabled,
-    Flag = "ESPCount",
-    Callback = function(Value)
-        espCountEnabled = Value
-        
-        if espCountEnabled then
-            if not espCountText then
-                espCountText = Drawing.new("Text")
-                espCountText.Size = 16
-                espCountText.Center = true
-                espCountText.Outline = true
-                espCountText.Color = Color3.fromRGB(170, 0, 170)
-                espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 80)
-            end
-            espCountText.Visible = true
-            showNotification("ESP Count: ON")
-        else
-            if espCountText then
-                espCountText.Visible = false
-            end
-            showNotification("ESP Count: OFF")
-        end
-    end,
-})
-
--- AimBot Section
-local AimBotSection = GunGameTab:CreateSection("AimBot")
-local AimBotToggle = AimBotSection:CreateToggle({
-    Name = "AimBot",
-    CurrentValue = aimBotEnabled,
-    Flag = "AimBot",
-    Callback = function(Value)
-        aimBotEnabled = Value
-        
-        if fovCircle then
-            fovCircle.Visible = aimBotEnabled
-        else
-            createFOVCircle()
-            fovCircle.Visible = aimBotEnabled
+        end)
+    else
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
         end
         
-        if Value then
-            showNotification("AimBot: ON")
-        else
-            showNotification("AimBot: OFF")
-        end
-    end,
-})
-
-local AimBotFOVSlider = AimBotSection:CreateSlider({
-    Name = "AimBot FOV",
-    Range = {10, 200},
-    Increment = 1,
-    Suffix = "px",
-    CurrentValue = aimBotFOV,
-    Flag = "AimBotFOV",
-    Callback = function(Value)
-        aimBotFOV = Value
-        updateFOVCircle()
-    end,
-})
-
--- 99 Nights Tab Content
-local MainSection = NightsTab:CreateSection("Main Features")
-local KillAuraToggle = MainSection:CreateToggle({
-    Name = "Kill Aura",
-    CurrentValue = ActiveKillAura,
-    Flag = "KillAura",
-    Callback = function(Value)
-        ActiveKillAura = Value
-        if Value then
-            showNotification("Kill Aura: ON")
-        else
-            showNotification("Kill Aura: OFF")
-        end
-        SaveSettings()
-    end,
-})
-
-local KillDistanceSlider = MainSection:CreateSlider({
-    Name = "Kill Aura Distance",
-    Range = {10, 150},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = DistanceForKillAura,
-    Flag = "KillDistance",
-    Callback = function(Value)
-        DistanceForKillAura = Value
-        SaveSettings()
-    end,
-})
-
-local AutoChopToggle = MainSection:CreateToggle({
-    Name = "Auto Chop Trees",
-    CurrentValue = ActiveAutoChopTree,
-    Flag = "AutoChop",
-    Callback = function(Value)
-        ActiveAutoChopTree = Value
-        if Value then
-            showNotification("Auto Chop: ON")
-        else
-            showNotification("Auto Chop: OFF")
-        end
-        SaveSettings()
-    end,
-})
-
-local ChopDistanceSlider = MainSection:CreateSlider({
-    Name = "Chop Distance",
-    Range = {10, 150},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = DistanceForAutoChopTree,
-    Flag = "ChopDistance",
-    Callback = function(Value)
-        DistanceForAutoChopTree = Value
-        SaveSettings()
-    end,
-})
-
--- Bring Items Section
-local BringSection = NightsTab:CreateSection("Bring Items Settings")
-local BringCountSlider = BringSection:CreateSlider({
-    Name = "Bring Count",
-    Range = {1, 20},
-    Increment = 1,
-    Suffix = "items",
-    CurrentValue = BringCount,
-    Flag = "BringCount",
-    Callback = function(Value)
-        BringCount = Value
-        SaveSettings()
-    end,
-})
-
-local BringSpeedSlider = BringSection:CreateSlider({
-    Name = "Bring Speed",
-    Range = {50, 500},
-    Increment = 10,
-    Suffix = "ms",
-    CurrentValue = BringDelay,
-    Flag = "BringSpeed",
-    Callback = function(Value)
-        BringDelay = Value
-        SaveSettings()
-    end,
-})
-
-local TeleportTargetDropdown = BringSection:CreateDropdown({
-    Name = "Teleport Target",
-    Options = {"Campfire", "Player"},
-    CurrentOption = BringTarget,
-    Flag = "TeleportTarget",
-    Callback = function(Option)
-        BringTarget = Option
-        showNotification("Teleport target: " .. Option)
-        SaveSettings()
-    end,
-})
-
--- Resources Section
-local ResourcesSection = NightsTab:CreateSection("Resources")
-local ResourcesButton = ResourcesSection:CreateButton({
-    Name = "Bring Logs",
-    Callback = function()
-        BringItems("Log")
-    end,
-})
-
-local CoalButton = ResourcesSection:CreateButton({
-    Name = "Bring Coal",
-    Callback = function()
-        BringItems("Coal")
-    end,
-})
-
-local ChairButton = ResourcesSection:CreateButton({
-    Name = "Bring Chairs",
-    Callback = function()
-        BringItems("Chair")
-    end,
-})
-
--- Fuel Section (ИСПРАВЛЕННЫЙ)
-local FuelSection = NightsTab:CreateSection("Fuel & Energy")
-local FuelCanisterButton = FuelSection:CreateButton({
-    Name = "Bring Fuel Canister",
-    Callback = function()
-        BringItems("Fuel Canister")
-    end,
-})
-
-local OilBarrelButton = FuelSection:CreateButton({
-    Name = "Bring Oil Barrel",
-    Callback = function()
-        BringItems("Oil Barrel")
-    end,
-})
-
-local BiofuelButton = FuelSection:CreateButton({
-    Name = "Bring Biofuel",
-    Callback = function()
-        BringItems("Biofuel")
-    end,
-})
-
--- Metals Section
-local MetalsSection = NightsTab:CreateSection("Metals & Parts")
-local BoltButton = MetalsSection:CreateButton({
-    Name = "Bring Bolts",
-    Callback = function()
-        BringItems("Bolt")
-    end,
-})
-
-local SheetMetalButton = MetalsSection:CreateButton({
-    Name = "Bring Sheet Metal",
-    Callback = function()
-        BringItems("Sheet Metal")
-    end,
-})
-
-local UFOButton = MetalsSection:CreateButton({
-    Name = "Bring UFO Scrap",
-    Callback = function()
-        BringItems("UFO Scrap")
-    end,
-})
-
-local OldRadioButton = MetalsSection:CreateButton({
-    Name = "Bring Old Radio",
-    Callback = function()
-        BringItems("Old Radio")
-    end,
-})
-
-local MicrowaveButton = MetalsSection:CreateButton({
-    Name = "Bring Broken Microwave",
-    Callback = function()
-        BringItems("Broken Microwave")
-    end,
-})
-
-local WashingMachineButton = MetalsSection:CreateButton({
-    Name = "Bring Washing Machine",
-    Callback = function()
-        BringItems("Washing Machine")
-    end,
-})
-
-local CarEngineButton = MetalsSection:CreateButton({
-    Name = "Bring Old Car Engine",
-    Callback = function()
-        BringItems("Old Car Engine")
-    end,
-})
-
-local CultistGemButton = MetalsSection:CreateButton({
-    Name = "Bring Cultist Gem",
-    Callback = function()
-        BringItems("Cultist Gem")
-    end,
-})
-
--- Food & Medical Section
-local FoodSection = NightsTab:CreateSection("Food & Medical")
-local CarrotButton = FoodSection:CreateButton({
-    Name = "Bring Carrots",
-    Callback = function()
-        BringItems("Carrot")
-    end,
-})
-
-local PumpkinButton = FoodSection:CreateButton({
-    Name = "Bring Pumpkins",
-    Callback = function()
-        BringItems("Pumpkin")
-    end,
-})
-
-local MorselButton = FoodSection:CreateButton({
-    Name = "Bring Morsel",
-    Callback = function()
-        BringItems("Morsel")
-    end,
-})
-
-local SteakButton = FoodSection:CreateButton({
-    Name = "Bring Steak",
-    Callback = function()
-        BringItems("Steak")
-    end,
-})
-
-local MedKitButton = FoodSection:CreateButton({
-    Name = "Bring MedKits",
-    Callback = function()
-        BringItems("MedKit")
-    end,
-})
-
-local BandageButton = FoodSection:CreateButton({
-    Name = "Bring Bandages",
-    Callback = function()
-        BringItems("Bandage")
-    end,
-})
-
-local ChiliButton = FoodSection:CreateButton({
-    Name = "Bring Chili",
-    Callback = function()
-        BringItems("Chili")
-    end,
-})
-
-local AppleButton = FoodSection:CreateButton({
-    Name = "Bring Apples",
-    Callback = function()
-        BringItems("Apple")
-    end,
-})
-
-local CakeButton = FoodSection:CreateButton({
-    Name = "Bring Cake",
-    Callback = function()
-        BringItems("Cake")
-    end,
-})
-
--- Weapons Section
-local WeaponsSection = NightsTab:CreateSection("Weapons & Tools")
-local RifleButton = WeaponsSection:CreateButton({
-    Name = "Bring Rifles",
-    Callback = function()
-        BringItems("Rifle")
-    end,
-})
-
-local RevolverButton = WeaponsSection:CreateButton({
-    Name = "Bring Revolvers",
-    Callback = function()
-        BringItems("Revolver")
-    end,
-})
-
-local RifleAmmoButton = WeaponsSection:CreateButton({
-    Name = "Bring Rifle Ammo",
-    Callback = function()
-        BringItems("Rifle Ammo")
-    end,
-})
-
-local RevolverAmmoButton = WeaponsSection:CreateButton({
-    Name = "Bring Revolver Ammo",
-    Callback = function()
-        BringItems("Revolver Ammo")
-    end,
-})
-
-local GoodAxeButton = WeaponsSection:CreateButton({
-    Name = "Bring Good Axe",
-    Callback = function()
-        BringItems("Good Axe")
-    end,
-})
-
-local StrongAxeButton = WeaponsSection:CreateButton({
-    Name = "Bring Strong Axe",
-    Callback = function()
-        BringItems("Strong Axe")
-    end,
-})
-
-local ChainsawButton = WeaponsSection:CreateButton({
-    Name = "Bring Chainsaw",
-    Callback = function()
-        BringItems("Chainsaw")
-    end,
-})
-
--- Player Tab Content
-local PlayerSection = PlayerTab:CreateSection("Player Features")
-local TeleportCampfireButton = PlayerSection:CreateButton({
-    Name = "Teleport to Campfire",
-    Callback = function()
-        local char = player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
-            showNotification("Teleported to Campfire!")
-        else
-            showNotification("Character not found!")
-        end
-    end,
-})
-
--- Исправленный Anti-AFK
-local AntiAFKToggle = PlayerSection:CreateToggle({
-    Name = "Anti AFK",
-    CurrentValue = antiAFKEnabled,
-    Flag = "AntiAFK",
-    Callback = function(Value)
-        antiAFKEnabled = Value
-        if antiAFKEnabled then
-            EnableAntiAFK()
-            showNotification("Anti-AFK Enabled")
-        else
-            DisableAntiAFK()
-            showNotification("Anti-AFK Disabled")
-        end
-        SaveSettings()
-    end,
-})
-
--- Initialize ESP for existing players
-for _, otherPlayer in pairs(Players:GetPlayers()) do
-    createESP(otherPlayer)
-end
-
-Players.PlayerAdded:Connect(function(newPlayer)
-    createESP(newPlayer)
-end)
-
-Players.PlayerRemoving:Connect(function(leftPlayer)
-    cleanupESP(leftPlayer)
-end)
-
--- ESP Count Update
-RunService.Heartbeat:Connect(updateESPCount)
-
-workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-    if espCountText then
-        espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 80)
-    end
-end)
-
--- AimBot Loop
-RunService.Heartbeat:Connect(function()
-    if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local closestPlayer = nil
-        local closestDistance = 1000
-        
-        for _, otherPlayer in pairs(Players:GetPlayers()) do
-            if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
-                local targetRoot = otherPlayer.Character.HumanoidRootPart
-                local distance = (player.Character.HumanoidRootPart.Position - targetRoot.Position).Magnitude
-                
-                if isInFOV(targetRoot.Position) and isPlayerVisible(otherPlayer) then
-                    if distance < closestDistance then
-                        closestDistance = distance
-                        closestPlayer = otherPlayer
-                    end
+        if player.Character then
+            for _, part in pairs(player.Character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
                 end
             end
         end
-        
-        if closestPlayer then
-            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, closestPlayer.Character.HumanoidRootPart.Position)
-        end
     end
-end)
+end, noclipEnabled)
 
--- Jump Hack
+-- Jump Hack обработчик
 UserInputService.JumpRequest:Connect(function()
     if jumpHackEnabled and player.Character then
         local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
@@ -1172,14 +766,10 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- Create FOV Circle
-createFOVCircle()
-
--- Восстанавливаем GUI после смерти
+-- Восстанавливаем настройки после смерти
 player.CharacterAdded:Connect(function()
     wait(2)
     
-    -- Восстанавливаем настройки SpeedHack после смерти
     if speedHackEnabled then
         wait(1)
         local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
@@ -1187,6 +777,10 @@ player.CharacterAdded:Connect(function()
             humanoid.WalkSpeed = currentSpeed
         end
     end
+    
+    if antiAFKEnabled then
+        EnableAntiAFK()
+    end
 end)
 
-showNotification("SANSTRO Menu Loaded!")
+showNotification("SANSTRO 99 Nights Menu Loaded!")
