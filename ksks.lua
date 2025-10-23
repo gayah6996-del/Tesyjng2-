@@ -556,11 +556,13 @@ local SpeedHackToggle = MovementSection:CreateToggle({
             if humanoid then
                 humanoid.WalkSpeed = currentSpeed
             end
+            showNotification("Speed Hack: ON")
         else
             local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid.WalkSpeed = 16
             end
+            showNotification("Speed Hack: OFF")
         end
         SaveSettings()
     end,
@@ -591,6 +593,11 @@ local JumpHackToggle = MovementSection:CreateToggle({
     Flag = "JumpHack",
     Callback = function(Value)
         jumpHackEnabled = Value
+        if Value then
+            showNotification("Infinity Jump: ON")
+        else
+            showNotification("Infinity Jump: OFF")
+        end
         SaveSettings()
     end,
 })
@@ -615,6 +622,7 @@ local NoClipToggle = MovementSection:CreateToggle({
                     end
                 end
             end)
+            showNotification("NoClip: ON")
         else
             if noclipConnection then
                 noclipConnection:Disconnect()
@@ -628,6 +636,7 @@ local NoClipToggle = MovementSection:CreateToggle({
                     end
                 end
             end
+            showNotification("NoClip: OFF")
         end
     end,
 })
@@ -640,6 +649,11 @@ local ESPTracersToggle = VisualSection:CreateToggle({
     Flag = "ESPTracers",
     Callback = function(Value)
         espTracersEnabled = Value
+        if Value then
+            showNotification("ESP Tracers: ON")
+        else
+            showNotification("ESP Tracers: OFF")
+        end
     end,
 })
 
@@ -649,6 +663,11 @@ local ESPBoxToggle = VisualSection:CreateToggle({
     Flag = "ESPBox",
     Callback = function(Value)
         espBoxEnabled = Value
+        if Value then
+            showNotification("ESP Box: ON")
+        else
+            showNotification("ESP Box: OFF")
+        end
     end,
 })
 
@@ -658,6 +677,11 @@ local ESPHealthToggle = VisualSection:CreateToggle({
     Flag = "ESPHealth",
     Callback = function(Value)
         espHealthEnabled = Value
+        if Value then
+            showNotification("ESP Health: ON")
+        else
+            showNotification("ESP Health: OFF")
+        end
     end,
 })
 
@@ -667,6 +691,11 @@ local ESPDistanceToggle = VisualSection:CreateToggle({
     Flag = "ESPDistance",
     Callback = function(Value)
         espDistanceEnabled = Value
+        if Value then
+            showNotification("ESP Distance: ON")
+        else
+            showNotification("ESP Distance: OFF")
+        end
     end,
 })
 
@@ -687,10 +716,12 @@ local ESPCountToggle = VisualSection:CreateToggle({
                 espCountText.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, 80)
             end
             espCountText.Visible = true
+            showNotification("ESP Count: ON")
         else
             if espCountText then
                 espCountText.Visible = false
             end
+            showNotification("ESP Count: OFF")
         end
     end,
 })
@@ -709,6 +740,12 @@ local AimBotToggle = AimBotSection:CreateToggle({
         else
             createFOVCircle()
             fovCircle.Visible = aimBotEnabled
+        end
+        
+        if Value then
+            showNotification("AimBot: ON")
+        else
+            showNotification("AimBot: OFF")
         end
     end,
 })
@@ -734,6 +771,11 @@ local KillAuraToggle = MainSection:CreateToggle({
     Flag = "KillAura",
     Callback = function(Value)
         ActiveKillAura = Value
+        if Value then
+            showNotification("Kill Aura: ON")
+        else
+            showNotification("Kill Aura: OFF")
+        end
         SaveSettings()
     end,
 })
@@ -757,6 +799,11 @@ local AutoChopToggle = MainSection:CreateToggle({
     Flag = "AutoChop",
     Callback = function(Value)
         ActiveAutoChopTree = Value
+        if Value then
+            showNotification("Auto Chop: ON")
+        else
+            showNotification("Auto Chop: OFF")
+        end
         SaveSettings()
     end,
 })
@@ -883,6 +930,41 @@ local UFOButton = MetalsSection:CreateButton({
     end,
 })
 
+local OldRadioButton = MetalsSection:CreateButton({
+    Name = "Bring Old Radio",
+    Callback = function()
+        BringItems("Old Radio")
+    end,
+})
+
+local MicrowaveButton = MetalsSection:CreateButton({
+    Name = "Bring Broken Microwave",
+    Callback = function()
+        BringItems("Broken Microwave")
+    end,
+})
+
+local WashingMachineButton = MetalsSection:CreateButton({
+    Name = "Bring Washing Machine",
+    Callback = function()
+        BringItems("Washing Machine")
+    end,
+})
+
+local CarEngineButton = MetalsSection:CreateButton({
+    Name = "Bring Old Car Engine",
+    Callback = function()
+        BringItems("Old Car Engine")
+    end,
+})
+
+local CultistGemButton = MetalsSection:CreateButton({
+    Name = "Bring Cultist Gem",
+    Callback = function()
+        BringItems("Cultist Gem")
+    end,
+})
+
 -- Food & Medical Section
 local FoodSection = NightsTab:CreateSection("Food & Medical")
 local CarrotButton = FoodSection:CreateButton({
@@ -899,10 +981,52 @@ local PumpkinButton = FoodSection:CreateButton({
     end,
 })
 
+local MorselButton = FoodSection:CreateButton({
+    Name = "Bring Morsel",
+    Callback = function()
+        BringItems("Morsel")
+    end,
+})
+
+local SteakButton = FoodSection:CreateButton({
+    Name = "Bring Steak",
+    Callback = function()
+        BringItems("Steak")
+    end,
+})
+
 local MedKitButton = FoodSection:CreateButton({
     Name = "Bring MedKits",
     Callback = function()
         BringItems("MedKit")
+    end,
+})
+
+local BandageButton = FoodSection:CreateButton({
+    Name = "Bring Bandages",
+    Callback = function()
+        BringItems("Bandage")
+    end,
+})
+
+local ChiliButton = FoodSection:CreateButton({
+    Name = "Bring Chili",
+    Callback = function()
+        BringItems("Chili")
+    end,
+})
+
+local AppleButton = FoodSection:CreateButton({
+    Name = "Bring Apples",
+    Callback = function()
+        BringItems("Apple")
+    end,
+})
+
+local CakeButton = FoodSection:CreateButton({
+    Name = "Bring Cake",
+    Callback = function()
+        BringItems("Cake")
     end,
 })
 
@@ -922,10 +1046,38 @@ local RevolverButton = WeaponsSection:CreateButton({
     end,
 })
 
-local AmmoButton = WeaponsSection:CreateButton({
+local RifleAmmoButton = WeaponsSection:CreateButton({
     Name = "Bring Rifle Ammo",
     Callback = function()
         BringItems("Rifle Ammo")
+    end,
+})
+
+local RevolverAmmoButton = WeaponsSection:CreateButton({
+    Name = "Bring Revolver Ammo",
+    Callback = function()
+        BringItems("Revolver Ammo")
+    end,
+})
+
+local GoodAxeButton = WeaponsSection:CreateButton({
+    Name = "Bring Good Axe",
+    Callback = function()
+        BringItems("Good Axe")
+    end,
+})
+
+local StrongAxeButton = WeaponsSection:CreateButton({
+    Name = "Bring Strong Axe",
+    Callback = function()
+        BringItems("Strong Axe")
+    end,
+})
+
+local ChainsawButton = WeaponsSection:CreateButton({
+    Name = "Bring Chainsaw",
+    Callback = function()
+        BringItems("Chainsaw")
     end,
 })
 
