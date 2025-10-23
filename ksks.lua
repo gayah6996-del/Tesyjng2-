@@ -46,7 +46,7 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- Создание окна
 local Window = Rayfield:CreateWindow({
-   Name = "99 Nights Menu",
+   Name = "SANSTRO|t.me/SCRIPTTYTA",
    LoadingTitle = "SANSTRO Menu",
    LoadingSubtitle = "by SANSTRO",
    ConfigurationSaving = {
@@ -692,7 +692,7 @@ player.CharacterAdded:Connect(function()
 end)
 
 Rayfield:Notify({
-    Title = "99 Nights Menu",
+    Title = "SANSTRO MENU",
     Content = "Menu loaded successfully!",
     Duration = 5,
     Image = 4483362458,
