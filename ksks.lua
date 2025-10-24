@@ -25,6 +25,30 @@ local antiAFKEnabled = false
 local antiAFKConnection = nil
 local currentSpeed = 16
 
+-- Настройки для мини-меню каждой категории
+local CategorySettings = {
+    Resources = {
+        BringTarget = "Campfire",
+        BringCount = 5,
+        BringDelay = 200
+    },
+    Metals = {
+        BringTarget = "Campfire",
+        BringCount = 5,
+        BringDelay = 200
+    },
+    FoodMed = {
+        BringTarget = "Campfire",
+        BringCount = 5,
+        BringDelay = 200
+    },
+    Weapons = {
+        BringTarget = "Campfire",
+        BringCount = 5,
+        BringDelay = 200
+    }
+}
+
 -- Настройки файла
 local SETTINGS_FILE = "astralcheat_settings.txt"
 local Settings = {
@@ -38,7 +62,8 @@ local Settings = {
     speedHackEnabled = false,
     jumpHackEnabled = false,
     currentSpeed = 16,
-    antiAFKEnabled = false
+    antiAFKEnabled = false,
+    CategorySettings = CategorySettings
 }
 
 -- Загрузка Rayfield
@@ -76,6 +101,7 @@ local function SaveSettings()
         Settings.jumpHackEnabled = jumpHackEnabled
         Settings.currentSpeed = currentSpeed
         Settings.antiAFKEnabled = antiAFKEnabled
+        Settings.CategorySettings = CategorySettings
         
         local data = HttpService:JSONEncode(Settings)
         writefile(SETTINGS_FILE, data)
@@ -105,6 +131,15 @@ local function LoadSettings()
             jumpHackEnabled = Settings.jumpHackEnabled or false
             currentSpeed = Settings.currentSpeed or 16
             antiAFKEnabled = Settings.antiAFKEnabled or false
+            
+            -- Загружаем настройки категорий
+            if loadedSettings.CategorySettings then
+                for category, settings in pairs(loadedSettings.CategorySettings) do
+                    if CategorySettings[category] then
+                        CategorySettings[category] = settings
+                    end
+                end
+            end
         end
     end)
 end
@@ -155,10 +190,12 @@ local function RunAutoChop()
     end
 end
 
--- Обновленная функция Bring Items с поддержкой выбора цели
-local function BringItems(itemName)
+-- Обновленная функция Bring Items с поддержкой категорий
+local function BringItems(itemName, category)
+    local categorySettings = CategorySettings[category] or CategorySettings.Resources
+    
     local targetPos
-    if BringTarget == "Player" then
+    if categorySettings.BringTarget == "Player" then
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             targetPos = char.HumanoidRootPart.Position
@@ -184,7 +221,10 @@ local function BringItems(itemName)
     end
     
     local teleported = 0
-    for i = 1, math.min(BringCount, #items) do
+    local bringCount = categorySettings.BringCount or 5
+    local bringDelay = categorySettings.BringDelay or 200
+    
+    for i = 1, math.min(bringCount, #items) do
         local item = items[i]
         item.CFrame = CFrame.new(
             targetPos.X + math.random(-3,3),
@@ -195,14 +235,14 @@ local function BringItems(itemName)
         item.AssemblyLinearVelocity = Vector3.new(0,0,0)
         teleported = teleported + 1
         
-        if BringDelay > 0 then
-            wait(BringDelay / 1000)
+        if bringDelay > 0 then
+            wait(bringDelay / 1000)
         end
     end
     
     Rayfield:Notify({
         Title = "Bring Items",
-        Content = "Teleported " .. teleported .. " " .. itemName .. "(s)",
+        Content = "Teleported " .. teleported .. " " .. itemName .. "(s) to " .. categorySettings.BringTarget,
         Duration = 3,
         Image = 4483362458,
     })
@@ -281,14 +321,14 @@ local KillAuraToggle = MainTab:CreateToggle({
         if Value then
             Rayfield:Notify({
                 Title = "Kill Aura",
-                Content = "Kill Aura ENABLED",
+                Content = "Kill Aura Enabled",
                 Duration = 3,
                 Image = 4483362458,
             })
         else
             Rayfield:Notify({
                 Title = "Kill Aura",
-                Content = "Kill Aura DISABLED",
+                Content = "Kill Aura Disabled",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -319,14 +359,14 @@ local AutoChopToggle = MainTab:CreateToggle({
         if Value then
             Rayfield:Notify({
                 Title = "Auto Chop",
-                Content = "Auto Chop ENABLED",
+                Content = "Auto Chop Enabled",
                 Duration = 3,
                 Image = 4483362458,
             })
         else
             Rayfield:Notify({
                 Title = "Auto Chop",
-                Content = "Auto Chop DISABLED",
+                Content = "Auto Chop Disabled",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -347,47 +387,22 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     end,
 })
 
--- Bring Tab
-local SettingsSection = BringTab:CreateSection("Bring Settings")
+-- Bring Tab - Resources Section
+local ResourcesSection = BringTab:CreateSection("📦 Resources")
 
-local BringCountSlider = BringTab:CreateSlider({
-    Name = "Bring Count",
-    Range = {1, 20},
-    Increment = 1,
-    Suffix = "items",
-    CurrentValue = BringCount,
-    Flag = "BringCountSlider",
-    Callback = function(Value)
-        BringCount = Value
-        SaveSettings()
-    end,
-})
+-- Мини-меню для Resources
+local ResourcesSettingsSection = BringTab:CreateSection("Resources Settings")
 
-local BringSpeedSlider = BringTab:CreateSlider({
-    Name = "Bring Speed",
-    Range = {50, 500},
-    Increment = 10,
-    Suffix = "ms",
-    CurrentValue = BringDelay,
-    Flag = "BringSpeedSlider",
-    Callback = function(Value)
-        BringDelay = Value
-        SaveSettings()
-    end,
-})
-
-local TargetSection = BringTab:CreateSection("Teleport Target")
-
-local TargetDropdown = BringTab:CreateDropdown({
-    Name = "Teleport Target",
+local ResourcesTargetDropdown = BringTab:CreateDropdown({
+    Name = "Resources Target",
     Options = {"Campfire", "Player"},
-    CurrentOption = BringTarget,
-    Flag = "TargetDropdown",
+    CurrentOption = CategorySettings.Resources.BringTarget,
+    Flag = "ResourcesTargetDropdown",
     Callback = function(Option)
-        BringTarget = Option
+        CategorySettings.Resources.BringTarget = Option
         SaveSettings()
         Rayfield:Notify({
-            Title = "Teleport Target",
+            Title = "Resources Target",
             Content = "Target set to: " .. Option,
             Duration = 3,
             Image = 4483362458,
@@ -395,9 +410,33 @@ local TargetDropdown = BringTab:CreateDropdown({
     end,
 })
 
--- Resources Section
-local ResourcesSection = BringTab:CreateSection("Resources")
+local ResourcesCountSlider = BringTab:CreateSlider({
+    Name = "Resources Count",
+    Range = {1, 20},
+    Increment = 1,
+    Suffix = "items",
+    CurrentValue = CategorySettings.Resources.BringCount,
+    Flag = "ResourcesCountSlider",
+    Callback = function(Value)
+        CategorySettings.Resources.BringCount = Value
+        SaveSettings()
+    end,
+})
 
+local ResourcesSpeedSlider = BringTab:CreateSlider({
+    Name = "Resources Speed",
+    Range = {50, 500},
+    Increment = 10,
+    Suffix = "ms",
+    CurrentValue = CategorySettings.Resources.BringDelay,
+    Flag = "ResourcesSpeedSlider",
+    Callback = function(Value)
+        CategorySettings.Resources.BringDelay = Value
+        SaveSettings()
+    end,
+})
+
+-- Кнопки Resources
 local ResourcesButtons = {
     {"Log", "📦"},
     {"Coal", "⛏️"},
@@ -412,14 +451,61 @@ for i, itemData in ipairs(ResourcesButtons) do
     BringTab:CreateButton({
         Name = emoji .. " Bring " .. itemName,
         Callback = function()
-            BringItems(itemName)
+            BringItems(itemName, "Resources")
         end,
     })
 end
 
--- Metals Section
-local MetalsSection = BringTab:CreateSection("Metals")
+-- Bring Tab - Metals Section
+local MetalsSection = BringTab:CreateSection("🔩 Metals")
 
+-- Мини-меню для Metals
+local MetalsSettingsSection = BringTab:CreateSection("Metals Settings")
+
+local MetalsTargetDropdown = BringTab:CreateDropdown({
+    Name = "Metals Target",
+    Options = {"Campfire", "Player"},
+    CurrentOption = CategorySettings.Metals.BringTarget,
+    Flag = "MetalsTargetDropdown",
+    Callback = function(Option)
+        CategorySettings.Metals.BringTarget = Option
+        SaveSettings()
+        Rayfield:Notify({
+            Title = "Metals Target",
+            Content = "Target set to: " .. Option,
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end,
+})
+
+local MetalsCountSlider = BringTab:CreateSlider({
+    Name = "Metals Count",
+    Range = {1, 20},
+    Increment = 1,
+    Suffix = "items",
+    CurrentValue = CategorySettings.Metals.BringCount,
+    Flag = "MetalsCountSlider",
+    Callback = function(Value)
+        CategorySettings.Metals.BringCount = Value
+        SaveSettings()
+    end,
+})
+
+local MetalsSpeedSlider = BringTab:CreateSlider({
+    Name = "Metals Speed",
+    Range = {50, 500},
+    Increment = 10,
+    Suffix = "ms",
+    CurrentValue = CategorySettings.Metals.BringDelay,
+    Flag = "MetalsSpeedSlider",
+    Callback = function(Value)
+        CategorySettings.Metals.BringDelay = Value
+        SaveSettings()
+    end,
+})
+
+-- Кнопки Metals
 local MetalsButtons = {
     {"Bolt", "🔩"},
     {"Sheet Metal", "📄"},
@@ -436,14 +522,61 @@ for i, itemData in ipairs(MetalsButtons) do
     BringTab:CreateButton({
         Name = emoji .. " Bring " .. itemName,
         Callback = function()
-            BringItems(itemName)
+            BringItems(itemName, "Metals")
         end,
     })
 end
 
--- Food & Medical Section
-local FoodMedSection = BringTab:CreateSection("Food & Medical")
+-- Bring Tab - Food & Medical Section
+local FoodMedSection = BringTab:CreateSection("🥕 Food & Medical")
 
+-- Мини-меню для Food & Medical
+local FoodMedSettingsSection = BringTab:CreateSection("Food & Medical Settings")
+
+local FoodMedTargetDropdown = BringTab:CreateDropdown({
+    Name = "Food & Medical Target",
+    Options = {"Campfire", "Player"},
+    CurrentOption = CategorySettings.FoodMed.BringTarget,
+    Flag = "FoodMedTargetDropdown",
+    Callback = function(Option)
+        CategorySettings.FoodMed.BringTarget = Option
+        SaveSettings()
+        Rayfield:Notify({
+            Title = "Food & Medical Target",
+            Content = "Target set to: " .. Option,
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end,
+})
+
+local FoodMedCountSlider = BringTab:CreateSlider({
+    Name = "Food & Medical Count",
+    Range = {1, 20},
+    Increment = 1,
+    Suffix = "items",
+    CurrentValue = CategorySettings.FoodMed.BringCount,
+    Flag = "FoodMedCountSlider",
+    Callback = function(Value)
+        CategorySettings.FoodMed.BringCount = Value
+        SaveSettings()
+    end,
+})
+
+local FoodMedSpeedSlider = BringTab:CreateSlider({
+    Name = "Food & Medical Speed",
+    Range = {50, 500},
+    Increment = 10,
+    Suffix = "ms",
+    CurrentValue = CategorySettings.FoodMed.BringDelay,
+    Flag = "FoodMedSpeedSlider",
+    Callback = function(Value)
+        CategorySettings.FoodMed.BringDelay = Value
+        SaveSettings()
+    end,
+})
+
+-- Кнопки Food & Medical
 local FoodMedButtons = {
     {"Carrot", "🥕"},
     {"Pumpkin", "🎃"},
@@ -461,14 +594,61 @@ for i, itemData in ipairs(FoodMedButtons) do
     BringTab:CreateButton({
         Name = emoji .. " Bring " .. itemName,
         Callback = function()
-            BringItems(itemName)
+            BringItems(itemName, "FoodMed")
         end,
     })
 end
 
--- Weapons & Tools Section
-local WeaponsSection = BringTab:CreateSection("Weapons & Tools")
+-- Bring Tab - Weapons & Tools Section
+local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
 
+-- Мини-меню для Weapons & Tools
+local WeaponsSettingsSection = BringTab:CreateSection("Weapons & Tools Settings")
+
+local WeaponsTargetDropdown = BringTab:CreateDropdown({
+    Name = "Weapons Target",
+    Options = {"Campfire", "Player"},
+    CurrentOption = CategorySettings.Weapons.BringTarget,
+    Flag = "WeaponsTargetDropdown",
+    Callback = function(Option)
+        CategorySettings.Weapons.BringTarget = Option
+        SaveSettings()
+        Rayfield:Notify({
+            Title = "Weapons Target",
+            Content = "Target set to: " .. Option,
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end,
+})
+
+local WeaponsCountSlider = BringTab:CreateSlider({
+    Name = "Weapons Count",
+    Range = {1, 20},
+    Increment = 1,
+    Suffix = "items",
+    CurrentValue = CategorySettings.Weapons.BringCount,
+    Flag = "WeaponsCountSlider",
+    Callback = function(Value)
+        CategorySettings.Weapons.BringCount = Value
+        SaveSettings()
+    end,
+})
+
+local WeaponsSpeedSlider = BringTab:CreateSlider({
+    Name = "Weapons Speed",
+    Range = {50, 500},
+    Increment = 10,
+    Suffix = "ms",
+    CurrentValue = CategorySettings.Weapons.BringDelay,
+    Flag = "WeaponsSpeedSlider",
+    Callback = function(Value)
+        CategorySettings.Weapons.BringDelay = Value
+        SaveSettings()
+    end,
+})
+
+-- Кнопки Weapons & Tools
 local WeaponsButtons = {
     {"Rifle", "🔫"},
     {"Rifle Ammo", "📦"},
@@ -484,7 +664,7 @@ for i, itemData in ipairs(WeaponsButtons) do
     BringTab:CreateButton({
         Name = emoji .. " Bring " .. itemName,
         Callback = function()
-            BringItems(itemName)
+            BringItems(itemName, "Weapons")
         end,
     })
 end
@@ -522,7 +702,7 @@ local SpeedHackToggle = MoreTab:CreateToggle({
             end
             Rayfield:Notify({
                 Title = "Speed Hack",
-                Content = "Speed Hack ENABLED",
+                Content = "Speed Hack Enabled",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -533,7 +713,7 @@ local SpeedHackToggle = MoreTab:CreateToggle({
             end
             Rayfield:Notify({
                 Title = "Speed Hack",
-                Content = "Speed Hack DISABLED",
+                Content = "Speed Hack Disabled",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -571,14 +751,14 @@ local InfinityJumpToggle = MoreTab:CreateToggle({
         if Value then
             Rayfield:Notify({
                 Title = "Infinity Jump",
-                Content = "Infinity Jump ENABLED",
+                Content = "Infinity Jump Enabled",
                 Duration = 3,
                 Image = 4483362458,
             })
         else
             Rayfield:Notify({
                 Title = "Infinity Jump",
-                Content = "Infinity Jump DISABLED",
+                Content = "Infinity Jump Disabled",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -598,7 +778,7 @@ local AntiAFKToggle = MoreTab:CreateToggle({
             EnableAntiAFK()
             Rayfield:Notify({
                 Title = "Anti AFK",
-                Content = "Anti AFK ENABLED",
+                Content = "Anti AFK Enabled",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -606,7 +786,7 @@ local AntiAFKToggle = MoreTab:CreateToggle({
             DisableAntiAFK()
             Rayfield:Notify({
                 Title = "Anti AFK",
-                Content = "Anti AFK DISABLED",
+                Content = "Anti AFK Disabled",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -625,7 +805,7 @@ local NoClipToggle = MoreTab:CreateToggle({
         if noclipEnabled then
             Rayfield:Notify({
                 Title = "NoClip",
-                Content = "NoClip ENABLED",
+                Content = "NoClip Enabled",
                 Duration = 3,
                 Image = 4483362458,
             })
@@ -646,7 +826,7 @@ local NoClipToggle = MoreTab:CreateToggle({
         else
             Rayfield:Notify({
                 Title = "NoClip",
-                Content = "NoClip DISABLED",
+                Content = "NoClip Disabled",
                 Duration = 3,
                 Image = 4483362458,
             })
