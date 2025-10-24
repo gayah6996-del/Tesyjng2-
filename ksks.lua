@@ -25,6 +25,40 @@ local antiAFKEnabled = false
 local antiAFKConnection = nil
 local currentSpeed = 16
 
+-- Выбранные предметы для телепорта
+local SelectedItems = {
+    ["Log"] = false,
+    ["Coal"] = false,
+    ["Chair"] = false,
+    ["Fuel Canister"] = false,
+    ["Oil Barrel"] = false,
+    ["Biofuel"] = false,
+    ["Bolt"] = false,
+    ["Sheet Metal"] = false,
+    ["Old Radio"] = false,
+    ["UFO Scrap"] = false,
+    ["Broken Microwave"] = false,
+    ["Washing Machine"] = false,
+    ["Old Car Engine"] = false,
+    ["Cultist Gem"] = false,
+    ["Carrot"] = false,
+    ["Pumpkin"] = false,
+    ["Morsel"] = false,
+    ["Steak"] = false,
+    ["MedKit"] = false,
+    ["Bandage"] = false,
+    ["Chili"] = false,
+    ["Apple"] = false,
+    ["Cake"] = false,
+    ["Rifle"] = false,
+    ["Rifle Ammo"] = false,
+    ["Revolver"] = false,
+    ["Revolver Ammo"] = false,
+    ["Good Axe"] = false,
+    ["Strong Axe"] = false,
+    ["Chainsaw"] = false
+}
+
 -- Настройки файла
 local SETTINGS_FILE = "astralcheat_settings.txt"
 local Settings = {
@@ -38,7 +72,8 @@ local Settings = {
     speedHackEnabled = false,
     jumpHackEnabled = false,
     currentSpeed = 16,
-    antiAFKEnabled = false
+    antiAFKEnabled = false,
+    SelectedItems = SelectedItems
 }
 
 -- Загрузка Rayfield
@@ -76,6 +111,7 @@ local function SaveSettings()
         Settings.jumpHackEnabled = jumpHackEnabled
         Settings.currentSpeed = currentSpeed
         Settings.antiAFKEnabled = antiAFKEnabled
+        Settings.SelectedItems = SelectedItems
         
         local data = HttpService:JSONEncode(Settings)
         writefile(SETTINGS_FILE, data)
@@ -105,6 +141,15 @@ local function LoadSettings()
             jumpHackEnabled = Settings.jumpHackEnabled or false
             currentSpeed = Settings.currentSpeed or 16
             antiAFKEnabled = Settings.antiAFKEnabled or false
+            
+            -- Загружаем выбранные предметы
+            if Settings.SelectedItems then
+                for itemName, isSelected in pairs(Settings.SelectedItems) do
+                    if SelectedItems[itemName] ~= nil then
+                        SelectedItems[itemName] = isSelected
+                    end
+                end
+            end
         end
     end)
 end
@@ -156,7 +201,7 @@ local function RunAutoChop()
 end
 
 -- Обновленная функция Bring Items с поддержкой выбора цели
-local function BringItems(itemName)
+local function BringSelectedItems()
     local targetPos
     if BringTarget == "Player" then
         local char = player.Character
@@ -169,43 +214,71 @@ local function BringItems(itemName)
         targetPos = CampfirePosition
     end
     
-    local items = {}
+    local totalTeleported = 0
     
-    for _, item in pairs(workspace.Items:GetChildren()) do
-        if item:IsA("Model") then
-            local itemLower = item.Name:lower()
-            local searchLower = itemName:lower()
+    -- Перебираем все выбранные предметы
+    for itemName, isSelected in pairs(SelectedItems) do
+        if isSelected then
+            local items = {}
             
-            if itemLower:find(searchLower) then
-                local part = item:FindFirstChildWhichIsA("BasePart")
-                if part then table.insert(items, part) end
+            -- Ищем предметы в workspace
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    local itemLower = item.Name:lower()
+                    local searchLower = itemName:lower()
+                    
+                    if itemLower:find(searchLower) then
+                        local part = item:FindFirstChildWhichIsA("BasePart")
+                        if part then table.insert(items, part) end
+                    end
+                end
+            end
+            
+            -- Телепортируем найденные предметы
+            local teleported = 0
+            for i = 1, math.min(BringCount, #items) do
+                local item = items[i]
+                item.CFrame = CFrame.new(
+                    targetPos.X + math.random(-3,3),
+                    targetPos.Y + 3,
+                    targetPos.Z + math.random(-3,3)
+                )
+                item.Anchored = false
+                item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+                teleported = teleported + 1
+                totalTeleported = totalTeleported + 1
+                
+                if BringDelay > 0 then
+                    wait(BringDelay / 1000)
+                end
+            end
+            
+            if teleported > 0 then
+                Rayfield:Notify({
+                    Title = "Bring Items",
+                    Content = "Teleported " .. teleported .. " " .. itemName .. "(s)",
+                    Duration = 2,
+                    Image = 4483362458,
+                })
             end
         end
     end
     
-    local teleported = 0
-    for i = 1, math.min(BringCount, #items) do
-        local item = items[i]
-        item.CFrame = CFrame.new(
-            targetPos.X + math.random(-3,3),
-            targetPos.Y + 3,
-            targetPos.Z + math.random(-3,3)
-        )
-        item.Anchored = false
-        item.AssemblyLinearVelocity = Vector3.new(0,0,0)
-        teleported = teleported + 1
-        
-        if BringDelay > 0 then
-            wait(BringDelay / 1000)
-        end
+    if totalTeleported > 0 then
+        Rayfield:Notify({
+            Title = "Bring Items",
+            Content = "Total teleported: " .. totalTeleported .. " items",
+            Duration = 5,
+            Image = 4483362458,
+        })
+    else
+        Rayfield:Notify({
+            Title = "Bring Items",
+            Content = "No items found or selected!",
+            Duration = 3,
+            Image = 4483362458,
+        })
     end
-    
-    Rayfield:Notify({
-        Title = "Bring Items",
-        Content = "Teleported " .. teleported .. " " .. itemName .. "(s)",
-        Duration = 3,
-        Image = 4483362458,
-    })
 end
 
 -- Anti AFK функция
@@ -347,12 +420,12 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     end,
 })
 
--- Bring Tab - Обновленная структура с выпадающими меню
+-- Bring Tab - Обновленная структура с выбором предметов
 local SettingsSection = BringTab:CreateSection("Bring Settings")
 
 local BringCountSlider = BringTab:CreateSlider({
     Name = "Bring Count",
-    Range = {1, 20},
+    Range = {1, 50},
     Increment = 1,
     Suffix = "items",
     CurrentValue = BringCount,
@@ -365,7 +438,7 @@ local BringCountSlider = BringTab:CreateSlider({
 
 local BringSpeedSlider = BringTab:CreateSlider({
     Name = "Bring Speed",
-    Range = {50, 500},
+    Range = {0, 1000},
     Increment = 10,
     Suffix = "ms",
     CurrentValue = BringDelay,
@@ -395,154 +468,126 @@ local TargetDropdown = BringTab:CreateDropdown({
     end,
 })
 
--- Создаем выпадающие меню для Bring Items
-local ResourcesSection = BringTab:CreateSection("📦 Resources")
+-- Кнопка телепорта
+local TeleportSection = BringTab:CreateSection("Teleport Action")
 
--- Переменные для хранения состояний выпадающих меню
-local ResourcesMenuOpen = false
-local MetalsMenuOpen = false
-local FoodMenuOpen = false
-local WeaponsMenuOpen = false
+local TeleportButton = BringTab:CreateButton({
+    Name = "🚀 TELEPORT SELECTED ITEMS",
+    Callback = function()
+        BringSelectedItems()
+    end,
+})
 
--- Функция для создания выпадающего меню
-local function CreateDropdownMenu(parentSection, menuName, itemsList)
-    local menuButton = BringTab:CreateButton({
-        Name = menuName,
-        Callback = function()
-            -- Здесь будет логика открытия/закрытия меню
+-- Resources Selection
+local ResourcesSection = BringTab:CreateSection("📦 Resources Selection")
+
+local ResourcesItems = {
+    {"Log", "📦"},
+    {"Coal", "⛏️"},
+    {"Chair", "🪑"},
+    {"Fuel Canister", "⛽"},
+    {"Oil Barrel", "🛢️"},
+    {"Biofuel", "🔥"}
+}
+
+for i, itemData in ipairs(ResourcesItems) do
+    local itemName, emoji = itemData[1], itemData[2]
+    BringTab:CreateToggle({
+        Name = emoji .. " " .. itemName,
+        CurrentValue = SelectedItems[itemName],
+        Flag = "Select" .. itemName,
+        Callback = function(Value)
+            SelectedItems[itemName] = Value
+            SaveSettings()
         end,
     })
-    
-    -- Создаем кнопки для этого меню (они будут скрыты/показаны)
-    local menuButtons = {}
-    for i, itemData in ipairs(itemsList) do
-        local itemName, emoji = itemData[1], itemData[2]
-        local button = BringTab:CreateButton({
-            Name = "    " .. emoji .. " " .. itemName,
-            Callback = function()
-                BringItems(itemName)
-            end,
-        })
-        table.insert(menuButtons, button)
-    end
-    
-    return menuButton, menuButtons
 end
 
--- Resources Dropdown Menu
-local ResourcesDropdown = BringTab:CreateDropdown({
-    Name = "📦 Resources Menu",
-    Options = {"📦 Log", "⛏️ Coal", "🪑 Chair", "⛽ Fuel Canister", "🛢️ Oil Barrel", "🔥 Biofuel"},
-    CurrentOption = "Open Menu",
-    Flag = "ResourcesDropdown",
-    Callback = function(Option)
-        if Option == "📦 Log" then
-            BringItems("Log")
-        elseif Option == "⛏️ Coal" then
-            BringItems("Coal")
-        elseif Option == "🪑 Chair" then
-            BringItems("Chair")
-        elseif Option == "⛽ Fuel Canister" then
-            BringItems("Fuel Canister")
-        elseif Option == "🛢️ Oil Barrel" then
-            BringItems("Oil Barrel")
-        elseif Option == "🔥 Biofuel" then
-            BringItems("Biofuel")
-        end
-    end,
-})
+-- Metals Selection
+local MetalsSection = BringTab:CreateSection("🔩 Metals Selection")
 
--- Metals Dropdown Menu
-local MetalsSection = BringTab:CreateSection("🔩 Metals")
+local MetalsItems = {
+    {"Bolt", "🔩"},
+    {"Sheet Metal", "📄"},
+    {"Old Radio", "📻"},
+    {"UFO Scrap", "🛸"},
+    {"Broken Microwave", "🍳"},
+    {"Washing Machine", "🧼"},
+    {"Old Car Engine", "🚗"},
+    {"Cultist Gem", "💎"}
+}
 
-local MetalsDropdown = BringTab:CreateDropdown({
-    Name = "🔩 Metals Menu",
-    Options = {"🔩 Bolt", "📄 Sheet Metal", "📻 Old Radio", "🛸 UFO Scrap", "🍳 Broken Microwave", "🧼 Washing Machine", "🚗 Old Car Engine", "💎 Cultist Gem"},
-    CurrentOption = "Open Menu",
-    Flag = "MetalsDropdown",
-    Callback = function(Option)
-        if Option == "🔩 Bolt" then
-            BringItems("Bolt")
-        elseif Option == "📄 Sheet Metal" then
-            BringItems("Sheet Metal")
-        elseif Option == "📻 Old Radio" then
-            BringItems("Old Radio")
-        elseif Option == "🛸 UFO Scrap" then
-            BringItems("UFO Scrap")
-        elseif Option == "🍳 Broken Microwave" then
-            BringItems("Broken Microwave")
-        elseif Option == "🧼 Washing Machine" then
-            BringItems("Washing Machine")
-        elseif Option == "🚗 Old Car Engine" then
-            BringItems("Old Car Engine")
-        elseif Option == "💎 Cultist Gem" then
-            BringItems("Cultist Gem")
-        end
-    end,
-})
+for i, itemData in ipairs(MetalsItems) do
+    local itemName, emoji = itemData[1], itemData[2]
+    BringTab:CreateToggle({
+        Name = emoji .. " " .. itemName,
+        CurrentValue = SelectedItems[itemName],
+        Flag = "Select" .. itemName,
+        Callback = function(Value)
+            SelectedItems[itemName] = Value
+            SaveSettings()
+        end,
+    })
+end
 
--- Food & Medical Dropdown Menu
-local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical")
+-- Food & Medical Selection
+local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical Selection")
 
-local FoodMedDropdown = BringTab:CreateDropdown({
-    Name = "🍎 Food & Medical Menu",
-    Options = {"🥕 Carrot", "🎃 Pumpkin", "🍖 Morsel", "🥩 Steak", "💊 MedKit", "🩹 Bandage", "🌶️ Chili", "🍎 Apple", "🍰 Cake"},
-    CurrentOption = "Open Menu",
-    Flag = "FoodMedDropdown",
-    Callback = function(Option)
-        if Option == "🥕 Carrot" then
-            BringItems("Carrot")
-        elseif Option == "🎃 Pumpkin" then
-            BringItems("Pumpkin")
-        elseif Option == "🍖 Morsel" then
-            BringItems("Morsel")
-        elseif Option == "🥩 Steak" then
-            BringItems("Steak")
-        elseif Option == "💊 MedKit" then
-            BringItems("MedKit")
-        elseif Option == "🩹 Bandage" then
-            BringItems("Bandage")
-        elseif Option == "🌶️ Chili" then
-            BringItems("Chili")
-        elseif Option == "🍎 Apple" then
-            BringItems("Apple")
-        elseif Option == "🍰 Cake" then
-            BringItems("Cake")
-        end
-    end,
-})
+local FoodMedItems = {
+    {"Carrot", "🥕"},
+    {"Pumpkin", "🎃"},
+    {"Morsel", "🍖"},
+    {"Steak", "🥩"},
+    {"MedKit", "💊"},
+    {"Bandage", "🩹"},
+    {"Chili", "🌶️"},
+    {"Apple", "🍎"},
+    {"Cake", "🍰"}
+}
 
--- Weapons & Tools Dropdown Menu
-local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
+for i, itemData in ipairs(FoodMedItems) do
+    local itemName, emoji = itemData[1], itemData[2]
+    BringTab:CreateToggle({
+        Name = emoji .. " " .. itemName,
+        CurrentValue = SelectedItems[itemName],
+        Flag = "Select" .. itemName,
+        Callback = function(Value)
+            SelectedItems[itemName] = Value
+            SaveSettings()
+        end,
+    })
+end
 
-local WeaponsDropdown = BringTab:CreateDropdown({
-    Name = "🔫 Weapons & Tools Menu",
-    Options = {"🔫 Rifle", "📦 Rifle Ammo", "🔫 Revolver", "📦 Revolver Ammo", "🪓 Good Axe", "🪓 Strong Axe", "🔪 Chainsaw"},
-    CurrentOption = "Open Menu",
-    Flag = "WeaponsDropdown",
-    Callback = function(Option)
-        if Option == "🔫 Rifle" then
-            BringItems("Rifle")
-        elseif Option == "📦 Rifle Ammo" then
-            BringItems("Rifle Ammo")
-        elseif Option == "🔫 Revolver" then
-            BringItems("Revolver")
-        elseif Option == "📦 Revolver Ammo" then
-            BringItems("Revolver Ammo")
-        elseif Option == "🪓 Good Axe" then
-            BringItems("Good Axe")
-        elseif Option == "🪓 Strong Axe" then
-            BringItems("Strong Axe")
-        elseif Option == "🔪 Chainsaw" then
-            BringItems("Chainsaw")
-        end
-    end,
-})
+-- Weapons & Tools Selection
+local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools Selection")
+
+local WeaponsItems = {
+    {"Rifle", "🔫"},
+    {"Rifle Ammo", "📦"},
+    {"Revolver", "🔫"},
+    {"Revolver Ammo", "📦"},
+    {"Good Axe", "🪓"},
+    {"Strong Axe", "🪓"},
+    {"Chainsaw", "🔪"}
+}
+
+for i, itemData in ipairs(WeaponsItems) do
+    local itemName, emoji = itemData[1], itemData[2]
+    BringTab:CreateToggle({
+        Name = emoji .. " " .. itemName,
+        CurrentValue = SelectedItems[itemName],
+        Flag = "Select" .. itemName,
+        Callback = function(Value)
+            SelectedItems[itemName] = Value
+            SaveSettings()
+        end,
+    })
+end
 
 -- More Tab
 local MovementSection = MoreTab:CreateSection("Movement")
 
-local TeleportButton = MoreTab:CreateButton({
+local TeleportToCampfireButton = MoreTab:CreateButton({
     Name = "🔥 Teleport to Campfire",
     Callback = function()
         local char = player.Character
