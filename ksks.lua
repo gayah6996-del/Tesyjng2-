@@ -200,8 +200,8 @@ local function RunAutoChop()
     end
 end
 
--- Обновленная функция Bring Items с поддержкой выбора цели
-local function BringSelectedItems()
+-- Функция телепорта для конкретной категории
+local function BringCategoryItems(categoryItems)
     local targetPos
     if BringTarget == "Player" then
         local char = player.Character
@@ -215,10 +215,11 @@ local function BringSelectedItems()
     end
     
     local totalTeleported = 0
+    local itemCounts = {}
     
-    -- Перебираем все выбранные предметы
-    for itemName, isSelected in pairs(SelectedItems) do
-        if isSelected then
+    -- Перебираем предметы из категории
+    for _, itemName in ipairs(categoryItems) do
+        if SelectedItems[itemName] then
             local items = {}
             
             -- Ищем предметы в workspace
@@ -254,21 +255,28 @@ local function BringSelectedItems()
             end
             
             if teleported > 0 then
-                Rayfield:Notify({
-                    Title = "Bring Items",
-                    Content = "Teleported " .. teleported .. " " .. itemName .. "(s)",
-                    Duration = 2,
-                    Image = 4483362458,
-                })
+                itemCounts[itemName] = teleported
             end
         end
     end
     
+    -- Формируем сообщение о результатах
     if totalTeleported > 0 then
+        local message = "Teleported: "
+        local first = true
+        for itemName, count in pairs(itemCounts) do
+            if not first then
+                message = message .. ", "
+            end
+            message = message .. count .. " " .. itemName
+            first = false
+        end
+        message = message .. " (Total: " .. totalTeleported .. " items)"
+        
         Rayfield:Notify({
             Title = "Bring Items",
-            Content = "Total teleported: " .. totalTeleported .. " items",
-            Duration = 5,
+            Content = message,
+            Duration = 6,
             Image = 4483362458,
         })
     else
@@ -420,7 +428,7 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     end,
 })
 
--- Bring Tab - Обновленная структура с мини-меню
+-- Bring Tab - Обновленная структура с отдельными кнопками для каждой категории
 local SettingsSection = BringTab:CreateSection("Bring Settings")
 
 local BringCountSlider = BringTab:CreateSlider({
@@ -468,140 +476,99 @@ local TargetDropdown = BringTab:CreateDropdown({
     end,
 })
 
--- Mini Menu Section
-local MiniMenuSection = BringTab:CreateSection("🎯 Item Selection Mini Menu")
-
 -- Resources Mini Menu
+local ResourcesSection = BringTab:CreateSection("📦 Resources")
+
+local ResourcesItems = {"Log", "Coal", "Chair", "Fuel Canister", "Oil Barrel", "Biofuel"}
+
 local ResourcesDropdown = BringTab:CreateDropdown({
-    Name = "📦 Resources",
-    Options = {"Select All", "Deselect All", "Log", "Coal", "Chair", "Fuel Canister", "Oil Barrel", "Biofuel"},
+    Name = "Select Resources",
+    Options = ResourcesItems,
     CurrentOption = "Select Items",
     Flag = "ResourcesDropdown",
     Callback = function(Option)
-        if Option == "Select All" then
-            SelectedItems["Log"] = true
-            SelectedItems["Coal"] = true
-            SelectedItems["Chair"] = true
-            SelectedItems["Fuel Canister"] = true
-            SelectedItems["Oil Barrel"] = true
-            SelectedItems["Biofuel"] = true
-        elseif Option == "Deselect All" then
-            SelectedItems["Log"] = false
-            SelectedItems["Coal"] = false
-            SelectedItems["Chair"] = false
-            SelectedItems["Fuel Canister"] = false
-            SelectedItems["Oil Barrel"] = false
-            SelectedItems["Biofuel"] = false
-        else
-            SelectedItems[Option] = not SelectedItems[Option]
-        end
+        SelectedItems[Option] = not SelectedItems[Option]
         SaveSettings()
+    end,
+})
+
+-- Кнопка телепорта для Resources
+local ResourcesTeleportButton = BringTab:CreateButton({
+    Name = "🚀 BRING RESOURCES",
+    Callback = function()
+        BringCategoryItems(ResourcesItems)
     end,
 })
 
 -- Metals Mini Menu
+local MetalsSection = BringTab:CreateSection("🔩 Metals")
+
+local MetalsItems = {"Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave", "Washing Machine", "Old Car Engine", "Cultist Gem"}
+
 local MetalsDropdown = BringTab:CreateDropdown({
-    Name = "🔩 Metals",
-    Options = {"Select All", "Deselect All", "Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave", "Washing Machine", "Old Car Engine", "Cultist Gem"},
+    Name = "Select Metals",
+    Options = MetalsItems,
     CurrentOption = "Select Items",
     Flag = "MetalsDropdown",
     Callback = function(Option)
-        if Option == "Select All" then
-            SelectedItems["Bolt"] = true
-            SelectedItems["Sheet Metal"] = true
-            SelectedItems["Old Radio"] = true
-            SelectedItems["UFO Scrap"] = true
-            SelectedItems["Broken Microwave"] = true
-            SelectedItems["Washing Machine"] = true
-            SelectedItems["Old Car Engine"] = true
-            SelectedItems["Cultist Gem"] = true
-        elseif Option == "Deselect All" then
-            SelectedItems["Bolt"] = false
-            SelectedItems["Sheet Metal"] = false
-            SelectedItems["Old Radio"] = false
-            SelectedItems["UFO Scrap"] = false
-            SelectedItems["Broken Microwave"] = false
-            SelectedItems["Washing Machine"] = false
-            SelectedItems["Old Car Engine"] = false
-            SelectedItems["Cultist Gem"] = false
-        else
-            SelectedItems[Option] = not SelectedItems[Option]
-        end
+        SelectedItems[Option] = not SelectedItems[Option]
         SaveSettings()
+    end,
+})
+
+-- Кнопка телепорта для Metals
+local MetalsTeleportButton = BringTab:CreateButton({
+    Name = "🚀 BRING METALS",
+    Callback = function()
+        BringCategoryItems(MetalsItems)
     end,
 })
 
 -- Food & Medical Mini Menu
+local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical")
+
+local FoodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage", "Chili", "Apple", "Cake"}
+
 local FoodMedDropdown = BringTab:CreateDropdown({
-    Name = "🍎 Food & Medical",
-    Options = {"Select All", "Deselect All", "Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage", "Chili", "Apple", "Cake"},
+    Name = "Select Food & Medical",
+    Options = FoodMedItems,
     CurrentOption = "Select Items",
     Flag = "FoodMedDropdown",
     Callback = function(Option)
-        if Option == "Select All" then
-            SelectedItems["Carrot"] = true
-            SelectedItems["Pumpkin"] = true
-            SelectedItems["Morsel"] = true
-            SelectedItems["Steak"] = true
-            SelectedItems["MedKit"] = true
-            SelectedItems["Bandage"] = true
-            SelectedItems["Chili"] = true
-            SelectedItems["Apple"] = true
-            SelectedItems["Cake"] = true
-        elseif Option == "Deselect All" then
-            SelectedItems["Carrot"] = false
-            SelectedItems["Pumpkin"] = false
-            SelectedItems["Morsel"] = false
-            SelectedItems["Steak"] = false
-            SelectedItems["MedKit"] = false
-            SelectedItems["Bandage"] = false
-            SelectedItems["Chili"] = false
-            SelectedItems["Apple"] = false
-            SelectedItems["Cake"] = false
-        else
-            SelectedItems[Option] = not SelectedItems[Option]
-        end
+        SelectedItems[Option] = not SelectedItems[Option]
         SaveSettings()
+    end,
+})
+
+-- Кнопка телепорта для Food & Medical
+local FoodMedTeleportButton = BringTab:CreateButton({
+    Name = "🚀 BRING FOOD & MEDICAL",
+    Callback = function()
+        BringCategoryItems(FoodMedItems)
     end,
 })
 
 -- Weapons & Tools Mini Menu
+local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
+
+local WeaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"}
+
 local WeaponsDropdown = BringTab:CreateDropdown({
-    Name = "🔫 Weapons & Tools",
-    Options = {"Select All", "Deselect All", "Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"},
+    Name = "Select Weapons & Tools",
+    Options = WeaponsItems,
     CurrentOption = "Select Items",
     Flag = "WeaponsDropdown",
     Callback = function(Option)
-        if Option == "Select All" then
-            SelectedItems["Rifle"] = true
-            SelectedItems["Rifle Ammo"] = true
-            SelectedItems["Revolver"] = true
-            SelectedItems["Revolver Ammo"] = true
-            SelectedItems["Good Axe"] = true
-            SelectedItems["Strong Axe"] = true
-            SelectedItems["Chainsaw"] = true
-        elseif Option == "Deselect All" then
-            SelectedItems["Rifle"] = false
-            SelectedItems["Rifle Ammo"] = false
-            SelectedItems["Revolver"] = false
-            SelectedItems["Revolver Ammo"] = false
-            SelectedItems["Good Axe"] = false
-            SelectedItems["Strong Axe"] = false
-            SelectedItems["Chainsaw"] = false
-        else
-            SelectedItems[Option] = not SelectedItems[Option]
-        end
+        SelectedItems[Option] = not SelectedItems[Option]
         SaveSettings()
     end,
 })
 
--- Кнопка телепорта под мини-меню
-local TeleportSection = BringTab:CreateSection("🚀 Teleport Action")
-
-local TeleportButton = BringTab:CreateButton({
-    Name = "TELEPORT SELECTED ITEMS",
+-- Кнопка телепорта для Weapons & Tools
+local WeaponsTeleportButton = BringTab:CreateButton({
+    Name = "🚀 BRING WEAPONS & TOOLS",
     Callback = function()
-        BringSelectedItems()
+        BringCategoryItems(WeaponsItems)
     end,
 })
 
