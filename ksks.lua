@@ -190,112 +190,62 @@ local function RunAutoChop()
     end
 end
 
--- Обновленная функция Bring Items с обработкой ошибок
+-- Обновленная функция Bring Items с поддержкой категорий
 local function BringItems(itemName, category)
-    pcall(function()
-        local categorySettings = CategorySettings[category] or CategorySettings.Resources
-        
-        local targetPos
-        if categorySettings.BringTarget == "Player" then
-            local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") then
-                targetPos = char.HumanoidRootPart.Position
-            else
-                targetPos = CampfirePosition
-                Rayfield:Notify({
-                    Title = "⚠️ Ошибка",
-                    Content = "Персонаж не найден, использую Campfire",
-                    Duration = 3,
-                    Image = 4483362458,
-                })
-            end
+    local categorySettings = CategorySettings[category] or CategorySettings.Resources
+    
+    local targetPos
+    if categorySettings.BringTarget == "Player" then
+        local char = player.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            targetPos = char.HumanoidRootPart.Position
         else
             targetPos = CampfirePosition
         end
-        
-        local items = {}
-        
-        -- Проверяем существует ли workspace.Items
-        if not workspace:FindFirstChild("Items") then
-            Rayfield:Notify({
-                Title = "❌ Ошибка",
-                Content = "Папка Items не найдена в workspace!",
-                Duration = 5,
-                Image = 4483362458,
-            })
-            return
-        end
-        
-        for _, item in pairs(workspace.Items:GetChildren()) do
-            if item:IsA("Model") then
-                local itemLower = item.Name:lower()
-                local searchLower = itemName:lower()
-                
-                -- Более гибкий поиск
-                if itemLower:find(searchLower) or itemLower == searchLower then
-                    local part = item:FindFirstChildWhichIsA("BasePart")
-                    if part then 
-                        table.insert(items, part)
-                    end
-                end
+    else
+        targetPos = CampfirePosition
+    end
+    
+    local items = {}
+    
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if item:IsA("Model") then
+            local itemLower = item.Name:lower()
+            local searchLower = itemName:lower()
+            
+            if itemLower:find(searchLower) then
+                local part = item:FindFirstChildWhichIsA("BasePart")
+                if part then table.insert(items, part) end
             end
         end
+    end
+    
+    local teleported = 0
+    local bringCount = categorySettings.BringCount or 5
+    local bringDelay = categorySettings.BringDelay or 200
+    
+    for i = 1, math.min(bringCount, #items) do
+        local item = items[i]
+        item.CFrame = CFrame.new(
+            targetPos.X + math.random(-3,3),
+            targetPos.Y + 3,
+            targetPos.Z + math.random(-3,3)
+        )
+        item.Anchored = false
+        item.AssemblyLinearVelocity = Vector3.new(0,0,0)
+        teleported = teleported + 1
         
-        if #items == 0 then
-            Rayfield:Notify({
-                Title = "❌ Не найдено",
-                Content = "Предметы " .. itemName .. " не найдены на карте",
-                Duration = 5,
-                Image = 4483362458,
-            })
-            return
+        if bringDelay > 0 then
+            wait(bringDelay / 1000)
         end
-        
-        local teleported = 0
-        local bringCount = categorySettings.BringCount or 5
-        local bringDelay = categorySettings.BringDelay or 200
-        
-        Rayfield:Notify({
-            Title = "🔄 Телепортация",
-            Content = "Начинаю телепортацию " .. math.min(bringCount, #items) .. " предметов...",
-            Duration = 3,
-            Image = 4483362458,
-        })
-        
-        for i = 1, math.min(bringCount, #items) do
-            local item = items[i]
-            if item and item.Parent then
-                -- Сохраняем оригинальные свойства
-                local wasAnchored = item.Anchored
-                
-                -- Телепортируем
-                item.CFrame = CFrame.new(
-                    targetPos.X + math.random(-3,3),
-                    targetPos.Y + 3,
-                    targetPos.Z + math.random(-3,3)
-                )
-                item.Anchored = false
-                item.AssemblyLinearVelocity = Vector3.new(0,0,0)
-                teleported = teleported + 1
-                
-                -- Восстанавливаем оригинальное состояние
-                wait(0.1)
-                item.Anchored = wasAnchored
-                
-                if bringDelay > 0 then
-                    wait(bringDelay / 1000)
-                end
-            end
-        end
-        
-        Rayfield:Notify({
-            Title = "✅ Успех",
-            Content = "Телепортировано " .. teleported .. " " .. itemName .. " к " .. categorySettings.BringTarget,
-            Duration = 5,
-            Image = 4483362458,
-        })
-        
-    end)
+    end
+    
+    Rayfield:Notify({
+        Title = "Bring Items",
+        Content = "Teleported " .. teleported .. " " .. itemName .. "(s) to " .. categorySettings.BringTarget,
+        Duration = 3,
+        Image = 4483362458,
+    })
 end
 
 -- Anti AFK функция
@@ -496,15 +446,17 @@ local ResourcesButtons = {
     {"Biofuel", "🔥"}
 }
 
-for i, itemData in ipairs(ResourcesButtons) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateButton({
-        Name = emoji .. " Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName, "Resources")
-        end,
-    })
-end
+    Callback = function()
+        if workspace:FindFirstChild("Items") then
+            local itemCount = 0
+            local itemNames = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    itemCount = itemCount + 1
+                    table.insert(itemNames, item.Name)
+                end
+            end
 
 -- Bring Tab - Metals Section
 local MetalsSection = BringTab:CreateSection("🔩 Metals")
@@ -567,15 +519,17 @@ local MetalsButtons = {
     {"Cultist Gem", "💎"}
 }
 
-for i, itemData in ipairs(MetalsButtons) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateButton({
-        Name = emoji .. " Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName, "Metals")
-        end,
-    })
-end
+    Callback = function()
+        if workspace:FindFirstChild("Items") then
+            local itemCount = 0
+            local itemNames = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    itemCount = itemCount + 1
+                    table.insert(itemNames, item.Name)
+                end
+            end
 
 -- Bring Tab - Food & Medical Section
 local FoodMedSection = BringTab:CreateSection("🥕 Food & Medical")
@@ -639,15 +593,17 @@ local FoodMedButtons = {
     {"Cake", "🍰"}
 }
 
-for i, itemData in ipairs(FoodMedButtons) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateButton({
-        Name = emoji .. " Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName, "FoodMed")
-        end,
-    })
-end
+    Callback = function()
+        if workspace:FindFirstChild("Items") then
+            local itemCount = 0
+            local itemNames = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    itemCount = itemCount + 1
+                    table.insert(itemNames, item.Name)
+                end
+            end
 
 -- Bring Tab - Weapons & Tools Section
 local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
@@ -709,15 +665,17 @@ local WeaponsButtons = {
     {"Chainsaw", "🔪"}
 }
 
-for i, itemData in ipairs(WeaponsButtons) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateButton({
-        Name = emoji .. " Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName, "Weapons")
-        end,
-    })
-end
+    Callback = function()
+        if workspace:FindFirstChild("Items") then
+            local itemCount = 0
+            local itemNames = {}
+            
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item:IsA("Model") then
+                    itemCount = itemCount + 1
+                    table.insert(itemNames, item.Name)
+                end
+            end
 
 -- More Tab
 local MovementSection = MoreTab:CreateSection("Movement")
@@ -889,47 +847,6 @@ local NoClipToggle = MoreTab:CreateToggle({
                 end
             end
         end
-    end,
-})
-
--- Debug Section
-local DebugSection = MoreTab:CreateSection("Debug")
-
-local DebugButton = MoreTab:CreateButton({
-    Name = "🛠️ Проверить Items",
-    Callback = function()
-        if workspace:FindFirstChild("Items") then
-            local itemCount = 0
-            local itemNames = {}
-            
-            for _, item in pairs(workspace.Items:GetChildren()) do
-                if item:IsA("Model") then
-                    itemCount = itemCount + 1
-                    table.insert(itemNames, item.Name)
-                end
-            end
-            
-            Rayfield:Notify({
-                Title = "🔍 Debug Info",
-                Content = "Найдено " .. itemCount .. " предметов: " .. table.concat(itemNames, ", "),
-                Duration = 8,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "❌ Debug Error",
-                Content = "Папка Items не существует!",
-                Duration = 5,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-local TestLogButton = MoreTab:CreateButton({
-    Name = "🧪 Тест Log",
-    Callback = function()
-        BringItems("Log", "Resources")
     end,
 })
 
