@@ -420,7 +420,7 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     end,
 })
 
--- Bring Tab - Обновленная структура с выбором предметов
+-- Bring Tab - Обновленная структура с мини-меню
 local SettingsSection = BringTab:CreateSection("Bring Settings")
 
 local BringCountSlider = BringTab:CreateSlider({
@@ -468,121 +468,142 @@ local TargetDropdown = BringTab:CreateDropdown({
     end,
 })
 
--- Кнопка телепорта
-local TeleportSection = BringTab:CreateSection("Teleport Action")
+-- Mini Menu Section
+local MiniMenuSection = BringTab:CreateSection("🎯 Item Selection Mini Menu")
+
+-- Resources Mini Menu
+local ResourcesDropdown = BringTab:CreateDropdown({
+    Name = "📦 Resources",
+    Options = {"Select All", "Deselect All", "Log", "Coal", "Chair", "Fuel Canister", "Oil Barrel", "Biofuel"},
+    CurrentOption = "Select Items",
+    Flag = "ResourcesDropdown",
+    Callback = function(Option)
+        if Option == "Select All" then
+            SelectedItems["Log"] = true
+            SelectedItems["Coal"] = true
+            SelectedItems["Chair"] = true
+            SelectedItems["Fuel Canister"] = true
+            SelectedItems["Oil Barrel"] = true
+            SelectedItems["Biofuel"] = true
+        elseif Option == "Deselect All" then
+            SelectedItems["Log"] = false
+            SelectedItems["Coal"] = false
+            SelectedItems["Chair"] = false
+            SelectedItems["Fuel Canister"] = false
+            SelectedItems["Oil Barrel"] = false
+            SelectedItems["Biofuel"] = false
+        else
+            SelectedItems[Option] = not SelectedItems[Option]
+        end
+        SaveSettings()
+    end,
+})
+
+-- Metals Mini Menu
+local MetalsDropdown = BringTab:CreateDropdown({
+    Name = "🔩 Metals",
+    Options = {"Select All", "Deselect All", "Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave", "Washing Machine", "Old Car Engine", "Cultist Gem"},
+    CurrentOption = "Select Items",
+    Flag = "MetalsDropdown",
+    Callback = function(Option)
+        if Option == "Select All" then
+            SelectedItems["Bolt"] = true
+            SelectedItems["Sheet Metal"] = true
+            SelectedItems["Old Radio"] = true
+            SelectedItems["UFO Scrap"] = true
+            SelectedItems["Broken Microwave"] = true
+            SelectedItems["Washing Machine"] = true
+            SelectedItems["Old Car Engine"] = true
+            SelectedItems["Cultist Gem"] = true
+        elseif Option == "Deselect All" then
+            SelectedItems["Bolt"] = false
+            SelectedItems["Sheet Metal"] = false
+            SelectedItems["Old Radio"] = false
+            SelectedItems["UFO Scrap"] = false
+            SelectedItems["Broken Microwave"] = false
+            SelectedItems["Washing Machine"] = false
+            SelectedItems["Old Car Engine"] = false
+            SelectedItems["Cultist Gem"] = false
+        else
+            SelectedItems[Option] = not SelectedItems[Option]
+        end
+        SaveSettings()
+    end,
+})
+
+-- Food & Medical Mini Menu
+local FoodMedDropdown = BringTab:CreateDropdown({
+    Name = "🍎 Food & Medical",
+    Options = {"Select All", "Deselect All", "Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage", "Chili", "Apple", "Cake"},
+    CurrentOption = "Select Items",
+    Flag = "FoodMedDropdown",
+    Callback = function(Option)
+        if Option == "Select All" then
+            SelectedItems["Carrot"] = true
+            SelectedItems["Pumpkin"] = true
+            SelectedItems["Morsel"] = true
+            SelectedItems["Steak"] = true
+            SelectedItems["MedKit"] = true
+            SelectedItems["Bandage"] = true
+            SelectedItems["Chili"] = true
+            SelectedItems["Apple"] = true
+            SelectedItems["Cake"] = true
+        elseif Option == "Deselect All" then
+            SelectedItems["Carrot"] = false
+            SelectedItems["Pumpkin"] = false
+            SelectedItems["Morsel"] = false
+            SelectedItems["Steak"] = false
+            SelectedItems["MedKit"] = false
+            SelectedItems["Bandage"] = false
+            SelectedItems["Chili"] = false
+            SelectedItems["Apple"] = false
+            SelectedItems["Cake"] = false
+        else
+            SelectedItems[Option] = not SelectedItems[Option]
+        end
+        SaveSettings()
+    end,
+})
+
+-- Weapons & Tools Mini Menu
+local WeaponsDropdown = BringTab:CreateDropdown({
+    Name = "🔫 Weapons & Tools",
+    Options = {"Select All", "Deselect All", "Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"},
+    CurrentOption = "Select Items",
+    Flag = "WeaponsDropdown",
+    Callback = function(Option)
+        if Option == "Select All" then
+            SelectedItems["Rifle"] = true
+            SelectedItems["Rifle Ammo"] = true
+            SelectedItems["Revolver"] = true
+            SelectedItems["Revolver Ammo"] = true
+            SelectedItems["Good Axe"] = true
+            SelectedItems["Strong Axe"] = true
+            SelectedItems["Chainsaw"] = true
+        elseif Option == "Deselect All" then
+            SelectedItems["Rifle"] = false
+            SelectedItems["Rifle Ammo"] = false
+            SelectedItems["Revolver"] = false
+            SelectedItems["Revolver Ammo"] = false
+            SelectedItems["Good Axe"] = false
+            SelectedItems["Strong Axe"] = false
+            SelectedItems["Chainsaw"] = false
+        else
+            SelectedItems[Option] = not SelectedItems[Option]
+        end
+        SaveSettings()
+    end,
+})
+
+-- Кнопка телепорта под мини-меню
+local TeleportSection = BringTab:CreateSection("🚀 Teleport Action")
 
 local TeleportButton = BringTab:CreateButton({
-    Name = "🚀 TELEPORT SELECTED ITEMS",
+    Name = "TELEPORT SELECTED ITEMS",
     Callback = function()
         BringSelectedItems()
     end,
 })
-
--- Resources Selection
-local ResourcesSection = BringTab:CreateSection("📦 Resources Selection")
-
-local ResourcesItems = {
-    {"Log", "📦"},
-    {"Coal", "⛏️"},
-    {"Chair", "🪑"},
-    {"Fuel Canister", "⛽"},
-    {"Oil Barrel", "🛢️"},
-    {"Biofuel", "🔥"}
-}
-
-for i, itemData in ipairs(ResourcesItems) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateToggle({
-        Name = emoji .. " " .. itemName,
-        CurrentValue = SelectedItems[itemName],
-        Flag = "Select" .. itemName,
-        Callback = function(Value)
-            SelectedItems[itemName] = Value
-            SaveSettings()
-        end,
-    })
-end
-
--- Metals Selection
-local MetalsSection = BringTab:CreateSection("🔩 Metals Selection")
-
-local MetalsItems = {
-    {"Bolt", "🔩"},
-    {"Sheet Metal", "📄"},
-    {"Old Radio", "📻"},
-    {"UFO Scrap", "🛸"},
-    {"Broken Microwave", "🍳"},
-    {"Washing Machine", "🧼"},
-    {"Old Car Engine", "🚗"},
-    {"Cultist Gem", "💎"}
-}
-
-for i, itemData in ipairs(MetalsItems) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateToggle({
-        Name = emoji .. " " .. itemName,
-        CurrentValue = SelectedItems[itemName],
-        Flag = "Select" .. itemName,
-        Callback = function(Value)
-            SelectedItems[itemName] = Value
-            SaveSettings()
-        end,
-    })
-end
-
--- Food & Medical Selection
-local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical Selection")
-
-local FoodMedItems = {
-    {"Carrot", "🥕"},
-    {"Pumpkin", "🎃"},
-    {"Morsel", "🍖"},
-    {"Steak", "🥩"},
-    {"MedKit", "💊"},
-    {"Bandage", "🩹"},
-    {"Chili", "🌶️"},
-    {"Apple", "🍎"},
-    {"Cake", "🍰"}
-}
-
-for i, itemData in ipairs(FoodMedItems) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateToggle({
-        Name = emoji .. " " .. itemName,
-        CurrentValue = SelectedItems[itemName],
-        Flag = "Select" .. itemName,
-        Callback = function(Value)
-            SelectedItems[itemName] = Value
-            SaveSettings()
-        end,
-    })
-end
-
--- Weapons & Tools Selection
-local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools Selection")
-
-local WeaponsItems = {
-    {"Rifle", "🔫"},
-    {"Rifle Ammo", "📦"},
-    {"Revolver", "🔫"},
-    {"Revolver Ammo", "📦"},
-    {"Good Axe", "🪓"},
-    {"Strong Axe", "🪓"},
-    {"Chainsaw", "🔪"}
-}
-
-for i, itemData in ipairs(WeaponsItems) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateToggle({
-        Name = emoji .. " " .. itemName,
-        CurrentValue = SelectedItems[itemName],
-        Flag = "Select" .. itemName,
-        Callback = function(Value)
-            SelectedItems[itemName] = Value
-            SaveSettings()
-        end,
-    })
-end
 
 -- More Tab
 local MovementSection = MoreTab:CreateSection("Movement")
