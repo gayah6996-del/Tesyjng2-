@@ -25,30 +25,6 @@ local antiAFKEnabled = false
 local antiAFKConnection = nil
 local currentSpeed = 16
 
--- Настройки для мини-меню каждой категории
-local CategorySettings = {
-    Resources = {
-        BringTarget = "Campfire",
-        BringCount = 5,
-        BringDelay = 200
-    },
-    Metals = {
-        BringTarget = "Campfire",
-        BringCount = 5,
-        BringDelay = 200
-    },
-    FoodMed = {
-        BringTarget = "Campfire",
-        BringCount = 5,
-        BringDelay = 200
-    },
-    Weapons = {
-        BringTarget = "Campfire",
-        BringCount = 5,
-        BringDelay = 200
-    }
-}
-
 -- Настройки файла
 local SETTINGS_FILE = "astralcheat_settings.txt"
 local Settings = {
@@ -62,8 +38,7 @@ local Settings = {
     speedHackEnabled = false,
     jumpHackEnabled = false,
     currentSpeed = 16,
-    antiAFKEnabled = false,
-    CategorySettings = CategorySettings
+    antiAFKEnabled = false
 }
 
 -- Загрузка Rayfield
@@ -101,7 +76,6 @@ local function SaveSettings()
         Settings.jumpHackEnabled = jumpHackEnabled
         Settings.currentSpeed = currentSpeed
         Settings.antiAFKEnabled = antiAFKEnabled
-        Settings.CategorySettings = CategorySettings
         
         local data = HttpService:JSONEncode(Settings)
         writefile(SETTINGS_FILE, data)
@@ -131,15 +105,6 @@ local function LoadSettings()
             jumpHackEnabled = Settings.jumpHackEnabled or false
             currentSpeed = Settings.currentSpeed or 16
             antiAFKEnabled = Settings.antiAFKEnabled or false
-            
-            -- Загружаем настройки категорий
-            if loadedSettings.CategorySettings then
-                for category, settings in pairs(loadedSettings.CategorySettings) do
-                    if CategorySettings[category] then
-                        CategorySettings[category] = settings
-                    end
-                end
-            end
         end
     end)
 end
@@ -190,12 +155,10 @@ local function RunAutoChop()
     end
 end
 
--- Обновленная функция Bring Items с поддержкой категорий
-local function BringItems(itemName, category)
-    local categorySettings = CategorySettings[category] or CategorySettings.Resources
-    
+-- Обновленная функция Bring Items с поддержкой выбора цели
+local function BringItems(itemName)
     local targetPos
-    if categorySettings.BringTarget == "Player" then
+    if BringTarget == "Player" then
         local char = player.Character
         if char and char:FindFirstChild("HumanoidRootPart") then
             targetPos = char.HumanoidRootPart.Position
@@ -221,10 +184,7 @@ local function BringItems(itemName, category)
     end
     
     local teleported = 0
-    local bringCount = categorySettings.BringCount or 5
-    local bringDelay = categorySettings.BringDelay or 200
-    
-    for i = 1, math.min(bringCount, #items) do
+    for i = 1, math.min(BringCount, #items) do
         local item = items[i]
         item.CFrame = CFrame.new(
             targetPos.X + math.random(-3,3),
@@ -235,14 +195,14 @@ local function BringItems(itemName, category)
         item.AssemblyLinearVelocity = Vector3.new(0,0,0)
         teleported = teleported + 1
         
-        if bringDelay > 0 then
-            wait(bringDelay / 1000)
+        if BringDelay > 0 then
+            wait(BringDelay / 1000)
         end
     end
     
     Rayfield:Notify({
         Title = "Bring Items",
-        Content = "Teleported " .. teleported .. " " .. itemName .. "(s) to " .. categorySettings.BringTarget,
+        Content = "Teleported " .. teleported .. " " .. itemName .. "(s)",
         Duration = 3,
         Image = 4483362458,
     })
@@ -338,7 +298,7 @@ local KillAuraToggle = MainTab:CreateToggle({
 
 local KillDistanceSlider = MainTab:CreateSlider({
     Name = "Kill Aura Distance",
-    Range = {10, 150},
+    Range = {10, 200},
     Increment = 1,
     Suffix = "studs",
     CurrentValue = DistanceForKillAura,
@@ -376,7 +336,7 @@ local AutoChopToggle = MainTab:CreateToggle({
 
 local ChopDistanceSlider = MainTab:CreateSlider({
     Name = "Chop Distance",
-    Range = {10, 150},
+    Range = {10, 200},
     Increment = 1,
     Suffix = "studs",
     CurrentValue = DistanceForAutoChopTree,
@@ -387,22 +347,47 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     end,
 })
 
--- Bring Tab - Resources Section
-local ResourcesSection = BringTab:CreateSection("📦 Resources")
+-- Bring Tab - Обновленная структура с подменю
+local SettingsSection = BringTab:CreateSection("Bring Settings")
 
--- Мини-меню для Resources
-local ResourcesSettingsSection = BringTab:CreateSection("Resources Settings")
+local BringCountSlider = BringTab:CreateSlider({
+    Name = "Bring Count",
+    Range = {1, 20},
+    Increment = 1,
+    Suffix = "items",
+    CurrentValue = BringCount,
+    Flag = "BringCountSlider",
+    Callback = function(Value)
+        BringCount = Value
+        SaveSettings()
+    end,
+})
 
-local ResourcesTargetDropdown = BringTab:CreateDropdown({
-    Name = "Resources Target",
+local BringSpeedSlider = BringTab:CreateSlider({
+    Name = "Bring Speed",
+    Range = {50, 500},
+    Increment = 10,
+    Suffix = "ms",
+    CurrentValue = BringDelay,
+    Flag = "BringSpeedSlider",
+    Callback = function(Value)
+        BringDelay = Value
+        SaveSettings()
+    end,
+})
+
+local TargetSection = BringTab:CreateSection("Teleport Target")
+
+local TargetDropdown = BringTab:CreateDropdown({
+    Name = "Teleport Target",
     Options = {"Campfire", "Player"},
-    CurrentOption = CategorySettings.Resources.BringTarget,
-    Flag = "ResourcesTargetDropdown",
+    CurrentOption = BringTarget,
+    Flag = "TargetDropdown",
     Callback = function(Option)
-        CategorySettings.Resources.BringTarget = Option
+        BringTarget = Option
         SaveSettings()
         Rayfield:Notify({
-            Title = "Resources Target",
+            Title = "Teleport Target",
             Content = "Target set to: " .. Option,
             Duration = 3,
             Image = 4483362458,
@@ -410,33 +395,9 @@ local ResourcesTargetDropdown = BringTab:CreateDropdown({
     end,
 })
 
-local ResourcesCountSlider = BringTab:CreateSlider({
-    Name = "Resources Count",
-    Range = {1, 20},
-    Increment = 1,
-    Suffix = "items",
-    CurrentValue = CategorySettings.Resources.BringCount,
-    Flag = "ResourcesCountSlider",
-    Callback = function(Value)
-        CategorySettings.Resources.BringCount = Value
-        SaveSettings()
-    end,
-})
+-- Создаем подменю для Bring Items
+local ResourcesSubMenu = BringTab:CreateSection("📦 Resources Submenu")
 
-local ResourcesSpeedSlider = BringTab:CreateSlider({
-    Name = "Resources Speed",
-    Range = {50, 500},
-    Increment = 10,
-    Suffix = "ms",
-    CurrentValue = CategorySettings.Resources.BringDelay,
-    Flag = "ResourcesSpeedSlider",
-    Callback = function(Value)
-        CategorySettings.Resources.BringDelay = Value
-        SaveSettings()
-    end,
-})
-
--- Кнопки Resources
 local ResourcesButtons = {
     {"Log", "📦"},
     {"Coal", "⛏️"},
@@ -446,68 +407,18 @@ local ResourcesButtons = {
     {"Biofuel", "🔥"}
 }
 
-    Callback = function()
-        if workspace:FindFirstChild("Items") then
-            local itemCount = 0
-            local itemNames = {}
-            
-            for _, item in pairs(workspace.Items:GetChildren()) do
-                if item:IsA("Model") then
-                    itemCount = itemCount + 1
-                    table.insert(itemNames, item.Name)
-                end
-            end
+for i, itemData in ipairs(ResourcesButtons) do
+    local itemName, emoji = itemData[1], itemData[2]
+    BringTab:CreateButton({
+        Name = emoji .. " Bring " .. itemName,
+        Callback = function()
+            BringItems(itemName)
+        end,
+    })
+end
 
--- Bring Tab - Metals Section
-local MetalsSection = BringTab:CreateSection("🔩 Metals")
+local MetalsSubMenu = BringTab:CreateSection("🔩 Metals Submenu")
 
--- Мини-меню для Metals
-local MetalsSettingsSection = BringTab:CreateSection("Metals Settings")
-
-local MetalsTargetDropdown = BringTab:CreateDropdown({
-    Name = "Metals Target",
-    Options = {"Campfire", "Player"},
-    CurrentOption = CategorySettings.Metals.BringTarget,
-    Flag = "MetalsTargetDropdown",
-    Callback = function(Option)
-        CategorySettings.Metals.BringTarget = Option
-        SaveSettings()
-        Rayfield:Notify({
-            Title = "Metals Target",
-            Content = "Target set to: " .. Option,
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end,
-})
-
-local MetalsCountSlider = BringTab:CreateSlider({
-    Name = "Metals Count",
-    Range = {1, 20},
-    Increment = 1,
-    Suffix = "items",
-    CurrentValue = CategorySettings.Metals.BringCount,
-    Flag = "MetalsCountSlider",
-    Callback = function(Value)
-        CategorySettings.Metals.BringCount = Value
-        SaveSettings()
-    end,
-})
-
-local MetalsSpeedSlider = BringTab:CreateSlider({
-    Name = "Metals Speed",
-    Range = {50, 500},
-    Increment = 10,
-    Suffix = "ms",
-    CurrentValue = CategorySettings.Metals.BringDelay,
-    Flag = "MetalsSpeedSlider",
-    Callback = function(Value)
-        CategorySettings.Metals.BringDelay = Value
-        SaveSettings()
-    end,
-})
-
--- Кнопки Metals
 local MetalsButtons = {
     {"Bolt", "🔩"},
     {"Sheet Metal", "📄"},
@@ -519,68 +430,18 @@ local MetalsButtons = {
     {"Cultist Gem", "💎"}
 }
 
-    Callback = function()
-        if workspace:FindFirstChild("Items") then
-            local itemCount = 0
-            local itemNames = {}
-            
-            for _, item in pairs(workspace.Items:GetChildren()) do
-                if item:IsA("Model") then
-                    itemCount = itemCount + 1
-                    table.insert(itemNames, item.Name)
-                end
-            end
+for i, itemData in ipairs(MetalsButtons) do
+    local itemName, emoji = itemData[1], itemData[2]
+    BringTab:CreateButton({
+        Name = emoji .. " Bring " .. itemName,
+        Callback = function()
+            BringItems(itemName)
+        end,
+    })
+end
 
--- Bring Tab - Food & Medical Section
-local FoodMedSection = BringTab:CreateSection("🥕 Food & Medical")
+local FoodMedSubMenu = BringTab:CreateSection("🍎 Food & Medical Submenu")
 
--- Мини-меню для Food & Medical
-local FoodMedSettingsSection = BringTab:CreateSection("Food & Medical Settings")
-
-local FoodMedTargetDropdown = BringTab:CreateDropdown({
-    Name = "Food & Medical Target",
-    Options = {"Campfire", "Player"},
-    CurrentOption = CategorySettings.FoodMed.BringTarget,
-    Flag = "FoodMedTargetDropdown",
-    Callback = function(Option)
-        CategorySettings.FoodMed.BringTarget = Option
-        SaveSettings()
-        Rayfield:Notify({
-            Title = "Food & Medical Target",
-            Content = "Target set to: " .. Option,
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end,
-})
-
-local FoodMedCountSlider = BringTab:CreateSlider({
-    Name = "Food & Medical Count",
-    Range = {1, 20},
-    Increment = 1,
-    Suffix = "items",
-    CurrentValue = CategorySettings.FoodMed.BringCount,
-    Flag = "FoodMedCountSlider",
-    Callback = function(Value)
-        CategorySettings.FoodMed.BringCount = Value
-        SaveSettings()
-    end,
-})
-
-local FoodMedSpeedSlider = BringTab:CreateSlider({
-    Name = "Food & Medical Speed",
-    Range = {50, 500},
-    Increment = 10,
-    Suffix = "ms",
-    CurrentValue = CategorySettings.FoodMed.BringDelay,
-    Flag = "FoodMedSpeedSlider",
-    Callback = function(Value)
-        CategorySettings.FoodMed.BringDelay = Value
-        SaveSettings()
-    end,
-})
-
--- Кнопки Food & Medical
 local FoodMedButtons = {
     {"Carrot", "🥕"},
     {"Pumpkin", "🎃"},
@@ -593,68 +454,18 @@ local FoodMedButtons = {
     {"Cake", "🍰"}
 }
 
-    Callback = function()
-        if workspace:FindFirstChild("Items") then
-            local itemCount = 0
-            local itemNames = {}
-            
-            for _, item in pairs(workspace.Items:GetChildren()) do
-                if item:IsA("Model") then
-                    itemCount = itemCount + 1
-                    table.insert(itemNames, item.Name)
-                end
-            end
+for i, itemData in ipairs(FoodMedButtons) do
+    local itemName, emoji = itemData[1], itemData[2]
+    BringTab:CreateButton({
+        Name = emoji .. " Bring " .. itemName,
+        Callback = function()
+            BringItems(itemName)
+        end,
+    })
+end
 
--- Bring Tab - Weapons & Tools Section
-local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
+local WeaponsSubMenu = BringTab:CreateSection("🔫 Weapons & Tools Submenu")
 
--- Мини-меню для Weapons & Tools
-local WeaponsSettingsSection = BringTab:CreateSection("Weapons & Tools Settings")
-
-local WeaponsTargetDropdown = BringTab:CreateDropdown({
-    Name = "Weapons Target",
-    Options = {"Campfire", "Player"},
-    CurrentOption = CategorySettings.Weapons.BringTarget,
-    Flag = "WeaponsTargetDropdown",
-    Callback = function(Option)
-        CategorySettings.Weapons.BringTarget = Option
-        SaveSettings()
-        Rayfield:Notify({
-            Title = "Weapons Target",
-            Content = "Target set to: " .. Option,
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end,
-})
-
-local WeaponsCountSlider = BringTab:CreateSlider({
-    Name = "Weapons Count",
-    Range = {1, 20},
-    Increment = 1,
-    Suffix = "items",
-    CurrentValue = CategorySettings.Weapons.BringCount,
-    Flag = "WeaponsCountSlider",
-    Callback = function(Value)
-        CategorySettings.Weapons.BringCount = Value
-        SaveSettings()
-    end,
-})
-
-local WeaponsSpeedSlider = BringTab:CreateSlider({
-    Name = "Weapons Speed",
-    Range = {50, 500},
-    Increment = 10,
-    Suffix = "ms",
-    CurrentValue = CategorySettings.Weapons.BringDelay,
-    Flag = "WeaponsSpeedSlider",
-    Callback = function(Value)
-        CategorySettings.Weapons.BringDelay = Value
-        SaveSettings()
-    end,
-})
-
--- Кнопки Weapons & Tools
 local WeaponsButtons = {
     {"Rifle", "🔫"},
     {"Rifle Ammo", "📦"},
@@ -665,17 +476,15 @@ local WeaponsButtons = {
     {"Chainsaw", "🔪"}
 }
 
-    Callback = function()
-        if workspace:FindFirstChild("Items") then
-            local itemCount = 0
-            local itemNames = {}
-            
-            for _, item in pairs(workspace.Items:GetChildren()) do
-                if item:IsA("Model") then
-                    itemCount = itemCount + 1
-                    table.insert(itemNames, item.Name)
-                end
-            end
+for i, itemData in ipairs(WeaponsButtons) do
+    local itemName, emoji = itemData[1], itemData[2]
+    BringTab:CreateButton({
+        Name = emoji .. " Bring " .. itemName,
+        Callback = function()
+            BringItems(itemName)
+        end,
+    })
+end
 
 -- More Tab
 local MovementSection = MoreTab:CreateSection("Movement")
