@@ -347,7 +347,7 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     end,
 })
 
--- Bring Tab - Обновленная структура с подменю
+-- Bring Tab - Обновленная структура с выпадающими меню
 local SettingsSection = BringTab:CreateSection("Bring Settings")
 
 local BringCountSlider = BringTab:CreateSlider({
@@ -395,96 +395,149 @@ local TargetDropdown = BringTab:CreateDropdown({
     end,
 })
 
--- Создаем подменю для Bring Items
-local ResourcesSubMenu = BringTab:CreateSection("📦 Resources Submenu")
+-- Создаем выпадающие меню для Bring Items
+local ResourcesSection = BringTab:CreateSection("📦 Resources")
 
-local ResourcesButtons = {
-    {"Log", "📦"},
-    {"Coal", "⛏️"},
-    {"Chair", "🪑"},
-    {"Fuel Canister", "⛽"},
-    {"Oil Barrel", "🛢️"},
-    {"Biofuel", "🔥"}
-}
+-- Переменные для хранения состояний выпадающих меню
+local ResourcesMenuOpen = false
+local MetalsMenuOpen = false
+local FoodMenuOpen = false
+local WeaponsMenuOpen = false
 
-for i, itemData in ipairs(ResourcesButtons) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateButton({
-        Name = emoji .. " Bring " .. itemName,
+-- Функция для создания выпадающего меню
+local function CreateDropdownMenu(parentSection, menuName, itemsList)
+    local menuButton = BringTab:CreateButton({
+        Name = menuName,
         Callback = function()
-            BringItems(itemName)
+            -- Здесь будет логика открытия/закрытия меню
         end,
     })
+    
+    -- Создаем кнопки для этого меню (они будут скрыты/показаны)
+    local menuButtons = {}
+    for i, itemData in ipairs(itemsList) do
+        local itemName, emoji = itemData[1], itemData[2]
+        local button = BringTab:CreateButton({
+            Name = "    " .. emoji .. " " .. itemName,
+            Callback = function()
+                BringItems(itemName)
+            end,
+        })
+        table.insert(menuButtons, button)
+    end
+    
+    return menuButton, menuButtons
 end
 
-local MetalsSubMenu = BringTab:CreateSection("🔩 Metals Submenu")
+-- Resources Dropdown Menu
+local ResourcesDropdown = BringTab:CreateDropdown({
+    Name = "📦 Resources Menu",
+    Options = {"📦 Log", "⛏️ Coal", "🪑 Chair", "⛽ Fuel Canister", "🛢️ Oil Barrel", "🔥 Biofuel"},
+    CurrentOption = "Open Menu",
+    Flag = "ResourcesDropdown",
+    Callback = function(Option)
+        if Option == "📦 Log" then
+            BringItems("Log")
+        elseif Option == "⛏️ Coal" then
+            BringItems("Coal")
+        elseif Option == "🪑 Chair" then
+            BringItems("Chair")
+        elseif Option == "⛽ Fuel Canister" then
+            BringItems("Fuel Canister")
+        elseif Option == "🛢️ Oil Barrel" then
+            BringItems("Oil Barrel")
+        elseif Option == "🔥 Biofuel" then
+            BringItems("Biofuel")
+        end
+    end,
+})
 
-local MetalsButtons = {
-    {"Bolt", "🔩"},
-    {"Sheet Metal", "📄"},
-    {"Old Radio", "📻"},
-    {"UFO Scrap", "🛸"},
-    {"Broken Microwave", "🍳"},
-    {"Washing Machine", "🧼"},
-    {"Old Car Engine", "🚗"},
-    {"Cultist Gem", "💎"}
-}
+-- Metals Dropdown Menu
+local MetalsSection = BringTab:CreateSection("🔩 Metals")
 
-for i, itemData in ipairs(MetalsButtons) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateButton({
-        Name = emoji .. " Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName)
-        end,
-    })
-end
+local MetalsDropdown = BringTab:CreateDropdown({
+    Name = "🔩 Metals Menu",
+    Options = {"🔩 Bolt", "📄 Sheet Metal", "📻 Old Radio", "🛸 UFO Scrap", "🍳 Broken Microwave", "🧼 Washing Machine", "🚗 Old Car Engine", "💎 Cultist Gem"},
+    CurrentOption = "Open Menu",
+    Flag = "MetalsDropdown",
+    Callback = function(Option)
+        if Option == "🔩 Bolt" then
+            BringItems("Bolt")
+        elseif Option == "📄 Sheet Metal" then
+            BringItems("Sheet Metal")
+        elseif Option == "📻 Old Radio" then
+            BringItems("Old Radio")
+        elseif Option == "🛸 UFO Scrap" then
+            BringItems("UFO Scrap")
+        elseif Option == "🍳 Broken Microwave" then
+            BringItems("Broken Microwave")
+        elseif Option == "🧼 Washing Machine" then
+            BringItems("Washing Machine")
+        elseif Option == "🚗 Old Car Engine" then
+            BringItems("Old Car Engine")
+        elseif Option == "💎 Cultist Gem" then
+            BringItems("Cultist Gem")
+        end
+    end,
+})
 
-local FoodMedSubMenu = BringTab:CreateSection("🍎 Food & Medical Submenu")
+-- Food & Medical Dropdown Menu
+local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical")
 
-local FoodMedButtons = {
-    {"Carrot", "🥕"},
-    {"Pumpkin", "🎃"},
-    {"Morsel", "🍖"},
-    {"Steak", "🥩"},
-    {"MedKit", "💊"},
-    {"Bandage", "🩹"},
-    {"Chili", "🌶️"},
-    {"Apple", "🍎"},
-    {"Cake", "🍰"}
-}
+local FoodMedDropdown = BringTab:CreateDropdown({
+    Name = "🍎 Food & Medical Menu",
+    Options = {"🥕 Carrot", "🎃 Pumpkin", "🍖 Morsel", "🥩 Steak", "💊 MedKit", "🩹 Bandage", "🌶️ Chili", "🍎 Apple", "🍰 Cake"},
+    CurrentOption = "Open Menu",
+    Flag = "FoodMedDropdown",
+    Callback = function(Option)
+        if Option == "🥕 Carrot" then
+            BringItems("Carrot")
+        elseif Option == "🎃 Pumpkin" then
+            BringItems("Pumpkin")
+        elseif Option == "🍖 Morsel" then
+            BringItems("Morsel")
+        elseif Option == "🥩 Steak" then
+            BringItems("Steak")
+        elseif Option == "💊 MedKit" then
+            BringItems("MedKit")
+        elseif Option == "🩹 Bandage" then
+            BringItems("Bandage")
+        elseif Option == "🌶️ Chili" then
+            BringItems("Chili")
+        elseif Option == "🍎 Apple" then
+            BringItems("Apple")
+        elseif Option == "🍰 Cake" then
+            BringItems("Cake")
+        end
+    end,
+})
 
-for i, itemData in ipairs(FoodMedButtons) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateButton({
-        Name = emoji .. " Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName)
-        end,
-    })
-end
+-- Weapons & Tools Dropdown Menu
+local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
 
-local WeaponsSubMenu = BringTab:CreateSection("🔫 Weapons & Tools Submenu")
-
-local WeaponsButtons = {
-    {"Rifle", "🔫"},
-    {"Rifle Ammo", "📦"},
-    {"Revolver", "🔫"},
-    {"Revolver Ammo", "📦"},
-    {"Good Axe", "🪓"},
-    {"Strong Axe", "🪓"},
-    {"Chainsaw", "🔪"}
-}
-
-for i, itemData in ipairs(WeaponsButtons) do
-    local itemName, emoji = itemData[1], itemData[2]
-    BringTab:CreateButton({
-        Name = emoji .. " Bring " .. itemName,
-        Callback = function()
-            BringItems(itemName)
-        end,
-    })
-end
+local WeaponsDropdown = BringTab:CreateDropdown({
+    Name = "🔫 Weapons & Tools Menu",
+    Options = {"🔫 Rifle", "📦 Rifle Ammo", "🔫 Revolver", "📦 Revolver Ammo", "🪓 Good Axe", "🪓 Strong Axe", "🔪 Chainsaw"},
+    CurrentOption = "Open Menu",
+    Flag = "WeaponsDropdown",
+    Callback = function(Option)
+        if Option == "🔫 Rifle" then
+            BringItems("Rifle")
+        elseif Option == "📦 Rifle Ammo" then
+            BringItems("Rifle Ammo")
+        elseif Option == "🔫 Revolver" then
+            BringItems("Revolver")
+        elseif Option == "📦 Revolver Ammo" then
+            BringItems("Revolver Ammo")
+        elseif Option == "🪓 Good Axe" then
+            BringItems("Good Axe")
+        elseif Option == "🪓 Strong Axe" then
+            BringItems("Strong Axe")
+        elseif Option == "🔪 Chainsaw" then
+            BringItems("Chainsaw")
+        end
+    end,
+})
 
 -- More Tab
 local MovementSection = MoreTab:CreateSection("Movement")
