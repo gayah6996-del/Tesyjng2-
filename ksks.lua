@@ -442,7 +442,7 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     end,
 })
 
--- Bring Tab - Обновленная структура с множественным выбором
+-- Bring Tab - Обновленная структура с мини-меню и тогглами
 local SettingsSection = BringTab:CreateSection("Bring Settings")
 
 local BringCountSlider = BringTab:CreateSlider({
@@ -490,12 +490,30 @@ local TargetDropdown = BringTab:CreateDropdown({
     end,
 })
 
--- Resources Mini Menu с множественным выбором
-local ResourcesSection = BringTab:CreateSection("📦 Resources")
+-- Resources Mini Menu
+local ResourcesSection = BringTab:CreateSection("📦 Resources Mini Menu")
 
 local ResourcesItems = {"Log", "Coal", "Chair", "Fuel Canister", "Oil Barrel", "Biofuel"}
 
--- Создаем тогглы для каждого предмета в Resources
+-- Выпадающее меню для быстрого выбора
+local ResourcesDropdown = BringTab:CreateDropdown({
+    Name = "Quick Select Resources",
+    Options = ResourcesItems,
+    CurrentOption = "Select Items",
+    Flag = "ResourcesDropdown",
+    Callback = function(Option)
+        SelectedItems[Option] = not SelectedItems[Option]
+        SaveSettings()
+        Rayfield:Notify({
+            Title = "Resources",
+            Content = Option .. " " .. (SelectedItems[Option] and "selected" : "deselected"),
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end,
+})
+
+-- Тогглы для каждого предмета
 for i, itemName in ipairs(ResourcesItems) do
     BringTab:CreateToggle({
         Name = "📦 " .. itemName,
@@ -516,12 +534,30 @@ local ResourcesTeleportButton = BringTab:CreateButton({
     end,
 })
 
--- Metals Mini Menu с множественным выбором
-local MetalsSection = BringTab:CreateSection("🔩 Metals")
+-- Metals Mini Menu
+local MetalsSection = BringTab:CreateSection("🔩 Metals Mini Menu")
 
 local MetalsItems = {"Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave", "Washing Machine", "Old Car Engine", "Cultist Gem"}
 
--- Создаем тогглы для каждого предмета в Metals
+-- Выпадающее меню для быстрого выбора
+local MetalsDropdown = BringTab:CreateDropdown({
+    Name = "Quick Select Metals",
+    Options = MetalsItems,
+    CurrentOption = "Select Items",
+    Flag = "MetalsDropdown",
+    Callback = function(Option)
+        SelectedItems[Option] = not SelectedItems[Option]
+        SaveSettings()
+        Rayfield:Notify({
+            Title = "Metals",
+            Content = Option .. " " .. (SelectedItems[Option] and "selected" : "deselected"),
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end,
+})
+
+-- Тогглы для каждого предмета
 for i, itemName in ipairs(MetalsItems) do
     BringTab:CreateToggle({
         Name = "🔩 " .. itemName,
@@ -542,12 +578,30 @@ local MetalsTeleportButton = BringTab:CreateButton({
     end,
 })
 
--- Food & Medical Mini Menu с множественным выбором
-local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical")
+-- Food & Medical Mini Menu
+local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical Mini Menu")
 
 local FoodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage", "Chili", "Apple", "Cake"}
 
--- Создаем тогглы для каждого предмета в Food & Medical
+-- Выпадающее меню для быстрого выбора
+local FoodMedDropdown = BringTab:CreateDropdown({
+    Name = "Quick Select Food & Medical",
+    Options = FoodMedItems,
+    CurrentOption = "Select Items",
+    Flag = "FoodMedDropdown",
+    Callback = function(Option)
+        SelectedItems[Option] = not SelectedItems[Option]
+        SaveSettings()
+        Rayfield:Notify({
+            Title = "Food & Medical",
+            Content = Option .. " " .. (SelectedItems[Option] and "selected" : "deselected"),
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end,
+})
+
+-- Тогглы для каждого предмета
 for i, itemName in ipairs(FoodMedItems) do
     BringTab:CreateToggle({
         Name = "🍎 " .. itemName,
@@ -568,12 +622,30 @@ local FoodMedTeleportButton = BringTab:CreateButton({
     end,
 })
 
--- Weapons & Tools Mini Menu с множественным выбором
-local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
+-- Weapons & Tools Mini Menu
+local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools Mini Menu")
 
 local WeaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"}
 
--- Создаем тогглы для каждого предмета в Weapons & Tools
+-- Выпадающее меню для быстрого выбора
+local WeaponsDropdown = BringTab:CreateDropdown({
+    Name = "Quick Select Weapons & Tools",
+    Options = WeaponsItems,
+    CurrentOption = "Select Items",
+    Flag = "WeaponsDropdown",
+    Callback = function(Option)
+        SelectedItems[Option] = not SelectedItems[Option]
+        SaveSettings()
+        Rayfield:Notify({
+            Title = "Weapons & Tools",
+            Content = Option .. " " .. (SelectedItems[Option] and "selected" : "deselected"),
+            Duration = 2,
+            Image = 4483362458,
+        })
+    end,
+})
+
+-- Тогглы для каждого предмета
 for i, itemName in ipairs(WeaponsItems) do
     BringTab:CreateToggle({
         Name = "🔫 " .. itemName,
