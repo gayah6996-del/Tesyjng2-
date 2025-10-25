@@ -1,624 +1,187 @@
--- 99 Nights Menu with Rayfield UI
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local Workspace = game:GetService("Workspace")
-local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
+local mouse = player:GetMouse()
 
--- Глобальные переменные
-local speedHackEnabled = false
-local jumpHackEnabled = false
-local noclipEnabled = false
-local ActiveKillAura = false
-local ActiveAutoChopTree = false
-local DistanceForKillAura = 25
-local DistanceForAutoChopTree = 25
-local BringCount = 5
-local BringDelay = 200
-local CampfirePosition = Vector3.new(0, 10, 0)
-local BringTarget = "Campfire"
-local antiAFKEnabled = false
-local antiAFKConnection = nil
-local currentSpeed = 16
-local lastJumpTime = 0
+-- Создание GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AimMenu"
+screenGui.Parent = player.PlayerGui
 
--- Выбранные предметы
-local SelectedItems = {
-    ["Log"] = false, ["Coal"] = false, ["Chair"] = false, ["Fuel Canister"] = false, ["Oil Barrel"] = false, ["Biofuel"] = false,
-    ["Bolt"] = false, ["Sheet Metal"] = false, ["Old Radio"] = false, ["UFO Scrap"] = false, ["Broken Microwave"] = false,
-    ["Washing Machine"] = false, ["Old Car Engine"] = false, ["Cultist Gem"] = false,
-    ["Carrot"] = false, ["Pumpkin"] = false, ["Morsel"] = false, ["Steak"] = false, ["MedKit"] = false, ["Bandage"] = false,
-    ["Chili"] = false, ["Apple"] = false, ["Cake"] = false,
-    ["Rifle"] = false, ["Rifle Ammo"] = false, ["Revolver"] = false, ["Revolver Ammo"] = false,
-    ["Good Axe"] = false, ["Strong Axe"] = false, ["Chainsaw"] = false
-}
+-- Основной фрейм меню
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 300, 0, 200)
+mainFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+mainFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
 
--- Загрузка Rayfield
-local success, Rayfield = pcall(function()
-    return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
-end)
+-- Крестик закрытия
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.new(1, 1, 1)
+closeButton.Parent = mainFrame
 
-if not success then
-    warn("Failed to load Rayfield UI Library")
-    return
-end
+-- Кнопка открытия меню (скрыта изначально)
+local openButton = Instance.new("TextButton")
+openButton.Size = UDim2.new(0, 50, 0, 50)
+openButton.Position = UDim2.new(1, -60, 0, 10)
+openButton.BackgroundColor3 = Color3.fromRGB(60, 60, 255)
+openButton.Text = "Menu"
+openButton.TextColor3 = Color3.new(1, 1, 1)
+openButton.Visible = false
+openButton.Parent = screenGui
 
--- Создание окна
-local Window = Rayfield:CreateWindow({
-    Name = "SANSTRO MENU",
-    LoadingTitle = "SANSTRO Menu",
-    LoadingSubtitle = "by SANSTRO",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "SANSTRO_Config",
-        FileName = "99Nights"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = true
-    },
-    KeySystem = false,
-})
+-- Кнопка BulletTrack
+local trackButton = Instance.new("TextButton")
+trackButton.Size = UDim2.new(0, 200, 0, 50)
+trackButton.Position = UDim2.new(0.5, -100, 0.2, 0)
+trackButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+trackButton.Text = "BulletTrack: OFF"
+trackButton.TextColor3 = Color3.new(1, 1, 1)
+trackButton.Parent = mainFrame
 
--- Функции
-local function SaveSettings()
-    -- Простая функция сохранения (можно добавить позже)
-end
+-- Слайдер для размера круга
+local sliderFrame = Instance.new("Frame")
+sliderFrame.Size = UDim2.new(0, 200, 0, 30)
+sliderFrame.Position = UDim2.new(0.5, -100, 0.6, 0)
+sliderFrame.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+sliderFrame.Parent = mainFrame
 
-local function LoadSettings()
-    -- Простая функция загрузки (можно добавить позже)
-end
+local sliderText = Instance.new("TextLabel")
+sliderText.Size = UDim2.new(1, 0, 1, 0)
+sliderText.BackgroundTransparency = 1
+sliderText.Text = "Circle Size: 50"
+sliderText.TextColor3 = Color3.new(1, 1, 1)
+sliderText.Parent = sliderFrame
 
--- Kill Aura функция
-local function RunKillAura()
-    while ActiveKillAura and task.wait(0.1) do
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
-        
-        if hrp and weapon then
-            for _, enemy in pairs(workspace.Characters:GetChildren()) do
-                if enemy:IsA("Model") and enemy.PrimaryPart then
-                    local dist = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
-                    if dist <= DistanceForKillAura then
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
-                    end
-                end
-            end
-        end
-    end
-end
+-- Круг прицела
+local aimCircle = Instance.new("Frame")
+aimCircle.Size = UDim2.new(0, 50, 0, 50)
+aimCircle.Position = UDim2.new(0.5, -25, 0.5, -25)
+aimCircle.BackgroundTransparency = 0.7
+aimCircle.BackgroundColor3 = Color3.new(1, 1, 1)
+aimCircle.Visible = false
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(1, 0)
+corner.Parent = aimCircle
+aimCircle.Parent = screenGui
 
--- Auto Chop функция
-local function RunAutoChop()
-    while ActiveAutoChopTree and task.wait(0.1) do
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
-        
-        if hrp and weapon then
-            for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                    local dist = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                    if dist <= DistanceForAutoChopTree then
-                        game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                    end
-                end
-            end
-        end
-    end
-end
+-- Переменные
+local trackEnabled = false
+local circleSize = 50
+local connection
 
--- Функция телепорта для категории
-local function BringCategoryItems(categoryItems)
-    local targetPos
-    if BringTarget == "Player" then
-        local char = player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            targetPos = char.HumanoidRootPart.Position
-        else
-            targetPos = CampfirePosition
-        end
-    else
-        targetPos = CampfirePosition
-    end
+-- Функция для поиска цели в круге
+function findTargetInCircle()
+    local character = player.Character
+    if not character then return nil end
     
-    local totalTeleported = 0
-    local itemCounts = {}
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return nil end
     
-    for _, itemName in ipairs(categoryItems) do
-        if SelectedItems[itemName] then
-            local items = {}
-            
-            for _, item in pairs(workspace.Items:GetChildren()) do
-                if item:IsA("Model") then
-                    local itemLower = item.Name:lower()
-                    local searchLower = itemName:lower()
-                    
-                    if itemLower:find(searchLower) then
-                        local part = item:FindFirstChildWhichIsA("BasePart")
-                        if part then table.insert(items, part) end
-                    end
-                end
-            end
-            
-            local teleported = 0
-            for i = 1, math.min(BringCount, #items) do
-                local item = items[i]
-                item.CFrame = CFrame.new(
-                    targetPos.X + math.random(-3,3),
-                    targetPos.Y + 3,
-                    targetPos.Z + math.random(-3,3)
-                )
-                item.Anchored = false
-                item.AssemblyLinearVelocity = Vector3.new(0,0,0)
-                teleported = teleported + 1
-                totalTeleported = totalTeleported + 1
+    local circleCenter = Vector2.new(
+        aimCircle.AbsolutePosition.X + aimCircle.AbsoluteSize.X / 2,
+        aimCircle.AbsolutePosition.Y + aimCircle.AbsoluteSize.Y / 2
+    )
+    local circleRadius = aimCircle.AbsoluteSize.X / 2
+    
+    for _, otherPlayer in pairs(Players:GetPlayers()) do
+        if otherPlayer ~= player and otherPlayer.Character then
+            local targetRoot = otherPlayer.Character:FindFirstChild("HumanoidRootPart")
+            if targetRoot then
+                local targetPos = targetRoot.Position
+                local screenPos, visible = workspace.CurrentCamera:WorldToScreenPoint(targetPos)
                 
-                if BringDelay > 0 then
-                    task.wait(BringDelay / 1000)
+                if visible then
+                    local distance = (Vector2.new(screenPos.X, screenPos.Y) - circleCenter).Magnitude
+                    if distance <= circleRadius then
+                        return otherPlayer.Character
+                    end
                 end
-            end
-            
-            if teleported > 0 then
-                itemCounts[itemName] = teleported
             end
         end
     end
-    
-    if totalTeleported > 0 then
-        local message = "Teleported: "
-        local first = true
-        for itemName, count in pairs(itemCounts) do
-            if not first then
-                message = message .. ", "
-            end
-            message = message .. count .. " " .. itemName
-            first = false
+    return nil
+end
+
+-- Функция для перенаправления пуль
+function redirectBullets()
+    if trackEnabled then
+        local target = findTargetInCircle()
+        if target then
+            -- Здесь должна быть логика перенаправления пуль
+            -- Это зависит от конкретного оружия в игре
+            print("Target found: " .. target.Name)
         end
-        message = message .. " (Total: " .. totalTeleported .. " items)"
+    end
+end
+
+-- Обработчики событий
+trackButton.MouseButton1Click:Connect(function()
+    trackEnabled = not trackEnabled
+    aimCircle.Visible = trackEnabled
+    
+    if trackEnabled then
+        trackButton.Text = "BulletTrack: ON"
+        trackButton.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
         
-        Rayfield:Notify({
-            Title = "Bring Items",
-            Content = message,
-            Duration = 6,
-            Image = 4483362458,
-        })
+        -- Запускаем проверку целей
+        if connection then
+            connection:Disconnect()
+        end
+        connection = RunService.Heartbeat:Connect(redirectBullets)
+        
     else
-        Rayfield:Notify({
-            Title = "Bring Items",
-            Content = "No items found or selected!",
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end
-end
-
--- Anti AFK функция
-local function EnableAntiAFK()
-    if antiAFKConnection then
-        antiAFKConnection:Disconnect()
-    end
-    
-    lastJumpTime = tick()
-    
-    antiAFKConnection = RunService.Heartbeat:Connect(function()
-        if antiAFKEnabled then
-            local currentTime = tick()
-            if currentTime - lastJumpTime >= 30 then
-                local character = player.Character
-                if character and character:FindFirstChild("Humanoid") then
-                    character.Humanoid.Jump = true
-                    lastJumpTime = currentTime
-                end
-            end
-        end
-    end)
-end
-
-local function DisableAntiAFK()
-    if antiAFKConnection then
-        antiAFKConnection:Disconnect()
-        antiAFKConnection = nil
-    end
-end
-
--- Запускаем функции геймплея
-task.spawn(function()
-    while task.wait(1) do
-        if ActiveKillAura then
-            RunKillAura()
+        trackButton.Text = "BulletTrack: OFF"
+        trackButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        
+        if connection then
+            connection:Disconnect()
+            connection = nil
         end
     end
 end)
 
-task.spawn(function()
-    while task.wait(1) do
-        if ActiveAutoChopTree then
-            RunAutoChop()
+closeButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = false
+    openButton.Visible = true
+end)
+
+openButton.MouseButton1Click:Connect(function()
+    mainFrame.Visible = true
+    openButton.Visible = false
+end)
+
+-- Обработка слайдера
+sliderFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        local connection
+        connection = RunService.Heartbeat:Connect(function()
+            local mouseLocation = UserInputService:GetMouseLocation()
+            local relativeX = math.clamp((mouseLocation.X - sliderFrame.AbsolutePosition.X) / sliderFrame.AbsoluteSize.X, 0, 1)
+            
+            circleSize = 20 + math.floor(relativeX * 100)
+            aimCircle.Size = UDim2.new(0, circleSize, 0, circleSize)
+            aimCircle.Position = UDim2.new(0.5, -circleSize/2, 0.5, -circleSize/2)
+            sliderText.Text = "Circle Size: " .. circleSize
+        end)
+        
+        local function endDrag()
+            if connection then
+                connection:Disconnect()
+            end
         end
+        
+        sliderFrame.InputEnded:Connect(endDrag)
+        UserInputService.InputEnded:Connect(endDrag)
     end
 end)
 
--- Создание вкладок
-local MainTab = Window:CreateTab("Main", 4483362458)
-local BringTab = Window:CreateTab("Bring Items", 4483362458)
-local MoreTab = Window:CreateTab("More", 4483362458)
-
--- Main Tab
-local CombatSection = MainTab:CreateSection("Combat")
-
-local KillAuraToggle = MainTab:CreateToggle({
-    Name = "Kill Aura",
-    CurrentValue = ActiveKillAura,
-    Flag = "KillAuraToggle",
-    Callback = function(Value)
-        ActiveKillAura = Value
-        if Value then
-            Rayfield:Notify({
-                Title = "Kill Aura",
-                Content = "Kill Aura Enabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "Kill Aura",
-                Content = "Kill Aura Disabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-local KillDistanceSlider = MainTab:CreateSlider({
-    Name = "Kill Aura Distance",
-    Range = {10, 200},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = DistanceForKillAura,
-    Flag = "KillDistanceSlider",
-    Callback = function(Value)
-        DistanceForKillAura = Value
-    end,
-})
-
-local AutoChopToggle = MainTab:CreateToggle({
-    Name = "Auto Chop Trees",
-    CurrentValue = ActiveAutoChopTree,
-    Flag = "AutoChopToggle",
-    Callback = function(Value)
-        ActiveAutoChopTree = Value
-        if Value then
-            Rayfield:Notify({
-                Title = "Auto Chop",
-                Content = "Auto Chop Enabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "Auto Chop",
-                Content = "Auto Chop Disabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-local ChopDistanceSlider = MainTab:CreateSlider({
-    Name = "Chop Distance",
-    Range = {10, 200},
-    Increment = 1,
-    Suffix = "studs",
-    CurrentValue = DistanceForAutoChopTree,
-    Flag = "ChopDistanceSlider",
-    Callback = function(Value)
-        DistanceForAutoChopTree = Value
-    end,
-})
-
--- Bring Tab Settings
-local SettingsSection = BringTab:CreateSection("Bring Settings")
-
-local BringCountSlider = BringTab:CreateSlider({
-    Name = "Bring Count",
-    Range = {1, 50},
-    Increment = 1,
-    Suffix = "items",
-    CurrentValue = BringCount,
-    Flag = "BringCountSlider",
-    Callback = function(Value)
-        BringCount = Value
-    end,
-})
-
-local BringSpeedSlider = BringTab:CreateSlider({
-    Name = "Bring Speed",
-    Range = {0, 1000},
-    Increment = 10,
-    Suffix = "ms",
-    CurrentValue = BringDelay,
-    Flag = "BringSpeedSlider",
-    Callback = function(Value)
-        BringDelay = Value
-    end,
-})
-
-local TargetSection = BringTab:CreateSection("Teleport Target")
-
-local TargetDropdown = BringTab:CreateDropdown({
-    Name = "Teleport Target",
-    Options = {"Campfire", "Player"},
-    CurrentOption = BringTarget,
-    Flag = "TargetDropdown",
-    Callback = function(Option)
-        BringTarget = Option
-        Rayfield:Notify({
-            Title = "Teleport Target",
-            Content = "Target set to: " .. Option,
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end,
-})
-
--- Resources Mini Menu
-local ResourcesSection = BringTab:CreateSection("📦 Resources")
-
-local ResourcesItems = {"Log", "Coal", "Chair", "Fuel Canister", "Oil Barrel", "Biofuel"}
-
--- Тогглы для Resources
-for i, itemName in ipairs(ResourcesItems) do
-    BringTab:CreateToggle({
-        Name = "📦 " .. itemName,
-        CurrentValue = SelectedItems[itemName],
-        Flag = "Select" .. itemName,
-        Callback = function(Value)
-            SelectedItems[itemName] = Value
-        end,
-    })
-end
-
--- Кнопка телепорта для Resources
-BringTab:CreateButton({
-    Name = "🚀 BRING RESOURCES",
-    Callback = function()
-        BringCategoryItems(ResourcesItems)
-    end,
-})
-
--- Metals Mini Menu
-local MetalsSection = BringTab:CreateSection("🔩 Metals")
-
-local MetalsItems = {"Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave", "Washing Machine", "Old Car Engine", "Cultist Gem"}
-
--- Тогглы для Metals
-for i, itemName in ipairs(MetalsItems) do
-    BringTab:CreateToggle({
-        Name = "🔩 " .. itemName,
-        CurrentValue = SelectedItems[itemName],
-        Flag = "Select" .. itemName,
-        Callback = function(Value)
-            SelectedItems[itemName] = Value
-        end,
-    })
-end
-
--- Кнопка телепорта для Metals
-BringTab:CreateButton({
-    Name = "🚀 BRING METALS",
-    Callback = function()
-        BringCategoryItems(MetalsItems)
-    end,
-})
-
--- Food & Medical Mini Menu
-local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical")
-
-local FoodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage", "Chili", "Apple", "Cake"}
-
--- Тогглы для Food & Medical
-for i, itemName in ipairs(FoodMedItems) do
-    BringTab:CreateToggle({
-        Name = "🍎 " .. itemName,
-        CurrentValue = SelectedItems[itemName],
-        Flag = "Select" .. itemName,
-        Callback = function(Value)
-            SelectedItems[itemName] = Value
-        end,
-    })
-end
-
--- Кнопка телепорта для Food & Medical
-BringTab:CreateButton({
-    Name = "🚀 BRING FOOD & MEDICAL",
-    Callback = function()
-        BringCategoryItems(FoodMedItems)
-    end,
-})
-
--- Weapons & Tools Mini Menu
-local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
-
-local WeaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"}
-
--- Тогглы для Weapons & Tools
-for i, itemName in ipairs(WeaponsItems) do
-    BringTab:CreateToggle({
-        Name = "🔫 " .. itemName,
-        CurrentValue = SelectedItems[itemName],
-        Flag = "Select" .. itemName,
-        Callback = function(Value)
-            SelectedItems[itemName] = Value
-        end,
-    })
-end
-
--- Кнопка телепорта для Weapons & Tools
-BringTab:CreateButton({
-    Name = "🚀 BRING WEAPONS & TOOLS",
-    Callback = function()
-        BringCategoryItems(WeaponsItems)
-    end,
-})
-
--- More Tab
-local MovementSection = MoreTab:CreateSection("Movement")
-
-MoreTab:CreateButton({
-    Name = "🔥 Teleport to Campfire",
-    Callback = function()
-        local char = player.Character
-        if char and char:FindFirstChild("HumanoidRootPart") then
-            char.HumanoidRootPart.CFrame = CFrame.new(CampfirePosition)
-            Rayfield:Notify({
-                Title = "Teleport",
-                Content = "Teleported to Campfire",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-local SpeedHackToggle = MoreTab:CreateToggle({
-    Name = "Speed Hack",
-    CurrentValue = speedHackEnabled,
-    Flag = "SpeedHackToggle",
-    Callback = function(Value)
-        speedHackEnabled = Value
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
-            end
-            Rayfield:Notify({
-                Title = "Speed Hack",
-                Content = "Speed Hack Enabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = 16
-            end
-            Rayfield:Notify({
-                Title = "Speed Hack",
-                Content = "Speed Hack Disabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-local SpeedSlider = MoreTab:CreateSlider({
-    Name = "Speed Value",
-    Range = {16, 100},
-    Increment = 1,
-    Suffix = "speed",
-    CurrentValue = currentSpeed,
-    Flag = "SpeedSlider",
-    Callback = function(Value)
-        currentSpeed = Value
-        if speedHackEnabled then
-            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = currentSpeed
-            end
-        end
-    end,
-})
-
-local InfinityJumpToggle = MoreTab:CreateToggle({
-    Name = "Infinity Jump",
-    CurrentValue = jumpHackEnabled,
-    Flag = "InfinityJumpToggle",
-    Callback = function(Value)
-        jumpHackEnabled = Value
-        if Value then
-            Rayfield:Notify({
-                Title = "Infinity Jump",
-                Content = "Infinity Jump Enabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "Infinity Jump",
-                Content = "Infinity Jump Disabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-local UtilitySection = MoreTab:CreateSection("Utility")
-
-local AntiAFKToggle = MoreTab:CreateToggle({
-    Name = "🔄 Anti AFK (Jump every 30s)",
-    CurrentValue = antiAFKEnabled,
-    Flag = "AntiAFKToggle",
-    Callback = function(Value)
-        antiAFKEnabled = Value
-        if antiAFKEnabled then
-            EnableAntiAFK()
-            Rayfield:Notify({
-                Title = "Anti AFK",
-                Content = "Anti AFK Enabled - Jumping every 30 seconds",
-                Duration = 5,
-                Image = 4483362458,
-            })
-        else
-            DisableAntiAFK()
-            Rayfield:Notify({
-                Title = "Anti AFK",
-                Content = "Anti AFK Disabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
-local NoClipToggle = MoreTab:CreateToggle({
-    Name = "NoClip",
-    CurrentValue = noclipEnabled,
-    Flag = "NoClipToggle",
-    Callback = function(Value)
-        noclipEnabled = Value
-        if noclipEnabled then
-            Rayfield:Notify({
-                Title = "NoClip",
-                Content = "NoClip Enabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        else
-            Rayfield:Notify({
-                Title = "NoClip",
-                Content = "NoClip Disabled",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
--- Уведомление о загрузке
-Rayfield:Notify({
-    Title = "SANSTRO MENU",
-    Content = "Menu loaded successfully!",
-    Duration = 5,
-    Image = 4483362458,
-})
-
-print("SANSTRO Menu loaded successfully!")
+print("Aim menu loaded! Use the menu button to open/close.")
