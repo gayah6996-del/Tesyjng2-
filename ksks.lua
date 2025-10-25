@@ -24,6 +24,7 @@ local BringTarget = "Campfire" -- "Campfire" или "Player"
 local antiAFKEnabled = false
 local antiAFKConnection = nil
 local currentSpeed = 16
+local lastJumpTime = 0
 
 -- Выбранные предметы для телепорта
 local SelectedItems = {
@@ -289,18 +290,31 @@ local function BringCategoryItems(categoryItems)
     end
 end
 
--- Anti AFK функция
+-- Исправленная Anti AFK функция для мобильных устройств (прыжок каждые 30 секунд)
 local function EnableAntiAFK()
     if antiAFKConnection then
         antiAFKConnection:Disconnect()
         antiAFKConnection = nil
     end
     
+    lastJumpTime = tick()
+    
     antiAFKConnection = RunService.Heartbeat:Connect(function()
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.Jump = true
-            wait(0.1)
-            player.Character.Humanoid.Jump = false
+        if antiAFKEnabled then
+            local currentTime = tick()
+            -- Проверяем, прошло ли 30 секунд с последнего прыжка
+            if currentTime - lastJumpTime >= 30 then
+                local character = player.Character
+                if character and character:FindFirstChild("Humanoid") then
+                    local humanoid = character.Humanoid
+                    -- Выполняем прыжок
+                    humanoid.Jump = true
+                    lastJumpTime = currentTime
+                    
+                    -- Уведомление в консоль для отладки
+                    print("[AntiAFK] Player jumped at " .. os.date("%X"))
+                end
+            end
         end
     end)
 end
@@ -428,7 +442,7 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     end,
 })
 
--- Bring Tab - Обновленная структура с отдельными кнопками для каждой категории
+-- Bring Tab - Обновленная структура с множественным выбором
 local SettingsSection = BringTab:CreateSection("Bring Settings")
 
 local BringCountSlider = BringTab:CreateSlider({
@@ -476,21 +490,23 @@ local TargetDropdown = BringTab:CreateDropdown({
     end,
 })
 
--- Resources Mini Menu
+-- Resources Mini Menu с множественным выбором
 local ResourcesSection = BringTab:CreateSection("📦 Resources")
 
 local ResourcesItems = {"Log", "Coal", "Chair", "Fuel Canister", "Oil Barrel", "Biofuel"}
 
-local ResourcesDropdown = BringTab:CreateDropdown({
-    Name = "Select Resources",
-    Options = ResourcesItems,
-    CurrentOption = "Select Items",
-    Flag = "ResourcesDropdown",
-    Callback = function(Option)
-        SelectedItems[Option] = not SelectedItems[Option]
-        SaveSettings()
-    end,
-})
+-- Создаем тогглы для каждого предмета в Resources
+for i, itemName in ipairs(ResourcesItems) do
+    BringTab:CreateToggle({
+        Name = "📦 " .. itemName,
+        CurrentValue = SelectedItems[itemName],
+        Flag = "Select" .. itemName,
+        Callback = function(Value)
+            SelectedItems[itemName] = Value
+            SaveSettings()
+        end,
+    })
+end
 
 -- Кнопка телепорта для Resources
 local ResourcesTeleportButton = BringTab:CreateButton({
@@ -500,21 +516,23 @@ local ResourcesTeleportButton = BringTab:CreateButton({
     end,
 })
 
--- Metals Mini Menu
+-- Metals Mini Menu с множественным выбором
 local MetalsSection = BringTab:CreateSection("🔩 Metals")
 
 local MetalsItems = {"Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave", "Washing Machine", "Old Car Engine", "Cultist Gem"}
 
-local MetalsDropdown = BringTab:CreateDropdown({
-    Name = "Select Metals",
-    Options = MetalsItems,
-    CurrentOption = "Select Items",
-    Flag = "MetalsDropdown",
-    Callback = function(Option)
-        SelectedItems[Option] = not SelectedItems[Option]
-        SaveSettings()
-    end,
-})
+-- Создаем тогглы для каждого предмета в Metals
+for i, itemName in ipairs(MetalsItems) do
+    BringTab:CreateToggle({
+        Name = "🔩 " .. itemName,
+        CurrentValue = SelectedItems[itemName],
+        Flag = "Select" .. itemName,
+        Callback = function(Value)
+            SelectedItems[itemName] = Value
+            SaveSettings()
+        end,
+    })
+end
 
 -- Кнопка телепорта для Metals
 local MetalsTeleportButton = BringTab:CreateButton({
@@ -524,21 +542,23 @@ local MetalsTeleportButton = BringTab:CreateButton({
     end,
 })
 
--- Food & Medical Mini Menu
+-- Food & Medical Mini Menu с множественным выбором
 local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical")
 
 local FoodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage", "Chili", "Apple", "Cake"}
 
-local FoodMedDropdown = BringTab:CreateDropdown({
-    Name = "Select Food & Medical",
-    Options = FoodMedItems,
-    CurrentOption = "Select Items",
-    Flag = "FoodMedDropdown",
-    Callback = function(Option)
-        SelectedItems[Option] = not SelectedItems[Option]
-        SaveSettings()
-    end,
-})
+-- Создаем тогглы для каждого предмета в Food & Medical
+for i, itemName in ipairs(FoodMedItems) do
+    BringTab:CreateToggle({
+        Name = "🍎 " .. itemName,
+        CurrentValue = SelectedItems[itemName],
+        Flag = "Select" .. itemName,
+        Callback = function(Value)
+            SelectedItems[itemName] = Value
+            SaveSettings()
+        end,
+    })
+end
 
 -- Кнопка телепорта для Food & Medical
 local FoodMedTeleportButton = BringTab:CreateButton({
@@ -548,21 +568,23 @@ local FoodMedTeleportButton = BringTab:CreateButton({
     end,
 })
 
--- Weapons & Tools Mini Menu
+-- Weapons & Tools Mini Menu с множественным выбором
 local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
 
 local WeaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"}
 
-local WeaponsDropdown = BringTab:CreateDropdown({
-    Name = "Select Weapons & Tools",
-    Options = WeaponsItems,
-    CurrentOption = "Select Items",
-    Flag = "WeaponsDropdown",
-    Callback = function(Option)
-        SelectedItems[Option] = not SelectedItems[Option]
-        SaveSettings()
-    end,
-})
+-- Создаем тогглы для каждого предмета в Weapons & Tools
+for i, itemName in ipairs(WeaponsItems) do
+    BringTab:CreateToggle({
+        Name = "🔫 " .. itemName,
+        CurrentValue = SelectedItems[itemName],
+        Flag = "Select" .. itemName,
+        Callback = function(Value)
+            SelectedItems[itemName] = Value
+            SaveSettings()
+        end,
+    })
+end
 
 -- Кнопка телепорта для Weapons & Tools
 local WeaponsTeleportButton = BringTab:CreateButton({
@@ -672,7 +694,7 @@ local InfinityJumpToggle = MoreTab:CreateToggle({
 local UtilitySection = MoreTab:CreateSection("Utility")
 
 local AntiAFKToggle = MoreTab:CreateToggle({
-    Name = "Anti AFK",
+    Name = "🔄 Anti AFK (Jump every 30s)",
     CurrentValue = antiAFKEnabled,
     Flag = "AntiAFKToggle",
     Callback = function(Value)
@@ -681,8 +703,8 @@ local AntiAFKToggle = MoreTab:CreateToggle({
             EnableAntiAFK()
             Rayfield:Notify({
                 Title = "Anti AFK",
-                Content = "Anti AFK Enabled",
-                Duration = 3,
+                Content = "Anti AFK Enabled - Jumping every 30 seconds",
+                Duration = 5,
                 Image = 4483362458,
             })
         else
