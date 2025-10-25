@@ -2,14 +2,12 @@
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 local Workspace = game:GetService("Workspace")
 local HttpService = game:GetService("HttpService")
 
 local player = Players.LocalPlayer
-local mouse = player:GetMouse()
 
--- Глобальные переменные для сохранения состояний
+-- Глобальные переменные
 local speedHackEnabled = false
 local jumpHackEnabled = false
 local noclipEnabled = false
@@ -20,148 +18,63 @@ local DistanceForAutoChopTree = 25
 local BringCount = 5
 local BringDelay = 200
 local CampfirePosition = Vector3.new(0, 10, 0)
-local BringTarget = "Campfire" -- "Campfire" или "Player"
+local BringTarget = "Campfire"
 local antiAFKEnabled = false
 local antiAFKConnection = nil
 local currentSpeed = 16
 local lastJumpTime = 0
 
--- Выбранные предметы для телепорта
+-- Выбранные предметы
 local SelectedItems = {
-    ["Log"] = false,
-    ["Coal"] = false,
-    ["Chair"] = false,
-    ["Fuel Canister"] = false,
-    ["Oil Barrel"] = false,
-    ["Biofuel"] = false,
-    ["Bolt"] = false,
-    ["Sheet Metal"] = false,
-    ["Old Radio"] = false,
-    ["UFO Scrap"] = false,
-    ["Broken Microwave"] = false,
-    ["Washing Machine"] = false,
-    ["Old Car Engine"] = false,
-    ["Cultist Gem"] = false,
-    ["Carrot"] = false,
-    ["Pumpkin"] = false,
-    ["Morsel"] = false,
-    ["Steak"] = false,
-    ["MedKit"] = false,
-    ["Bandage"] = false,
-    ["Chili"] = false,
-    ["Apple"] = false,
-    ["Cake"] = false,
-    ["Rifle"] = false,
-    ["Rifle Ammo"] = false,
-    ["Revolver"] = false,
-    ["Revolver Ammo"] = false,
-    ["Good Axe"] = false,
-    ["Strong Axe"] = false,
-    ["Chainsaw"] = false
-}
-
--- Настройки файла
-local SETTINGS_FILE = "astralcheat_settings.txt"
-local Settings = {
-    ActiveKillAura = false,
-    ActiveAutoChopTree = false,
-    DistanceForKillAura = 25,
-    DistanceForAutoChopTree = 25,
-    BringCount = 5,
-    BringDelay = 200,
-    BringTarget = "Campfire",
-    speedHackEnabled = false,
-    jumpHackEnabled = false,
-    currentSpeed = 16,
-    antiAFKEnabled = false,
-    SelectedItems = SelectedItems
+    ["Log"] = false, ["Coal"] = false, ["Chair"] = false, ["Fuel Canister"] = false, ["Oil Barrel"] = false, ["Biofuel"] = false,
+    ["Bolt"] = false, ["Sheet Metal"] = false, ["Old Radio"] = false, ["UFO Scrap"] = false, ["Broken Microwave"] = false,
+    ["Washing Machine"] = false, ["Old Car Engine"] = false, ["Cultist Gem"] = false,
+    ["Carrot"] = false, ["Pumpkin"] = false, ["Morsel"] = false, ["Steak"] = false, ["MedKit"] = false, ["Bandage"] = false,
+    ["Chili"] = false, ["Apple"] = false, ["Cake"] = false,
+    ["Rifle"] = false, ["Rifle Ammo"] = false, ["Revolver"] = false, ["Revolver Ammo"] = false,
+    ["Good Axe"] = false, ["Strong Axe"] = false, ["Chainsaw"] = false
 }
 
 -- Загрузка Rayfield
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+local success, Rayfield = pcall(function()
+    return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+end)
+
+if not success then
+    warn("Failed to load Rayfield UI Library")
+    return
+end
 
 -- Создание окна
 local Window = Rayfield:CreateWindow({
-   Name = "SANSTRO|t.me/SCRIPTTYTA",
-   LoadingTitle = "SANSTRO Menu",
-   LoadingSubtitle = "by SANSTRO",
-   ConfigurationSaving = {
-      Enabled = true,
-      FolderName = "SANSTRO_Config",
-      FileName = "99Nights"
-   },
-   Discord = {
-      Enabled = false,
-      Invite = "noinvitelink",
-      RememberJoins = true
-   },
-   KeySystem = false,
+    Name = "SANSTRO MENU",
+    LoadingTitle = "SANSTRO Menu",
+    LoadingSubtitle = "by SANSTRO",
+    ConfigurationSaving = {
+        Enabled = true,
+        FolderName = "SANSTRO_Config",
+        FileName = "99Nights"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = false,
 })
 
--- Функции сохранения настроек
+-- Функции
 local function SaveSettings()
-    pcall(function()
-        Settings.ActiveKillAura = ActiveKillAura
-        Settings.ActiveAutoChopTree = ActiveAutoChopTree
-        Settings.DistanceForKillAura = DistanceForKillAura
-        Settings.DistanceForAutoChopTree = DistanceForAutoChopTree
-        Settings.BringCount = BringCount
-        Settings.BringDelay = BringDelay
-        Settings.BringTarget = BringTarget
-        Settings.speedHackEnabled = speedHackEnabled
-        Settings.jumpHackEnabled = jumpHackEnabled
-        Settings.currentSpeed = currentSpeed
-        Settings.antiAFKEnabled = antiAFKEnabled
-        Settings.SelectedItems = SelectedItems
-        
-        local data = HttpService:JSONEncode(Settings)
-        writefile(SETTINGS_FILE, data)
-    end)
+    -- Простая функция сохранения (можно добавить позже)
 end
 
 local function LoadSettings()
-    pcall(function()
-        if isfile(SETTINGS_FILE) then
-            local data = readfile(SETTINGS_FILE)
-            local loadedSettings = HttpService:JSONDecode(data)
-            for key, value in pairs(loadedSettings) do
-                if Settings[key] ~= nil then 
-                    Settings[key] = value 
-                end
-            end
-            
-            -- Применяем загруженные настройки
-            ActiveKillAura = Settings.ActiveKillAura
-            ActiveAutoChopTree = Settings.ActiveAutoChopTree
-            DistanceForKillAura = Settings.DistanceForKillAura
-            DistanceForAutoChopTree = Settings.DistanceForAutoChopTree
-            BringCount = Settings.BringCount
-            BringDelay = Settings.BringDelay
-            BringTarget = Settings.BringTarget or "Campfire"
-            speedHackEnabled = Settings.speedHackEnabled or false
-            jumpHackEnabled = Settings.jumpHackEnabled or false
-            currentSpeed = Settings.currentSpeed or 16
-            antiAFKEnabled = Settings.antiAFKEnabled or false
-            
-            -- Загружаем выбранные предметы
-            if Settings.SelectedItems then
-                for itemName, isSelected in pairs(Settings.SelectedItems) do
-                    if SelectedItems[itemName] ~= nil then
-                        SelectedItems[itemName] = isSelected
-                    end
-                end
-            end
-        end
-    end)
+    -- Простая функция загрузки (можно добавить позже)
 end
 
--- Загружаем настройки при запуске
-LoadSettings()
-
--- Функции из второго скрипта
 -- Kill Aura функция
 local function RunKillAura()
-    while ActiveKillAura do
+    while ActiveKillAura and task.wait(0.1) do
         local char = player.Character
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
         local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
@@ -176,13 +89,12 @@ local function RunKillAura()
                 end
             end
         end
-        wait(0.1)
     end
 end
 
 -- Auto Chop функция
 local function RunAutoChop()
-    while ActiveAutoChopTree do
+    while ActiveAutoChopTree and task.wait(0.1) do
         local char = player.Character
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
         local weapon = player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw")
@@ -197,11 +109,10 @@ local function RunAutoChop()
                 end
             end
         end
-        wait(0.1)
     end
 end
 
--- Функция телепорта для конкретной категории
+-- Функция телепорта для категории
 local function BringCategoryItems(categoryItems)
     local targetPos
     if BringTarget == "Player" then
@@ -218,12 +129,10 @@ local function BringCategoryItems(categoryItems)
     local totalTeleported = 0
     local itemCounts = {}
     
-    -- Перебираем предметы из категории
     for _, itemName in ipairs(categoryItems) do
         if SelectedItems[itemName] then
             local items = {}
             
-            -- Ищем предметы в workspace
             for _, item in pairs(workspace.Items:GetChildren()) do
                 if item:IsA("Model") then
                     local itemLower = item.Name:lower()
@@ -236,7 +145,6 @@ local function BringCategoryItems(categoryItems)
                 end
             end
             
-            -- Телепортируем найденные предметы
             local teleported = 0
             for i = 1, math.min(BringCount, #items) do
                 local item = items[i]
@@ -251,7 +159,7 @@ local function BringCategoryItems(categoryItems)
                 totalTeleported = totalTeleported + 1
                 
                 if BringDelay > 0 then
-                    wait(BringDelay / 1000)
+                    task.wait(BringDelay / 1000)
                 end
             end
             
@@ -261,7 +169,6 @@ local function BringCategoryItems(categoryItems)
         end
     end
     
-    -- Формируем сообщение о результатах
     if totalTeleported > 0 then
         local message = "Teleported: "
         local first = true
@@ -290,11 +197,10 @@ local function BringCategoryItems(categoryItems)
     end
 end
 
--- Исправленная Anti AFK функция для мобильных устройств (прыжок каждые 30 секунд)
+-- Anti AFK функция
 local function EnableAntiAFK()
     if antiAFKConnection then
         antiAFKConnection:Disconnect()
-        antiAFKConnection = nil
     end
     
     lastJumpTime = tick()
@@ -302,17 +208,11 @@ local function EnableAntiAFK()
     antiAFKConnection = RunService.Heartbeat:Connect(function()
         if antiAFKEnabled then
             local currentTime = tick()
-            -- Проверяем, прошло ли 30 секунд с последнего прыжка
             if currentTime - lastJumpTime >= 30 then
                 local character = player.Character
                 if character and character:FindFirstChild("Humanoid") then
-                    local humanoid = character.Humanoid
-                    -- Выполняем прыжок
-                    humanoid.Jump = true
+                    character.Humanoid.Jump = true
                     lastJumpTime = currentTime
-                    
-                    -- Уведомление в консоль для отладки
-                    print("[AntiAFK] Player jumped at " .. os.date("%X"))
                 end
             end
         end
@@ -328,35 +228,20 @@ end
 
 -- Запускаем функции геймплея
 task.spawn(function()
-    while true do
+    while task.wait(1) do
         if ActiveKillAura then
             RunKillAura()
         end
-        wait(1)
     end
 end)
 
 task.spawn(function()
-    while true do
+    while task.wait(1) do
         if ActiveAutoChopTree then
             RunAutoChop()
         end
-        wait(1)
     end
 end)
-
--- Применяем настройки SpeedHack при загрузке
-if speedHackEnabled then
-    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-    if humanoid then
-        humanoid.WalkSpeed = currentSpeed
-    end
-end
-
--- Применяем настройки AntiAFK при загрузке
-if antiAFKEnabled then
-    EnableAntiAFK()
-end
 
 -- Создание вкладок
 local MainTab = Window:CreateTab("Main", 4483362458)
@@ -372,7 +257,6 @@ local KillAuraToggle = MainTab:CreateToggle({
     Flag = "KillAuraToggle",
     Callback = function(Value)
         ActiveKillAura = Value
-        SaveSettings()
         if Value then
             Rayfield:Notify({
                 Title = "Kill Aura",
@@ -400,7 +284,6 @@ local KillDistanceSlider = MainTab:CreateSlider({
     Flag = "KillDistanceSlider",
     Callback = function(Value)
         DistanceForKillAura = Value
-        SaveSettings()
     end,
 })
 
@@ -410,7 +293,6 @@ local AutoChopToggle = MainTab:CreateToggle({
     Flag = "AutoChopToggle",
     Callback = function(Value)
         ActiveAutoChopTree = Value
-        SaveSettings()
         if Value then
             Rayfield:Notify({
                 Title = "Auto Chop",
@@ -438,11 +320,10 @@ local ChopDistanceSlider = MainTab:CreateSlider({
     Flag = "ChopDistanceSlider",
     Callback = function(Value)
         DistanceForAutoChopTree = Value
-        SaveSettings()
     end,
 })
 
--- Bring Tab - Обновленная структура с мини-меню и тогглами
+-- Bring Tab Settings
 local SettingsSection = BringTab:CreateSection("Bring Settings")
 
 local BringCountSlider = BringTab:CreateSlider({
@@ -454,7 +335,6 @@ local BringCountSlider = BringTab:CreateSlider({
     Flag = "BringCountSlider",
     Callback = function(Value)
         BringCount = Value
-        SaveSettings()
     end,
 })
 
@@ -467,7 +347,6 @@ local BringSpeedSlider = BringTab:CreateSlider({
     Flag = "BringSpeedSlider",
     Callback = function(Value)
         BringDelay = Value
-        SaveSettings()
     end,
 })
 
@@ -480,7 +359,6 @@ local TargetDropdown = BringTab:CreateDropdown({
     Flag = "TargetDropdown",
     Callback = function(Option)
         BringTarget = Option
-        SaveSettings()
         Rayfield:Notify({
             Title = "Teleport Target",
             Content = "Target set to: " .. Option,
@@ -491,29 +369,11 @@ local TargetDropdown = BringTab:CreateDropdown({
 })
 
 -- Resources Mini Menu
-local ResourcesSection = BringTab:CreateSection("📦 Resources Mini Menu")
+local ResourcesSection = BringTab:CreateSection("📦 Resources")
 
 local ResourcesItems = {"Log", "Coal", "Chair", "Fuel Canister", "Oil Barrel", "Biofuel"}
 
--- Выпадающее меню для быстрого выбора
-local ResourcesDropdown = BringTab:CreateDropdown({
-    Name = "Quick Select Resources",
-    Options = ResourcesItems,
-    CurrentOption = "Select Items",
-    Flag = "ResourcesDropdown",
-    Callback = function(Option)
-        SelectedItems[Option] = not SelectedItems[Option]
-        SaveSettings()
-        Rayfield:Notify({
-            Title = "Resources",
-            Content = Option .. " " .. (SelectedItems[Option] and "selected" : "deselected"),
-            Duration = 2,
-            Image = 4483362458,
-        })
-    end,
-})
-
--- Тогглы для каждого предмета
+-- Тогглы для Resources
 for i, itemName in ipairs(ResourcesItems) do
     BringTab:CreateToggle({
         Name = "📦 " .. itemName,
@@ -521,13 +381,12 @@ for i, itemName in ipairs(ResourcesItems) do
         Flag = "Select" .. itemName,
         Callback = function(Value)
             SelectedItems[itemName] = Value
-            SaveSettings()
         end,
     })
 end
 
 -- Кнопка телепорта для Resources
-local ResourcesTeleportButton = BringTab:CreateButton({
+BringTab:CreateButton({
     Name = "🚀 BRING RESOURCES",
     Callback = function()
         BringCategoryItems(ResourcesItems)
@@ -535,29 +394,11 @@ local ResourcesTeleportButton = BringTab:CreateButton({
 })
 
 -- Metals Mini Menu
-local MetalsSection = BringTab:CreateSection("🔩 Metals Mini Menu")
+local MetalsSection = BringTab:CreateSection("🔩 Metals")
 
 local MetalsItems = {"Bolt", "Sheet Metal", "Old Radio", "UFO Scrap", "Broken Microwave", "Washing Machine", "Old Car Engine", "Cultist Gem"}
 
--- Выпадающее меню для быстрого выбора
-local MetalsDropdown = BringTab:CreateDropdown({
-    Name = "Quick Select Metals",
-    Options = MetalsItems,
-    CurrentOption = "Select Items",
-    Flag = "MetalsDropdown",
-    Callback = function(Option)
-        SelectedItems[Option] = not SelectedItems[Option]
-        SaveSettings()
-        Rayfield:Notify({
-            Title = "Metals",
-            Content = Option .. " " .. (SelectedItems[Option] and "selected" : "deselected"),
-            Duration = 2,
-            Image = 4483362458,
-        })
-    end,
-})
-
--- Тогглы для каждого предмета
+-- Тогглы для Metals
 for i, itemName in ipairs(MetalsItems) do
     BringTab:CreateToggle({
         Name = "🔩 " .. itemName,
@@ -565,13 +406,12 @@ for i, itemName in ipairs(MetalsItems) do
         Flag = "Select" .. itemName,
         Callback = function(Value)
             SelectedItems[itemName] = Value
-            SaveSettings()
         end,
     })
 end
 
 -- Кнопка телепорта для Metals
-local MetalsTeleportButton = BringTab:CreateButton({
+BringTab:CreateButton({
     Name = "🚀 BRING METALS",
     Callback = function()
         BringCategoryItems(MetalsItems)
@@ -579,29 +419,11 @@ local MetalsTeleportButton = BringTab:CreateButton({
 })
 
 -- Food & Medical Mini Menu
-local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical Mini Menu")
+local FoodMedSection = BringTab:CreateSection("🍎 Food & Medical")
 
 local FoodMedItems = {"Carrot", "Pumpkin", "Morsel", "Steak", "MedKit", "Bandage", "Chili", "Apple", "Cake"}
 
--- Выпадающее меню для быстрого выбора
-local FoodMedDropdown = BringTab:CreateDropdown({
-    Name = "Quick Select Food & Medical",
-    Options = FoodMedItems,
-    CurrentOption = "Select Items",
-    Flag = "FoodMedDropdown",
-    Callback = function(Option)
-        SelectedItems[Option] = not SelectedItems[Option]
-        SaveSettings()
-        Rayfield:Notify({
-            Title = "Food & Medical",
-            Content = Option .. " " .. (SelectedItems[Option] and "selected" : "deselected"),
-            Duration = 2,
-            Image = 4483362458,
-        })
-    end,
-})
-
--- Тогглы для каждого предмета
+-- Тогглы для Food & Medical
 for i, itemName in ipairs(FoodMedItems) do
     BringTab:CreateToggle({
         Name = "🍎 " .. itemName,
@@ -609,13 +431,12 @@ for i, itemName in ipairs(FoodMedItems) do
         Flag = "Select" .. itemName,
         Callback = function(Value)
             SelectedItems[itemName] = Value
-            SaveSettings()
         end,
     })
 end
 
 -- Кнопка телепорта для Food & Medical
-local FoodMedTeleportButton = BringTab:CreateButton({
+BringTab:CreateButton({
     Name = "🚀 BRING FOOD & MEDICAL",
     Callback = function()
         BringCategoryItems(FoodMedItems)
@@ -623,29 +444,11 @@ local FoodMedTeleportButton = BringTab:CreateButton({
 })
 
 -- Weapons & Tools Mini Menu
-local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools Mini Menu")
+local WeaponsSection = BringTab:CreateSection("🔫 Weapons & Tools")
 
 local WeaponsItems = {"Rifle", "Rifle Ammo", "Revolver", "Revolver Ammo", "Good Axe", "Strong Axe", "Chainsaw"}
 
--- Выпадающее меню для быстрого выбора
-local WeaponsDropdown = BringTab:CreateDropdown({
-    Name = "Quick Select Weapons & Tools",
-    Options = WeaponsItems,
-    CurrentOption = "Select Items",
-    Flag = "WeaponsDropdown",
-    Callback = function(Option)
-        SelectedItems[Option] = not SelectedItems[Option]
-        SaveSettings()
-        Rayfield:Notify({
-            Title = "Weapons & Tools",
-            Content = Option .. " " .. (SelectedItems[Option] and "selected" : "deselected"),
-            Duration = 2,
-            Image = 4483362458,
-        })
-    end,
-})
-
--- Тогглы для каждого предмета
+-- Тогглы для Weapons & Tools
 for i, itemName in ipairs(WeaponsItems) do
     BringTab:CreateToggle({
         Name = "🔫 " .. itemName,
@@ -653,13 +456,12 @@ for i, itemName in ipairs(WeaponsItems) do
         Flag = "Select" .. itemName,
         Callback = function(Value)
             SelectedItems[itemName] = Value
-            SaveSettings()
         end,
     })
 end
 
 -- Кнопка телепорта для Weapons & Tools
-local WeaponsTeleportButton = BringTab:CreateButton({
+BringTab:CreateButton({
     Name = "🚀 BRING WEAPONS & TOOLS",
     Callback = function()
         BringCategoryItems(WeaponsItems)
@@ -669,7 +471,7 @@ local WeaponsTeleportButton = BringTab:CreateButton({
 -- More Tab
 local MovementSection = MoreTab:CreateSection("Movement")
 
-local TeleportToCampfireButton = MoreTab:CreateButton({
+MoreTab:CreateButton({
     Name = "🔥 Teleport to Campfire",
     Callback = function()
         local char = player.Character
@@ -691,7 +493,6 @@ local SpeedHackToggle = MoreTab:CreateToggle({
     Flag = "SpeedHackToggle",
     Callback = function(Value)
         speedHackEnabled = Value
-        
         if speedHackEnabled then
             local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
             if humanoid then
@@ -715,7 +516,6 @@ local SpeedHackToggle = MoreTab:CreateToggle({
                 Image = 4483362458,
             })
         end
-        SaveSettings()
     end,
 })
 
@@ -734,7 +534,6 @@ local SpeedSlider = MoreTab:CreateSlider({
                 humanoid.WalkSpeed = currentSpeed
             end
         end
-        SaveSettings()
     end,
 })
 
@@ -744,7 +543,6 @@ local InfinityJumpToggle = MoreTab:CreateToggle({
     Flag = "InfinityJumpToggle",
     Callback = function(Value)
         jumpHackEnabled = Value
-        SaveSettings()
         if Value then
             Rayfield:Notify({
                 Title = "Infinity Jump",
@@ -788,7 +586,6 @@ local AntiAFKToggle = MoreTab:CreateToggle({
                 Image = 4483362458,
             })
         end
-        SaveSettings()
     end,
 })
 
@@ -798,7 +595,6 @@ local NoClipToggle = MoreTab:CreateToggle({
     Flag = "NoClipToggle",
     Callback = function(Value)
         noclipEnabled = Value
-        
         if noclipEnabled then
             Rayfield:Notify({
                 Title = "NoClip",
@@ -806,20 +602,6 @@ local NoClipToggle = MoreTab:CreateToggle({
                 Duration = 3,
                 Image = 4483362458,
             })
-            
-            -- NoClip логика
-            local noclipConnection
-            noclipConnection = RunService.Stepped:Connect(function()
-                if player.Character and noclipEnabled then
-                    for _, part in pairs(player.Character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                elseif not noclipEnabled and noclipConnection then
-                    noclipConnection:Disconnect()
-                end
-            end)
         else
             Rayfield:Notify({
                 Title = "NoClip",
@@ -827,50 +609,16 @@ local NoClipToggle = MoreTab:CreateToggle({
                 Duration = 3,
                 Image = 4483362458,
             })
-            
-            if player.Character then
-                for _, part in pairs(player.Character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-            end
         end
     end,
 })
 
--- Обработчик прыжка для Infinity Jump
-UserInputService.JumpRequest:Connect(function()
-    if jumpHackEnabled and player.Character then
-        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end
-end)
-
--- Восстанавливаем настройки после смерти
-player.CharacterAdded:Connect(function()
-    wait(2)
-    
-    -- Восстанавливаем SpeedHack после смерти
-    if speedHackEnabled then
-        wait(1)
-        local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-        if humanoid then
-            humanoid.WalkSpeed = currentSpeed
-        end
-    end
-    
-    -- Восстанавливаем AntiAFK после смерти
-    if antiAFKEnabled then
-        EnableAntiAFK()
-    end
-end)
-
+-- Уведомление о загрузке
 Rayfield:Notify({
     Title = "SANSTRO MENU",
     Content = "Menu loaded successfully!",
     Duration = 5,
     Image = 4483362458,
 })
+
+print("SANSTRO Menu loaded successfully!")
