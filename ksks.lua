@@ -453,28 +453,22 @@ end
 local function applySmallCrosshair(tool)
     if not smallCrosshairEnabled then return end
     
-    -- Отключаем разброс
-    local spread = tool:FindFirstChild("Spread")
-    if spread then
-        spread.Value = 0
-    end
-    
-    -- Отключаем отдачу
-    local recoil = tool:FindFirstChild("Recoil")
-    if recoil then
-        recoil.Value = 0
-    end
-    
-    -- Ищем другие параметры связанные с разбросом и отдачей
+    -- Отключаем разброс и отдачу через изменение всех возможных параметров
     for _, descendant in pairs(tool:GetDescendants()) do
-        if descendant:IsA("NumberValue") then
+        if descendant:IsA("NumberValue") or descendant:IsA("IntValue") then
             local name = descendant.Name:lower()
-            if name:find("spread") or name:find("accuracy") then
+            if name:find("spread") or name:find("accuracy") or name:find("deviation") then
                 descendant.Value = 0
-            elseif name:find("recoil") or name:find("kick") then
+            elseif name:find("recoil") or name:find("kick") or name:find("shake") then
                 descendant.Value = 0
             end
         end
+    end
+    
+    -- Также пытаемся найти и изменить модули стрельбы
+    local fireModule = tool:FindFirstChildWhichIsA("ModuleScript")
+    if fireModule then
+        -- Здесь можно попытаться изменить логику стрельбы, но это сложнее
     end
 end
 
@@ -494,10 +488,11 @@ local function createCrosshair()
     crosshairGui.Parent = player.PlayerGui
     crosshairGui.ResetOnSpawn = false
     
+    -- Поднимаем прицел на 15 пикселей вверх от центра
     local crosshair = Instance.new("Frame")
     crosshair.Name = "Crosshair"
     crosshair.Size = UDim2.new(0, 6, 0, 6)
-    crosshair.Position = UDim2.new(0.5, -3, 0.5, -3)
+    crosshair.Position = UDim2.new(0.5, -3, 0.5, -18) -- Сдвиг на 15 пикселей вверх
     crosshair.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     crosshair.BorderSizePixel = 0
     crosshair.BackgroundTransparency = 0.3
@@ -515,6 +510,41 @@ local function removeCrosshair()
     local crosshairGui = player.PlayerGui:FindFirstChild("CrosshairGui")
     if crosshairGui then
         crosshairGui:Destroy()
+    end
+end
+
+-- Улучшенная функция для устранения разброса пуль
+local function eliminateBulletSpread()
+    if not smallCrosshairEnabled then return end
+    
+    -- Постоянно мониторим и исправляем параметры оружия
+    while smallCrosshairEnabled do
+        wait(0.1)
+        
+        if player.Character then
+            for _, tool in pairs(player.Character:GetChildren()) do
+                if tool:IsA("Tool") then
+                    applySmallCrosshair(tool)
+                    
+                    -- Дополнительные попытки устранения разброса
+                    local handle = tool:FindFirstChild("Handle")
+                    if handle then
+                        -- Пытаемся перехватить выстрелы
+                        local remoteEvents = tool:GetDescendants()
+                        for _, remote in pairs(remoteEvents) do
+                            if remote:IsA("RemoteEvent") then
+                                -- Перехватываем выстрелы и корректируем их
+                                remote.OnClientEvent:Connect(function(...)
+                                    if smallCrosshairEnabled then
+                                        -- Здесь можно попытаться скорректировать параметры выстрела
+                                    end
+                                end)
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
@@ -1210,6 +1240,8 @@ local function createGUI()
                 end
             end
         end
+        -- Запускаем постоянное устранение разброса
+        coroutine.wrap(eliminateBulletSpread)()
     end
 
     -- Speed Hack
@@ -1325,6 +1357,9 @@ local function createGUI()
                     end
                 end
             end
+            
+            -- Запускаем постоянное устранение разброса
+            coroutine.wrap(eliminateBulletSpread)()
             
             -- Обработчик для нового оружия
             player.CharacterAdded:Connect(function(character)
