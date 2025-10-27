@@ -23,6 +23,10 @@ local Window = Rayfield:CreateWindow({
 local ESPTab = Window:CreateTab("ESP", "🔍")
 local AimbotTab = Window:CreateTab("Aimbot", "🎯")
 
+-- Добавляем разделы для лучшей организации
+local ESPSection = ESPTab:CreateSection("ESP Настройки")
+local AimbotSection = AimbotTab:CreateSection("Aimbot Настройки")
+
 -- Переменные для ESP
 local ESP = {
     Enabled = false,
@@ -49,7 +53,7 @@ local function createESP(player)
     if ESP.Box then
         local box = Drawing.new("Square")
         box.Visible = false
-        box.Color = Color3.fromRGB(255, 255, 255)
+        box.Color = Color3.fromRGB(255, 0, 0)
         box.Thickness = 2
         box.Filled = false
         box.ZIndex = 1
@@ -62,8 +66,8 @@ local function createESP(player)
     if ESP.Tracers then
         local tracer = Drawing.new("Line")
         tracer.Visible = false
-        tracer.Color = Color3.fromRGB(255, 255, 255)
-        tracer.Thickness = 1
+        tracer.Color = Color3.fromRGB(0, 255, 0)
+        tracer.Thickness = 2
         tracer.ZIndex = 1
         
         espObjects[player] = espObjects[player] or {}
@@ -75,7 +79,7 @@ local function createESP(player)
         local name = Drawing.new("Text")
         name.Visible = false
         name.Color = Color3.fromRGB(255, 255, 255)
-        name.Size = 13
+        name.Size = 16
         name.Center = true
         name.Outline = true
         name.Text = player.Name
@@ -90,7 +94,7 @@ local function createESP(player)
         local health = Drawing.new("Text")
         health.Visible = false
         health.Color = Color3.fromRGB(0, 255, 0)
-        health.Size = 13
+        health.Size = 14
         health.Center = true
         health.Outline = true
         health.ZIndex = 1
@@ -117,6 +121,7 @@ local function updateESP()
             end
         end
         playerCountLabel.Text = "Игроков: " .. alivePlayers
+        playerCountLabel.Visible = true
     end
     
     for player, drawings in pairs(espObjects) do
@@ -147,14 +152,14 @@ local function updateESP()
                 
                 -- Name ESP
                 if drawings.Name and ESP.Names then
-                    drawings.Name.Position = Vector2.new(position.X, position.Y - 40)
+                    drawings.Name.Position = Vector2.new(position.X, position.Y - 50)
                     drawings.Name.Visible = true
                 end
                 
                 -- Health ESP
                 if drawings.Health and ESP.Health and humanoid then
                     drawings.Health.Text = "HP: " .. math.floor(humanoid.Health)
-                    drawings.Health.Position = Vector2.new(position.X, position.Y - 25)
+                    drawings.Health.Position = Vector2.new(position.X, position.Y - 30)
                     drawings.Health.Visible = true
                 end
             else
@@ -188,8 +193,8 @@ local function clearESP()
     espObjects = {}
 end
 
--- Элементы ESP
-ESPTab:CreateToggle({
+-- Создаем элементы ESP
+ESPSection:CreateToggle({
     Name = "Включить ESP",
     CurrentValue = false,
     Flag = "ESPEnabled",
@@ -197,6 +202,9 @@ ESPTab:CreateToggle({
         ESP.Enabled = value
         if not value then
             clearESP()
+            if playerCountLabel then
+                playerCountLabel.Visible = false
+            end
         else
             local players = game:GetService("Players")
             for _, player in pairs(players:GetPlayers()) do
@@ -208,7 +216,7 @@ ESPTab:CreateToggle({
     end,
 })
 
-ESPTab:CreateToggle({
+ESPSection:CreateToggle({
     Name = "ESP Box",
     CurrentValue = false,
     Flag = "ESPBox",
@@ -226,7 +234,7 @@ ESPTab:CreateToggle({
     end,
 })
 
-ESPTab:CreateToggle({
+ESPSection:CreateToggle({
     Name = "ESP Tracers",
     CurrentValue = false,
     Flag = "ESPTracers",
@@ -244,7 +252,7 @@ ESPTab:CreateToggle({
     end,
 })
 
-ESPTab:CreateToggle({
+ESPSection:CreateToggle({
     Name = "ESP Name",
     CurrentValue = false,
     Flag = "ESPName",
@@ -262,7 +270,7 @@ ESPTab:CreateToggle({
     end,
 })
 
-ESPTab:CreateToggle({
+ESPSection:CreateToggle({
     Name = "ESP Health",
     CurrentValue = false,
     Flag = "ESPHealth",
@@ -280,7 +288,7 @@ ESPTab:CreateToggle({
     end,
 })
 
-ESPTab:CreateToggle({
+ESPSection:CreateToggle({
     Name = "ESP Count",
     CurrentValue = false,
     Flag = "ESPCount",
@@ -312,11 +320,15 @@ local target
 
 -- Создание FOV круга
 local function createFOVCircle()
+    if fovCircle then
+        fovCircle:Remove()
+    end
+    
     fovCircle = Drawing.new("Circle")
     fovCircle.Visible = Aimbot.Enabled
     fovCircle.Color = Color3.fromRGB(255, 255, 255)
-    fovCircle.Thickness = 1
-    fovCircle.NumSides = 100
+    fovCircle.Thickness = 2
+    fovCircle.NumSides = 64
     fovCircle.Filled = false
     fovCircle.Radius = Aimbot.FOV
     fovCircle.Position = Vector2.new(
@@ -375,22 +387,27 @@ local function findTarget()
     return closestPlayer
 end
 
--- Элементы Aimbot
-AimbotTab:CreateToggle({
+-- Создаем элементы Aimbot
+AimbotSection:CreateToggle({
     Name = "Включить Aimbot",
     CurrentValue = false,
     Flag = "AimbotEnabled",
     Callback = function(value)
         Aimbot.Enabled = value
-        if fovCircle then
-            fovCircle.Visible = value
+        if value then
+            if not fovCircle then
+                createFOVCircle()
+            end
+            fovCircle.Visible = true
         else
-            createFOVCircle()
+            if fovCircle then
+                fovCircle.Visible = false
+            end
         end
     end,
 })
 
-AimbotTab:CreateSlider({
+AimbotSection:CreateSlider({
     Name = "FOV Размер",
     Range = {10, 200},
     Increment = 5,
@@ -401,6 +418,8 @@ AimbotTab:CreateSlider({
         Aimbot.FOV = value
         if fovCircle then
             fovCircle.Radius = value
+        else
+            createFOVCircle()
         end
     end,
 })
@@ -423,8 +442,9 @@ game:GetService("Players").PlayerRemoving:Connect(function(player)
     end
 end)
 
--- Основной цикл
-game:GetService("RunService").RenderStepped:Connect(function()
+-- Основной цикл обновления
+local updateLoop
+updateLoop = game:GetService("RunService").RenderStepped:Connect(function()
     -- Обновление ESP
     if ESP.Enabled then
         updateESP()
@@ -442,22 +462,19 @@ game:GetService("RunService").RenderStepped:Connect(function()
     -- Aimbot логика
     if Aimbot.Enabled then
         target = findTarget()
-        
-        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-            local camera = workspace.CurrentCamera
-            local targetPos = target.Character.HumanoidRootPart.Position
-            
-            -- Здесь можно добавить логику для автоматического прицеливания
-            -- Например, изменение положения мыши или камеры
-        end
+        -- Здесь можно добавить дополнительную логику аимбота
     end
 end)
 
--- Обработка смерти (чтобы меню не пропадало)
-local function onCharacterAdded(character)
-    -- Меню остается активным после смерти
-end
+-- Уведомление о загрузке
+Rayfield:Notify({
+    Title = "SANSTRO Cheat",
+    Content = "Меню успешно загружено!",
+    Duration = 3,
+    Image = 4483362458,
+})
 
-game:GetService("Players").LocalPlayer.CharacterAdded:Connect(onCharacterAdded)
-
+-- Загрузка конфигурации
 Rayfield:LoadConfiguration()
+
+print("SANSTRO Cheat Menu loaded successfully!")
