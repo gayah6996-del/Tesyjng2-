@@ -36,118 +36,6 @@ local espConnections = {}
 local espCountText = nil
 local noclipConnection = nil
 
--- Анимация частиц
-local particleAnimationEnabled = true
-local particles = {}
-local particleConnections = {}
-
--- Функция создания анимации частиц
-local function createParticleAnimation()
-    -- Очищаем предыдущие анимации
-    for _, part in pairs(particles) do
-        if part then
-            part:Destroy()
-        end
-    end
-    for _, conn in pairs(particleConnections) do
-        if conn then
-            conn:Disconnect()
-        end
-    end
-    
-    particles = {}
-    particleConnections = {}
-    
-    if not particleAnimationEnabled or not MainFrame then return end
-    
-    -- Создаем фоновый контейнер для анимации
-    local backgroundFrame = Instance.new("Frame")
-    backgroundFrame.Name = "ParticleBackground"
-    backgroundFrame.Size = UDim2.new(1, 0, 1, 0)
-    backgroundFrame.Position = UDim2.new(0, 0, 0, 0)
-    backgroundFrame.BackgroundTransparency = 1
-    backgroundFrame.ZIndex = 0
-    backgroundFrame.Parent = MainFrame
-
-    -- Создаем несколько частиц
-    for i = 1, 15 do
-        local particle = Instance.new("Frame")
-        particle.Name = "Particle" .. i
-        particle.Size = UDim2.new(0, math.random(4, 8), 0, math.random(4, 8))
-        particle.Position = UDim2.new(math.random() * 0.9, 0, 0, -math.random(20, 80))
-        particle.BackgroundColor3 = Color3.fromRGB(
-            math.random(150, 255),
-            math.random(50, 150),
-            math.random(200, 255)
-        )
-        particle.BackgroundTransparency = math.random(30, 70) / 100
-        particle.BorderSizePixel = 0
-        particle.ZIndex = 0
-        particle.Parent = backgroundFrame
-        
-        -- Создаем форму частицы через скругление
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(1, 0)
-        corner.Parent = particle
-        
-        -- Добавляем свечение
-        local glow = Instance.new("UIStroke")
-        glow.Color = Color3.fromRGB(200, 100, 255)
-        glow.Thickness = 1
-        glow.Transparency = 0.7
-        glow.Parent = particle
-        
-        -- Начальный поворот
-        particle.Rotation = math.random(0, 360)
-        
-        table.insert(particles, particle)
-        
-        -- Анимация движения с реалистичной физикой
-        local startTime = tick()
-        local startX = math.random() * 0.9
-        local swingAmount = math.random(5, 20) / 100
-        local swingSpeed = math.random(8, 20) / 10
-        local fallSpeed = math.random(15, 35)
-        local rotationSpeed = math.random(-120, 120)
-        
-        local connection
-        connection = RunService.Heartbeat:Connect(function(delta)
-            if not particle or not particle.Parent then
-                connection:Disconnect()
-                return
-            end
-            
-            local currentTime = tick() - startTime
-            
-            -- Позиция по Y (падение)
-            local progress = (currentTime * fallSpeed) / 100
-            local yPos = progress
-            
-            -- Боковое колебание (эффект ветра)
-            local swing = math.sin(currentTime * swingSpeed) * swingAmount
-            local xPos = startX + swing
-            
-            -- Вращение
-            particle.Rotation = particle.Rotation + (rotationSpeed * delta)
-            
-            -- Обновление позиции
-            particle.Position = UDim2.new(xPos, 0, yPos, 0)
-            
-            -- Эффект мерцания
-            particle.BackgroundTransparency = 0.3 + (math.sin(currentTime * 5) * 0.2)
-            
-            -- Если частица упала за пределы, возвращаем ее наверх
-            if yPos > 1.2 then
-                startTime = tick()
-                startX = math.random() * 0.9
-                particle.Position = UDim2.new(startX, 0, 0, -math.random(20, 80))
-            end
-        end)
-        
-        table.insert(particleConnections, connection)
-    end
-end
-
 -- Функция создания FOV Circle
 local function createFOVCircle()
     if fovCircle then
@@ -199,15 +87,6 @@ local function createOpenCloseButton()
     Stroke.Color = Color3.fromRGB(200, 150, 255)
     Stroke.Thickness = 2
     Stroke.Parent = OpenCloseButton
-
-    -- Градиент для кнопки
-    local Gradient = Instance.new("UIGradient")
-    Gradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 70, 220)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 50, 200))
-    })
-    Gradient.Rotation = 45
-    Gradient.Parent = OpenCloseButton
 
     -- Обработчик нажатия
     OpenCloseButton.MouseButton1Click:Connect(function()
@@ -280,7 +159,6 @@ local function createESP(otherPlayer)
     local function updateESP()
         if not espObjects[otherPlayer] then return end
         
-        -- Check if player is dead or doesn't exist
         if not otherPlayer.Character or not otherPlayer.Character:FindFirstChild("HumanoidRootPart") or not otherPlayer.Character:FindFirstChild("Humanoid") then
             if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
             if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
@@ -295,7 +173,6 @@ local function createESP(otherPlayer)
         
         if not head then return end
         
-        -- Check if player is dead
         if humanoid.Health <= 0 then
             if espObjects[otherPlayer].tracer then espObjects[otherPlayer].tracer.Visible = false end
             if espObjects[otherPlayer].box then espObjects[otherPlayer].box.Visible = false end
@@ -389,10 +266,8 @@ local function createESP(otherPlayer)
         end
     end
     
-    -- Update ESP continuously
     espConnections[otherPlayer] = RunService.Heartbeat:Connect(updateESP)
     
-    -- Clean up when player leaves
     otherPlayer.AncestryChanged:Connect(function()
         if not otherPlayer.Parent then
             cleanupESP(otherPlayer)
@@ -402,7 +277,7 @@ end
 
 -- ESP Count Function
 local function updateESPCount()
-    if not espCountEnabled or not espCountText then return end
+    if not espCountEnabled then return end
     
     local aliveCount = 0
     for _, otherPlayer in pairs(Players:GetPlayers()) do
@@ -411,8 +286,9 @@ local function updateESPCount()
         end
     end
     
-    espCountText.Text = "Players: " .. aliveCount
-    espCountText.Visible = true
+    if espCountText then
+        espCountText.Text = "Players: " .. aliveCount
+    end
 end
 
 -- Improved AimBot with wall check and FOV
@@ -425,7 +301,6 @@ local function isPlayerVisible(targetPlayer)
     local camera = workspace.CurrentCamera
     local origin = camera.CFrame.Position
     
-    -- Raycast to target
     local direction = (targetRoot.Position - origin).Unit
     local ray = Ray.new(origin, direction * 1000)
     
@@ -433,7 +308,6 @@ local function isPlayerVisible(targetPlayer)
     local hit, hitPosition = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList)
     
     if hit then
-        -- Check if we hit the target player
         local hitModel = hit:FindFirstAncestorOfClass("Model")
         if hitModel and hitModel == targetPlayer.Character then
             return true
@@ -462,12 +336,8 @@ local function createGUI()
     if ScreenGui then
         savedPosition = MainFrame.Position
         ScreenGui:Destroy()
-        ScreenGui = nil
-        MainFrame = nil
-        OpenCloseButton = nil
     end
 
-    -- Create GUI
     ScreenGui = Instance.new("ScreenGui")
     ScreenGui.Name = "SANSTRO_GUI"
     ScreenGui.Parent = player.PlayerGui
@@ -475,7 +345,7 @@ local function createGUI()
 
     MainFrame = Instance.new("Frame")
     MainFrame.Name = "MainFrame"
-    MainFrame.Size = UDim2.new(0, 300, 0, 410)
+    MainFrame.Size = UDim2.new(0, 300, 0, 400)
     MainFrame.Position = savedPosition
     MainFrame.BackgroundColor3 = Color3.fromRGB(50, 20, 80)
     MainFrame.BackgroundTransparency = 0.1
@@ -489,23 +359,10 @@ local function createGUI()
     Corner.CornerRadius = UDim.new(0, 12)
     Corner.Parent = MainFrame
 
-    -- Добавляем градиентный фон
-    local BackgroundGradient = Instance.new("UIGradient")
-    BackgroundGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 30, 110)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 20, 80))
-    })
-    BackgroundGradient.Rotation = 45
-    BackgroundGradient.Parent = MainFrame
-
-    -- Добавляем обводку
     local MainStroke = Instance.new("UIStroke")
     MainStroke.Color = Color3.fromRGB(150, 70, 220)
     MainStroke.Thickness = 2
     MainStroke.Parent = MainFrame
-
-    -- Создаем анимацию частиц на заднем фоне
-    createParticleAnimation()
 
     local Title = Instance.new("TextLabel")
     Title.Name = "Title"
@@ -523,11 +380,6 @@ local function createGUI()
     TitleCorner.CornerRadius = UDim.new(0, 12)
     TitleCorner.Parent = Title
 
-    local TitleStroke = Instance.new("UIStroke")
-    TitleStroke.Color = Color3.fromRGB(180, 80, 255)
-    TitleStroke.Thickness = 1
-    TitleStroke.Parent = Title
-
     local TabButtons = Instance.new("Frame")
     TabButtons.Name = "TabButtons"
     TabButtons.Size = UDim2.new(1, 0, 0, 40)
@@ -541,7 +393,7 @@ local function createGUI()
     MovementTab.Name = "MovementTab"
     MovementTab.Size = UDim2.new(0.33, 0, 1, 0)
     MovementTab.Position = UDim2.new(0, 0, 0, 0)
-    MovementTab.BackgroundColor3 = Color3.fromRGB(90, 40, 140)
+    MovementTab.BackgroundColor3 = Color3.fromRGB(120, 50, 200)
     MovementTab.TextColor3 = Color3.fromRGB(255, 255, 255)
     MovementTab.Text = "Movement"
     MovementTab.Font = Enum.Font.Gotham
@@ -659,11 +511,6 @@ local function createGUI()
     SpeedHackToggleCorner.CornerRadius = UDim.new(0, 6)
     SpeedHackToggleCorner.Parent = SpeedHackToggle
 
-    local SpeedHackToggleStroke = Instance.new("UIStroke")
-    SpeedHackToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    SpeedHackToggleStroke.Thickness = 1
-    SpeedHackToggleStroke.Parent = SpeedHackToggle
-
     local SpeedHackSlider = Instance.new("Frame")
     SpeedHackSlider.Name = "SpeedHackSlider"
     SpeedHackSlider.Size = UDim2.new(1, -20, 0, 30)
@@ -677,11 +524,6 @@ local function createGUI()
     local SpeedHackSliderCorner = Instance.new("UICorner")
     SpeedHackSliderCorner.CornerRadius = UDim.new(0, 6)
     SpeedHackSliderCorner.Parent = SpeedHackSlider
-
-    local SpeedHackSliderStroke = Instance.new("UIStroke")
-    SpeedHackSliderStroke.Color = Color3.fromRGB(150, 70, 220)
-    SpeedHackSliderStroke.Thickness = 1
-    SpeedHackSliderStroke.Parent = SpeedHackSlider
 
     local SpeedValue = Instance.new("TextLabel")
     SpeedValue.Name = "SpeedValue"
@@ -707,11 +549,6 @@ local function createGUI()
     local JumpHackCorner = Instance.new("UICorner")
     JumpHackCorner.CornerRadius = UDim.new(0, 8)
     JumpHackCorner.Parent = JumpHackFrame
-
-    local JumpHackStroke = Instance.new("UIStroke")
-    JumpHackStroke.Color = Color3.fromRGB(150, 70, 220)
-    JumpHackStroke.Thickness = 1
-    JumpHackStroke.Parent = JumpHackFrame
 
     local JumpHackLabel = Instance.new("TextLabel")
     JumpHackLabel.Name = "JumpHackLabel"
@@ -742,11 +579,6 @@ local function createGUI()
     JumpHackToggleCorner.CornerRadius = UDim.new(0, 6)
     JumpHackToggleCorner.Parent = JumpHackToggle
 
-    local JumpHackToggleStroke = Instance.new("UIStroke")
-    JumpHackToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    JumpHackToggleStroke.Thickness = 1
-    JumpHackToggleStroke.Parent = JumpHackToggle
-
     -- NoClip
     local NoClipFrame = Instance.new("Frame")
     NoClipFrame.Name = "NoClipFrame"
@@ -760,11 +592,6 @@ local function createGUI()
     local NoClipCorner = Instance.new("UICorner")
     NoClipCorner.CornerRadius = UDim.new(0, 8)
     NoClipCorner.Parent = NoClipFrame
-
-    local NoClipStroke = Instance.new("UIStroke")
-    NoClipStroke.Color = Color3.fromRGB(150, 70, 220)
-    NoClipStroke.Thickness = 1
-    NoClipStroke.Parent = NoClipFrame
 
     local NoClipLabel = Instance.new("TextLabel")
     NoClipLabel.Name = "NoClipLabel"
@@ -795,15 +622,10 @@ local function createGUI()
     NoClipToggleCorner.CornerRadius = UDim.new(0, 6)
     NoClipToggleCorner.Parent = NoClipToggle
 
-    local NoClipToggleStroke = Instance.new("UIStroke")
-    NoClipToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    NoClipToggleStroke.Thickness = 1
-    NoClipToggleStroke.Parent = NoClipToggle
-
     -- Visual Content
     local VisualContent = Instance.new("Frame")
     VisualContent.Name = "VisualContent"
-    VisualContent.Size = UDim2.new(1, 0, 0, 320)
+    VisualContent.Size = UDim2.new(1, 0, 0, 250)
     VisualContent.BackgroundTransparency = 1
     VisualContent.Visible = false
     VisualContent.ZIndex = 2
@@ -821,11 +643,6 @@ local function createGUI()
     local ESPTracersCorner = Instance.new("UICorner")
     ESPTracersCorner.CornerRadius = UDim.new(0, 8)
     ESPTracersCorner.Parent = ESPTracersFrame
-
-    local ESPTracersStroke = Instance.new("UIStroke")
-    ESPTracersStroke.Color = Color3.fromRGB(150, 70, 220)
-    ESPTracersStroke.Thickness = 1
-    ESPTracersStroke.Parent = ESPTracersFrame
 
     local ESPTracersLabel = Instance.new("TextLabel")
     ESPTracersLabel.Name = "ESPTracersLabel"
@@ -856,11 +673,6 @@ local function createGUI()
     ESPTracersToggleCorner.CornerRadius = UDim.new(0, 6)
     ESPTracersToggleCorner.Parent = ESPTracersToggle
 
-    local ESPTracersToggleStroke = Instance.new("UIStroke")
-    ESPTracersToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    ESPTracersToggleStroke.Thickness = 1
-    ESPTracersToggleStroke.Parent = ESPTracersToggle
-
     -- ESP Box
     local ESPBoxFrame = Instance.new("Frame")
     ESPBoxFrame.Name = "ESPBoxFrame"
@@ -874,11 +686,6 @@ local function createGUI()
     local ESPBoxCorner = Instance.new("UICorner")
     ESPBoxCorner.CornerRadius = UDim.new(0, 8)
     ESPBoxCorner.Parent = ESPBoxFrame
-
-    local ESPBoxStroke = Instance.new("UIStroke")
-    ESPBoxStroke.Color = Color3.fromRGB(150, 70, 220)
-    ESPBoxStroke.Thickness = 1
-    ESPBoxStroke.Parent = ESPBoxFrame
 
     local ESPBoxLabel = Instance.new("TextLabel")
     ESPBoxLabel.Name = "ESPBoxLabel"
@@ -909,11 +716,6 @@ local function createGUI()
     ESPBoxToggleCorner.CornerRadius = UDim.new(0, 6)
     ESPBoxToggleCorner.Parent = ESPBoxToggle
 
-    local ESPBoxToggleStroke = Instance.new("UIStroke")
-    ESPBoxToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    ESPBoxToggleStroke.Thickness = 1
-    ESPBoxToggleStroke.Parent = ESPBoxToggle
-
     -- ESP Health
     local ESPHealthFrame = Instance.new("Frame")
     ESPHealthFrame.Name = "ESPHealthFrame"
@@ -927,11 +729,6 @@ local function createGUI()
     local ESPHealthCorner = Instance.new("UICorner")
     ESPHealthCorner.CornerRadius = UDim.new(0, 8)
     ESPHealthCorner.Parent = ESPHealthFrame
-
-    local ESPHealthStroke = Instance.new("UIStroke")
-    ESPHealthStroke.Color = Color3.fromRGB(150, 70, 220)
-    ESPHealthStroke.Thickness = 1
-    ESPHealthStroke.Parent = ESPHealthFrame
 
     local ESPHealthLabel = Instance.new("TextLabel")
     ESPHealthLabel.Name = "ESPHealthLabel"
@@ -962,11 +759,6 @@ local function createGUI()
     ESPHealthToggleCorner.CornerRadius = UDim.new(0, 6)
     ESPHealthToggleCorner.Parent = ESPHealthToggle
 
-    local ESPHealthToggleStroke = Instance.new("UIStroke")
-    ESPHealthToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    ESPHealthToggleStroke.Thickness = 1
-    ESPHealthToggleStroke.Parent = ESPHealthToggle
-
     -- ESP Distance
     local ESPDistanceFrame = Instance.new("Frame")
     ESPDistanceFrame.Name = "ESPDistanceFrame"
@@ -980,11 +772,6 @@ local function createGUI()
     local ESPDistanceCorner = Instance.new("UICorner")
     ESPDistanceCorner.CornerRadius = UDim.new(0, 8)
     ESPDistanceCorner.Parent = ESPDistanceFrame
-
-    local ESPDistanceStroke = Instance.new("UIStroke")
-    ESPDistanceStroke.Color = Color3.fromRGB(150, 70, 220)
-    ESPDistanceStroke.Thickness = 1
-    ESPDistanceStroke.Parent = ESPDistanceFrame
 
     local ESPDistanceLabel = Instance.new("TextLabel")
     ESPDistanceLabel.Name = "ESPDistanceLabel"
@@ -1015,11 +802,6 @@ local function createGUI()
     ESPDistanceToggleCorner.CornerRadius = UDim.new(0, 6)
     ESPDistanceToggleCorner.Parent = ESPDistanceToggle
 
-    local ESPDistanceToggleStroke = Instance.new("UIStroke")
-    ESPDistanceToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    ESPDistanceToggleStroke.Thickness = 1
-    ESPDistanceToggleStroke.Parent = ESPDistanceToggle
-
     -- ESP Count
     local ESPCountFrame = Instance.new("Frame")
     ESPCountFrame.Name = "ESPCountFrame"
@@ -1033,11 +815,6 @@ local function createGUI()
     local ESPCountCorner = Instance.new("UICorner")
     ESPCountCorner.CornerRadius = UDim.new(0, 8)
     ESPCountCorner.Parent = ESPCountFrame
-
-    local ESPCountStroke = Instance.new("UIStroke")
-    ESPCountStroke.Color = Color3.fromRGB(150, 70, 220)
-    ESPCountStroke.Thickness = 1
-    ESPCountStroke.Parent = ESPCountFrame
 
     local ESPCountLabel = Instance.new("TextLabel")
     ESPCountLabel.Name = "ESPCountLabel"
@@ -1068,11 +845,6 @@ local function createGUI()
     ESPCountToggleCorner.CornerRadius = UDim.new(0, 6)
     ESPCountToggleCorner.Parent = ESPCountToggle
 
-    local ESPCountToggleStroke = Instance.new("UIStroke")
-    ESPCountToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    ESPCountToggleStroke.Thickness = 1
-    ESPCountToggleStroke.Parent = ESPCountToggle
-
     -- ESP Count Text
     espCountText = Instance.new("TextLabel")
     espCountText.Name = "ESPCountText"
@@ -1090,11 +862,6 @@ local function createGUI()
     local ESPCountTextCorner = Instance.new("UICorner")
     ESPCountTextCorner.CornerRadius = UDim.new(0, 6)
     ESPCountTextCorner.Parent = espCountText
-
-    local ESPCountTextStroke = Instance.new("UIStroke")
-    ESPCountTextStroke.Color = Color3.fromRGB(150, 70, 220)
-    ESPCountTextStroke.Thickness = 1
-    ESPCountTextStroke.Parent = espCountText
 
     -- AimBot Content
     local AimBotContent = Instance.new("Frame")
@@ -1117,11 +884,6 @@ local function createGUI()
     local AimBotCorner = Instance.new("UICorner")
     AimBotCorner.CornerRadius = UDim.new(0, 8)
     AimBotCorner.Parent = AimBotFrame
-
-    local AimBotStroke = Instance.new("UIStroke")
-    AimBotStroke.Color = Color3.fromRGB(150, 70, 220)
-    AimBotStroke.Thickness = 1
-    AimBotStroke.Parent = AimBotFrame
 
     local AimBotLabel = Instance.new("TextLabel")
     AimBotLabel.Name = "AimBotLabel"
@@ -1152,11 +914,6 @@ local function createGUI()
     AimBotToggleCorner.CornerRadius = UDim.new(0, 6)
     AimBotToggleCorner.Parent = AimBotToggle
 
-    local AimBotToggleStroke = Instance.new("UIStroke")
-    AimBotToggleStroke.Color = Color3.fromRGB(180, 80, 255)
-    AimBotToggleStroke.Thickness = 1
-    AimBotToggleStroke.Parent = AimBotToggle
-
     -- FOV Slider
     local FOVFrame = Instance.new("Frame")
     FOVFrame.Name = "FOVFrame"
@@ -1170,11 +927,6 @@ local function createGUI()
     local FOVCorner = Instance.new("UICorner")
     FOVCorner.CornerRadius = UDim.new(0, 8)
     FOVCorner.Parent = FOVFrame
-
-    local FOVStroke = Instance.new("UIStroke")
-    FOVStroke.Color = Color3.fromRGB(150, 70, 220)
-    FOVStroke.Thickness = 1
-    FOVStroke.Parent = FOVFrame
 
     local FOVLabel = Instance.new("TextLabel")
     FOVLabel.Name = "FOVLabel"
@@ -1200,11 +952,6 @@ local function createGUI()
     local FOVSliderCorner = Instance.new("UICorner")
     FOVSliderCorner.CornerRadius = UDim.new(0, 6)
     FOVSliderCorner.Parent = FOVSlider
-
-    local FOVSliderStroke = Instance.new("UIStroke")
-    FOVSliderStroke.Color = Color3.fromRGB(150, 70, 220)
-    FOVSliderStroke.Thickness = 1
-    FOVSliderStroke.Parent = FOVSlider
 
     local FOVFill = Instance.new("Frame")
     FOVFill.Name = "FOVFill"
@@ -1259,22 +1006,29 @@ local function createGUI()
         SpeedHackSlider.Visible = speedHackEnabled
         
         if speedHackEnabled then
-            while speedHackEnabled and player.Character and player.Character:FindFirstChild("Humanoid") do
-                player.Character.Humanoid.WalkSpeed = currentSpeed
-                RunService.Heartbeat:Wait()
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = currentSpeed
             end
-        elseif player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = 16
+        else
+            local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = 16
+            end
         end
     end)
 
     -- Speed Hack Slider
+    local speedSliderConnection
     SpeedHackSlider.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local connection
-            connection = RunService.Heartbeat:Connect(function()
+            if speedSliderConnection then
+                speedSliderConnection:Disconnect()
+            end
+            
+            speedSliderConnection = RunService.Heartbeat:Connect(function()
                 if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                    connection:Disconnect()
+                    speedSliderConnection:Disconnect()
                     return
                 end
                 
@@ -1283,11 +1037,14 @@ local function createGUI()
                 local sliderSize = SpeedHackSlider.AbsoluteSize
                 
                 local relativeX = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
-                currentSpeed = math.floor(16 + (relativeX * 84)) -- от 16 до 100
+                currentSpeed = math.floor(16 + (relativeX * 84))
                 SpeedValue.Text = "Speed: " .. currentSpeed
                 
-                if speedHackEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
-                    player.Character.Humanoid.WalkSpeed = currentSpeed
+                if speedHackEnabled and player.Character then
+                    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.WalkSpeed = currentSpeed
+                    end
                 end
             end)
         end
@@ -1299,12 +1056,14 @@ local function createGUI()
         toggleButton(JumpHackToggle, jumpHackEnabled)
         
         if jumpHackEnabled then
-            while jumpHackEnabled and player.Character and player.Character:FindFirstChild("Humanoid") do
-                player.Character.Humanoid.JumpPower = 100
-                RunService.Heartbeat:Wait()
-            end
-        elseif player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.JumpPower = 50
+            UserInputService.JumpRequest:Connect(function()
+                if jumpHackEnabled and player.Character then
+                    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+                    end
+                end
+            end)
         end
     end)
 
@@ -1337,72 +1096,24 @@ local function createGUI()
     ESPTracersToggle.MouseButton1Click:Connect(function()
         espTracersEnabled = not espTracersEnabled
         toggleButton(ESPTracersToggle, espTracersEnabled)
-        
-        if espTracersEnabled then
-            for _, otherPlayer in pairs(Players:GetPlayers()) do
-                if otherPlayer ~= player then
-                    createESP(otherPlayer)
-                end
-            end
-        else
-            for otherPlayer, _ in pairs(espObjects) do
-                cleanupESP(otherPlayer)
-            end
-        end
     end)
 
     -- ESP Box Toggle
     ESPBoxToggle.MouseButton1Click:Connect(function()
         espBoxEnabled = not espBoxEnabled
         toggleButton(ESPBoxToggle, espBoxEnabled)
-        
-        if espBoxEnabled then
-            for _, otherPlayer in pairs(Players:GetPlayers()) do
-                if otherPlayer ~= player then
-                    createESP(otherPlayer)
-                end
-            end
-        else
-            for otherPlayer, _ in pairs(espObjects) do
-                cleanupESP(otherPlayer)
-            end
-        end
     end)
 
     -- ESP Health Toggle
     ESPHealthToggle.MouseButton1Click:Connect(function()
         espHealthEnabled = not espHealthEnabled
         toggleButton(ESPHealthToggle, espHealthEnabled)
-        
-        if espHealthEnabled then
-            for _, otherPlayer in pairs(Players:GetPlayers()) do
-                if otherPlayer ~= player then
-                    createESP(otherPlayer)
-                end
-            end
-        else
-            for otherPlayer, _ in pairs(espObjects) do
-                cleanupESP(otherPlayer)
-            end
-        end
     end)
 
     -- ESP Distance Toggle
     ESPDistanceToggle.MouseButton1Click:Connect(function()
         espDistanceEnabled = not espDistanceEnabled
         toggleButton(ESPDistanceToggle, espDistanceEnabled)
-        
-        if espDistanceEnabled then
-            for _, otherPlayer in pairs(Players:GetPlayers()) do
-                if otherPlayer ~= player then
-                    createESP(otherPlayer)
-                end
-            end
-        else
-            for otherPlayer, _ in pairs(espObjects) do
-                cleanupESP(otherPlayer)
-            end
-        end
     end)
 
     -- ESP Count Toggle
@@ -1410,15 +1121,6 @@ local function createGUI()
         espCountEnabled = not espCountEnabled
         toggleButton(ESPCountToggle, espCountEnabled)
         espCountText.Visible = espCountEnabled
-        
-        if espCountEnabled then
-            while espCountEnabled do
-                updateESPCount()
-                wait(0.5)
-            end
-        else
-            espCountText.Visible = false
-        end
     end)
 
     -- AimBot Toggle
@@ -1427,19 +1129,26 @@ local function createGUI()
         toggleButton(AimBotToggle, aimBotEnabled)
         
         if aimBotEnabled then
+            if not fovCircle then
+                createFOVCircle()
+            end
             fovCircle.Visible = true
-        else
+        elseif fovCircle then
             fovCircle.Visible = false
         end
     end)
 
     -- FOV Slider
+    local fovSliderConnection
     FOVSlider.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            local connection
-            connection = RunService.Heartbeat:Connect(function()
+            if fovSliderConnection then
+                fovSliderConnection:Disconnect()
+            end
+            
+            fovSliderConnection = RunService.Heartbeat:Connect(function()
                 if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                    connection:Disconnect()
+                    fovSliderConnection:Disconnect()
                     return
                 end
                 
@@ -1448,7 +1157,7 @@ local function createGUI()
                 local sliderSize = FOVSlider.AbsoluteSize
                 
                 local relativeX = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
-                aimBotFOV = math.floor(10 + (relativeX * 190)) -- от 10 до 200
+                aimBotFOV = math.floor(10 + (relativeX * 190))
                 FOVLabel.Text = "AimBot FOV: " .. aimBotFOV
                 FOVFill.Size = UDim2.new((aimBotFOV - 10) / 190, 0, 1, 0)
                 
@@ -1457,20 +1166,35 @@ local function createGUI()
         end
     end)
 
-    -- Сохраняем позицию при перетаскивании
-    MainFrame.DragStopped:Connect(function()
-        savedPosition = MainFrame.Position
-    end)
-
-    -- Player Added/Removed
-    Players.PlayerAdded:Connect(function(otherPlayer)
-        if espTracersEnabled or espBoxEnabled or espHealthEnabled or espDistanceEnabled then
-            createESP(otherPlayer)
+    -- AimBot Logic
+    RunService.Heartbeat:Connect(function()
+        if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            local closestPlayer = nil
+            local closestDistance = math.huge
+            
+            for _, otherPlayer in pairs(Players:GetPlayers()) do
+                if otherPlayer ~= player and otherPlayer.Character and otherPlayer.Character:FindFirstChild("HumanoidRootPart") and otherPlayer.Character:FindFirstChild("Humanoid") and otherPlayer.Character.Humanoid.Health > 0 then
+                    local targetRoot = otherPlayer.Character.HumanoidRootPart
+                    local distance = (player.Character.HumanoidRootPart.Position - targetRoot.Position).Magnitude
+                    
+                    if isInFOV(targetRoot.Position) and isPlayerVisible(otherPlayer) then
+                        if distance < closestDistance then
+                            closestDistance = distance
+                            closestPlayer = otherPlayer
+                        end
+                    end
+                end
+            end
+            
+            if closestPlayer then
+                workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, closestPlayer.Character.HumanoidRootPart.Position)
+            end
         end
     end)
 
-    Players.PlayerRemoving:Connect(function(otherPlayer)
-        cleanupESP(otherPlayer)
+    -- Update ESP Count
+    RunService.Heartbeat:Connect(function()
+        updateESPCount()
     end)
 
     -- Initialize ESP for existing players
@@ -1480,13 +1204,28 @@ local function createGUI()
         end
     end
 
-    -- Initialize FOV Circle
-    createFOVCircle()
+    -- Player Added/Removed
+    Players.PlayerAdded:Connect(function(otherPlayer)
+        createESP(otherPlayer)
+    end)
+
+    Players.PlayerRemoving:Connect(function(otherPlayer)
+        cleanupESP(otherPlayer)
+    end)
+
+    -- Сохраняем позицию при перетаскивании
+    MainFrame.DragStopped:Connect(function()
+        savedPosition = MainFrame.Position
+    end)
 end
 
 -- Main execution
-if player.PlayerGui:FindFirstChild("SANSTRO_GUI") then
-    player.PlayerGui.SANSTRO_GUI:Destroy()
-end
-
 createGUI()
+createFOVCircle()
+
+-- Восстанавливаем GUI после смерти
+player.CharacterAdded:Connect(function()
+    wait(1)
+    createGUI()
+    createFOVCircle()
+end)
