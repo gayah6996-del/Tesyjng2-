@@ -36,6 +36,40 @@ local espConnections = {}
 local espCountText = nil
 local noclipConnection = nil
 
+-- Сохраняем состояния при смерти
+local function saveStates()
+    return {
+        speedHackEnabled = speedHackEnabled,
+        jumpHackEnabled = jumpHackEnabled,
+        noclipEnabled = noclipEnabled,
+        espTracersEnabled = espTracersEnabled,
+        espBoxEnabled = espBoxEnabled,
+        espHealthEnabled = espHealthEnabled,
+        espDistanceEnabled = espDistanceEnabled,
+        espCountEnabled = espCountEnabled,
+        aimBotEnabled = aimBotEnabled,
+        currentSpeed = currentSpeed,
+        aimBotFOV = aimBotFOV
+    }
+end
+
+local savedStates = saveStates()
+
+-- Восстанавливаем состояния после смерти
+local function restoreStates(states)
+    speedHackEnabled = states.speedHackEnabled or false
+    jumpHackEnabled = states.jumpHackEnabled or false
+    noclipEnabled = states.noclipEnabled or false
+    espTracersEnabled = states.espTracersEnabled or false
+    espBoxEnabled = states.espBoxEnabled or false
+    espHealthEnabled = states.espHealthEnabled or false
+    espDistanceEnabled = states.espDistanceEnabled or false
+    espCountEnabled = states.espCountEnabled or false
+    aimBotEnabled = states.aimBotEnabled or false
+    currentSpeed = states.currentSpeed or 16
+    aimBotFOV = states.aimBotFOV or 50
+end
+
 -- Функция создания FOV Circle
 local function createFOVCircle()
     if fovCircle then
@@ -331,6 +365,41 @@ local function isInFOV(targetPosition)
     return distance <= aimBotFOV
 end
 
+-- Улучшенная функция для слайдеров на мобильных устройствах
+local function createMobileSlider(sliderFrame, callback)
+    local isSliding = false
+    
+    sliderFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isSliding = true
+            
+            while isSliding do
+                local touchPos
+                if input.UserInputType == Enum.UserInputType.Touch then
+                    touchPos = input.Position
+                else
+                    touchPos = UserInputService:GetMouseLocation()
+                end
+                
+                local sliderAbsolutePos = sliderFrame.AbsolutePosition
+                local sliderAbsoluteSize = sliderFrame.AbsoluteSize
+                
+                local relativeX = math.clamp((touchPos.X - sliderAbsolutePos.X) / sliderAbsoluteSize.X, 0, 1)
+                
+                callback(relativeX)
+                
+                RunService.Heartbeat:Wait()
+            end
+        end
+    end)
+    
+    sliderFrame.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isSliding = false
+        end
+    end)
+end
+
 -- Функция создания GUI
 local function createGUI()
     if ScreenGui then
@@ -499,9 +568,9 @@ local function createGUI()
     SpeedHackToggle.Name = "SpeedHackToggle"
     SpeedHackToggle.Size = UDim2.new(0.3, 0, 0, 30)
     SpeedHackToggle.Position = UDim2.new(0.7, 0, 0, 10)
-    SpeedHackToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    SpeedHackToggle.BackgroundColor3 = speedHackEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     SpeedHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    SpeedHackToggle.Text = "OFF"
+    SpeedHackToggle.Text = speedHackEnabled and "ON" or "OFF"
     SpeedHackToggle.Font = Enum.Font.Gotham
     SpeedHackToggle.TextSize = 12
     SpeedHackToggle.ZIndex = 2
@@ -511,19 +580,32 @@ local function createGUI()
     SpeedHackToggleCorner.CornerRadius = UDim.new(0, 6)
     SpeedHackToggleCorner.Parent = SpeedHackToggle
 
-    local SpeedHackSlider = Instance.new("Frame")
+    local SpeedHackSlider = Instance.new("TextButton")
     SpeedHackSlider.Name = "SpeedHackSlider"
     SpeedHackSlider.Size = UDim2.new(1, -20, 0, 30)
     SpeedHackSlider.Position = UDim2.new(0, 10, 0, 45)
     SpeedHackSlider.BackgroundColor3 = Color3.fromRGB(60, 20, 100)
     SpeedHackSlider.BorderSizePixel = 0
-    SpeedHackSlider.Visible = false
+    SpeedHackSlider.Text = ""
+    SpeedHackSlider.Visible = speedHackEnabled
     SpeedHackSlider.ZIndex = 2
     SpeedHackSlider.Parent = SpeedHackFrame
 
     local SpeedHackSliderCorner = Instance.new("UICorner")
     SpeedHackSliderCorner.CornerRadius = UDim.new(0, 6)
     SpeedHackSliderCorner.Parent = SpeedHackSlider
+
+    local SpeedFill = Instance.new("Frame")
+    SpeedFill.Name = "SpeedFill"
+    SpeedFill.Size = UDim2.new((currentSpeed - 16) / 84, 0, 1, 0)
+    SpeedFill.BackgroundColor3 = Color3.fromRGB(180, 80, 255)
+    SpeedFill.BorderSizePixel = 0
+    SpeedFill.ZIndex = 3
+    SpeedFill.Parent = SpeedHackSlider
+
+    local SpeedFillCorner = Instance.new("UICorner")
+    SpeedFillCorner.CornerRadius = UDim.new(0, 6)
+    SpeedFillCorner.Parent = SpeedFill
 
     local SpeedValue = Instance.new("TextLabel")
     SpeedValue.Name = "SpeedValue"
@@ -533,7 +615,7 @@ local function createGUI()
     SpeedValue.Text = "Speed: " .. currentSpeed
     SpeedValue.Font = Enum.Font.Gotham
     SpeedValue.TextSize = 12
-    SpeedValue.ZIndex = 2
+    SpeedValue.ZIndex = 4
     SpeedValue.Parent = SpeedHackSlider
 
     -- Jump Hack
@@ -567,9 +649,9 @@ local function createGUI()
     JumpHackToggle.Name = "JumpHackToggle"
     JumpHackToggle.Size = UDim2.new(0.3, 0, 0, 30)
     JumpHackToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    JumpHackToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    JumpHackToggle.BackgroundColor3 = jumpHackEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     JumpHackToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    JumpHackToggle.Text = "OFF"
+    JumpHackToggle.Text = jumpHackEnabled and "ON" or "OFF"
     JumpHackToggle.Font = Enum.Font.Gotham
     JumpHackToggle.TextSize = 12
     JumpHackToggle.ZIndex = 2
@@ -610,9 +692,9 @@ local function createGUI()
     NoClipToggle.Name = "NoClipToggle"
     NoClipToggle.Size = UDim2.new(0.3, 0, 0, 30)
     NoClipToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    NoClipToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    NoClipToggle.BackgroundColor3 = noclipEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     NoClipToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    NoClipToggle.Text = "OFF"
+    NoClipToggle.Text = noclipEnabled and "ON" or "OFF"
     NoClipToggle.Font = Enum.Font.Gotham
     NoClipToggle.TextSize = 12
     NoClipToggle.ZIndex = 2
@@ -661,9 +743,9 @@ local function createGUI()
     ESPTracersToggle.Name = "ESPTracersToggle"
     ESPTracersToggle.Size = UDim2.new(0.3, 0, 0, 30)
     ESPTracersToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    ESPTracersToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    ESPTracersToggle.BackgroundColor3 = espTracersEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     ESPTracersToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ESPTracersToggle.Text = "OFF"
+    ESPTracersToggle.Text = espTracersEnabled and "ON" or "OFF"
     ESPTracersToggle.Font = Enum.Font.Gotham
     ESPTracersToggle.TextSize = 12
     ESPTracersToggle.ZIndex = 2
@@ -704,9 +786,9 @@ local function createGUI()
     ESPBoxToggle.Name = "ESPBoxToggle"
     ESPBoxToggle.Size = UDim2.new(0.3, 0, 0, 30)
     ESPBoxToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    ESPBoxToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    ESPBoxToggle.BackgroundColor3 = espBoxEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     ESPBoxToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ESPBoxToggle.Text = "OFF"
+    ESPBoxToggle.Text = espBoxEnabled and "ON" or "OFF"
     ESPBoxToggle.Font = Enum.Font.Gotham
     ESPBoxToggle.TextSize = 12
     ESPBoxToggle.ZIndex = 2
@@ -747,9 +829,9 @@ local function createGUI()
     ESPHealthToggle.Name = "ESPHealthToggle"
     ESPHealthToggle.Size = UDim2.new(0.3, 0, 0, 30)
     ESPHealthToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    ESPHealthToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    ESPHealthToggle.BackgroundColor3 = espHealthEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     ESPHealthToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ESPHealthToggle.Text = "OFF"
+    ESPHealthToggle.Text = espHealthEnabled and "ON" or "OFF"
     ESPHealthToggle.Font = Enum.Font.Gotham
     ESPHealthToggle.TextSize = 12
     ESPHealthToggle.ZIndex = 2
@@ -790,9 +872,9 @@ local function createGUI()
     ESPDistanceToggle.Name = "ESPDistanceToggle"
     ESPDistanceToggle.Size = UDim2.new(0.3, 0, 0, 30)
     ESPDistanceToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    ESPDistanceToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    ESPDistanceToggle.BackgroundColor3 = espDistanceEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     ESPDistanceToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ESPDistanceToggle.Text = "OFF"
+    ESPDistanceToggle.Text = espDistanceEnabled and "ON" or "OFF"
     ESPDistanceToggle.Font = Enum.Font.Gotham
     ESPDistanceToggle.TextSize = 12
     ESPDistanceToggle.ZIndex = 2
@@ -833,9 +915,9 @@ local function createGUI()
     ESPCountToggle.Name = "ESPCountToggle"
     ESPCountToggle.Size = UDim2.new(0.3, 0, 0, 30)
     ESPCountToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    ESPCountToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    ESPCountToggle.BackgroundColor3 = espCountEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     ESPCountToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    ESPCountToggle.Text = "OFF"
+    ESPCountToggle.Text = espCountEnabled and "ON" or "OFF"
     ESPCountToggle.Font = Enum.Font.Gotham
     ESPCountToggle.TextSize = 12
     ESPCountToggle.ZIndex = 2
@@ -855,7 +937,7 @@ local function createGUI()
     espCountText.Text = "Players: 0"
     espCountText.Font = Enum.Font.Gotham
     espCountText.TextSize = 14
-    espCountText.Visible = false
+    espCountText.Visible = espCountEnabled
     espCountText.ZIndex = 2
     espCountText.Parent = VisualContent
 
@@ -902,9 +984,9 @@ local function createGUI()
     AimBotToggle.Name = "AimBotToggle"
     AimBotToggle.Size = UDim2.new(0.3, 0, 0, 30)
     AimBotToggle.Position = UDim2.new(0.7, 0, 0.125, 0)
-    AimBotToggle.BackgroundColor3 = Color3.fromRGB(80, 30, 120)
+    AimBotToggle.BackgroundColor3 = aimBotEnabled and Color3.fromRGB(180, 80, 255) or Color3.fromRGB(80, 30, 120)
     AimBotToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    AimBotToggle.Text = "OFF"
+    AimBotToggle.Text = aimBotEnabled and "ON" or "OFF"
     AimBotToggle.Font = Enum.Font.Gotham
     AimBotToggle.TextSize = 12
     AimBotToggle.ZIndex = 2
@@ -958,7 +1040,7 @@ local function createGUI()
     FOVFill.Size = UDim2.new((aimBotFOV - 10) / 190, 0, 1, 0)
     FOVFill.BackgroundColor3 = Color3.fromRGB(180, 80, 255)
     FOVFill.BorderSizePixel = 0
-    FOVFill.ZIndex = 2
+    FOVFill.ZIndex = 3
     FOVFill.Parent = FOVSlider
 
     local FOVFillCorner = Instance.new("UICorner")
@@ -970,6 +1052,28 @@ local function createGUI()
 
     -- Create Open/Close Button
     createOpenCloseButton()
+
+    -- Mobile слайдер для скорости
+    createMobileSlider(SpeedHackSlider, function(relativeX)
+        currentSpeed = math.floor(16 + (relativeX * 84))
+        SpeedValue.Text = "Speed: " .. currentSpeed
+        SpeedFill.Size = UDim2.new(relativeX, 0, 1, 0)
+        
+        if speedHackEnabled and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = currentSpeed
+            end
+        end
+    end)
+
+    -- Mobile слайдер для FOV
+    createMobileSlider(FOVSlider, function(relativeX)
+        aimBotFOV = math.floor(10 + (relativeX * 190))
+        FOVLabel.Text = "AimBot FOV: " .. aimBotFOV
+        FOVFill.Size = UDim2.new(relativeX, 0, 1, 0)
+        updateFOVCircle()
+    end)
 
     -- Tab Switching
     MovementTab.MouseButton1Click:Connect(function()
@@ -1018,52 +1122,19 @@ local function createGUI()
         end
     end)
 
-    -- Speed Hack Slider
-    local speedSliderConnection
-    SpeedHackSlider.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if speedSliderConnection then
-                speedSliderConnection:Disconnect()
-            end
-            
-            speedSliderConnection = RunService.Heartbeat:Connect(function()
-                if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                    speedSliderConnection:Disconnect()
-                    return
-                end
-                
-                local mousePos = UserInputService:GetMouseLocation()
-                local sliderPos = SpeedHackSlider.AbsolutePosition
-                local sliderSize = SpeedHackSlider.AbsoluteSize
-                
-                local relativeX = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
-                currentSpeed = math.floor(16 + (relativeX * 84))
-                SpeedValue.Text = "Speed: " .. currentSpeed
-                
-                if speedHackEnabled and player.Character then
-                    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid.WalkSpeed = currentSpeed
-                    end
-                end
-            end)
-        end
-    end)
-
     -- Jump Hack Toggle
     JumpHackToggle.MouseButton1Click:Connect(function()
         jumpHackEnabled = not jumpHackEnabled
         toggleButton(JumpHackToggle, jumpHackEnabled)
-        
-        if jumpHackEnabled then
-            UserInputService.JumpRequest:Connect(function()
-                if jumpHackEnabled and player.Character then
-                    local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
-                    if humanoid then
-                        humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-                    end
-                end
-            end)
+    end)
+
+    -- Infinite Jump
+    UserInputService.JumpRequest:Connect(function()
+        if jumpHackEnabled and player.Character then
+            local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
         end
     end)
 
@@ -1138,34 +1209,6 @@ local function createGUI()
         end
     end)
 
-    -- FOV Slider
-    local fovSliderConnection
-    FOVSlider.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            if fovSliderConnection then
-                fovSliderConnection:Disconnect()
-            end
-            
-            fovSliderConnection = RunService.Heartbeat:Connect(function()
-                if not UserInputService:IsMouseButtonPressed(Enum.UserInputType.MouseButton1) then
-                    fovSliderConnection:Disconnect()
-                    return
-                end
-                
-                local mousePos = UserInputService:GetMouseLocation()
-                local sliderPos = FOVSlider.AbsolutePosition
-                local sliderSize = FOVSlider.AbsoluteSize
-                
-                local relativeX = math.clamp((mousePos.X - sliderPos.X) / sliderSize.X, 0, 1)
-                aimBotFOV = math.floor(10 + (relativeX * 190))
-                FOVLabel.Text = "AimBot FOV: " .. aimBotFOV
-                FOVFill.Size = UDim2.new((aimBotFOV - 10) / 190, 0, 1, 0)
-                
-                updateFOVCircle()
-            end)
-        end
-    end)
-
     -- AimBot Logic
     RunService.Heartbeat:Connect(function()
         if aimBotEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
@@ -1223,9 +1266,42 @@ end
 createGUI()
 createFOVCircle()
 
--- Восстанавливаем GUI после смерти
+-- Сохраняем состояния перед смертью
+player.CharacterRemoving:Connect(function()
+    savedStates = saveStates()
+end)
+
+-- Восстанавливаем GUI и состояния после смерти
 player.CharacterAdded:Connect(function()
     wait(1)
+    restoreStates(savedStates)
     createGUI()
     createFOVCircle()
+    
+    -- Восстанавливаем функции после смерти
+    if speedHackEnabled and player.Character then
+        local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = currentSpeed
+        end
+    end
+    
+    if noclipEnabled then
+        if noclipConnection then
+            noclipConnection:Disconnect()
+        end
+        noclipConnection = RunService.Stepped:Connect(function()
+            if player.Character then
+                for _, part in pairs(player.Character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    end
+    
+    if aimBotEnabled and fovCircle then
+        fovCircle.Visible = true
+    end
 end)
