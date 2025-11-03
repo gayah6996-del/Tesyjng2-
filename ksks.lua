@@ -102,7 +102,7 @@ ContentFrame.Parent = MainFrame
 -- Секция Farm Candies
 local FarmSection = Instance.new("Frame")
 FarmSection.Name = "FarmSection"
-FarmSection.Size = UDim2.new(1, 0, 0, 200)
+FarmSection.Size = UDim2.new(1, 0, 0, 250)
 FarmSection.Position = UDim2.new(0, 0, 0, 10)
 FarmSection.BackgroundColor3 = Color3.fromRGB(65, 0, 110)
 FarmSection.BorderColor3 = Color3.fromRGB(148, 0, 211)
@@ -124,7 +124,7 @@ FarmTitle.Parent = FarmSection
 local AutoFarmToggle = Instance.new("TextButton")
 AutoFarmToggle.Name = "AutoFarmToggle"
 AutoFarmToggle.Size = UDim2.new(0.9, 0, 0, 50)
-AutoFarmToggle.Position = UDim2.new(0.05, 0, 0.3, 0)
+AutoFarmToggle.Position = UDim2.new(0.05, 0, 0.2, 0)
 AutoFarmToggle.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
 AutoFarmToggle.BorderSizePixel = 0
 AutoFarmToggle.Text = "🔴 AutoFarm Candies: OFF"
@@ -137,7 +137,7 @@ AutoFarmToggle.Parent = FarmSection
 local SpeedSection = Instance.new("Frame")
 SpeedSection.Name = "SpeedSection"
 SpeedSection.Size = UDim2.new(0.9, 0, 0, 80)
-SpeedSection.Position = UDim2.new(0.05, 0, 0.6, 0)
+SpeedSection.Position = UDim2.new(0.05, 0, 0.45, 0)
 SpeedSection.BackgroundColor3 = Color3.fromRGB(47, 0, 82)
 SpeedSection.BorderColor3 = Color3.fromRGB(148, 0, 211)
 SpeedSection.BorderSizePixel = 2
@@ -183,6 +183,19 @@ SliderButton.Text = ""
 SliderButton.ZIndex = 2
 SliderButton.Parent = SliderTrack
 
+-- Счетчик конфет
+local CandyCounter = Instance.new("TextLabel")
+CandyCounter.Name = "CandyCounter"
+CandyCounter.Size = UDim2.new(0.9, 0, 0, 30)
+CandyCounter.Position = UDim2.new(0.05, 0, 0.85, 0)
+CandyCounter.BackgroundTransparency = 1
+CandyCounter.Text = "🍭 Candies: 0"
+CandyCounter.TextColor3 = Color3.fromRGB(255, 215, 0)
+CandyCounter.TextScaled = true
+CandyCounter.Font = Enum.Font.GothamBold
+CandyCounter.TextXAlignment = Enum.TextXAlignment.Left
+CandyCounter.Parent = FarmSection
+
 -- Переменные
 local autoFarmEnabled = false
 local farmSpeed = 1
@@ -190,12 +203,33 @@ local menuHidden = false
 local connection
 local sliding = false
 
--- Функции
+-- Функция для подсчета конфет
+local function countCandies()
+    local count = 0
+    
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name:lower():find("candy") or obj.Name:lower():find("coin") or obj.Name:lower():find("reward") then
+            if obj:IsA("Part") or obj:IsA("MeshPart") then
+                count = count + 1
+            end
+        end
+    end
+    
+    return count
+end
+
+-- Функция для обновления счетчика
+local function updateCandyCounter()
+    local candyCount = countCandies()
+    CandyCounter.Text = "🍭 Candies: " .. tostring(candyCount)
+end
+
+-- Функция для поиска конфет (для автофарма)
 local function findCandies()
     local candies = {}
     
     for _, obj in pairs(workspace:GetDescendants()) do
-        if obj.Name:lower():find("candy") or obj.Name:lower():find("coin") then
+        if obj.Name:lower():find("candy") or obj.Name:lower():find("coin") or obj.Name:lower():find("reward") then
             if obj:IsA("Part") or obj:IsA("MeshPart") then
                 table.insert(candies, obj)
             end
@@ -313,6 +347,12 @@ player.CharacterAdded:Connect(function(newChar)
     end
 end)
 
+-- Автоматическое обновление счетчика конфет
+local candyUpdateConnection
+candyUpdateConnection = RunService.Heartbeat:Connect(function()
+    updateCandyCounter()
+end)
+
 -- Установка начальной позиции слайдера
 wait(0.5)
 updateSlider(SliderTrack.AbsolutePosition.X + 20)
@@ -320,3 +360,4 @@ updateSlider(SliderTrack.AbsolutePosition.X + 20)
 print("✅ SANSTRO MM2 Menu loaded successfully!")
 print("🎃 Halloween theme activated!")
 print("📱 Working on mobile!")
+print("🍭 Candy counter added!")
