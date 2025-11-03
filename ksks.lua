@@ -1,639 +1,339 @@
--- Rayfield Interface Script
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+-- SANSTRO MM2 Script
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
--- Создание основного окна
-local Window = Rayfield:CreateWindow({
-    Name = "SANSTRO MENU",
-    LoadingTitle = "Загрузка SANSTRO MENU...",
-    LoadingSubtitle = "by Script Developer",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = nil,
-        FileName = "SANSTRO_MENU"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = true
-    },
-    KeySystem = false,
-})
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
 
--- Создание вкладок
-local ESPTab = Window:CreateTab("ESP", 4483362458)
-local AimbotTab = Window:CreateTab("Aimbot", 4483362458)
-local MoreTab = Window:CreateTab("More", 4483362458)
+-- Переменные для меню
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local TopBar = Instance.new("Frame")
+local Title = Instance.new("TextLabel")
+local CloseButton = Instance.new("TextButton")
+local HideButton = Instance.new("TextButton")
+local OpenButton = Instance.new("TextButton")
+local ScrollFrame = Instance.new("ScrollingFrame")
+local FarmSection = Instance.new("Frame")
+local FarmTitle = Instance.new("TextLabel")
+local AutoFarmToggle = Instance.new("TextButton")
+local SpeedSlider = Instance.new("Frame")
+local SpeedTitle = Instance.new("TextLabel")
+local SpeedValue = Instance.new("TextLabel")
+local Slider = Instance.new("Frame")
+local SliderButton = Instance.new("TextButton")
 
--- Переменные для ESP
-local ESP = {
-    Tracers = false,
-    Box = false,
-    Health = false,
-    Name = false
-}
+-- Настройки
+local autoFarmEnabled = false
+local farmSpeed = 1
+local menuHidden = false
+local connection
 
-local espObjects = {}
+-- Создание GUI
+ScreenGui.Name = "SANSTROMM2"
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
--- Функция для создания ESP
-function createESP(player)
-    if player == game.Players.LocalPlayer then return end
+-- Главный фрейм
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 350, 0, 400)
+MainFrame.Position = UDim2.new(0.5, -175, 0.5, -200)
+MainFrame.BackgroundColor3 = Color3.fromRGB(75, 0, 130) -- Темно-фиолетовый
+MainFrame.BorderColor3 = Color3.fromRGB(148, 0, 211) -- Фиолетовый
+MainFrame.BorderSizePixel = 3
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+-- Верхняя панель
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 40)
+TopBar.BackgroundColor3 = Color3.fromRGB(106, 13, 173) -- Фиолетовый хеллоуин
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+
+-- Заголовок
+Title.Name = "Title"
+Title.Size = UDim2.new(0.6, 0, 1, 0)
+Title.Position = UDim2.new(0.02, 0, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "SANSTRO MM2"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextScaled = true
+Title.Font = Enum.Font.GothamBold
+Title.TextStrokeTransparency = 0.8
+Title.Parent = TopBar
+
+-- Кнопка закрытия
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 30, 0, 30)
+CloseButton.Position = UDim2.new(0.9, 0, 0.12, 0)
+CloseButton.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+CloseButton.BorderSizePixel = 0
+CloseButton.Text = "X"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextScaled = true
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = TopBar
+
+-- Кнопка скрытия
+HideButton.Name = "HideButton"
+HideButton.Size = UDim2.new(0, 30, 0, 30)
+HideButton.Position = UDim2.new(0.8, 0, 0.12, 0)
+HideButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+HideButton.BorderSizePixel = 0
+HideButton.Text = "_"
+HideButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+HideButton.TextScaled = true
+HideButton.Font = Enum.Font.GothamBold
+HideButton.Parent = TopBar
+
+-- Кнопка открытия (изначально скрыта)
+OpenButton.Name = "OpenButton"
+OpenButton.Size = UDim2.new(0, 60, 0, 60)
+OpenButton.Position = UDim2.new(0, 10, 0, 10)
+OpenButton.BackgroundColor3 = Color3.fromRGB(106, 13, 173)
+OpenButton.BorderColor3 = Color3.fromRGB(148, 0, 211)
+OpenButton.BorderSizePixel = 2
+OpenButton.Text = "MENU"
+OpenButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+OpenButton.TextScaled = true
+OpenButton.Font = Enum.Font.GothamBold
+OpenButton.Visible = false
+OpenButton.Parent = ScreenGui
+
+-- Скролл фрейм
+ScrollFrame.Name = "ScrollFrame"
+ScrollFrame.Size = UDim2.new(1, -10, 1, -50)
+ScrollFrame.Position = UDim2.new(0, 5, 0, 45)
+ScrollFrame.BackgroundTransparency = 1
+ScrollFrame.ScrollBarThickness = 5
+ScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 300)
+ScrollFrame.Parent = MainFrame
+
+-- Секция Farm Candies
+FarmSection.Name = "FarmSection"
+FarmSection.Size = UDim2.new(1, -10, 0, 200)
+FarmSection.Position = UDim2.new(0, 5, 0, 5)
+FarmSection.BackgroundColor3 = Color3.fromRGB(65, 0, 110)
+FarmSection.BorderColor3 = Color3.fromRGB(148, 0, 211)
+FarmSection.BorderSizePixel = 2
+FarmSection.Parent = ScrollFrame
+
+FarmTitle.Name = "FarmTitle"
+FarmTitle.Size = UDim2.new(1, 0, 0, 40)
+FarmTitle.BackgroundColor3 = Color3.fromRGB(106, 13, 173)
+FarmTitle.BorderSizePixel = 0
+FarmTitle.Text = "Farm Candies"
+FarmTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+FarmTitle.TextScaled = true
+FarmTitle.Font = Enum.Font.GothamBold
+FarmTitle.Parent = FarmSection
+
+-- Кнопка AutoFarm
+AutoFarmToggle.Name = "AutoFarmToggle"
+AutoFarmToggle.Size = UDim2.new(0.9, 0, 0, 50)
+AutoFarmToggle.Position = UDim2.new(0.05, 0, 0.25, 0)
+AutoFarmToggle.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+AutoFarmToggle.BorderSizePixel = 0
+AutoFarmToggle.Text = "AutoFarm Candies: OFF"
+AutoFarmToggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoFarmToggle.TextScaled = true
+AutoFarmToggle.Font = Enum.Font.GothamBold
+AutoFarmToggle.Parent = FarmSection
+
+-- Слайдер скорости
+SpeedSlider.Name = "SpeedSlider"
+SpeedSlider.Size = UDim2.new(0.9, 0, 0, 80)
+SpeedSlider.Position = UDim2.new(0.05, 0, 0.55, 0)
+SpeedSlider.BackgroundColor3 = Color3.fromRGB(65, 0, 110)
+SpeedSlider.BorderSizePixel = 0
+SpeedSlider.Parent = FarmSection
+
+SpeedTitle.Name = "SpeedTitle"
+SpeedTitle.Size = UDim2.new(1, 0, 0, 30)
+SpeedTitle.BackgroundTransparency = 1
+SpeedTitle.Text = "Farm Speed:"
+SpeedTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedTitle.TextScaled = true
+SpeedTitle.Font = Enum.Font.Gotham
+SpeedTitle.Parent = SpeedSlider
+
+SpeedValue.Name = "SpeedValue"
+SpeedValue.Size = UDim2.new(0.3, 0, 0, 30)
+SpeedValue.Position = UDim2.new(0.7, 0, 0, 0)
+SpeedValue.BackgroundTransparency = 1
+SpeedValue.Text = "1"
+SpeedValue.TextColor3 = Color3.fromRGB(255, 255, 255)
+SpeedValue.TextScaled = true
+SpeedValue.Font = Enum.Font.GothamBold
+SpeedValue.Parent = SpeedSlider
+
+Slider.Name = "Slider"
+Slider.Size = UDim2.new(1, 0, 0, 20)
+Slider.Position = UDim2.new(0, 0, 0.5, 0)
+Slider.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+Slider.BorderSizePixel = 0
+Slider.Parent = SpeedSlider
+
+SliderButton.Name = "SliderButton"
+SliderButton.Size = UDim2.new(0, 30, 0, 30)
+SliderButton.Position = UDim2.new(0, -15, 0.25, -15)
+SliderButton.BackgroundColor3 = Color3.fromRGB(148, 0, 211)
+SliderButton.BorderSizePixel = 0
+SliderButton.Text = ""
+SliderButton.ZIndex = 2
+SliderButton.Parent = Slider
+
+-- Функции
+local function findCandies()
+    local candies = {}
     
-    local character = player.Character
-    if not character then return end
-    
-    local humanoid = character:FindFirstChild("Humanoid")
-    local head = character:FindFirstChild("Head")
-    
-    if not humanoid or not head then return end
-    
-    -- Очистка старых ESP объектов
-    if espObjects[player] then
-        for _, obj in pairs(espObjects[player]) do
-            if obj then
-                obj:Remove()
+    -- Поиск конфет в workspace
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name:lower():find("candy") or obj.Name:lower():find("coin") then
+            if obj:IsA("Part") or obj:IsA("MeshPart") then
+                table.insert(candies, obj)
             end
         end
     end
     
-    espObjects[player] = {}
-    
-    -- ESP Tracers
-    if ESP.Tracers then
-        local tracer = Drawing.new("Line")
-        tracer.Visible = false
-        tracer.Color = Color3.fromRGB(255, 0, 0)
-        tracer.Thickness = 1
-        tracer.Transparency = 1
-        table.insert(espObjects[player], tracer)
-    end
-    
-    -- ESP Box
-    if ESP.Box then
-        local box = Drawing.new("Square")
-        box.Visible = false
-        box.Color = Color3.fromRGB(255, 0, 0)
-        box.Thickness = 1
-        box.Filled = false
-        table.insert(espObjects[player], box)
-    end
-    
-    -- ESP Health
-    if ESP.Health then
-        local healthText = Drawing.new("Text")
-        healthText.Visible = false
-        healthText.Color = Color3.fromRGB(0, 255, 0) -- Зеленый цвет
-        healthText.Size = 13
-        healthText.Center = true
-        healthText.Outline = true
-        table.insert(espObjects[player], healthText)
-    end
-    
-    -- ESP Name
-    if ESP.Name then
-        local nameText = Drawing.new("Text")
-        nameText.Visible = false
-        nameText.Color = Color3.fromRGB(255, 0, 0)
-        nameText.Size = 13
-        nameText.Center = true
-        nameText.Outline = true
-        table.insert(espObjects[player], nameText)
+    return candies
+end
+
+local function collectCandy(candy)
+    if candy and candy.Parent then
+        local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+        if humanoidRootPart then
+            -- Телепортация к конфете
+            humanoidRootPart.CFrame = candy.CFrame
+            
+            -- Небольшая задержка для сбора
+            wait(0.1)
+        end
     end
 end
 
--- Функция обновления ESP
-function updateESP()
-    for player, objects in pairs(espObjects) do
-        local character = player.Character
-        local humanoid = character and character:FindFirstChild("Humanoid")
-        local head = character and character:FindFirstChild("Head")
+local function autoFarm()
+    if autoFarmEnabled and character and character:FindFirstChild("Humanoid") and character.Humanoid.Health > 0 then
+        local candies = findCandies()
         
-        -- Проверка жив ли игрок
-        if character and humanoid and head and humanoid.Health > 0 then
-            local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
-            
-            if onScreen then
-                local index = 1
-                
-                -- Обновление Tracers
-                if ESP.Tracers and objects[index] then
-                    objects[index].From = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y)
-                    objects[index].To = Vector2.new(vector.X, vector.Y)
-                    objects[index].Visible = true
-                    index = index + 1
-                end
-                
-                -- Обновление Box
-                if ESP.Box and objects[index] then
-                    local scale = 1 / (vector.Z * math.tan(math.rad(workspace.CurrentCamera.FieldOfView * 0.5)) * 2) * 100
-                    local width, height = math.floor(40 * scale), math.floor(55 * scale)
-                    objects[index].Position = Vector2.new(math.floor(vector.X - width * 0.5), math.floor(vector.Y - height * 0.5))
-                    objects[index].Size = Vector2.new(width, height)
-                    objects[index].Visible = true
-                    index = index + 1
-                end
-                
-                -- Обновление Health
-                if ESP.Health and objects[index] then
-                    objects[index].Position = Vector2.new(math.floor(vector.X), math.floor(vector.Y + 30))
-                    objects[index].Text = "HP: " .. math.floor(humanoid.Health)
-                    objects[index].Visible = true
-                    index = index + 1
-                end
-                
-                -- Обновление Name
-                if ESP.Name and objects[index] then
-                    objects[index].Position = Vector2.new(math.floor(vector.X), math.floor(vector.Y - 30))
-                    objects[index].Text = player.Name
-                    objects[index].Visible = true
-                end
-            else
-                -- Скрыть ESP если игрок не на экране
-                for _, obj in pairs(objects) do
-                    if obj then
-                        obj.Visible = false
-                    end
-                end
-            end
-        else
-            -- Удалить ESP если игрок умер или не существует
-            for _, obj in pairs(objects) do
-                if obj then
-                    obj.Visible = false
-                    obj:Remove()
-                end
-            end
-            espObjects[player] = nil
+        for _, candy in pairs(candies) do
+            if not autoFarmEnabled then break end
+            collectCandy(candy)
+            wait(1 / farmSpeed) -- Задержка в зависимости от скорости
         end
     end
 end
 
--- Переменные для Aimbot
-local Aimbot = {
-    Enabled = false,
-    FOV = 50,
-    TargetPart = "Head" -- По умолчанию цель - голова
-}
-
-local circle = Drawing.new("Circle")
-circle.Visible = false
-circle.Color = Color3.fromRGB(255, 0, 0)
-circle.Thickness = 1
-circle.NumSides = 100
-circle.Radius = Aimbot.FOV
-circle.Filled = false
-circle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
-
--- Функция для Aimbot
-function aimbot()
-    if not Aimbot.Enabled then return end
-    
-    local closestPlayer = nil
-    local closestDistance = Aimbot.FOV
-
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            local character = player.Character
-            local humanoid = character and character:FindFirstChild("Humanoid")
-            local targetPart = character and character:FindFirstChild(Aimbot.TargetPart)
-            
-            -- Проверка что игрок жив и существует
-            if character and humanoid and targetPart and humanoid.Health > 0 then
-                local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(targetPart.Position)
-                
-                if onScreen then
-                    local distance = (Vector2.new(vector.X, vector.Y) - circle.Position).Magnitude
-                    
-                    if distance < closestDistance then
-                        -- Проверка на видимость (не через стены)
-                        local raycastParams = RaycastParams.new()
-                        raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-                        raycastParams.FilterDescendantsInstances = {game.Players.LocalPlayer.Character}
-                        
-                        local raycastResult = workspace:Raycast(
-                            workspace.CurrentCamera.CFrame.Position, 
-                            (targetPart.Position - workspace.CurrentCamera.CFrame.Position).Unit * 1000, 
-                            raycastParams
-                        )
-                        
-                        if raycastResult and raycastResult.Instance:IsDescendantOf(character) then
-                            closestPlayer = player
-                            closestDistance = distance
-                        end
-                    end
-                end
-            end
-        end
-    end
-    
-    if closestPlayer and closestPlayer.Character then
-        local targetPart = closestPlayer.Character:FindFirstChild(Aimbot.TargetPart)
-        if targetPart then
-            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, targetPart.Position)
-        end
-    end
-end
-
--- Переменные для More раздела
-local SpeedHack = {
-    Enabled = false,
-    Speed = 16
-}
-
-local InfinityJump = false
-local AntiAFK = false
-local NoClip = false
-local NoRecoil = false
-
--- Функция для SpeedHack
-function updateSpeedHack()
-    if SpeedHack.Enabled then
-        local character = game.Players.LocalPlayer.Character
-        if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid.WalkSpeed = SpeedHack.Speed
-        end
-    else
-        local character = game.Players.LocalPlayer.Character
-        if character and character:FindFirstChild("Humanoid") then
-            character.Humanoid.WalkSpeed = 16 -- Стандартная скорость
-        end
-    end
-end
-
--- Функция для Infinity Jump
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if InfinityJump and game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
-        game.Players.LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+-- Обработчики событий
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+    if connection then
+        connection:Disconnect()
     end
 end)
 
--- Функция для AntiAFK
-if AntiAFK then
-    local VirtualUser = game:GetService("VirtualUser")
-    game.Players.LocalPlayer.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-    end)
-end
+HideButton.MouseButton1Click:Connect(function()
+    menuHidden = true
+    MainFrame.Visible = false
+    OpenButton.Visible = true
+end)
 
--- Функция для NoClip
-local noclipConnection
-function updateNoClip()
-    if NoClip then
-        local character = game.Players.LocalPlayer.Character
-        if character then
-            -- Отключаем коллизию для всех частей персонажа
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-            
-            -- Постоянное обновление NoClip
-            if noclipConnection then
-                noclipConnection:Disconnect()
-            end
-            
-            noclipConnection = game:GetService("RunService").Stepped:Connect(function()
-                if character then
-                    for _, part in pairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                else
-                    noclipConnection:Disconnect()
-                end
-            end)
-        end
-    else
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
+OpenButton.MouseButton1Click:Connect(function()
+    menuHidden = false
+    MainFrame.Visible = true
+    OpenButton.Visible = false
+end)
+
+AutoFarmToggle.MouseButton1Click:Connect(function()
+    autoFarmEnabled = not autoFarmEnabled
+    
+    if autoFarmEnabled then
+        AutoFarmToggle.BackgroundColor3 = Color3.fromRGB(50, 205, 50)
+        AutoFarmToggle.Text = "AutoFarm Candies: ON"
         
-        -- Восстанавливаем коллизию
-        local character = game.Players.LocalPlayer.Character
-        if character then
-            for _, part in pairs(character:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
-            end
+        -- Запуск автофарма
+        if connection then
+            connection:Disconnect()
+        end
+        connection = RunService.Heartbeat:Connect(autoFarm)
+    else
+        AutoFarmToggle.BackgroundColor3 = Color3.fromRGB(220, 20, 60)
+        AutoFarmToggle.Text = "AutoFarm Candies: OFF"
+        
+        if connection then
+            connection:Disconnect()
         end
     end
+end)
+
+-- Слайдер скорости
+local sliding = false
+SliderButton.MouseButton1Down:Connect(function()
+    sliding = true
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        sliding = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if sliding and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local sliderAbsolutePosition = Slider.AbsolutePosition.X
+        local sliderAbsoluteSize = Slider.AbsoluteSize.X
+        local mouseX = input.Position.X
+        
+        local relativeX = math.clamp(mouseX - sliderAbsolutePosition, 0, sliderAbsoluteSize)
+        local percentage = relativeX / sliderAbsoluteSize
+        
+        farmSpeed = math.floor(percentage * 10) + 1 -- Скорость от 1 до 11
+        SpeedValue.Text = tostring(farmSpeed)
+        
+        SliderButton.Position = UDim2.new(percentage, -15, 0.25, -15)
+    end
+end)
+
+-- Обработка смерти игрока
+player.CharacterAdded:Connect(function(newChar)
+    character = newChar
+    humanoid = character:WaitForChild("Humanoid")
+    
+    -- Автоматическое возобновление автофарма после смерти
+    if autoFarmEnabled then
+        wait(3) -- Ждем respawn
+        if connection then
+            connection:Disconnect()
+        end
+        connection = RunService.Heartbeat:Connect(autoFarm)
+    end
+end)
+
+-- Хеллоуинские украшения
+local function addHalloweenDecorations()
+    -- Тыква в углу
+    local pumpkin = Instance.new("ImageLabel")
+    pumpkin.Size = UDim2.new(0, 40, 0, 40)
+    pumpkin.Position = UDim2.new(0.85, 0, 0.85, 0)
+    pumpkin.BackgroundTransparency = 1
+    pumpkin.Image = "rbxassetid://11144551645" -- Замените на ID текстуры тыквы
+    pumpkin.Parent = MainFrame
+    
+    -- Паутина
+    local web = Instance.new("ImageLabel")
+    web.Size = UDim2.new(0, 60, 0, 60)
+    web.Position = UDim2.new(0.02, 0, 0.02, 0)
+    web.BackgroundTransparency = 1
+    web.Image = "rbxassetid://11144551645" -- Замените на ID текстуры паутины
+    web.Parent = MainFrame
 end
 
--- Функция для NoRecoil
-function updateNoRecoil()
-    if NoRecoil then
-        -- Отключаем отдачу для всех инструментов и оружия
-        for _, tool in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                -- Ищем модульные скрипты, которые могут управлять отдачей
-                for _, script in pairs(tool:GetDescendants()) do
-                    if script:IsA("ModuleScript") then
-                        -- Можно добавить специфичную логику для разных игр
-                    end
-                end
-            end
-        end
-    end
-end
+addHalloweenDecorations()
 
--- Создание элементов вкладки ESP
-ESPTab:CreateSection("ESP Настройки")
-
-ESPTab:CreateToggle({
-    Name = "ESP Tracers",
-    CurrentValue = false,
-    Flag = "ESP_Tracers",
-    Callback = function(Value)
-        ESP.Tracers = Value
-        if not Value then
-            for player, objects in pairs(espObjects) do
-                if objects[1] then
-                    objects[1].Visible = false
-                end
-            end
-        else
-            -- Пересоздать ESP для всех игроков при включении
-            for _, player in pairs(game.Players:GetPlayers()) do
-                createESP(player)
-            end
-        end
-    end,
-})
-
-ESPTab:CreateToggle({
-    Name = "ESP Box",
-    CurrentValue = false,
-    Flag = "ESP_Box",
-    Callback = function(Value)
-        ESP.Box = Value
-        if not Value then
-            for player, objects in pairs(espObjects) do
-                if objects[2] then
-                    objects[2].Visible = false
-                end
-            end
-        else
-            for _, player in pairs(game.Players:GetPlayers()) do
-                createESP(player)
-            end
-        end
-    end,
-})
-
-ESPTab:CreateToggle({
-    Name = "ESP Health",
-    CurrentValue = false,
-    Flag = "ESP_Health",
-    Callback = function(Value)
-        ESP.Health = Value
-        if not Value then
-            for player, objects in pairs(espObjects) do
-                if objects[3] then
-                    objects[3].Visible = false
-                end
-            end
-        else
-            for _, player in pairs(game.Players:GetPlayers()) do
-                createESP(player)
-            end
-        end
-    end,
-})
-
-ESPTab:CreateToggle({
-    Name = "ESP Name",
-    CurrentValue = false,
-    Flag = "ESP_Name",
-    Callback = function(Value)
-        ESP.Name = Value
-        if not Value then
-            for player, objects in pairs(espObjects) do
-                if objects[4] then
-                    objects[4].Visible = false
-                end
-            end
-        else
-            for _, player in pairs(game.Players:GetPlayers()) do
-                createESP(player)
-            end
-        end
-    end,
-})
-
--- Создание элементов вкладки Aimbot
-AimbotTab:CreateSection("Aimbot Настройки")
-
-AimbotTab:CreateToggle({
-    Name = "Aimbot",
-    CurrentValue = false,
-    Flag = "Aimbot_Enabled",
-    Callback = function(Value)
-        Aimbot.Enabled = Value
-        circle.Visible = Value
-    end,
-})
-
-AimbotTab:CreateSlider({
-    Name = "FOV",
-    Range = {10, 200},
-    Increment = 5,
-    Suffix = "px",
-    CurrentValue = 50,
-    Flag = "Aimbot_FOV",
-    Callback = function(Value)
-        Aimbot.FOV = Value
-        circle.Radius = Value
-    end,
-})
-
--- Подменю выбора цели для Aimbot
-local TargetSelection = AimbotTab:CreateSection("Выбор цели")
-
--- Создаем мини-меню с кнопками выбора цели
-AimbotTab:CreateButton({
-    Name = "Head (Голова)",
-    Callback = function()
-        Aimbot.TargetPart = "Head"
-        Rayfield:Notify({
-            Title = "Aimbot Target",
-            Content = "Цель установлена: Head",
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end,
-})
-
-AimbotTab:CreateButton({
-    Name = "Body (Тело)",
-    Callback = function()
-        Aimbot.TargetPart = "HumanoidRootPart"
-        Rayfield:Notify({
-            Title = "Aimbot Target",
-            Content = "Цель установлена: Body",
-            Duration = 3,
-            Image = 4483362458,
-        })
-    end,
-})
-
--- Создание элементов вкладки More
-MoreTab:CreateSection("Speed Hack")
-
-MoreTab:CreateToggle({
-    Name = "Speed Hack",
-    CurrentValue = false,
-    Flag = "SpeedHack_Enabled",
-    Callback = function(Value)
-        SpeedHack.Enabled = Value
-        updateSpeedHack()
-    end,
-})
-
-MoreTab:CreateSlider({
-    Name = "Скорость",
-    Range = {16, 100},
-    Increment = 5,
-    Suffix = "speed",
-    CurrentValue = 16,
-    Flag = "SpeedHack_Speed",
-    Callback = function(Value)
-        SpeedHack.Speed = Value
-        updateSpeedHack()
-    end,
-})
-
-MoreTab:CreateSection("Другие функции")
-
-MoreTab:CreateToggle({
-    Name = "Infinity Jump",
-    CurrentValue = false,
-    Flag = "InfinityJump",
-    Callback = function(Value)
-        InfinityJump = Value
-    end,
-})
-
-MoreTab:CreateToggle({
-    Name = "Anti AFK",
-    CurrentValue = false,
-    Flag = "AntiAFK",
-    Callback = function(Value)
-        AntiAFK = Value
-        if Value then
-            local VirtualUser = game:GetService("VirtualUser")
-            game.Players.LocalPlayer.Idled:Connect(function()
-                VirtualUser:CaptureController()
-                VirtualUser:ClickButton2(Vector2.new())
-            end)
-        end
-    end,
-})
-
-MoreTab:CreateToggle({
-    Name = "NoClip",
-    CurrentValue = false,
-    Flag = "NoClip",
-    Callback = function(Value)
-        NoClip = Value
-        updateNoClip()
-    end,
-})
-
-MoreTab:CreateToggle({
-    Name = "No Recoil",
-    CurrentValue = false,
-    Flag = "NoRecoil",
-    Callback = function(Value)
-        NoRecoil = Value
-        updateNoRecoil()
-        if Value then
-            Rayfield:Notify({
-                Title = "No Recoil",
-                Content = "Отдача отключена для всего оружия",
-                Duration = 3,
-                Image = 4483362458,
-            })
-        end
-    end,
-})
-
--- Инициализация ESP для всех игроков
-for _, player in pairs(game.Players:GetPlayers()) do
-    createESP(player)
-end
-
--- Обработка новых игроков
-game.Players.PlayerAdded:Connect(function(player)
-    createESP(player)
-end)
-
--- Обработка вышедших игроков
-game.Players.PlayerRemoving:Connect(function(player)
-    if espObjects[player] then
-        for _, obj in pairs(espObjects[player]) do
-            if obj then
-                obj:Remove()
-            end
-        end
-        espObjects[player] = nil
-    end
-end)
-
--- Обработка смерти/возрождения игроков
-game.Players.PlayerAdded:Connect(function(player)
-    player.CharacterAdded:Connect(function(character)
-        wait(1) -- Небольшая задержка для загрузки персонажа
-        createESP(player)
-    end)
-end)
-
--- Для уже существующих игроков
-for _, player in pairs(game.Players:GetPlayers()) do
-    if player.Character then
-        createESP(player)
-    end
-    player.CharacterAdded:Connect(function(character)
-        wait(1)
-        createESP(player)
-    end)
-end
-
--- Обновление SpeedHack при изменении персонажа
-game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
-    wait(1)
-    updateSpeedHack()
-    updateNoClip()
-end)
-
--- Обновление NoClip при изменении персонажа
-game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
-    wait(1)
-    if NoClip then
-        updateNoClip()
-    end
-end)
-
--- Основной цикл обновления
-game:GetService("RunService").RenderStepped:Connect(function()
-    updateESP()
-    aimbot()
-end)
-
--- Обновление позиции круга FOV при изменении размера экрана
-workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
-    circle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
-end)
-
-Rayfield:LoadConfiguration()
-
--- Уведомление о загрузке
-Rayfield:Notify({
-    Title = "SANSTRO MENU",
-    Content = "Меню успешно загружено!",
-    Duration = 5,
-    Image = 4483362458,
-})
+print("SANSTRO MM2 Menu loaded! Use the menu to farm candies.")
