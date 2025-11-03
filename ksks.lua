@@ -158,7 +158,7 @@ SpeedValue.Name = "SpeedValue"
 SpeedValue.Size = UDim2.new(0.3, 0, 0, 25)
 SpeedValue.Position = UDim2.new(0.7, 0, 0, 0)
 SpeedValue.BackgroundTransparency = 1
-SpeedValue.Text = "1"
+SpeedValue.Text = "5"
 SpeedValue.TextColor3 = Color3.fromRGB(255, 140, 0)
 SpeedValue.TextScaled = true
 SpeedValue.Font = Enum.Font.GothamBold
@@ -176,7 +176,7 @@ SliderTrack.Parent = SpeedSection
 local SliderButton = Instance.new("TextButton")
 SliderButton.Name = "SliderButton"
 SliderButton.Size = UDim2.new(0, 25, 0, 25)
-SliderButton.Position = UDim2.new(0, -12, 0, -5)
+SliderButton.Position = UDim2.new(0.4, -12, 0, -5) -- Начальная позиция для скорости 5
 SliderButton.BackgroundColor3 = Color3.fromRGB(255, 140, 0)
 SliderButton.BorderSizePixel = 0
 SliderButton.Text = ""
@@ -198,11 +198,12 @@ CandyCounter.Parent = FarmSection
 
 -- Переменные
 local autoFarmEnabled = false
-local farmSpeed = 1
+local farmSpeed = 5 -- Начальная скорость 5
 local menuHidden = false
 local connection
 local sliding = false
-local collectedCandies = {} -- Таблица для отслеживания собранных конфет
+local collectedCandies = {}
+local isCollecting = false -- Флаг чтобы не собирать несколько конфет одновременно
 
 -- Функция для подсчета конфет
 local function countCandies()
@@ -248,31 +249,35 @@ local function findNearestCandy()
     return nearestCandy
 end
 
--- Функция сбора конфеты
+-- Функция сбора конфеты (ФИКСИРОВАННОЕ ВРЕМЯ 500ms)
 local function collectCandy(candy)
+    if isCollecting then return false end -- Уже собираем другую конфету
     if candy and candy.Parent and not collectedCandies[candy] then
         local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
         if humanoidRootPart then
+            isCollecting = true -- Начинаем сбор
+            
             -- Отмечаем конфету как собранную
             collectedCandies[candy] = true
             
-            -- Телепортируемся к конфете
+            -- ТЕЛЕПОРТАЦИЯ к конфете (мгновенно)
             humanoidRootPart.CFrame = CFrame.new(candy.Position + Vector3.new(0, 3, 0))
             
-            -- Ждем немного перед сбором
-            wait(0.3)
+            -- ФИКСИРОВАННАЯ ЗАДЕРЖКА 500 МИЛЛИСЕКУНД
+            wait(0.5)
             
-            -- Пытаемся "собрать" конфету (симуляция сбора)
+            -- Пытаемся "собрать" конфету
             if candy.Parent then
-                -- Если конфета все еще существует, пытаемся ее убрать
                 pcall(function()
                     candy:Destroy()
                 end)
             end
             
+            isCollecting = false -- Завершили сбор
             return true
         end
     end
+    isCollecting = false
     return false
 end
 
@@ -280,17 +285,21 @@ end
 local function autoFarm()
     if not autoFarmEnabled then return end
     if not character or not character:FindFirstChild("Humanoid") or character.Humanoid.Health <= 0 then return end
+    if isCollecting then return end -- Не прерываем текущий сбор
     
     local candy = findNearestCandy()
     
     if candy then
         local success = collectCandy(candy)
         if success then
-            -- Успешно собрали конфету, ждем перед поиском следующей
-            wait(1 / farmSpeed)
+            -- Успешно собрали конфету за 500ms, ждем перед поиском следующей
+            local waitTime = (1 / farmSpeed) - 0.5 -- Вычитаем время сбора
+            if waitTime > 0 then
+                wait(waitTime)
+            end
         else
             -- Не удалось собрать, ждем немного и продолжаем
-            wait(0.5)
+            wait(0.2)
         end
     else
         -- Нет конфет для сбора, ждем и проверяем снова
@@ -299,7 +308,7 @@ local function autoFarm()
         -- Очищаем таблицу собранных конфет если все собрано
         if countCandies() == 0 then
             collectedCandies = {}
-            wait(2) -- Ждем перед повторным поиском
+            wait(2)
         end
     end
 end
@@ -365,6 +374,7 @@ AutoFarmToggle.MouseButton1Click:Connect(function()
         
         -- Очищаем историю собранных конфет при запуске
         collectedCandies = {}
+        isCollecting = false
         
         if connection then
             connection:Disconnect()
@@ -389,6 +399,7 @@ player.CharacterAdded:Connect(function(newChar)
     
     -- Очищаем историю собранных конфет после смерти
     collectedCandies = {}
+    isCollecting = false
     
     if autoFarmEnabled then
         if connection then
@@ -406,12 +417,9 @@ candyUpdateConnection = RunService.Heartbeat:Connect(function()
     updateCandyCounter()
 end)
 
--- Установка начальной позиции слайдера
-wait(0.5)
-updateSlider(SliderTrack.AbsolutePosition.X + 20)
-
 print("✅ SANSTRO MM2 Menu loaded successfully!")
 print("🎃 Halloween theme activated!")
 print("📱 Working on mobile!")
 print("🍭 Candy counter added!")
-print("🚀 AutoFarm FIXED - now collects all candies properly!")
+print("⏱️ Fixed collection time: 500ms per candy")
+print("⚡ Speed controls delay BETWEEN candies")
