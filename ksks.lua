@@ -241,6 +241,8 @@ local SpeedHack = {
 
 local InfinityJump = false
 local AntiAFK = false
+local NoClip = false
+local NoRecoil = false
 
 -- Функция для SpeedHack
 function updateSpeedHack()
@@ -271,6 +273,71 @@ if AntiAFK then
         VirtualUser:CaptureController()
         VirtualUser:ClickButton2(Vector2.new())
     end)
+end
+
+-- Функция для NoClip
+local noclipConnection
+function updateNoClip()
+    if NoClip then
+        local character = game.Players.LocalPlayer.Character
+        if character then
+            -- Отключаем коллизию для всех частей персонажа
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+            
+            -- Постоянное обновление NoClip
+            if noclipConnection then
+                noclipConnection:Disconnect()
+            end
+            
+            noclipConnection = game:GetService("RunService").Stepped:Connect(function()
+                if character then
+                    for _, part in pairs(character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                else
+                    noclipConnection:Disconnect()
+                end
+            end)
+        end
+    else
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        
+        -- Восстанавливаем коллизию
+        local character = game.Players.LocalPlayer.Character
+        if character then
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+    end
+end
+
+-- Функция для NoRecoil
+function updateNoRecoil()
+    if NoRecoil then
+        -- Отключаем отдачу для всех инструментов и оружия
+        for _, tool in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                -- Ищем модульные скрипты, которые могут управлять отдачей
+                for _, script in pairs(tool:GetDescendants()) do
+                    if script:IsA("ModuleScript") then
+                        -- Можно добавить специфичную логику для разных игр
+                    end
+                end
+            end
+        end
+    end
 end
 
 -- Создание элементов вкладки ESP
@@ -384,8 +451,9 @@ AimbotTab:CreateSlider({
 })
 
 -- Подменю выбора цели для Aimbot
-AimbotTab:CreateSection("Выбор цели")
+local TargetSelection = AimbotTab:CreateSection("Выбор цели")
 
+-- Создаем мини-меню с кнопками выбора цели
 AimbotTab:CreateButton({
     Name = "Head (Голова)",
     Callback = function()
@@ -465,6 +533,34 @@ MoreTab:CreateToggle({
     end,
 })
 
+MoreTab:CreateToggle({
+    Name = "NoClip",
+    CurrentValue = false,
+    Flag = "NoClip",
+    Callback = function(Value)
+        NoClip = Value
+        updateNoClip()
+    end,
+})
+
+MoreTab:CreateToggle({
+    Name = "No Recoil",
+    CurrentValue = false,
+    Flag = "NoRecoil",
+    Callback = function(Value)
+        NoRecoil = Value
+        updateNoRecoil()
+        if Value then
+            Rayfield:Notify({
+                Title = "No Recoil",
+                Content = "Отдача отключена для всего оружия",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+    end,
+})
+
 -- Инициализация ESP для всех игроков
 for _, player in pairs(game.Players:GetPlayers()) do
     createESP(player)
@@ -510,6 +606,15 @@ end
 game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
     wait(1)
     updateSpeedHack()
+    updateNoClip()
+end)
+
+-- Обновление NoClip при изменении персонажа
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    wait(1)
+    if NoClip then
+        updateNoClip()
+    end
 end)
 
 -- Основной цикл обновления
