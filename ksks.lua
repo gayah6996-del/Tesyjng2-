@@ -22,6 +22,7 @@ local Window = Rayfield:CreateWindow({
 -- Создание вкладок
 local ESPTab = Window:CreateTab("ESP", 4483362458)
 local AimbotTab = Window:CreateTab("Aimbot", 4483362458)
+local MoreTab = Window:CreateTab("More", 4483362458)
 
 -- Переменные для ESP
 local ESP = {
@@ -80,7 +81,7 @@ function createESP(player)
     if ESP.Health then
         local healthText = Drawing.new("Text")
         healthText.Visible = false
-        healthText.Color = Color3.fromRGB(255, 0, 0)
+        healthText.Color = Color3.fromRGB(0, 255, 0) -- Зеленый цвет
         healthText.Size = 13
         healthText.Center = true
         healthText.Outline = true
@@ -169,7 +170,8 @@ end
 -- Переменные для Aimbot
 local Aimbot = {
     Enabled = false,
-    FOV = 50
+    FOV = 50,
+    TargetPart = "Head" -- По умолчанию цель - голова
 }
 
 local circle = Drawing.new("Circle")
@@ -193,29 +195,41 @@ function aimbot()
             local character = player.Character
             local humanoid = character and character:FindFirstChild("Humanoid")
             local head = character and character:FindFirstChild("Head")
+            local humanoidRootPart = character and character:FindFirstChild("HumanoidRootPart")
             
             -- Проверка что игрок жив и существует
-            if character and humanoid and head and humanoid.Health > 0 then
-                local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(head.Position)
+            if character and humanoid and head and humanoidRootPart and humanoid.Health > 0 then
+                local targetPart = character:FindFirstChild(Aimbot.TargetPart)
+                if not targetPart then
+                    if Aimbot.TargetPart == "Head" then
+                        targetPart = head
+                    else
+                        targetPart = humanoidRootPart
+                    end
+                end
                 
-                if onScreen then
-                    local distance = (Vector2.new(vector.X, vector.Y) - circle.Position).Magnitude
+                if targetPart then
+                    local vector, onScreen = workspace.CurrentCamera:WorldToViewportPoint(targetPart.Position)
                     
-                    if distance < closestDistance then
-                        -- Проверка на видимость (не через стены)
-                        local raycastParams = RaycastParams.new()
-                        raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
-                        raycastParams.FilterDescendantsInstances = {game.Players.LocalPlayer.Character}
+                    if onScreen then
+                        local distance = (Vector2.new(vector.X, vector.Y) - circle.Position).Magnitude
                         
-                        local raycastResult = workspace:Raycast(
-                            workspace.CurrentCamera.CFrame.Position, 
-                            (head.Position - workspace.CurrentCamera.CFrame.Position).Unit * 1000, 
-                            raycastParams
-                        )
-                        
-                        if raycastResult and raycastResult.Instance:IsDescendantOf(character) then
-                            closestPlayer = player
-                            closestDistance = distance
+                        if distance < closestDistance then
+                            -- Проверка на видимость (не через стены)
+                            local raycastParams = RaycastParams.new()
+                            raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+                            raycastParams.FilterDescendantsInstances = {game.Players.LocalPlayer.Character}
+                            
+                            local raycastResult = workspace:Raycast(
+                                workspace.CurrentCamera.CFrame.Position, 
+                                (targetPart.Position - workspace.CurrentCamera.CFrame.Position).Unit * 1000, 
+                                raycastParams
+                            )
+                            
+                            if raycastResult and raycastResult.Instance:IsDescendantOf(character) then
+                                closestPlayer = player
+                                closestDistance = distance
+                            end
                         end
                     end
                 end
@@ -224,11 +238,61 @@ function aimbot()
     end
     
     if closestPlayer and closestPlayer.Character then
-        local targetHead = closestPlayer.Character:FindFirstChild("Head")
-        if targetHead then
-            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, targetHead.Position)
+        local targetPart = closestPlayer.Character:FindFirstChild(Aimbot.TargetPart)
+        if not targetPart then
+            if Aimbot.TargetPart == "Head" then
+                targetPart = closestPlayer.Character:FindFirstChild("Head")
+            else
+                targetPart = closestPlayer.Character:FindFirstChild("HumanoidRootPart")
+            end
+        end
+        
+        if targetPart then
+            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, targetPart.Position)
         end
     end
+end
+
+-- Переменные для More раздела
+local SpeedHack = {
+    Enabled = false,
+    Speed = 16
+}
+
+local InfinityJump = false
+local AntiAFK = false
+
+-- Функция для SpeedHack
+function updateSpeed()
+    local character = game.Players.LocalPlayer.Character
+    if character then
+        local humanoid = character:FindFirstChild("Humanoid")
+        if humanoid then
+            if SpeedHack.Enabled then
+                humanoid.WalkSpeed = SpeedHack.Speed
+            else
+                humanoid.WalkSpeed = 16 -- Стандартная скорость
+            end
+        end
+    end
+end
+
+-- Функция для Infinity Jump
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if InfinityJump then
+        local character = game.Players.LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid:ChangeState("Jumping")
+            end
+        end
+    end
+end)
+
+-- Функция для AntiAFK
+if setfflag then
+    setfflag("DFIntTaskSchedulerTargetFps", "60")
 end
 
 -- Создание элементов вкладки ESP
@@ -315,27 +379,6 @@ ESPTab:CreateToggle({
     end,
 })
 
--- Кнопка для обновления ESP
-ESPTab:CreateButton({
-    Name = "Обновить ESP",
-    Callback = function()
-        -- Очистка старых ESP объектов
-        for player, objects in pairs(espObjects) do
-            for _, obj in pairs(objects) do
-                if obj then
-                    obj:Remove()
-                end
-            end
-        end
-        espObjects = {}
-        
-        -- Создание новых ESP объектов
-        for _, player in pairs(game.Players:GetPlayers()) do
-            createESP(player)
-        end
-    end,
-})
-
 -- Создание элементов вкладки Aimbot
 AimbotTab:CreateSection("Aimbot Настройки")
 
@@ -359,6 +402,104 @@ AimbotTab:CreateSlider({
     Callback = function(Value)
         Aimbot.FOV = Value
         circle.Radius = Value
+    end,
+})
+
+AimbotTab:CreateSection("Выбор цели")
+
+AimbotTab:CreateButton({
+    Name = "Head",
+    Callback = function()
+        Aimbot.TargetPart = "Head"
+        Rayfield:Notify({
+            Title = "Aimbot",
+            Content = "Цель установлена: Head",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end,
+})
+
+AimbotTab:CreateButton({
+    Name = "Body",
+    Callback = function()
+        Aimbot.TargetPart = "HumanoidRootPart"
+        Rayfield:Notify({
+            Title = "Aimbot",
+            Content = "Цель установлена: Body",
+            Duration = 3,
+            Image = 4483362458,
+        })
+    end,
+})
+
+-- Создание элементов вкладки More
+MoreTab:CreateSection("Speed Hack")
+
+MoreTab:CreateToggle({
+    Name = "Speed Hack",
+    CurrentValue = false,
+    Flag = "SpeedHack_Enabled",
+    Callback = function(Value)
+        SpeedHack.Enabled = Value
+        updateSpeed()
+    end,
+})
+
+MoreTab:CreateSlider({
+    Name = "Скорость",
+    Range = {16, 100},
+    Increment = 5,
+    Suffix = "speed",
+    CurrentValue = 16,
+    Flag = "SpeedHack_Speed",
+    Callback = function(Value)
+        SpeedHack.Speed = Value
+        updateSpeed()
+    end,
+})
+
+MoreTab:CreateSection("Другие функции")
+
+MoreTab:CreateToggle({
+    Name = "Infinity Jump",
+    CurrentValue = false,
+    Flag = "Infinity_Jump",
+    Callback = function(Value)
+        InfinityJump = Value
+        if Value then
+            Rayfield:Notify({
+                Title = "Infinity Jump",
+                Content = "Бесконечный прыжок включен!",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
+    end,
+})
+
+MoreTab:CreateToggle({
+    Name = "Anti AFK",
+    CurrentValue = false,
+    Flag = "Anti_AFK",
+    Callback = function(Value)
+        AntiAFK = Value
+        if Value then
+            -- Активация Anti AFK
+            local VirtualUser = game:GetService("VirtualUser")
+            game:GetService("Players").LocalPlayer.Idled:connect(function()
+                if AntiAFK then
+                    VirtualUser:CaptureController()
+                    VirtualUser:ClickButton2(Vector2.new())
+                end
+            end)
+            Rayfield:Notify({
+                Title = "Anti AFK",
+                Content = "Anti AFK включен!",
+                Duration = 3,
+                Image = 4483362458,
+            })
+        end
     end,
 })
 
@@ -412,6 +553,12 @@ end)
 -- Обновление позиции круга FOV при изменении размера экрана
 workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(function()
     circle.Position = Vector2.new(workspace.CurrentCamera.ViewportSize.X / 2, workspace.CurrentCamera.ViewportSize.Y / 2)
+end)
+
+-- Обновление скорости при возрождении
+game.Players.LocalPlayer.CharacterAdded:Connect(function(character)
+    wait(1)
+    updateSpeed()
 end)
 
 Rayfield:LoadConfiguration()
